@@ -1,0 +1,9553 @@
+Angular açılır
+   ↓
+HttpOnly refresh cookie varsa session restore denenir
+   ↓
+/login
+   ↓
+username/email + password
+   ↓
+POST /api/auth/login
+   ↓
+Access Token → Angular memory
+Refresh Token → HttpOnly Cookie
+   ↓
+JWT ve response development console'a yazılır
+   ↓
+/app
+   ↓
+Korunan boş ekran
+   ↓
+API çağrılarında Authorization: Bearer ...
+   ↓
+401 olursa otomatik refresh
+   ↓
+Aynı anda birden fazla 401 → tek refresh isteği
+
+Angular tarafında TypeScript kullandığımız için backend’deki XML Documentation karşılığı olarak önemli class/interface/property/method’larda /** ... */ documentation comment kullanacağım.
+Aşağıdaki kodda backend login/refresh response’unun şu şekilde olduğunu kabul ediyorum:
+{
+  "accessToken": "eyJhbGciOi...",
+  "accessTokenExpiresAt": "2026-10-06T19:30:00Z",
+  "user": {
+    "id": "...",
+    "userName": "admin",
+    "firstName": "Burak",
+    "lastName": "Tekin",
+    "fullName": "Burak Tekin",
+    "email": "mail@example.com",
+    "organizationUnitId": null,
+    "roles": ["ADMIN"],
+    "permissions": ["Users.View", "Users.Create"]
+  }
+}
+
+Swagger’da DTO’nun property isimleri farklıysa sadece response modelini beraber düzeltiriz.
+1. PrimeNG paketleri
+Angular projesinin terminalinde:
+npm install primeng @primeuix/themes primeicons
+
+Sonra:
+npm install
+
+2. Oluşturacağımız klasör yapısı
+src/app altında:
+src/app
+│
+├── core
+│   │
+│   ├── config
+│   │   └── api.tokens.ts
+│   │
+│   ├── auth
+│   │   │
+│   │   ├── models
+│   │   │   ├── login-request.model.ts
+│   │   │   ├── auth-user.model.ts
+│   │   │   ├── auth-session-response.model.ts
+│   │   │   └── auth-state.model.ts
+│   │   │
+│   │   ├── services
+│   │   │   ├── auth-store.service.ts
+│   │   │   ├── auth-debug.service.ts
+│   │   │   └── auth.service.ts
+│   │   │
+│   │   ├── guards
+│   │   │   ├── auth.guard.ts
+│   │   │   └── guest.guard.ts
+│   │   │
+│   │   └── interceptors
+│   │       └── auth.interceptor.ts
+│   │
+│   └── permissions
+│       ├── services
+│       │   └── permission.service.ts
+│       │
+│       └── guards
+│           └── permission.guard.ts
+│
+├── features
+│   │
+│   ├── authentication
+│   │   └── login
+│   │       ├── login.component.ts
+│   │       ├── login.component.html
+│   │       └── login.component.scss
+│   │
+│   └── home
+│       ├── home.component.ts
+│       ├── home.component.html
+│       └── home.component.scss
+│
+├── app.component.ts
+├── app.config.ts
+└── app.routes.ts
+
+3. API base URL InjectionToken
+Dosya:
+src/app/core/config/api.tokens.ts
+
+import { InjectionToken } from '@angular/core';
+
+/**
+ * Backend API'nin Angular uygulaması tarafından kullanılacak
+ * temel adresini temsil eder.
+ */
+export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL');
+
+Biz development sırasında:
+/api
+
+kullanacağız.
+Böylece kod içine:
+https://localhost:7234
+
+gibi adresleri gömmeyeceğiz.
+4. Login request modeli
+Dosya:
+src/app/core/auth/models/login-request.model.ts
+
+/**
+ * Kullanıcının kullanıcı adı veya e-posta adresi ile
+ * sisteme giriş yapması için gönderilen isteği temsil eder.
+ */
+export interface LoginRequest {
+
+  /**
+   * Kullanıcının kullanıcı adı veya e-posta adresidir.
+   */
+  userNameOrEmail: string;
+
+  /**
+   * Kullanıcının açık metin parolasıdır.
+   *
+   * Bu değer istemci tarafında kalıcı olarak saklanmaz.
+   */
+  password: string;
+}
+
+5. AuthUser modeli
+Dosya:
+src/app/core/auth/models/auth-user.model.ts
+
+/**
+ * Oturum açmış kullanıcıya ait Angular uygulamasında
+ * kullanılacak profil ve authorization bilgilerini temsil eder.
+ */
+export interface AuthUser {
+
+  /**
+   * Kullanıcının benzersiz sistem kimliğidir.
+   */
+  id: string;
+
+  /**
+   * Kullanıcının kullanıcı adıdır.
+   */
+  userName: string;
+
+  /**
+   * Kullanıcının adıdır.
+   */
+  firstName: string;
+
+  /**
+   * Kullanıcının soyadıdır.
+   */
+  lastName: string;
+
+  /**
+   * Kullanıcının ekranda gösterilecek tam adıdır.
+   */
+  fullName: string;
+
+  /**
+   * Kullanıcının e-posta adresidir.
+   */
+  email: string;
+
+  /**
+   * Kullanıcının bağlı bulunduğu organizasyon biriminin
+   * benzersiz kimliğidir.
+   */
+  organizationUnitId: string | null;
+
+  /**
+   * Kullanıcının sahip olduğu rol kodlarını içerir.
+   *
+   * Örnek:
+   * ADMIN
+   * STANDARD_USER
+   */
+  roles: string[];
+
+  /**
+   * Kullanıcının efektif permission kodlarını içerir.
+   *
+   * Bu liste yalnızca kullanıcı arayüzü davranışları için kullanılır.
+   * Nihai authorization kararı backend tarafından verilir.
+   */
+  permissions: string[];
+}
+
+6. Login / Refresh response modeli
+Dosya:
+src/app/core/auth/models/auth-session-response.model.ts
+
+import { AuthUser } from './auth-user.model';
+
+/**
+ * Login veya refresh işlemi sonucunda backend tarafından
+ * Angular uygulamasına dönen authentication oturumunu temsil eder.
+ *
+ * Refresh token bu response içerisinde bulunmaz.
+ * Refresh token yalnızca HttpOnly cookie içerisinde tutulur.
+ */
+export interface AuthSessionResponse {
+
+  /**
+   * Backend API çağrılarında Authorization header içerisinde
+   * kullanılacak JWT access token'dır.
+   */
+  accessToken: string;
+
+  /**
+   * Access token'ın UTC bazında sona ereceği zamanı belirtir.
+   */
+  accessTokenExpiresAt: string;
+
+  /**
+   * Oturum açmış kullanıcıya ait güncel bilgileri içerir.
+   */
+  user: AuthUser;
+}
+
+7. Angular AuthState
+Dosya:
+src/app/core/auth/models/auth-state.model.ts
+
+import { AuthUser } from './auth-user.model';
+
+/**
+ * Angular uygulamasının çalışma zamanındaki
+ * authentication durumunu temsil eder.
+ */
+export interface AuthState {
+
+  /**
+   * Uygulama başlangıcındaki session restore işleminin
+   * tamamlanıp tamamlanmadığını belirtir.
+   */
+  isInitialized: boolean;
+
+  /**
+   * Kullanıcının geçerli bir oturuma sahip olup olmadığını belirtir.
+   */
+  isAuthenticated: boolean;
+
+  /**
+   * Bellekte tutulan kısa ömürlü JWT access token'dır.
+   *
+   * LocalStorage veya SessionStorage içerisinde tutulmaz.
+   */
+  accessToken: string | null;
+
+  /**
+   * Access token'ın sona erme zamanıdır.
+   */
+  accessTokenExpiresAt: string | null;
+
+  /**
+   * Oturum açmış kullanıcının güncel bilgilerini içerir.
+   */
+  user: AuthUser | null;
+}
+
+8. Auth Store
+Şimdi authentication state’imizi Angular Signals ile yöneteceğiz.
+Dosya:
+src/app/core/auth/services/auth-store.service.ts
+
+import { computed, Injectable, signal } from '@angular/core';
+
+import { AuthSessionResponse } from '../models/auth-session-response.model';
+import { AuthState } from '../models/auth-state.model';
+import { AuthUser } from '../models/auth-user.model';
+
+/**
+ * Angular uygulamasındaki authentication durumunu
+ * bellek içerisinde yöneten merkezi state servisidir.
+ *
+ * Access token yalnızca memory içerisinde tutulur.
+ * Refresh token bu servisin erişimine hiçbir zaman verilmez.
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthStoreService {
+
+  /**
+   * Authentication state'inin değiştirilebilir dahili Signal nesnesidir.
+   */
+  private readonly _state = signal<AuthState>({
+    isInitialized: false,
+    isAuthenticated: false,
+    accessToken: null,
+    accessTokenExpiresAt: null,
+    user: null
+  });
+
+  /**
+   * Authentication state'inin dışarıya salt okunur olarak
+   * sunulan halidir.
+   */
+  public readonly state = this._state.asReadonly();
+
+  /**
+   * Session initialization işleminin tamamlanıp
+   * tamamlanmadığını belirtir.
+   */
+  public readonly isInitialized = computed(
+    () => this._state().isInitialized
+  );
+
+  /**
+   * Kullanıcının oturum açmış olup olmadığını belirtir.
+   */
+  public readonly isAuthenticated = computed(
+    () => this._state().isAuthenticated
+  );
+
+  /**
+   * Aktif access token bilgisini döndürür.
+   */
+  public readonly accessToken = computed(
+    () => this._state().accessToken
+  );
+
+  /**
+   * Güncel kullanıcı bilgisini döndürür.
+   */
+  public readonly user = computed(
+    () => this._state().user
+  );
+
+  /**
+   * Backend'den alınan başarılı login veya refresh sonucunu
+   * authentication state'ine yazar.
+   *
+   * @param session Backend tarafından dönen authentication session bilgisidir.
+   */
+  public setSession(session: AuthSessionResponse): void {
+    this._state.set({
+      isInitialized: true,
+      isAuthenticated: true,
+      accessToken: session.accessToken,
+      accessTokenExpiresAt: session.accessTokenExpiresAt,
+      user: session.user
+    });
+  }
+
+  /**
+   * Mevcut kullanıcı bilgisini günceller.
+   *
+   * Access token ve diğer authentication bilgileri korunur.
+   *
+   * @param user Güncel kullanıcı bilgisidir.
+   */
+  public setUser(user: AuthUser): void {
+    this._state.update(current => ({
+      ...current,
+      user
+    }));
+  }
+
+  /**
+   * Authentication state'ini temizler.
+   *
+   * Bu işlem refresh token'a erişmez veya cookie silmez.
+   * Refresh token backend tarafından yönetilir.
+   */
+  public clearSession(): void {
+    this._state.set({
+      isInitialized: true,
+      isAuthenticated: false,
+      accessToken: null,
+      accessTokenExpiresAt: null,
+      user: null
+    });
+  }
+
+  /**
+   * Mevcut access token değerini döndürür.
+   *
+   * HTTP interceptor tarafından Authorization header oluşturmak
+   * amacıyla kullanılır.
+   *
+   * @returns JWT access token veya null.
+   */
+  public getAccessToken(): string | null {
+    return this._state().accessToken;
+  }
+}
+
+Burada önemli nokta:
+localStorage YOK
+sessionStorage YOK
+
+Access token tamamen memory’de.
+F5 sonrası silinecek.
+F5 sonrasında refresh cookie üzerinden geri alacağız.
+9. JWT Debug Service
+Sen şu an login’i test edeceğin için response’u ve JWT’yi console’da açıkça görelim.
+Ama bunu sadece development ortamında çalıştıracağız.
+Dosya:
+src/app/core/auth/services/auth-debug.service.ts
+
+import { isDevMode, Injectable } from '@angular/core';
+
+import { AuthSessionResponse } from '../models/auth-session-response.model';
+
+/**
+ * Authentication işlemleri sırasında development ortamında
+ * response ve JWT bilgilerini tarayıcı console'una yazdıran servistir.
+ *
+ * Production ortamında çıktı üretmez.
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthDebugService {
+
+  /**
+   * Authentication response'unu ve çözümlenmiş JWT payload'ını
+   * development console'una yazar.
+   *
+   * @param source Log kaynağını belirten açıklamadır.
+   * @param response Backend authentication response'udur.
+   */
+  public logSession(
+    source: string,
+    response: AuthSessionResponse
+  ): void {
+
+    if (!isDevMode()) {
+      return;
+    }
+
+    console.group(`[MSKBS AUTH] ${source}`);
+
+    console.log('Authentication Response:', response);
+
+    console.log(
+      'Access Token:',
+      response.accessToken
+    );
+
+    console.log(
+      'Access Token Expires At:',
+      response.accessTokenExpiresAt
+    );
+
+    console.log(
+      'User:',
+      response.user
+    );
+
+    console.log(
+      'Decoded JWT Payload:',
+      this.decodeJwtPayload(response.accessToken)
+    );
+
+    console.groupEnd();
+  }
+
+  /**
+   * JWT access token'ın payload bölümünü yalnızca debug amacıyla çözer.
+   *
+   * Bu işlem JWT doğrulaması yapmaz.
+   * Token doğrulaması her zaman backend tarafından yapılmalıdır.
+   *
+   * @param token Decode edilecek JWT token'dır.
+   * @returns JWT payload nesnesi veya null.
+   */
+  public decodeJwtPayload(
+    token: string
+  ): Record<string, unknown> | null {
+
+    try {
+      const parts = token.split('.');
+
+      if (parts.length !== 3) {
+        return null;
+      }
+
+      const payload = parts[1]
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+
+      const paddedPayload =
+        payload.padEnd(
+          payload.length + ((4 - payload.length % 4) % 4),
+          '='
+        );
+
+      const binary = atob(paddedPayload);
+
+      const bytes = Uint8Array.from(
+        binary,
+        character => character.charCodeAt(0)
+      );
+
+      const json = new TextDecoder().decode(bytes);
+
+      return JSON.parse(json) as Record<string, unknown>;
+    }
+    catch (error) {
+      console.error(
+        '[MSKBS AUTH] JWT decode edilemedi.',
+        error
+      );
+
+      return null;
+    }
+  }
+}
+
+Böylece login olduktan sonra F12 → Console içerisinde:
+[MSKBS AUTH] Login successful
+
+Authentication Response:
+...
+
+Access Token:
+eyJhbGciOi...
+
+Decoded JWT Payload:
+{
+    nameid: "...",
+    email: "...",
+    role: ["ADMIN"],
+    permission: [...]
+}
+
+göreceğiz.
+10. Ana AuthService
+Şimdi en önemli servis.
+Dosya:
+src/app/core/auth/services/auth.service.ts
+
+import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+import {
+  catchError,
+  finalize,
+  map,
+  Observable,
+  of,
+  shareReplay,
+  tap
+} from 'rxjs';
+
+import { API_BASE_URL } from '../../config/api.tokens';
+
+import { LoginRequest } from '../models/login-request.model';
+import { AuthSessionResponse } from '../models/auth-session-response.model';
+import { AuthUser } from '../models/auth-user.model';
+
+import { AuthStoreService } from './auth-store.service';
+import { AuthDebugService } from './auth-debug.service';
+
+/**
+ * MSKBS authentication işlemlerinin Angular tarafındaki
+ * merkezi servisidir.
+ *
+ * Login, refresh, session restore, current user ve logout
+ * işlemlerinden sorumludur.
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+
+  private readonly http = inject(HttpClient);
+
+  private readonly apiBaseUrl = inject(API_BASE_URL);
+
+  private readonly store = inject(AuthStoreService);
+
+  private readonly debugService = inject(AuthDebugService);
+
+  /**
+   * Aynı anda birden fazla request 401 döndüğünde yalnızca
+   * tek bir refresh isteğinin backend'e gönderilmesini sağlar.
+   */
+  private refreshInFlight$: Observable<AuthSessionResponse> | null = null;
+
+  /**
+   * Kullanıcının authentication durumunu dışarıya sunar.
+   */
+  public readonly isAuthenticated = this.store.isAuthenticated;
+
+  /**
+   * Session initialization durumunu dışarıya sunar.
+   */
+  public readonly isInitialized = this.store.isInitialized;
+
+  /**
+   * Oturum açmış güncel kullanıcı bilgisini dışarıya sunar.
+   */
+  public readonly currentUser = this.store.user;
+
+  /**
+   * Kullanıcı adı/e-posta ve parola ile oturum açar.
+   *
+   * Başarılı login sonucunda access token memory içerisine alınır.
+   * Refresh token ise HttpOnly cookie olarak backend tarafından yönetilir.
+   *
+   * @param request Login bilgilerini içeren request modelidir.
+   * @returns Authentication session response.
+   */
+  public login(
+    request: LoginRequest
+  ): Observable<AuthSessionResponse> {
+
+    return this.http.post<AuthSessionResponse>(
+      `${this.apiBaseUrl}/auth/login`,
+      request,
+      {
+        withCredentials: true
+      }
+    )
+    .pipe(
+      tap(response => {
+
+        this.store.setSession(response);
+
+        this.debugService.logSession(
+          'Login successful',
+          response
+        );
+      })
+    );
+  }
+
+  /**
+   * HttpOnly cookie içerisindeki refresh token kullanılarak
+   * yeni access token oluşturur.
+   *
+   * Eşzamanlı refresh talepleri tek bir HTTP isteği altında paylaşılır.
+   *
+   * @returns Yenilenmiş authentication session response.
+   */
+  public refresh(): Observable<AuthSessionResponse> {
+
+    if (this.refreshInFlight$) {
+      return this.refreshInFlight$;
+    }
+
+    const request$ = this.http.post<AuthSessionResponse>(
+      `${this.apiBaseUrl}/auth/refresh`,
+      {},
+      {
+        withCredentials: true
+      }
+    )
+    .pipe(
+      tap(response => {
+
+        this.store.setSession(response);
+
+        this.debugService.logSession(
+          'Token refreshed',
+          response
+        );
+      }),
+
+      finalize(() => {
+        this.refreshInFlight$ = null;
+      }),
+
+      shareReplay({
+        bufferSize: 1,
+        refCount: false
+      })
+    );
+
+    this.refreshInFlight$ = request$;
+
+    return request$;
+  }
+
+  /**
+   * Angular uygulaması ilk açıldığında mevcut refresh cookie
+   * üzerinden session'ı geri yüklemeye çalışır.
+   *
+   * Refresh cookie bulunmuyorsa kullanıcı anonymous olarak kabul edilir.
+   *
+   * @returns Initialization tamamlandığında sonuçlanan Observable.
+   */
+  public initializeSession(): Observable<void> {
+
+    if (this.store.isInitialized()) {
+      return of(void 0);
+    }
+
+    return this.refresh()
+      .pipe(
+        map(() => void 0),
+
+        catchError(() => {
+
+          this.store.clearSession();
+
+          return of(void 0);
+        })
+      );
+  }
+
+  /**
+   * Backend'den güncel kullanıcı bilgilerini getirir.
+   *
+   * @returns Güncel authenticated kullanıcı bilgisi.
+   */
+  public me(): Observable<AuthUser> {
+
+    return this.http.get<AuthUser>(
+      `${this.apiBaseUrl}/auth/me`,
+      {
+        withCredentials: true
+      }
+    )
+    .pipe(
+      tap(user => {
+
+        this.store.setUser(user);
+
+        console.log(
+          '[MSKBS AUTH] /auth/me response:',
+          user
+        );
+      })
+    );
+  }
+
+  /**
+   * Mevcut cihazdaki refresh token'ı revoke ederek
+   * kullanıcının oturumunu kapatır.
+   *
+   * @returns Logout HTTP işlemi.
+   */
+  public logout(): Observable<void> {
+
+    return this.http.post<void>(
+      `${this.apiBaseUrl}/auth/logout`,
+      {},
+      {
+        withCredentials: true
+      }
+    )
+    .pipe(
+      finalize(() => {
+        this.store.clearSession();
+      })
+    );
+  }
+
+  /**
+   * Kullanıcının bütün refresh token'larını revoke ederek
+   * tüm cihazlardaki oturumlarını sonlandırır.
+   *
+   * @returns Logout-all HTTP işlemi.
+   */
+  public logoutAll(): Observable<void> {
+
+    return this.http.post<void>(
+      `${this.apiBaseUrl}/auth/logout-all`,
+      {},
+      {
+        withCredentials: true
+      }
+    )
+    .pipe(
+      finalize(() => {
+        this.store.clearSession();
+      })
+    );
+  }
+
+  /**
+   * Angular memory içerisindeki access token değerini döndürür.
+   *
+   * HTTP interceptor tarafından kullanılır.
+   *
+   * @returns Aktif access token veya null.
+   */
+  public getAccessToken(): string | null {
+    return this.store.getAccessToken();
+  }
+
+  /**
+   * Angular tarafındaki authentication state'ini temizler.
+   *
+   * Genellikle refresh token doğrulaması başarısız olduğunda kullanılır.
+   */
+  public clearSession(): void {
+    this.store.clearSession();
+  }
+
+  /**
+   * Mevcut authentication state'ini development console'una yazar.
+   */
+  public debugCurrentSession(): void {
+
+    console.log(
+      '[MSKBS AUTH] Current Auth State:',
+      this.store.state()
+    );
+  }
+}
+
+Buradaki:
+shareReplay(...)
+
+önemli.
+Örneğin:
+Request A → 401
+Request B → 401
+Request C → 401
+Request D → 401
+
+olursa:
+4 tane /refresh
+
+atmıyoruz.
+Hepsi aynı refresh işlemini bekliyor.
+11. HTTP Interceptor
+Dosya:
+src/app/core/auth/interceptors/auth.interceptor.ts
+
+import { inject } from '@angular/core';
+
+import {
+  HttpContextToken,
+  HttpErrorResponse,
+  HttpInterceptorFn,
+  HttpRequest
+} from '@angular/common/http';
+
+import {
+  catchError,
+  switchMap,
+  throwError
+} from 'rxjs';
+
+import { Router } from '@angular/router';
+
+import { API_BASE_URL } from '../../config/api.tokens';
+import { AuthService } from '../services/auth.service';
+
+/**
+ * Bir HTTP request'in refresh sonrasında tekrar gönderilip
+ * gönderilmediğini belirtir.
+ *
+ * Sonsuz 401 → refresh → retry döngüsünü engeller.
+ */
+const AUTH_RETRY =
+  new HttpContextToken<boolean>(() => false);
+
+/**
+ * MSKBS API çağrılarına access token ekleyen ve 401 durumlarında
+ * otomatik refresh işlemini yöneten functional HTTP interceptor'dır.
+ */
+export const authInterceptor: HttpInterceptorFn =
+  (request, next) => {
+
+    const authService = inject(AuthService);
+
+    const router = inject(Router);
+
+    const apiBaseUrl = inject(API_BASE_URL);
+
+    const isApiRequest =
+      request.url.startsWith(apiBaseUrl);
+
+    if (!isApiRequest) {
+      return next(request);
+    }
+
+    const accessToken =
+      authService.getAccessToken();
+
+    let authenticatedRequest =
+      addAuthentication(
+        request,
+        accessToken
+      );
+
+    return next(authenticatedRequest)
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+
+          if (
+            error.status !== 401 ||
+            shouldSkipAutomaticRefresh(request.url) ||
+            request.context.get(AUTH_RETRY)
+          ) {
+
+            return throwError(() => error);
+          }
+
+          /*
+           * Request eski access token ile gönderilmiş olabilir.
+           * Bu sırada başka bir request refresh işlemini tamamladıysa
+           * ikinci kez refresh yapmak yerine yeni token ile tekrar deneriz.
+           */
+          const currentAccessToken =
+            authService.getAccessToken();
+
+          if (
+            currentAccessToken &&
+            accessToken &&
+            currentAccessToken !== accessToken
+          ) {
+
+            authenticatedRequest =
+              addAuthentication(
+                request.clone({
+                  context: request.context.set(
+                    AUTH_RETRY,
+                    true
+                  )
+                }),
+                currentAccessToken
+              );
+
+            return next(authenticatedRequest);
+          }
+
+          return authService.refresh()
+            .pipe(
+              switchMap(session => {
+
+                const retryRequest =
+                  addAuthentication(
+                    request.clone({
+                      context: request.context.set(
+                        AUTH_RETRY,
+                        true
+                      )
+                    }),
+                    session.accessToken
+                  );
+
+                return next(retryRequest);
+              }),
+
+              catchError(refreshError => {
+
+                authService.clearSession();
+
+                void router.navigate(
+                  ['/login']
+                );
+
+                return throwError(
+                  () => refreshError
+                );
+              })
+            );
+        })
+      );
+  };
+
+/**
+ * HTTP request'e gerekli authentication özelliklerini ekler.
+ *
+ * @param request Orijinal HTTP request.
+ * @param accessToken Access token veya null.
+ * @returns Authentication bilgileri eklenmiş request.
+ */
+function addAuthentication(
+  request: HttpRequest<unknown>,
+  accessToken: string | null
+): HttpRequest<unknown> {
+
+  if (!accessToken) {
+
+    return request.clone({
+      withCredentials: true
+    });
+  }
+
+  return request.clone({
+
+    withCredentials: true,
+
+    setHeaders: {
+      Authorization: `Bearer ${accessToken}`
+    }
+  });
+}
+
+/**
+ * Otomatik refresh uygulanmaması gereken authentication
+ * endpoint'lerini belirler.
+ *
+ * @param url HTTP request URL'sidir.
+ * @returns Refresh atlanacaksa true.
+ */
+function shouldSkipAutomaticRefresh(
+  url: string
+): boolean {
+
+  return [
+    '/auth/login',
+    '/auth/refresh',
+    '/auth/forgot-password',
+    '/auth/reset-password'
+  ]
+  .some(path => url.includes(path));
+}
+
+Burada özellikle refresh endpoint’ini exclude ettik.
+Yoksa:
+refresh → 401
+↓
+interceptor
+↓
+refresh
+↓
+401
+↓
+refresh...
+
+sonsuz döngü olurdu.
+12. AuthGuard
+Dosya:
+src/app/core/auth/guards/auth.guard.ts
+
+import { inject } from '@angular/core';
+
+import {
+  CanActivateFn,
+  Router
+} from '@angular/router';
+
+import { AuthService } from '../services/auth.service';
+
+/**
+ * Authentication gerektiren route'lara anonim kullanıcıların
+ * erişmesini engeller.
+ */
+export const authGuard: CanActivateFn =
+  (_route, state) => {
+
+    const authService =
+      inject(AuthService);
+
+    const router =
+      inject(Router);
+
+    if (authService.isAuthenticated()) {
+      return true;
+    }
+
+    return router.createUrlTree(
+      ['/login'],
+      {
+        queryParams: {
+          returnUrl: state.url
+        }
+      }
+    );
+  };
+
+13. GuestGuard
+Login olmuş kullanıcı tekrar /login yazarsa login ekranına gitmesin.
+Dosya:
+src/app/core/auth/guards/guest.guard.ts
+
+import { inject } from '@angular/core';
+
+import {
+  CanActivateFn,
+  Router
+} from '@angular/router';
+
+import { AuthService } from '../services/auth.service';
+
+/**
+ * Yalnızca anonymous kullanıcıların erişmesi gereken
+ * route'ları korur.
+ *
+ * Oturum açmış kullanıcı login ekranına gitmeye çalışırsa
+ * uygulamanın ana ekranına yönlendirilir.
+ */
+export const guestGuard: CanActivateFn =
+  () => {
+
+    const authService =
+      inject(AuthService);
+
+    const router =
+      inject(Router);
+
+    if (!authService.isAuthenticated()) {
+      return true;
+    }
+
+    return router.createUrlTree(
+      ['/app']
+    );
+  };
+
+14. PermissionService
+Daha login aşamasında kullanmayacağız ama temelimiz hazır olsun.
+Dosya:
+src/app/core/permissions/services/permission.service.ts
+
+import { inject, Injectable } from '@angular/core';
+
+import { AuthStoreService } from '../../auth/services/auth-store.service';
+
+/**
+ * Angular kullanıcı arayüzünde permission bazlı görünürlük
+ * kontrollerini gerçekleştiren servistir.
+ *
+ * Bu servis bir güvenlik sınırı değildir.
+ * Nihai yetki kontrolü backend tarafından yapılır.
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class PermissionService {
+
+  private readonly authStore =
+    inject(AuthStoreService);
+
+  /**
+   * Kullanıcının belirtilen permission'a sahip olup
+   * olmadığını kontrol eder.
+   *
+   * @param permission Permission kodudur.
+   * @returns Kullanıcı permission'a sahipse true.
+   */
+  public has(
+    permission: string
+  ): boolean {
+
+    const user =
+      this.authStore.user();
+
+    if (!user) {
+      return false;
+    }
+
+    if (
+      user.roles.includes('ADMIN')
+    ) {
+      return true;
+    }
+
+    return user.permissions.includes(
+      permission
+    );
+  }
+
+  /**
+   * Kullanıcının verilen permission'lardan en az birine
+   * sahip olup olmadığını kontrol eder.
+   *
+   * @param permissions Permission kodlarıdır.
+   * @returns En az bir permission mevcutsa true.
+   */
+  public hasAny(
+    ...permissions: string[]
+  ): boolean {
+
+    return permissions.some(
+      permission => this.has(permission)
+    );
+  }
+
+  /**
+   * Kullanıcının verilen permission'ların tamamına
+   * sahip olup olmadığını kontrol eder.
+   *
+   * @param permissions Permission kodlarıdır.
+   * @returns Tüm permission'lar mevcutsa true.
+   */
+  public hasAll(
+    ...permissions: string[]
+  ): boolean {
+
+    return permissions.every(
+      permission => this.has(permission)
+    );
+  }
+}
+
+15. PermissionGuard
+Dosya:
+src/app/core/permissions/guards/permission.guard.ts
+
+import { inject } from '@angular/core';
+
+import {
+  CanActivateFn,
+  Router
+} from '@angular/router';
+
+import { PermissionService } from '../services/permission.service';
+
+/**
+ * Route seviyesinde permission kontrolü gerçekleştirir.
+ *
+ * Route data içerisinde:
+ *
+ * permissions: ['Users.View']
+ *
+ * şeklinde kullanılır.
+ */
+export const permissionGuard: CanActivateFn =
+  route => {
+
+    const permissionService =
+      inject(PermissionService);
+
+    const router =
+      inject(Router);
+
+    const permissions =
+      route.data['permissions'] as string[] | undefined;
+
+    const mode =
+      route.data['permissionMode'] as
+        'all' | 'any' | undefined;
+
+    if (
+      !permissions ||
+      permissions.length === 0
+    ) {
+      return true;
+    }
+
+    const authorized =
+      mode === 'any'
+        ? permissionService.hasAny(
+            ...permissions
+          )
+        : permissionService.hasAll(
+            ...permissions
+          );
+
+    if (authorized) {
+      return true;
+    }
+
+    return router.createUrlTree(
+      ['/app']
+    );
+  };
+
+İleride:
+{
+  path: 'users',
+  canActivate: [
+    authGuard,
+    permissionGuard
+  ],
+  data: {
+    permissions: [
+      'Users.View'
+    ]
+  }
+}
+
+yapacağız.
+16. Login Component TypeScript
+Dosya:
+src/app/features/authentication/login/login.component.ts
+
+import {
+  Component,
+  inject,
+  signal
+} from '@angular/core';
+
+import { CommonModule } from '@angular/common';
+
+import {
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
+
+import {
+  HttpErrorResponse
+} from '@angular/common/http';
+
+import {
+  ActivatedRoute,
+  Router
+} from '@angular/router';
+
+import {
+  finalize
+} from 'rxjs';
+
+import {
+  InputTextModule
+} from 'primeng/inputtext';
+
+import {
+  PasswordModule
+} from 'primeng/password';
+
+import {
+  ButtonModule
+} from 'primeng/button';
+
+import {
+  CardModule
+} from 'primeng/card';
+
+import {
+  MessageModule
+} from 'primeng/message';
+
+import {
+  AuthService
+} from '../../../core/auth/services/auth.service';
+
+/**
+ * MSKBS kullanıcı giriş ekranını temsil eder.
+ */
+@Component({
+  selector: 'app-login',
+  standalone: true,
+
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    InputTextModule,
+    PasswordModule,
+    ButtonModule,
+    CardModule,
+    MessageModule
+  ],
+
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.scss'
+})
+export class LoginComponent {
+
+  private readonly formBuilder =
+    inject(FormBuilder);
+
+  private readonly authService =
+    inject(AuthService);
+
+  private readonly router =
+    inject(Router);
+
+  private readonly activatedRoute =
+    inject(ActivatedRoute);
+
+  /**
+   * Login HTTP isteğinin devam edip etmediğini belirtir.
+   */
+  public readonly loading =
+    signal(false);
+
+  /**
+   * Kullanıcıya gösterilecek login hata mesajıdır.
+   */
+  public readonly errorMessage =
+    signal<string | null>(null);
+
+  /**
+   * Login ekranındaki kullanıcı adı/e-posta ve parola alanlarını
+   * içeren reactive form nesnesidir.
+   */
+  public readonly form =
+    this.formBuilder.nonNullable.group({
+
+      userNameOrEmail: [
+        '',
+        [
+          Validators.required
+        ]
+      ],
+
+      password: [
+        '',
+        [
+          Validators.required
+        ]
+      ]
+    });
+
+  /**
+   * Login formunu backend authentication endpoint'ine gönderir.
+   */
+  public submit(): void {
+
+    this.errorMessage.set(null);
+
+    if (this.form.invalid) {
+
+      this.form.markAllAsTouched();
+
+      return;
+    }
+
+    this.loading.set(true);
+
+    const request =
+      this.form.getRawValue();
+
+    console.log(
+      '[MSKBS AUTH] Login request gönderiliyor:',
+      {
+        userNameOrEmail:
+          request.userNameOrEmail,
+
+        /*
+         * Parolayı console'a kesinlikle yazmıyoruz.
+         */
+        password: '********'
+      }
+    );
+
+    this.authService.login(request)
+      .pipe(
+        finalize(() => {
+          this.loading.set(false);
+        })
+      )
+      .subscribe({
+
+        next: response => {
+
+          console.log(
+            '[MSKBS AUTH] Login tamamlandı:',
+            response
+          );
+
+          const returnUrl =
+            this.activatedRoute
+              .snapshot
+              .queryParamMap
+              .get('returnUrl');
+
+          if (
+            returnUrl &&
+            this.isSafeReturnUrl(returnUrl)
+          ) {
+
+            void this.router.navigateByUrl(
+              returnUrl
+            );
+
+            return;
+          }
+
+          void this.router.navigate(
+            ['/app']
+          );
+        },
+
+        error: (
+          error: HttpErrorResponse
+        ) => {
+
+          console.error(
+            '[MSKBS AUTH] Login error:',
+            error
+          );
+
+          this.errorMessage.set(
+            this.resolveErrorMessage(error)
+          );
+        }
+      });
+  }
+
+  /**
+   * Backend ProblemDetails response'undan kullanıcıya
+   * gösterilecek uygun hata mesajını oluşturur.
+   *
+   * @param error HTTP hata nesnesidir.
+   * @returns Kullanıcıya gösterilecek hata mesajı.
+   */
+  private resolveErrorMessage(
+    error: HttpErrorResponse
+  ): string {
+
+    if (error.status === 423) {
+
+      return (
+        error.error?.detail ??
+        'Hesabınız geçici olarak kilitlenmiştir.'
+      );
+    }
+
+    if (error.status === 401) {
+
+      return (
+        error.error?.detail ??
+        'Kullanıcı adı/e-posta veya parola hatalı.'
+      );
+    }
+
+    if (error.status === 0) {
+
+      return 'API sunucusuna ulaşılamıyor.';
+    }
+
+    return (
+      error.error?.detail ??
+      error.error?.title ??
+      'Giriş sırasında beklenmeyen bir hata oluştu.'
+    );
+  }
+
+  /**
+   * returnUrl değerinin yalnızca Angular uygulaması içerisindeki
+   * relative bir route olduğunu doğrular.
+   *
+   * @param url Kontrol edilecek route değeridir.
+   * @returns Güvenli bir internal route ise true.
+   */
+  private isSafeReturnUrl(
+    url: string
+  ): boolean {
+
+    return (
+      url.startsWith('/') &&
+      !url.startsWith('//')
+    );
+  }
+}
+
+17. Login HTML
+Dosya:
+src/app/features/authentication/login/login.component.html
+
+<div class="login-page">
+
+  <p-card
+    styleClass="login-card">
+
+    <ng-template pTemplate="header">
+
+      <div class="login-header">
+
+        <h1>
+          MSKBS
+        </h1>
+
+        <p>
+          Sisteme giriş yapın
+        </p>
+
+      </div>
+
+    </ng-template>
+
+    <form
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      class="login-form">
+
+      <div class="form-field">
+
+        <label
+          for="userNameOrEmail">
+
+          Kullanıcı Adı veya E-posta
+
+        </label>
+
+        <input
+          id="userNameOrEmail"
+          type="text"
+          pInputText
+          formControlName="userNameOrEmail"
+          autocomplete="username"
+          placeholder="Kullanıcı adı veya e-posta" />
+
+        @if (
+          form.controls.userNameOrEmail.touched &&
+          form.controls.userNameOrEmail.invalid
+        ) {
+
+          <small class="validation-error">
+            Kullanıcı adı veya e-posta zorunludur.
+          </small>
+
+        }
+
+      </div>
+
+      <div class="form-field">
+
+        <label
+          for="password">
+
+          Parola
+
+        </label>
+
+        <p-password
+          inputId="password"
+          formControlName="password"
+          [feedback]="false"
+          [toggleMask]="true"
+          autocomplete="current-password"
+          placeholder="Parolanız"
+          styleClass="password-field"
+          inputStyleClass="password-input">
+        </p-password>
+
+        @if (
+          form.controls.password.touched &&
+          form.controls.password.invalid
+        ) {
+
+          <small class="validation-error">
+            Parola zorunludur.
+          </small>
+
+        }
+
+      </div>
+
+      @if (errorMessage()) {
+
+        <p-message
+          severity="error"
+          [text]="errorMessage()!">
+        </p-message>
+
+      }
+
+      <p-button
+        type="submit"
+        label="Giriş Yap"
+        icon="pi pi-sign-in"
+        [loading]="loading()"
+        [disabled]="loading()"
+        styleClass="login-button">
+      </p-button>
+
+    </form>
+
+  </p-card>
+
+</div>
+
+18. Login SCSS
+Dosya:
+src/app/features/authentication/login/login.component.scss
+
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.login-page {
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 1.5rem;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f8fafc 0%,
+      #eef2f7 100%
+    );
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.login-header {
+  padding-top: 1.5rem;
+
+  text-align: center;
+
+  h1 {
+    margin: 0;
+
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+
+    color: #64748b;
+  }
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+
+  gap: 1.25rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.5rem;
+
+  label {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  input {
+    width: 100%;
+  }
+}
+
+:host ::ng-deep .password-field {
+  width: 100%;
+}
+
+:host ::ng-deep .password-input {
+  width: 100%;
+}
+
+:host ::ng-deep .login-button {
+  width: 100%;
+}
+
+.validation-error {
+  color: #dc2626;
+}
+
+19. Login sonrası gideceğimiz boş ekran
+Dosya:
+src/app/features/home/home.component.ts
+
+import {
+  Component,
+  inject
+} from '@angular/core';
+
+import {
+  Router
+} from '@angular/router';
+
+import {
+  ButtonModule
+} from 'primeng/button';
+
+import {
+  AuthService
+} from '../../core/auth/services/auth.service';
+
+/**
+ * Login sonrasında authentication mekanizmasını test etmek amacıyla
+ * kullanılan geçici korumalı ana ekran bileşenidir.
+ */
+@Component({
+  selector: 'app-home',
+  standalone: true,
+
+  imports: [
+    ButtonModule
+  ],
+
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.scss'
+})
+export class HomeComponent {
+
+  private readonly authService =
+    inject(AuthService);
+
+  private readonly router =
+    inject(Router);
+
+  /**
+   * Oturum açmış güncel kullanıcı bilgisidir.
+   */
+  public readonly user =
+    this.authService.currentUser;
+
+  /**
+   * Güncel Angular authentication state'ini
+   * tarayıcı console'una yazdırır.
+   */
+  public writeSessionToConsole(): void {
+
+    this.authService.debugCurrentSession();
+  }
+
+  /**
+   * /api/auth/me endpoint'ini çağırarak backend'den
+   * güncel kullanıcı bilgilerini getirir.
+   */
+  public testMeEndpoint(): void {
+
+    this.authService.me()
+      .subscribe({
+
+        next: response => {
+
+          console.log(
+            '[MSKBS AUTH] ME TEST SUCCESS:',
+            response
+          );
+        },
+
+        error: error => {
+
+          console.error(
+            '[MSKBS AUTH] ME TEST ERROR:',
+            error
+          );
+        }
+      });
+  }
+
+  /**
+   * Kullanıcının mevcut oturumunu sonlandırır.
+   */
+  public logout(): void {
+
+    this.authService.logout()
+      .subscribe({
+
+        next: () => {
+
+          void this.router.navigate(
+            ['/login']
+          );
+        },
+
+        error: () => {
+
+          /*
+           * Backend logout sırasında hata verse bile
+           * local authentication state temizlenmiştir.
+           */
+          void this.router.navigate(
+            ['/login']
+          );
+        }
+      });
+  }
+}
+
+20. Home HTML
+Dosya:
+src/app/features/home/home.component.html
+
+<div class="home-page">
+
+  <h2>
+    Giriş Başarılı
+  </h2>
+
+  @if (user()) {
+
+    <p>
+      {{ user()!.fullName }}
+    </p>
+
+  }
+
+  <div class="actions">
+
+    <p-button
+      label="Session'ı Console'a Yaz"
+      icon="pi pi-code"
+      severity="secondary"
+      (onClick)="writeSessionToConsole()">
+    </p-button>
+
+    <p-button
+      label="/auth/me Test"
+      icon="pi pi-user"
+      severity="secondary"
+      (onClick)="testMeEndpoint()">
+    </p-button>
+
+    <p-button
+      label="Çıkış Yap"
+      icon="pi pi-sign-out"
+      severity="danger"
+      (onClick)="logout()">
+    </p-button>
+
+  </div>
+
+</div>
+
+Bu ekran geçici.
+Asıl layout/dashboard yapınca kaldıracağız.
+21. Home SCSS
+Dosya:
+src/app/features/home/home.component.scss
+
+.home-page {
+  padding: 2rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 1rem;
+
+  margin-top: 2rem;
+}
+
+22. Routing
+Dosya:
+src/app/app.routes.ts
+
+Tamamen şöyle yap:
+import {
+  Routes
+} from '@angular/router';
+
+import {
+  authGuard
+} from './core/auth/guards/auth.guard';
+
+import {
+  guestGuard
+} from './core/auth/guards/guest.guard';
+
+/**
+ * MSKBS Angular uygulamasının route tanımlarıdır.
+ */
+export const routes: Routes = [
+
+  {
+    path: 'login',
+
+    canActivate: [
+      guestGuard
+    ],
+
+    loadComponent: () =>
+      import(
+        './features/authentication/login/login.component'
+      )
+      .then(
+        component =>
+          component.LoginComponent
+      )
+  },
+
+  {
+    path: 'app',
+
+    canActivate: [
+      authGuard
+    ],
+
+    loadComponent: () =>
+      import(
+        './features/home/home.component'
+      )
+      .then(
+        component =>
+          component.HomeComponent
+      )
+  },
+
+  {
+    path: '',
+
+    pathMatch: 'full',
+
+    redirectTo: 'app'
+  },
+
+  {
+    path: '**',
+
+    redirectTo: 'app'
+  }
+];
+
+23. AppComponent
+Angular’ın oluşturduğu demo içeriğini silelim.
+Dosya:
+src/app/app.component.ts
+
+import {
+  Component
+} from '@angular/core';
+
+import {
+  RouterOutlet
+} from '@angular/router';
+
+/**
+ * MSKBS Angular uygulamasının root component'idir.
+ */
+@Component({
+  selector: 'app-root',
+  standalone: true,
+
+  imports: [
+    RouterOutlet
+  ],
+
+  template: `
+    <router-outlet />
+  `
+})
+export class AppComponent {
+}
+
+Eğer:
+app.component.html
+
+varsa artık kullanmıyoruz.
+24. AppConfig
+En önemli dosyalardan biri.
+Dosya:
+src/app/app.config.ts
+
+import {
+  ApplicationConfig,
+  inject,
+  provideAppInitializer,
+  provideZoneChangeDetection
+} from '@angular/core';
+
+import {
+  provideRouter
+} from '@angular/router';
+
+import {
+  provideHttpClient,
+  withInterceptors
+} from '@angular/common/http';
+
+import {
+  provideAnimationsAsync
+} from '@angular/platform-browser/animations/async';
+
+import {
+  providePrimeNG
+} from 'primeng/config';
+
+import Aura from '@primeuix/themes/aura';
+
+import {
+  firstValueFrom
+} from 'rxjs';
+
+import {
+  routes
+} from './app.routes';
+
+import {
+  API_BASE_URL
+} from './core/config/api.tokens';
+
+import {
+  authInterceptor
+} from './core/auth/interceptors/auth.interceptor';
+
+import {
+  AuthService
+} from './core/auth/services/auth.service';
+
+/**
+ * MSKBS Angular uygulamasının global provider ve
+ * framework configuration tanımlarıdır.
+ */
+export const appConfig: ApplicationConfig = {
+
+  providers: [
+
+    provideZoneChangeDetection({
+      eventCoalescing: true
+    }),
+
+    provideRouter(
+      routes
+    ),
+
+    provideHttpClient(
+      withInterceptors([
+        authInterceptor
+      ])
+    ),
+
+    provideAnimationsAsync(),
+
+    providePrimeNG({
+
+      theme: {
+
+        preset: Aura
+      }
+    }),
+
+    {
+      provide: API_BASE_URL,
+
+      useValue: '/api'
+    },
+
+    provideAppInitializer(
+      () => {
+
+        const authService =
+          inject(AuthService);
+
+        return firstValueFrom(
+          authService.initializeSession()
+        );
+      }
+    )
+  ]
+};
+
+Buradaki:
+provideAppInitializer(...)
+
+sayesinde Angular açılırken:
+refresh cookie var mı?
+
+diye bakıyoruz.
+Örneğin kullanıcı dün giriş yaptı.
+Browser’da HttpOnly refresh cookie duruyor.
+Bugün:
+http://localhost:4200
+
+açtı.
+Angular:
+POST /api/auth/refresh
+
+yapacak.
+Başarılıysa:
+access token yeniden memory'ye
+↓
+user yeniden state'e
+↓
+/app
+
+Kullanıcının tekrar login olması gerekmeyecek.
+25. main.ts
+Dosya:
+src/main.ts
+
+import {
+  bootstrapApplication
+} from '@angular/platform-browser';
+
+import {
+  appConfig
+} from './app/app.config';
+
+import {
+  AppComponent
+} from './app/app.component';
+
+bootstrapApplication(
+  AppComponent,
+  appConfig
+)
+.catch(error => {
+  console.error(error);
+});
+
+26. PrimeIcons
+Global style dosyasına:
+src/styles.scss
+
+şunu ekle:
+@import "primeicons/primeicons.css";
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family:
+    Inter,
+    Arial,
+    sans-serif;
+}
+
+27. Development Proxy
+Şimdi Angular:
+/api/auth/login
+
+diyecek.
+Bunu backend’e göndermemiz gerekiyor.
+Angular projesinin ROOT’una:
+proxy.conf.json
+
+oluştur.
+Örneğin:
+{
+  "/api": {
+    "target": "https://localhost:7001",
+    "secure": false,
+    "changeOrigin": true
+  }
+}
+
+Buradaki:
+https://localhost:7001
+
+örnek.
+Sen MSKBS.Api içindeki:
+Properties/launchSettings.json
+
+dosyasına bak.
+Örneğin:
+"applicationUrl": "https://localhost:7143;http://localhost:5143"
+
+yazıyorsa:
+{
+  "/api": {
+    "target": "https://localhost:7143",
+    "secure": false,
+    "changeOrigin": true
+  }
+}
+
+yap.
+Sonra Angular’ı:
+ng serve --proxy-config proxy.conf.json
+
+ile aç.
+İstersen package.json:
+"scripts": {
+  "start": "ng serve --proxy-config proxy.conf.json"
+}
+
+yaparsın.
+Sonra sadece:
+npm start
+
+dersin.
+28. İlk çalıştırma
+Backend'i önce çalıştır:
+MSKBS.Api
+
+Sonra Angular:
+npm start
+
+Browser:
+http://localhost:4200
+
+aç.
+Otomatik:
+/app
+
+gitmeye çalışacak.
+AuthGuard authenticated olmadığını görecek.
+Şuraya atacak:
+/login?returnUrl=%2Fapp
+
+Login ekranı gelecek.
+29. Login yaptığımızda ne göreceğiz?
+Doğru kullanıcı/parola gir.
+F12 → Network aç.
+Şunu göreceksin:
+POST
+/api/auth/login
+
+Request:
+{
+  "userNameOrEmail": "admin",
+  "password": "..."
+}
+
+Response:
+{
+  "accessToken": "...",
+  "accessTokenExpiresAt": "...",
+  "user": {
+    ...
+  }
+}
+
+Aynı response headers tarafında backend'in:
+Set-Cookie
+
+göndermesi gerekiyor.
+Refresh token:
+HttpOnly
+
+olduğu için JavaScript'ten:
+document.cookie
+
+ile okuyamayacağız.
+Zaten istediğimiz de bu.
+30. Console'da göreceğimiz şey
+Login başarılı olduğunda:
+[MSKBS AUTH] Login successful
+
+altında:
+Authentication Response
+Access Token
+Access Token Expires At
+User
+Decoded JWT Payload
+
+göreceğiz.
+Decoded JWT içerisinde bizim backend’den:
+nameidentifier
+name
+email
+given_name
+surname
+organization_unit_id
+security_stamp
+role
+permission
+exp
+iss
+aud
+
+gibi claim’lerin gelmesini bekliyoruz.
+Bu bizim JWT'nin doğru üretildiğini ilk kez Angular üzerinden de doğrulamamızı sağlayacak.
+31. Login sonrası
+Başarılı login:
+/login
+ ↓
+POST /api/auth/login
+ ↓
+access token memory
+ ↓
+router.navigate('/app')
+
+sonucunda ekranda:
+Giriş Başarılı
+
+Burak Tekin
+
+[Session'ı Console'a Yaz]
+[/auth/me Test]
+[Çıkış Yap]
+
+göreceksin.
+/auth/me Test dediğimizde request headers içerisinde:
+Authorization: Bearer eyJ...
+
+olması gerekiyor.
+F12 → Network → /auth/me → Request Headers altında bunu görebilirsin.
+32. En önemli test: F5
+Login ol.
+Sonra:
+/app
+
+ekranındayken F5 yap.
+Access token memory’de olduğu için silinir.
+Ama refresh token HttpOnly cookie’de kalır.
+Angular başlangıçta:
+POST /api/auth/refresh
+
+yapmalı.
+Backend:
+eski refresh token
+↓
+hash
+↓
+DB kontrol
+↓
+rotation
+↓
+yeni refresh token cookie
++
+yeni access token
+
+döndürmeli.
+Console:
+[MSKBS AUTH] Token refreshed
+
+göstermeli.
+Ve kullanıcı login ekranına düşmeden:
+/app
+
+ekranında kalmalı.
+Bu test çalışıyorsa auth mimarimizin çok önemli bir kısmı tamamlanmış demektir.
+33. İkinci önemli test: access token expire
+Bizim ayar:
+"AccessTokenExpirationMinutes": 15
+
+Şimdilik test için bunu geçici olarak:
+"AccessTokenExpirationMinutes": 1
+
+yapabiliriz.
+Login ol.
+1 dakika bekle.
+Sonra:
+/auth/me Test
+
+butonuna bas.
+İlk request:
+GET /api/auth/me
+Authorization: Bearer ESKI_TOKEN
+
+Backend:
+401
+
+döndürecek.
+Angular interceptor:
+401 yakala
+ ↓
+POST /auth/refresh
+ ↓
+yeni JWT al
+ ↓
+eski /auth/me isteğini yeni JWT ile tekrar gönder
+
+yapacak.
+Son kullanıcı 401 görmemeli.
+Network'te ise:
+GET  /auth/me       401
+POST /auth/refresh  200
+GET  /auth/me       200
+
+görmelisin.
+Bu da çalışırsa:
+JWT + Refresh Token + Rotation + Angular Interceptor entegrasyonumuz çalışıyor demektir.
+
+
+
+
+
+
+Devam edelim. Şimdi kodu sadece yazmış olmakla bırakmayalım; login akışını gerçekten ayağa kaldırıp backend ile konuşturalım. İlk hedefimiz login → JWT → /app → /auth/me akışını tamamlamak. Forgot/reset daha sonra.
+1. Backend response ile Angular modelini netleştirelim
+Biz backend tarafında daha önce:
+LoginResponse
+LoginResult
+LoginUserResponse
+
+oluşturmuştuk. Angular tarafında en temiz yaklaşım, HTTP response'un backend ile birebir aynı olması.
+Örneğin backend response şu yapıdaysa:
+/// <summary>
+/// Başarılı authentication işleminin Angular istemcisine
+/// döndürülen sonucunu temsil eder.
+/// </summary>
+public sealed class LoginResponse
+{
+    /// <summary>
+    /// Kısa ömürlü JWT access token değeridir.
+    /// </summary>
+    public string AccessToken { get; init; } = default!;
+
+    /// <summary>
+    /// Access token'ın UTC sona erme zamanıdır.
+    /// </summary>
+    public DateTime AccessTokenExpiresAt { get; init; }
+
+    /// <summary>
+    /// Oturum açmış kullanıcı bilgilerini içerir.
+    /// </summary>
+    public LoginUserResponse User { get; init; } = default!;
+}
+
+Angular tarafındaki:
+export interface AuthSessionResponse {
+  accessToken: string;
+  accessTokenExpiresAt: string;
+  user: AuthUser;
+}
+
+doğrudan uyumludur.
+ASP.NET Core JSON çıktısı varsayılan camelCase olduğundan:
+AccessToken
+
+Angular'a:
+"accessToken"
+
+gelir.
+Dolayısıyla ekstra mapping gerekmiyor.
+2. ProblemDetails modelini de ekleyelim
+Login hata yönetimini biraz daha düzgün yapalım.
+Dosya:
+src/app/core/models/problem-details.model.ts
+
+Klasör yoksa:
+src/app/core/models
+
+oluştur.
+/**
+ * Backend tarafından RFC 7807 / ProblemDetails formatında
+ * döndürülen API hata bilgisini temsil eder.
+ */
+export interface ProblemDetails {
+
+  /**
+   * Hatanın genel başlığıdır.
+   */
+  title?: string;
+
+  /**
+   * HTTP status kodudur.
+   */
+  status?: number;
+
+  /**
+   * Kullanıcıya veya istemciye gösterilebilecek
+   * detaylı hata açıklamasıdır.
+   */
+  detail?: string;
+
+  /**
+   * Hatanın meydana geldiği request path bilgisidir.
+   */
+  instance?: string;
+
+  /**
+   * Backend tarafından eklenmiş ek hata alanlarını temsil eder.
+   */
+  [key: string]: unknown;
+}
+
+Sonra login.component.ts içerisine:
+import { ProblemDetails } from '../../../core/models/problem-details.model';
+
+ekleyelim.
+resolveErrorMessage() metodunu da şöyle değiştirelim:
+/**
+ * Backend ProblemDetails response'undan kullanıcıya gösterilecek
+ * uygun hata mesajını oluşturur.
+ *
+ * @param error HTTP hata nesnesidir.
+ * @returns Kullanıcıya gösterilecek hata mesajı.
+ */
+private resolveErrorMessage(
+  error: HttpErrorResponse
+): string {
+
+  const problem =
+    error.error as ProblemDetails | null;
+
+  if (error.status === 423) {
+    return (
+      problem?.detail ??
+      'Hesabınız geçici olarak kilitlenmiştir.'
+    );
+  }
+
+  if (error.status === 401) {
+    return (
+      problem?.detail ??
+      'Kullanıcı adı/e-posta veya parola hatalı.'
+    );
+  }
+
+  if (error.status === 400) {
+    return (
+      problem?.detail ??
+      'Gönderilen bilgiler geçerli değildir.'
+    );
+  }
+
+  if (error.status === 0) {
+    return 'API sunucusuna ulaşılamıyor.';
+  }
+
+  return (
+    problem?.detail ??
+    problem?.title ??
+    'Giriş sırasında beklenmeyen bir hata oluştu.'
+  );
+}
+
+3. Backend refresh cookie ayarını kontrol edelim
+Angular refresh token'ı görmeyecek.
+Backend login sırasında cookie oluşturmalı.
+AuthController içerisinde muhtemelen buna benzer bir yapı yazmıştık.
+Cookie oluşturmayı merkezi metoda alalım.
+Örneğin:
+/// <summary>
+/// Refresh token değerini güvenli HttpOnly cookie olarak
+/// HTTP response'a ekler.
+/// </summary>
+/// <param name="refreshToken">
+/// Kullanıcıya gönderilecek açık refresh token değeridir.
+/// </param>
+/// <param name="expiresAt">
+/// Refresh token'ın UTC sona erme zamanıdır.
+/// </param>
+private void SetRefreshTokenCookie(
+    string refreshToken,
+    DateTime expiresAt)
+{
+    Response.Cookies.Append(
+        "MSKBS.RefreshToken",
+        refreshToken,
+        new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = expiresAt,
+            Path = "/api/auth"
+        });
+}
+
+Burada:
+HttpOnly = true
+
+JavaScript token'ı okuyamaz.
+Secure = true
+
+HTTPS zorlar.
+SameSite = Strict
+
+CSRF yüzeyini azaltır.
+Path = /api/auth
+
+refresh cookie gereksiz yere bütün API endpointlerine gitmez.
+Login endpoint'inde:
+var result = await _mediator.Send(command);
+
+SetRefreshTokenCookie(
+    result.RefreshToken,
+    result.RefreshTokenExpiresAt);
+
+return Ok(result.Response);
+
+mantığı olmalı.
+Refresh token response body'ye dönmemeli.
+4. Refresh endpoint cookie'yi buradan okuyacak
+Örneğin:
+/// <summary>
+/// HttpOnly refresh cookie kullanılarak yeni access token
+/// ve refresh token üretir.
+/// </summary>
+/// <param name="cancellationToken">
+/// Request iptal token'ıdır.
+/// </param>
+/// <returns>
+/// Yenilenmiş authentication session bilgisini döndürür.
+/// </returns>
+[HttpPost("refresh")]
+[AllowAnonymous]
+public async Task<ActionResult<LoginResponse>> Refresh(
+    CancellationToken cancellationToken)
+{
+    if (!Request.Cookies.TryGetValue(
+        "MSKBS.RefreshToken",
+        out var refreshToken))
+    {
+        throw new InvalidRefreshTokenException();
+    }
+
+    var command = new RefreshTokenCommand
+    {
+        RefreshToken = refreshToken
+    };
+
+    var result = await _mediator.Send(
+        command,
+        cancellationToken);
+
+    SetRefreshTokenCookie(
+        result.RefreshToken,
+        result.RefreshTokenExpiresAt);
+
+    return Ok(result.Response);
+}
+
+Sende command/property isimleri biraz farklıysa mevcut olanı bozma; önemli olan mantık:
+Cookie
+ ↓
+Refresh handler
+ ↓
+rotation
+ ↓
+yeni access token
++
+yeni refresh cookie
+
+5. Logout'ta cookie'yi de silelim
+DB'deki refresh token revoke ediliyor ama browser cookie'sini de kaldırmamız gerekiyor.
+Controller'a:
+/// <summary>
+/// Tarayıcıdaki refresh token cookie'sini kaldırır.
+/// </summary>
+private void DeleteRefreshTokenCookie()
+{
+    Response.Cookies.Delete(
+        "MSKBS.RefreshToken",
+        new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Path = "/api/auth"
+        });
+}
+
+Logout'tan sonra:
+DeleteRefreshTokenCookie();
+
+çalıştır.
+Logout-all'da da:
+DeleteRefreshTokenCookie();
+
+çalıştır.
+Cookie silerken Path oluştururken kullandığımız path ile aynı olmalı.
+6. Development'ta API adresini bulalım
+Şurayı aç:
+MSKBS.Api
+└── Properties
+    └── launchSettings.json
+
+Örneğin şöyle olacaktır:
+{
+  "profiles": {
+    "https": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:7189;http://localhost:5189"
+    }
+  }
+}
+
+Burada HTTPS:
+https://localhost:7189
+
+ise Angular root dizinindeki:
+proxy.conf.json
+
+şöyle olacak:
+{
+  "/api": {
+    "target": "https://localhost:7189",
+    "secure": false,
+    "changeOrigin": true
+  }
+}
+
+Portu kendi launchSettings.json değerine göre yaz.
+7. package.json'da proxy'yi sabitleyelim
+Angular projesindeki:
+package.json
+
+içerisinde:
+"scripts": {
+  "ng": "ng",
+  "start": "ng serve --proxy-config proxy.conf.json",
+  "build": "ng build",
+  "watch": "ng build --watch --configuration development",
+  "test": "ng test"
+}
+
+yapalım.
+Bundan sonra:
+npm start
+
+yeterli.
+8. Burada önemli bir startup problemi var
+Şu an app.config.ts içerisinde:
+provideAppInitializer(
+  () => {
+
+    const authService =
+      inject(AuthService);
+
+    return firstValueFrom(
+      authService.initializeSession()
+    );
+  }
+)
+
+kullanıyoruz.
+Bu doğru.
+Ama ilk kez uygulamayı açan kullanıcıda refresh cookie bulunmayacak.
+Angular:
+POST /api/auth/refresh
+
+atacak.
+Backend:
+401
+
+döndürecek.
+Bizim interceptor'da refresh endpoint'i exclude edildiği için sonsuz döngü oluşmayacak.
+Sonra:
+catchError(() => {
+
+  this.store.clearSession();
+
+  return of(void 0);
+})
+
+çalışacak.
+Uygulama açılmaya devam edecek.
+Ardından:
+/app
+ ↓
+AuthGuard
+ ↓
+authenticated = false
+ ↓
+/login
+
+olacak.
+Tam istediğimiz davranış bu.
+9. Login formunda Enter da çalışıyor
+Biz:
+<form
+  [formGroup]="form"
+  (ngSubmit)="submit()">
+
+ve:
+<p-button
+  type="submit"
+
+kullandığımız için kullanıcı parola alanında:
+Enter
+
+yapınca login çalışacak.
+Ekstra key event yazmaya gerek yok.
+10. Şimdi projeyi compile edelim
+Angular klasöründe:
+npm start
+
+çalıştır.
+İlk önce compile hatalarını temizleyeceğiz.
+Angular başarılı açılırsa browser:
+http://localhost:4200
+
+11. İlk açılışta Network'te beklediğimiz
+F12 → Network.
+İlk request büyük ihtimalle:
+POST /api/auth/refresh
+
+olacak.
+Henüz hiç login yapılmadığı için:
+401 Unauthorized
+
+dönebilir.
+Bu hata değil.
+Sonrasında ekran:
+/login
+
+olmalı.
+12. Login testi
+Seed'de oluşturduğumuz admin bilgileriyle login yap.
+Network:
+POST /api/auth/login
+
+Request Payload:
+{
+  "userNameOrEmail": "admin",
+  "password": "*****"
+}
+
+Backend:
+200 OK
+
+dönmeli.
+Response:
+{
+  "accessToken": "eyJ...",
+  "accessTokenExpiresAt": "...",
+  "user": {
+    "id": "...",
+    "userName": "...",
+    "firstName": "...",
+    "lastName": "...",
+    "fullName": "...",
+    "email": "...",
+    "organizationUnitId": null,
+    "roles": [
+      "ADMIN"
+    ],
+    "permissions": [
+      ...
+    ]
+  }
+}
+
+olmasını bekliyoruz.
+13. En kritik kontrol: cookie
+F12:
+Application
+→ Storage
+→ Cookies
+→ http://localhost:4200
+
+veya browser sürümüne göre ilgili localhost kaynağında:
+MSKBS.RefreshToken
+
+görmelisin.
+Şunları kontrol et:
+HttpOnly     ✓
+Secure       ✓
+Path         /api/auth
+
+Refresh token'ın değerini Angular JS tarafından okuyamıyor olman normal ve istenen durum.
+14. Login sonrası console
+Şunları görmelisin:
+[MSKBS AUTH] Login request gönderiliyor
+
+sonra:
+[MSKBS AUTH] Login successful
+
+ve:
+Authentication Response
+Access Token
+Access Token Expires At
+User
+Decoded JWT Payload
+
+Decoded JWT içinde özellikle:
+nameidentifier
+name
+email
+given_name
+surname
+organization_unit_id
+security_stamp
+role
+permission
+exp
+iss
+aud
+
+kontrol edeceğiz.
+Admin ise permission listesinin tamamının token'a eklenmiş olması beklenebilir.
+15. /app ekranına geçtiğinde
+Şunu görmelisin:
+Giriş Başarılı
+
+Admin Ad Soyad
+
+ve üç buton.
+Önce:
+Session'ı Console'a Yaz
+
+tıkla.
+Console:
+{
+  isInitialized: true,
+  isAuthenticated: true,
+  accessToken: "eyJ...",
+  accessTokenExpiresAt: "...",
+  user: {
+     ...
+  }
+}
+
+olmalı.
+16. /auth/me test
+Sonra:
+/auth/me Test
+
+bas.
+Network'te:
+GET /api/auth/me
+
+seç.
+Request Headers kısmında:
+Authorization: Bearer eyJ...
+
+görmelisin.
+Bu çok önemli.
+Burada 200 OK gelirse:
+Angular
+→ interceptor
+→ JWT
+→ ASP.NET JWT authentication
+→ OnTokenValidated
+→ SecurityStamp DB kontrolü
+→ AuthController
+
+zincirinin tamamı çalışıyor demektir.
+17. JWT'yi localStorage'da arama
+F12 → Application:
+Local Storage
+Session Storage
+
+içerisinde:
+accessToken
+refreshToken
+jwt
+
+gibi hiçbir kayıt olmamalı.
+Çünkü tasarımımız:
+Access Token
+    ↓
+Angular memory
+
+Refresh Token
+    ↓
+HttpOnly Cookie
+
+18. F5 testi
+Şimdi /app ekranındayken:
+F5
+
+yap.
+Angular memory resetlenecek.
+Dolayısıyla eski access token kaybolacak.
+Ama cookie duruyor.
+Startup:
+POST /api/auth/refresh
+
+göndermeli.
+Network'te:
+POST /api/auth/refresh
+200
+
+olmalı.
+Console:
+[MSKBS AUTH] Token refreshed
+
+olmalı.
+Sonra yine /app.
+Login ekranı gelmemeli.
+Bu testi başarıyla geçerse HttpOnly refresh session restore tamamdır.
+19. Bir güvenlik iyileştirmesi
+Şu anda debug servisinde:
+console.log(
+  'Access Token:',
+  response.accessToken
+);
+
+yazdırıyoruz.
+Bunu özellikle sen:
+JWT'yi console'da görelim
+
+dediğin için koyduk.
+Login mekanizmasını doğruladıktan sonra bu satırı kaldıracağız.
+Decoded payload kalabilir ama production'da zaten:
+isDevMode()
+
+nedeniyle hiçbirisi çalışmıyor.
+Yine de gerçek token'ın console'da uzun süre loglanmasını istemeyiz.
+Şu anda senden istediğim nokta
+Önce:
+npm start
+
+yap.
+Compile hatası varsa ilk hatayı gönder.
+Compile olursa login ekranını açıp giriş yap. O noktada bana özellikle /api/auth/login response'unu gönder. Parola ve JWT'nin tamamını göndermene gerek yok; response'un property yapısını görmem yeterli.
+Sonra frontend modelini backend DTO'muzla birebir sabitleyip, /auth/me ve refresh testine geçeceğiz.
+
+
+
+
+
+
+devam edelim login tamamen bitsin ondan sonra bakıcaz hata var ise, login giirş parola reset fln hepsini bitirelim güzel klasör yapısı olsun. geçiştirmeden çok fazla dallanıp budaklandırmadan yap. devam..
+Tamam. Authentication tarafını burada tamamlayalım; ekstra katman üretmeden şu yapıda kalacağız:
+
+core/auth
+    models
+    services
+    guards
+    interceptors
+
+features/authentication
+    login
+    forgot-password
+    reset-password
+    change-password
+Login, refresh, session restore, logout zaten kuruldu. Şimdi Forgot Password + Reset Password + Change Password ekranlarını ve kalan route/service bağlantılarını tamamlıyoruz.
+
+1. Son klasör yapımız
+src/app
+│
+├── core
+│   ├── auth
+│   │   ├── models
+│   │   │   ├── auth-session-response.model.ts
+│   │   │   ├── auth-state.model.ts
+│   │   │   ├── auth-user.model.ts
+│   │   │   ├── login-request.model.ts
+│   │   │   ├── forgot-password-request.model.ts
+│   │   │   ├── reset-password-request.model.ts
+│   │   │   └── change-password-request.model.ts
+│   │   │
+│   │   ├── services
+│   │   │   ├── auth-store.service.ts
+│   │   │   ├── auth-debug.service.ts
+│   │   │   └── auth.service.ts
+│   │   │
+│   │   ├── guards
+│   │   │   ├── auth.guard.ts
+│   │   │   └── guest.guard.ts
+│   │   │
+│   │   └── interceptors
+│   │       └── auth.interceptor.ts
+│   │
+│   ├── config
+│   │   └── api.tokens.ts
+│   │
+│   └── models
+│       └── problem-details.model.ts
+│
+├── features
+│   ├── authentication
+│   │   ├── login
+│   │   │   ├── login.component.ts
+│   │   │   ├── login.component.html
+│   │   │   └── login.component.scss
+│   │   │
+│   │   ├── forgot-password
+│   │   │   ├── forgot-password.component.ts
+│   │   │   ├── forgot-password.component.html
+│   │   │   └── forgot-password.component.scss
+│   │   │
+│   │   ├── reset-password
+│   │   │   ├── reset-password.component.ts
+│   │   │   ├── reset-password.component.html
+│   │   │   └── reset-password.component.scss
+│   │   │
+│   │   └── change-password
+│   │       ├── change-password.component.ts
+│   │       ├── change-password.component.html
+│   │       └── change-password.component.scss
+│   │
+│   └── home
+│       └── ...
+│
+├── app.config.ts
+├── app.routes.ts
+└── app.component.ts
+2. ForgotPasswordRequest
+Dosya:
+
+src/app/core/auth/models/forgot-password-request.model.ts
+/**
+ * Kullanıcının parola sıfırlama bağlantısı talep etmesi için
+ * backend'e gönderilen isteği temsil eder.
+ */
+export interface ForgotPasswordRequest {
+
+  /**
+   * Parola sıfırlama bağlantısının gönderileceği
+   * kullanıcı e-posta adresidir.
+   */
+  email: string;
+}
+
+3. ResetPasswordRequest
+Dosya:
+
+src/app/core/auth/models/reset-password-request.model.ts
+/**
+ * Parola sıfırlama token'ı kullanılarak yeni parola
+ * oluşturulması için gönderilen isteği temsil eder.
+ */
+export interface ResetPasswordRequest {
+
+  /**
+   * Kullanıcının e-posta ile aldığı açık parola
+   * sıfırlama token'ıdır.
+   */
+  token: string;
+
+  /**
+   * Kullanıcının belirlediği yeni paroladır.
+   */
+  newPassword: string;
+
+  /**
+   * Yeni parolanın doğrulama amacıyla tekrar girilen halidir.
+   */
+  confirmPassword: string;
+}
+
+4. ChangePasswordRequest
+Dosya:
+
+src/app/core/auth/models/change-password-request.model.ts
+/**
+ * Oturum açmış kullanıcının mevcut parolasını
+ * değiştirmesi için gönderilen isteği temsil eder.
+ */
+export interface ChangePasswordRequest {
+
+  /**
+   * Kullanıcının mevcut parolasıdır.
+   */
+  currentPassword: string;
+
+  /**
+   * Kullanıcının belirlediği yeni paroladır.
+   */
+  newPassword: string;
+
+  /**
+   * Yeni parolanın doğrulama amacıyla tekrar girilen halidir.
+   */
+  confirmPassword: string;
+}
+
+5. AuthService'i tamamlayalım
+Mevcut:
+
+src/app/core/auth/services/auth.service.ts
+dosyana şu importları ekle:
+
+import { ForgotPasswordRequest }
+  from '../models/forgot-password-request.model';
+
+import { ResetPasswordRequest }
+  from '../models/reset-password-request.model';
+
+import { ChangePasswordRequest }
+  from '../models/change-password-request.model';
+
+Sonra class içerisine şu üç metodu ekle:
+
+/**
+ * Kullanıcının e-posta adresine parola sıfırlama
+ * bağlantısı gönderilmesini talep eder.
+ *
+ * Backend kullanıcı mevcut olsa da olmasa da aynı cevabı
+ * döndürerek kullanıcı hesabı keşfini engeller.
+ *
+ * @param request Kullanıcının e-posta adresini içeren istektir.
+ * @returns Forgot password HTTP işlemi.
+ */
+public forgotPassword(
+  request: ForgotPasswordRequest
+): Observable<void> {
+
+  return this.http.post<void>(
+    `${this.apiBaseUrl}/auth/forgot-password`,
+    request
+  );
+}
+
+/**
+ * E-posta bağlantısından alınan reset token kullanılarak
+ * kullanıcının parolasını yeniler.
+ *
+ * @param request Token ve yeni parola bilgilerini içeren istektir.
+ * @returns Reset password HTTP işlemi.
+ */
+public resetPassword(
+  request: ResetPasswordRequest
+): Observable<void> {
+
+  return this.http.post<void>(
+    `${this.apiBaseUrl}/auth/reset-password`,
+    request
+  )
+  .pipe(
+    tap(() => {
+      /*
+       * Backend parola sıfırlama sonrasında SecurityStamp
+       * değiştirdiği ve refresh token'ları revoke ettiği için
+       * istemci authentication state'i de temizlenir.
+       */
+      this.store.clearSession();
+    })
+  );
+}
+
+/**
+ * Oturum açmış kullanıcının mevcut parolasını değiştirir.
+ *
+ * Başarılı işlemden sonra backend SecurityStamp değerini
+ * değiştirir ve refresh token'ları revoke eder. Bu nedenle
+ * kullanıcı yeniden login olmalıdır.
+ *
+ * @param request Mevcut ve yeni parola bilgilerini içerir.
+ * @returns Change password HTTP işlemi.
+ */
+public changePassword(
+  request: ChangePasswordRequest
+): Observable<void> {
+
+  return this.http.post<void>(
+    `${this.apiBaseUrl}/auth/change-password`,
+    request,
+    {
+      withCredentials: true
+    }
+  )
+  .pipe(
+    tap(() => {
+      this.store.clearSession();
+    })
+  );
+}
+
+Böylece AuthService artık:
+
+login()
+refresh()
+initializeSession()
+me()
+
+forgotPassword()
+resetPassword()
+changePassword()
+
+logout()
+logoutAll()
+
+getAccessToken()
+clearSession()
+ile authentication alanını kapsıyor.
+
+6. Forgot Password Component
+Dosya:
+
+src/app/features/authentication/forgot-password/forgot-password.component.ts
+import {
+  Component,
+  inject,
+  signal
+} from '@angular/core';
+
+import {
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
+
+import { RouterLink } from '@angular/router';
+
+import { HttpErrorResponse } from '@angular/common/http';
+
+import { finalize } from 'rxjs';
+
+import { InputTextModule } from 'primeng/inputtext';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { MessageModule } from 'primeng/message';
+
+import { AuthService }
+  from '../../../core/auth/services/auth.service';
+
+/**
+ * Kullanıcının parola sıfırlama bağlantısı talep
+ * edebildiği ekranı temsil eder.
+ */
+@Component({
+  selector: 'app-forgot-password',
+  standalone: true,
+
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    InputTextModule,
+    ButtonModule,
+    CardModule,
+    MessageModule
+  ],
+
+  templateUrl: './forgot-password.component.html',
+  styleUrl: './forgot-password.component.scss'
+})
+export class ForgotPasswordComponent {
+
+  private readonly formBuilder =
+    inject(FormBuilder);
+
+  private readonly authService =
+    inject(AuthService);
+
+  /**
+   * HTTP isteğinin devam edip etmediğini belirtir.
+   */
+  public readonly loading =
+    signal(false);
+
+  /**
+   * İşlem sonrasında kullanıcıya gösterilecek
+   * başarı mesajıdır.
+   */
+  public readonly successMessage =
+    signal<string | null>(null);
+
+  /**
+   * Kullanıcıya gösterilecek hata mesajıdır.
+   */
+  public readonly errorMessage =
+    signal<string | null>(null);
+
+  /**
+   * Forgot password form modelidir.
+   */
+  public readonly form =
+    this.formBuilder.nonNullable.group({
+
+      email: [
+        '',
+        [
+          Validators.required,
+          Validators.email
+        ]
+      ]
+    });
+
+  /**
+   * Parola sıfırlama bağlantısı talebini backend'e gönderir.
+   */
+  public submit(): void {
+
+    this.successMessage.set(null);
+    this.errorMessage.set(null);
+
+    if (this.form.invalid) {
+
+      this.form.markAllAsTouched();
+
+      return;
+    }
+
+    this.loading.set(true);
+
+    this.authService
+      .forgotPassword(
+        this.form.getRawValue()
+      )
+      .pipe(
+        finalize(() => {
+          this.loading.set(false);
+        })
+      )
+      .subscribe({
+
+        next: () => {
+
+          /*
+           * Kullanıcının sistemde bulunup bulunmadığına
+           * göre farklı mesaj göstermiyoruz.
+           */
+          this.successMessage.set(
+            'Bu e-posta adresi sistemde kayıtlıysa parola sıfırlama bağlantısı gönderilmiştir.'
+          );
+        },
+
+        error: (
+          error: HttpErrorResponse
+        ) => {
+
+          console.error(
+            '[MSKBS AUTH] Forgot password error:',
+            error
+          );
+
+          this.errorMessage.set(
+            'Parola sıfırlama talebi sırasında bir hata oluştu.'
+          );
+        }
+      });
+  }
+}
+
+7. Forgot Password HTML
+src/app/features/authentication/forgot-password/forgot-password.component.html
+<div class="auth-page">
+
+  <p-card styleClass="auth-card">
+
+    <ng-template pTemplate="header">
+
+      <div class="auth-header">
+
+        <h1>
+          Parolamı Unuttum
+        </h1>
+
+        <p>
+          E-posta adresinizi girin.
+        </p>
+
+      </div>
+
+    </ng-template>
+
+    <form
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      class="auth-form">
+
+      <div class="form-field">
+
+        <label for="email">
+          E-posta
+        </label>
+
+        <input
+          id="email"
+          type="email"
+          pInputText
+          formControlName="email"
+          autocomplete="email"
+          placeholder="E-posta adresiniz" />
+
+        @if (
+          form.controls.email.touched &&
+          form.controls.email.hasError('required')
+        ) {
+
+          <small class="validation-error">
+            E-posta adresi zorunludur.
+          </small>
+
+        }
+
+        @if (
+          form.controls.email.touched &&
+          form.controls.email.hasError('email')
+        ) {
+
+          <small class="validation-error">
+            Geçerli bir e-posta adresi giriniz.
+          </small>
+
+        }
+
+      </div>
+
+      @if (successMessage()) {
+
+        <p-message
+          severity="success"
+          [text]="successMessage()!">
+        </p-message>
+
+      }
+
+      @if (errorMessage()) {
+
+        <p-message
+          severity="error"
+          [text]="errorMessage()!">
+        </p-message>
+
+      }
+
+      <p-button
+        type="submit"
+        label="Sıfırlama Bağlantısı Gönder"
+        icon="pi pi-envelope"
+        [loading]="loading()"
+        [disabled]="loading()"
+        styleClass="auth-button">
+      </p-button>
+
+      <a
+        routerLink="/login"
+        class="back-link">
+
+        Giriş ekranına dön
+
+      </a>
+
+    </form>
+
+  </p-card>
+
+</div>
+
+8. Forgot Password SCSS
+src/app/features/authentication/forgot-password/forgot-password.component.scss
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.auth-page {
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 1.5rem;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f8fafc 0%,
+      #eef2f7 100%
+    );
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-header {
+  padding-top: 1.5rem;
+  text-align: center;
+
+  h1 {
+    margin: 0;
+  }
+
+  p {
+    margin-top: 0.5rem;
+    color: #64748b;
+  }
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  input {
+    width: 100%;
+  }
+}
+
+.validation-error {
+  color: #dc2626;
+}
+
+:host ::ng-deep .auth-button {
+  width: 100%;
+}
+
+.back-link {
+  text-align: center;
+  text-decoration: none;
+}
+
+9. Reset Password Component
+Reset ekranında URL'den:
+
+/reset-password?token=ABC123...
+alacağız.
+
+Dosya:
+
+src/app/features/authentication/reset-password/reset-password.component.ts
+import {
+  Component,
+  inject,
+  signal
+} from '@angular/core';
+
+import {
+  AbstractControl,
+  FormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators
+} from '@angular/forms';
+
+import {
+  ActivatedRoute,
+  Router,
+  RouterLink
+} from '@angular/router';
+
+import { HttpErrorResponse } from '@angular/common/http';
+
+import { finalize } from 'rxjs';
+
+import { PasswordModule } from 'primeng/password';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { MessageModule } from 'primeng/message';
+
+import { AuthService }
+  from '../../../core/auth/services/auth.service';
+
+/**
+ * Kullanıcının e-posta ile aldığı parola sıfırlama token'ı
+ * üzerinden yeni parola belirlediği ekranı temsil eder.
+ */
+@Component({
+  selector: 'app-reset-password',
+  standalone: true,
+
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    PasswordModule,
+    ButtonModule,
+    CardModule,
+    MessageModule
+  ],
+
+  templateUrl: './reset-password.component.html',
+  styleUrl: './reset-password.component.scss'
+})
+export class ResetPasswordComponent {
+
+  private readonly formBuilder =
+    inject(FormBuilder);
+
+  private readonly authService =
+    inject(AuthService);
+
+  private readonly activatedRoute =
+    inject(ActivatedRoute);
+
+  private readonly router =
+    inject(Router);
+
+  /**
+   * URL üzerinden alınan parola sıfırlama token'ıdır.
+   */
+  public readonly token =
+    this.activatedRoute.snapshot.queryParamMap.get('token');
+
+  /**
+   * HTTP isteğinin devam edip etmediğini belirtir.
+   */
+  public readonly loading =
+    signal(false);
+
+  /**
+   * Kullanıcıya gösterilecek hata mesajıdır.
+   */
+  public readonly errorMessage =
+    signal<string | null>(null);
+
+  /**
+   * Parola sıfırlama işleminin başarıyla tamamlanıp
+   * tamamlanmadığını belirtir.
+   */
+  public readonly completed =
+    signal(false);
+
+  /**
+   * Yeni parola ve parola tekrar alanlarını içeren
+   * reset password formudur.
+   */
+  public readonly form =
+    this.formBuilder.nonNullable.group(
+      {
+        newPassword: [
+          '',
+          [
+            Validators.required
+          ]
+        ],
+
+        confirmPassword: [
+          '',
+          [
+            Validators.required
+          ]
+        ]
+      },
+      {
+        validators: passwordsMatchValidator()
+      }
+    );
+
+  /**
+   * Yeni parola bilgisini backend'e göndererek
+   * kullanıcının parolasını sıfırlar.
+   */
+  public submit(): void {
+
+    this.errorMessage.set(null);
+
+    if (!this.token) {
+
+      this.errorMessage.set(
+        'Parola sıfırlama bağlantısı geçersizdir.'
+      );
+
+      return;
+    }
+
+    if (this.form.invalid) {
+
+      this.form.markAllAsTouched();
+
+      return;
+    }
+
+    this.loading.set(true);
+
+    const value =
+      this.form.getRawValue();
+
+    this.authService
+      .resetPassword({
+        token: this.token,
+        newPassword: value.newPassword,
+        confirmPassword: value.confirmPassword
+      })
+      .pipe(
+        finalize(() => {
+          this.loading.set(false);
+        })
+      )
+      .subscribe({
+
+        next: () => {
+
+          this.completed.set(true);
+
+          /*
+           * Kullanıcı mesajı okuyabilsin diye kısa bir
+           * gecikmeyle login ekranına yönlendiriyoruz.
+           */
+          setTimeout(() => {
+
+            void this.router.navigate(
+              ['/login']
+            );
+
+          }, 2000);
+        },
+
+        error: (
+          error: HttpErrorResponse
+        ) => {
+
+          console.error(
+            '[MSKBS AUTH] Reset password error:',
+            error
+          );
+
+          this.errorMessage.set(
+            error.error?.detail ??
+            'Parola sıfırlama bağlantısı geçersiz veya süresi dolmuş olabilir.'
+          );
+        }
+      });
+  }
+}
+
+/**
+ * Yeni parola ve parola tekrar alanlarının
+ * birbiriyle aynı olmasını doğrular.
+ *
+ * @returns Angular form validator fonksiyonu.
+ */
+function passwordsMatchValidator(): ValidatorFn {
+
+  return (
+    control: AbstractControl
+  ): ValidationErrors | null => {
+
+    const newPassword =
+      control.get('newPassword')?.value;
+
+    const confirmPassword =
+      control.get('confirmPassword')?.value;
+
+    if (
+      !newPassword ||
+      !confirmPassword
+    ) {
+      return null;
+    }
+
+    return newPassword === confirmPassword
+      ? null
+      : {
+          passwordMismatch: true
+        };
+  };
+}
+
+
+10. Reset Password HTML
+src/app/features/authentication/reset-password/reset-password.component.html
+
+<div class="auth-page">
+
+  <p-card styleClass="auth-card">
+
+    <ng-template pTemplate="header">
+
+      <div class="auth-header">
+
+        <h1>
+          Yeni Parola Belirle
+        </h1>
+
+        <p>
+          Hesabınız için yeni parolanızı oluşturun.
+        </p>
+
+      </div>
+
+    </ng-template>
+
+    @if (!token) {
+
+      <p-message
+        severity="error"
+        text="Parola sıfırlama bağlantısı geçersizdir.">
+      </p-message>
+
+      <a
+        routerLink="/forgot-password"
+        class="back-link">
+
+        Yeni bağlantı iste
+
+      </a>
+
+    }
+    @else if (completed()) {
+
+      <p-message
+        severity="success"
+        text="Parolanız başarıyla değiştirildi. Giriş ekranına yönlendiriliyorsunuz.">
+      </p-message>
+
+    }
+    @else {
+
+      <form
+        [formGroup]="form"
+        (ngSubmit)="submit()"
+        class="auth-form">
+
+        <div class="form-field">
+
+          <label for="newPassword">
+            Yeni Parola
+          </label>
+
+          <p-password
+            inputId="newPassword"
+            formControlName="newPassword"
+            [toggleMask]="true"
+            autocomplete="new-password"
+            placeholder="Yeni parolanız"
+            styleClass="password-field"
+            inputStyleClass="password-input">
+          </p-password>
+
+        </div>
+
+        <div class="form-field">
+
+          <label for="confirmPassword">
+            Yeni Parola Tekrar
+          </label>
+
+          <p-password
+            inputId="confirmPassword"
+            formControlName="confirmPassword"
+            [feedback]="false"
+            [toggleMask]="true"
+            autocomplete="new-password"
+            placeholder="Yeni parolanızı tekrar girin"
+            styleClass="password-field"
+            inputStyleClass="password-input">
+          </p-password>
+
+        </div>
+
+        @if (
+          form.touched &&
+          form.hasError('passwordMismatch')
+        ) {
+
+          <small class="validation-error">
+            Girilen parolalar birbiriyle aynı değildir.
+          </small>
+
+        }
+
+        @if (errorMessage()) {
+
+          <p-message
+            severity="error"
+            [text]="errorMessage()!">
+          </p-message>
+
+        }
+
+        <p-button
+          type="submit"
+          label="Parolayı Değiştir"
+          icon="pi pi-key"
+          [loading]="loading()"
+          [disabled]="loading()"
+          styleClass="auth-button">
+        </p-button>
+
+      </form>
+
+    }
+
+  </p-card>
+
+</div>
+
+11. Reset Password SCSS
+src/app/features/authentication/reset-password/reset-password.component.scss
+
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.auth-page {
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 1.5rem;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f8fafc 0%,
+      #eef2f7 100%
+    );
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-header {
+  padding-top: 1.5rem;
+  text-align: center;
+
+  h1 {
+    margin: 0;
+  }
+
+  p {
+    color: #64748b;
+  }
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+:host ::ng-deep .password-field,
+:host ::ng-deep .password-input,
+:host ::ng-deep .auth-button {
+  width: 100%;
+}
+
+.validation-error {
+  color: #dc2626;
+}
+
+.back-link {
+  display: block;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+12. Change Password Component
+Bu ekran authenticated kullanıcı içindir.
+src/app/features/authentication/change-password/change-password.component.ts
+
+import {
+  Component,
+  inject,
+  signal
+} from '@angular/core';
+
+import {
+  AbstractControl,
+  FormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators
+} from '@angular/forms';
+
+import {
+  Router
+} from '@angular/router';
+
+import {
+  HttpErrorResponse
+} from '@angular/common/http';
+
+import {
+  finalize
+} from 'rxjs';
+
+import {
+  PasswordModule
+} from 'primeng/password';
+
+import {
+  ButtonModule
+} from 'primeng/button';
+
+import {
+  CardModule
+} from 'primeng/card';
+
+import {
+  MessageModule
+} from 'primeng/message';
+
+import {
+  AuthService
+} from '../../../core/auth/services/auth.service';
+
+/**
+ * Oturum açmış kullanıcının mevcut parolasını
+ * değiştirmesini sağlayan ekranı temsil eder.
+ */
+@Component({
+  selector: 'app-change-password',
+  standalone: true,
+
+  imports: [
+    ReactiveFormsModule,
+    PasswordModule,
+    ButtonModule,
+    CardModule,
+    MessageModule
+  ],
+
+  templateUrl: './change-password.component.html',
+  styleUrl: './change-password.component.scss'
+})
+export class ChangePasswordComponent {
+
+  private readonly formBuilder =
+    inject(FormBuilder);
+
+  private readonly authService =
+    inject(AuthService);
+
+  private readonly router =
+    inject(Router);
+
+  /**
+   * Change password isteğinin devam edip etmediğini belirtir.
+   */
+  public readonly loading =
+    signal(false);
+
+  /**
+   * Kullanıcıya gösterilecek hata mesajıdır.
+   */
+  public readonly errorMessage =
+    signal<string | null>(null);
+
+  /**
+   * Parola değiştirme form modelidir.
+   */
+  public readonly form =
+    this.formBuilder.nonNullable.group(
+      {
+        currentPassword: [
+          '',
+          [
+            Validators.required
+          ]
+        ],
+
+        newPassword: [
+          '',
+          [
+            Validators.required
+          ]
+        ],
+
+        confirmPassword: [
+          '',
+          [
+            Validators.required
+          ]
+        ]
+      },
+      {
+        validators: passwordsMatchValidator()
+      }
+    );
+
+  /**
+   * Kullanıcının mevcut parolasını doğrulatarak
+   * yeni parolasını backend'e gönderir.
+   */
+  public submit(): void {
+
+    this.errorMessage.set(null);
+
+    if (this.form.invalid) {
+
+      this.form.markAllAsTouched();
+
+      return;
+    }
+
+    this.loading.set(true);
+
+    this.authService
+      .changePassword(
+        this.form.getRawValue()
+      )
+      .pipe(
+        finalize(() => {
+          this.loading.set(false);
+        })
+      )
+      .subscribe({
+
+        next: () => {
+
+          /*
+           * Change password sonrasında bütün refresh token'lar
+           * revoke edildiğinden yeniden login istiyoruz.
+           */
+          void this.router.navigate(
+            ['/login'],
+            {
+              queryParams: {
+                passwordChanged: true
+              }
+            }
+          );
+        },
+
+        error: (
+          error: HttpErrorResponse
+        ) => {
+
+          console.error(
+            '[MSKBS AUTH] Change password error:',
+            error
+          );
+
+          if (error.status === 400) {
+
+            this.errorMessage.set(
+              error.error?.detail ??
+              'Mevcut parola hatalı veya yeni parola geçerli değildir.'
+            );
+
+            return;
+          }
+
+          this.errorMessage.set(
+            'Parola değiştirilirken beklenmeyen bir hata oluştu.'
+          );
+        }
+      });
+  }
+}
+
+/**
+ * Yeni parola ve parola tekrar alanlarını karşılaştırır.
+ *
+ * @returns Angular form validator fonksiyonu.
+ */
+function passwordsMatchValidator(): ValidatorFn {
+
+  return (
+    control: AbstractControl
+  ): ValidationErrors | null => {
+
+    const newPassword =
+      control.get('newPassword')?.value;
+
+    const confirmPassword =
+      control.get('confirmPassword')?.value;
+
+    if (
+      !newPassword ||
+      !confirmPassword
+    ) {
+      return null;
+    }
+
+    return newPassword === confirmPassword
+      ? null
+      : {
+          passwordMismatch: true
+        };
+  };
+}
+
+13. Change Password HTML
+src/app/features/authentication/change-password/change-password.component.html
+
+<div class="auth-page">
+
+  <p-card styleClass="auth-card">
+
+    <ng-template pTemplate="header">
+
+      <div class="auth-header">
+
+        <h1>
+          Parola Değiştir
+        </h1>
+
+        <p>
+          Hesap parolanızı güncelleyin.
+        </p>
+
+      </div>
+
+    </ng-template>
+
+    <form
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      class="auth-form">
+
+      <div class="form-field">
+
+        <label for="currentPassword">
+          Mevcut Parola
+        </label>
+
+        <p-password
+          inputId="currentPassword"
+          formControlName="currentPassword"
+          [feedback]="false"
+          [toggleMask]="true"
+          autocomplete="current-password"
+          styleClass="password-field"
+          inputStyleClass="password-input">
+        </p-password>
+
+      </div>
+
+      <div class="form-field">
+
+        <label for="newPassword">
+          Yeni Parola
+        </label>
+
+        <p-password
+          inputId="newPassword"
+          formControlName="newPassword"
+          [toggleMask]="true"
+          autocomplete="new-password"
+          styleClass="password-field"
+          inputStyleClass="password-input">
+        </p-password>
+
+      </div>
+
+      <div class="form-field">
+
+        <label for="confirmPassword">
+          Yeni Parola Tekrar
+        </label>
+
+        <p-password
+          inputId="confirmPassword"
+          formControlName="confirmPassword"
+          [feedback]="false"
+          [toggleMask]="true"
+          autocomplete="new-password"
+          styleClass="password-field"
+          inputStyleClass="password-input">
+        </p-password>
+
+      </div>
+
+      @if (
+        form.touched &&
+        form.hasError('passwordMismatch')
+      ) {
+
+        <small class="validation-error">
+          Yeni parolalar birbiriyle aynı değildir.
+        </small>
+
+      }
+
+      @if (errorMessage()) {
+
+        <p-message
+          severity="error"
+          [text]="errorMessage()!">
+        </p-message>
+
+      }
+
+      <p-button
+        type="submit"
+        label="Parolayı Güncelle"
+        icon="pi pi-key"
+        [loading]="loading()"
+        [disabled]="loading()"
+        styleClass="auth-button">
+      </p-button>
+
+    </form>
+
+  </p-card>
+
+</div>
+
+14. Change Password SCSS
+Aynı sade yapıyı kullan:
+src/app/features/authentication/change-password/change-password.component.scss
+
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.auth-page {
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 1.5rem;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f8fafc 0%,
+      #eef2f7 100%
+    );
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-header {
+  padding-top: 1.5rem;
+  text-align: center;
+
+  h1 {
+    margin: 0;
+  }
+
+  p {
+    color: #64748b;
+  }
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+:host ::ng-deep .password-field,
+:host ::ng-deep .password-input,
+:host ::ng-deep .auth-button {
+  width: 100%;
+}
+
+.validation-error {
+  color: #dc2626;
+}
+
+15. Login ekranına "Parolamı Unuttum" ekleyelim
+login.component.ts importlarına:
+import { RouterLink } from '@angular/router';
+
+Zaten:
+import {
+  ActivatedRoute,
+  Router
+} from '@angular/router';
+
+varsa bunu şöyle yap:
+import {
+  ActivatedRoute,
+  Router,
+  RouterLink
+} from '@angular/router';
+
+Component imports:
+imports: [
+  CommonModule,
+  ReactiveFormsModule,
+  RouterLink,
+  InputTextModule,
+  PasswordModule,
+  ButtonModule,
+  CardModule,
+  MessageModule
+]
+
+Login HTML'de parola alanından sonra:
+<div class="forgot-password">
+
+  <a routerLink="/forgot-password">
+    Parolamı unuttum
+  </a>
+
+</div>
+
+SCSS:
+.forgot-password {
+  text-align: right;
+
+  a {
+    font-size: 0.9rem;
+    text-decoration: none;
+  }
+}
+
+16. Parola değiştirme sonrası login mesajı
+login.component.ts constructor kullanmıyoruz; ActivatedRoute zaten var.
+Şu signal'ı ekleyebilirsin:
+/**
+ * Parola değiştirme işlemi sonrasında login ekranında
+ * gösterilecek bilgilendirme mesajıdır.
+ */
+public readonly informationMessage =
+  signal<string | null>(null);
+
+Ardından class içerisinde constructor yerine Angular'ın field initialization sonrasında çalışan basit constructor kullanabiliriz:
+/**
+ * Login component başlangıç işlemlerini gerçekleştirir.
+ */
+public constructor() {
+
+  const passwordChanged =
+    this.activatedRoute
+      .snapshot
+      .queryParamMap
+      .get('passwordChanged');
+
+  if (passwordChanged === 'true') {
+
+    this.informationMessage.set(
+      'Parolanız başarıyla değiştirildi. Yeni parolanızla giriş yapabilirsiniz.'
+    );
+  }
+}
+
+Login HTML'de hata mesajından önce:
+@if (informationMessage()) {
+
+  <p-message
+    severity="success"
+    [text]="informationMessage()!">
+  </p-message>
+
+}
+
+17. Routes'u tamamlayalım
+Şimdi:
+src/app/app.routes.ts
+
+dosyasını bütün authentication ekranlarıyla son haline getirelim:
+import {
+  Routes
+} from '@angular/router';
+
+import {
+  authGuard
+} from './core/auth/guards/auth.guard';
+
+import {
+  guestGuard
+} from './core/auth/guards/guest.guard';
+
+/**
+ * MSKBS Angular uygulamasının ana route tanımlarını içerir.
+ */
+export const routes: Routes = [
+
+  {
+    path: 'login',
+
+    canActivate: [
+      guestGuard
+    ],
+
+    loadComponent: () =>
+      import(
+        './features/authentication/login/login.component'
+      )
+      .then(
+        component =>
+          component.LoginComponent
+      )
+  },
+
+  {
+    path: 'forgot-password',
+
+    canActivate: [
+      guestGuard
+    ],
+
+    loadComponent: () =>
+      import(
+        './features/authentication/forgot-password/forgot-password.component'
+      )
+      .then(
+        component =>
+          component.ForgotPasswordComponent
+      )
+  },
+
+  {
+    path: 'reset-password',
+
+    loadComponent: () =>
+      import(
+        './features/authentication/reset-password/reset-password.component'
+      )
+      .then(
+        component =>
+          component.ResetPasswordComponent
+      )
+  },
+
+  {
+    path: 'change-password',
+
+    canActivate: [
+      authGuard
+    ],
+
+    loadComponent: () =>
+      import(
+        './features/authentication/change-password/change-password.component'
+      )
+      .then(
+        component =>
+          component.ChangePasswordComponent
+      )
+  },
+
+  {
+    path: 'app',
+
+    canActivate: [
+      authGuard
+    ],
+
+    loadComponent: () =>
+      import(
+        './features/home/home.component'
+      )
+      .then(
+        component =>
+          component.HomeComponent
+      )
+  },
+
+  {
+    path: '',
+
+    pathMatch: 'full',
+
+    redirectTo: 'app'
+  },
+
+  {
+    path: '**',
+
+    redirectTo: 'app'
+  }
+];
+
+18. Home ekranına parola değiştirme ekleyelim
+home.component.ts zaten Router kullanıyor.
+Şu metodu ekle:
+/**
+ * Kullanıcıyı parola değiştirme ekranına yönlendirir.
+ */
+public changePassword(): void {
+
+  void this.router.navigate(
+    ['/change-password']
+  );
+}
+
+home.component.html:
+<div class="home-page">
+
+  <h2>
+    Giriş Başarılı
+  </h2>
+
+  @if (user()) {
+
+    <p>
+      {{ user()!.fullName }}
+    </p>
+
+  }
+
+  <div class="actions">
+
+    <p-button
+      label="Session'ı Console'a Yaz"
+      icon="pi pi-code"
+      severity="secondary"
+      (onClick)="writeSessionToConsole()">
+    </p-button>
+
+    <p-button
+      label="/auth/me Test"
+      icon="pi pi-user"
+      severity="secondary"
+      (onClick)="testMeEndpoint()">
+    </p-button>
+
+    <p-button
+      label="Parola Değiştir"
+      icon="pi pi-key"
+      severity="secondary"
+      (onClick)="changePassword()">
+    </p-button>
+
+    <p-button
+      label="Çıkış Yap"
+      icon="pi pi-sign-out"
+      severity="danger"
+      (onClick)="logout()">
+    </p-button>
+
+  </div>
+
+</div>
+
+19. Password reset mail link'i
+Backend'deki:
+PasswordResetSettings
+
+Development ortamında örneğin:
+{
+  "PasswordReset": {
+    "TokenExpirationMinutes": 30,
+    "ResetUrlBase": "http://localhost:4200/reset-password"
+  }
+}
+
+olmalı.
+Mail link'i backend tarafından:
+http://localhost:4200/reset-password?token=ABC...
+
+şeklinde oluşturulacak.
+Token querystring'e yazılır ama DB'de:
+AÇIK TOKEN YOK
+
+sadece:
+SHA-256 TokenHash
+
+vardır.
+Bu mevcut tasarımımızla uyumlu.
+20. Backend ChangePassword sonrası cookie
+Backend zaten tüm refresh token'ları revoke ediyor.
+change-password endpoint başarılı olduğunda tarayıcıdaki eski cookie'yi de silelim.
+Controller'da başarılı change-password işleminden sonra:
+DeleteRefreshTokenCookie();
+
+return NoContent();
+
+Logout'ta kullandığımız:
+/// <summary>
+/// Tarayıcıda tutulan refresh token cookie'sini kaldırır.
+/// </summary>
+private void DeleteRefreshTokenCookie()
+{
+    Response.Cookies.Delete(
+        "MSKBS.RefreshToken",
+        new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Path = "/api/auth"
+        });
+}
+
+metodunu burada da kullan.
+Aynı şekilde reset-password endpoint'i browser üzerinden authenticated halde kullanılabilecekse işlem sonunda cookie temizlemek de doğru olur.
+21. Authentication modülümüz artık ne içeriyor?
+Şu akışların tamamı kod tarafında hazır:
+LOGIN
+username/email
++
+password
+↓
+JWT access token
++
+HttpOnly refresh cookie
+↓
+/app
+
+
+SESSION RESTORE
+F5
+↓
+access token kaybolur
+↓
+refresh cookie
+↓
+POST /refresh
+↓
+yeni access token
+↓
+session devam eder
+
+
+AUTOMATIC REFRESH
+API → 401
+↓
+POST /refresh
+↓
+yeni JWT
+↓
+eski request retry
+
+
+FORGOT PASSWORD
+email
+↓
+POST /forgot-password
+↓
+mail
+
+
+RESET PASSWORD
+mail linki
+↓
+/reset-password?token=...
+↓
+newPassword
+↓
+POST /reset-password
+↓
+SecurityStamp değişir
+↓
+refresh token'lar revoke
+
+
+CHANGE PASSWORD
+authenticated user
+↓
+currentPassword
++
+newPassword
+↓
+POST /change-password
+↓
+SecurityStamp değişir
+↓
+refresh token'lar revoke
+↓
+login ekranı
+
+
+LOGOUT
+↓
+refresh token revoke
+↓
+cookie delete
+↓
+memory temizle
+↓
+login
+
+Bu kadar. Auth için daha fazla class üretmiyoruz.
+Login/Auth Faz-1 tamamlandığında elimizde
+Backend:
+POST /auth/login
+POST /auth/refresh
+POST /auth/logout
+POST /auth/logout-all
+GET  /auth/me
+POST /auth/change-password
+POST /auth/forgot-password
+POST /auth/reset-password
+
+Frontend:
+/login
+/forgot-password
+/reset-password
+/change-password
+/app
+
+olacak.
+Bundan sonraki aşamada artık auth klasörünü büyütmeyelim. Önce bu yapının compile ve gerçek API testlerini yaparız; çıkan hataları tek tek düzeltiriz. Login/JWT/refresh/reset tamamlandıktan sonra ana layout, sidebar ve permission bazlı menü yapısına geçmek doğru sıra olacak.
+
+
+
+devam edelim
+Devam edelim ve authentication kısmını gerçekten kapatalım. Bu aşamada yeni klasörler üretmeyeceğiz. Mevcut yapıya sadece eksik olan logout-all, başarılı parola mesajları, login ekranının son hali ve küçük güvenlik/UX düzeltmelerini ekleyeceğiz.
+
+1. Login ekranını son hale getirelim
+src/app/features/authentication/login/login.component.ts
+
+Mevcut dosyayı şu hale getir:
+
+import {
+  Component,
+  inject,
+  signal
+} from '@angular/core';
+
+import {
+  CommonModule
+} from '@angular/common';
+
+import {
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
+
+import {
+  HttpErrorResponse
+} from '@angular/common/http';
+
+import {
+  ActivatedRoute,
+  Router,
+  RouterLink
+} from '@angular/router';
+
+import {
+  finalize
+} from 'rxjs';
+
+import {
+  InputTextModule
+} from 'primeng/inputtext';
+
+import {
+  PasswordModule
+} from 'primeng/password';
+
+import {
+  ButtonModule
+} from 'primeng/button';
+
+import {
+  CardModule
+} from 'primeng/card';
+
+import {
+  MessageModule
+} from 'primeng/message';
+
+import {
+  AuthService
+} from '../../../core/auth/services/auth.service';
+
+import {
+  ProblemDetails
+} from '../../../core/models/problem-details.model';
+
+/**
+ * MSKBS kullanıcı giriş ekranını temsil eder.
+ *
+ * Kullanıcı adı veya e-posta adresi ile giriş yapılmasını sağlar.
+ */
+@Component({
+  selector: 'app-login',
+  standalone: true,
+
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    InputTextModule,
+    PasswordModule,
+    ButtonModule,
+    CardModule,
+    MessageModule
+  ],
+
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.scss'
+})
+export class LoginComponent {
+
+  private readonly formBuilder =
+    inject(FormBuilder);
+
+  private readonly authService =
+    inject(AuthService);
+
+  private readonly router =
+    inject(Router);
+
+  private readonly activatedRoute =
+    inject(ActivatedRoute);
+
+  /**
+   * Login isteğinin devam edip etmediğini belirtir.
+   */
+  public readonly loading =
+    signal(false);
+
+  /**
+   * Kullanıcıya gösterilecek login hata mesajıdır.
+   */
+  public readonly errorMessage =
+    signal<string | null>(null);
+
+  /**
+   * Login ekranında gösterilecek bilgilendirme mesajıdır.
+   */
+  public readonly informationMessage =
+    signal<string | null>(null);
+
+  /**
+   * Login form modelidir.
+   */
+  public readonly form =
+    this.formBuilder.nonNullable.group({
+
+      userNameOrEmail: [
+        '',
+        [
+          Validators.required
+        ]
+      ],
+
+      password: [
+        '',
+        [
+          Validators.required
+        ]
+      ]
+    });
+
+  /**
+   * Login ekranı başlangıç kontrollerini gerçekleştirir.
+   */
+  public constructor() {
+
+    const passwordChanged =
+      this.activatedRoute
+        .snapshot
+        .queryParamMap
+        .get('passwordChanged');
+
+    const passwordReset =
+      this.activatedRoute
+        .snapshot
+        .queryParamMap
+        .get('passwordReset');
+
+    const loggedOut =
+      this.activatedRoute
+        .snapshot
+        .queryParamMap
+        .get('loggedOut');
+
+    if (passwordChanged === 'true') {
+
+      this.informationMessage.set(
+        'Parolanız başarıyla değiştirildi. Yeni parolanızla giriş yapabilirsiniz.'
+      );
+
+      return;
+    }
+
+    if (passwordReset === 'true') {
+
+      this.informationMessage.set(
+        'Parolanız başarıyla sıfırlandı. Yeni parolanızla giriş yapabilirsiniz.'
+      );
+
+      return;
+    }
+
+    if (loggedOut === 'true') {
+
+      this.informationMessage.set(
+        'Oturumunuz başarıyla kapatıldı.'
+      );
+    }
+  }
+
+  /**
+   * Login formunu backend authentication endpoint'ine gönderir.
+   */
+  public submit(): void {
+
+    this.errorMessage.set(null);
+
+    if (this.form.invalid) {
+
+      this.form.markAllAsTouched();
+
+      return;
+    }
+
+    this.loading.set(true);
+
+    const request =
+      this.form.getRawValue();
+
+    console.log(
+      '[MSKBS AUTH] Login request:',
+      {
+        userNameOrEmail:
+          request.userNameOrEmail,
+
+        password:
+          '********'
+      }
+    );
+
+    this.authService
+      .login(request)
+      .pipe(
+        finalize(() => {
+          this.loading.set(false);
+        })
+      )
+      .subscribe({
+
+        next: response => {
+
+          console.log(
+            '[MSKBS AUTH] Login başarılı:',
+            response
+          );
+
+          const returnUrl =
+            this.activatedRoute
+              .snapshot
+              .queryParamMap
+              .get('returnUrl');
+
+          if (
+            returnUrl &&
+            this.isSafeReturnUrl(returnUrl)
+          ) {
+
+            void this.router.navigateByUrl(
+              returnUrl
+            );
+
+            return;
+          }
+
+          void this.router.navigate(
+            ['/app']
+          );
+        },
+
+        error: (
+          error: HttpErrorResponse
+        ) => {
+
+          console.error(
+            '[MSKBS AUTH] Login hatası:',
+            error
+          );
+
+          this.errorMessage.set(
+            this.resolveErrorMessage(error)
+          );
+        }
+      });
+  }
+
+  /**
+   * Backend ProblemDetails cevabından kullanıcıya
+   * gösterilecek uygun hata mesajını üretir.
+   *
+   * @param error HTTP hata nesnesidir.
+   * @returns Kullanıcıya gösterilecek hata mesajı.
+   */
+  private resolveErrorMessage(
+    error: HttpErrorResponse
+  ): string {
+
+    const problem =
+      error.error as ProblemDetails | null;
+
+    if (error.status === 423) {
+
+      return (
+        problem?.detail ??
+        'Hesabınız geçici olarak kilitlenmiştir.'
+      );
+    }
+
+    if (error.status === 401) {
+
+      return (
+        problem?.detail ??
+        'Kullanıcı adı/e-posta veya parola hatalı.'
+      );
+    }
+
+    if (error.status === 400) {
+
+      return (
+        problem?.detail ??
+        'Gönderilen bilgiler geçerli değildir.'
+      );
+    }
+
+    if (error.status === 0) {
+
+      return 'API sunucusuna ulaşılamıyor.';
+    }
+
+    return (
+      problem?.detail ??
+      problem?.title ??
+      'Giriş sırasında beklenmeyen bir hata oluştu.'
+    );
+  }
+
+  /**
+   * returnUrl değerinin yalnızca Angular uygulaması
+   * içerisindeki route'lara yönlenmesini sağlar.
+   *
+   * @param url Kontrol edilecek URL değeridir.
+   * @returns Güvenli ise true.
+   */
+  private isSafeReturnUrl(
+    url: string
+  ): boolean {
+
+    return (
+      url.startsWith('/') &&
+      !url.startsWith('//')
+    );
+  }
+}
+
+2. Login HTML son hali
+src/app/features/authentication/login/login.component.html
+
+<div class="login-page">
+
+  <p-card styleClass="login-card">
+
+    <ng-template pTemplate="header">
+
+      <div class="login-header">
+
+        <h1>
+          MSKBS
+        </h1>
+
+        <p>
+          Sisteme giriş yapın
+        </p>
+
+      </div>
+
+    </ng-template>
+
+    <form
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      class="login-form">
+
+      @if (informationMessage()) {
+
+        <p-message
+          severity="success"
+          [text]="informationMessage()!">
+        </p-message>
+
+      }
+
+      <div class="form-field">
+
+        <label for="userNameOrEmail">
+          Kullanıcı Adı veya E-posta
+        </label>
+
+        <input
+          id="userNameOrEmail"
+          type="text"
+          pInputText
+          formControlName="userNameOrEmail"
+          autocomplete="username"
+          placeholder="Kullanıcı adı veya e-posta" />
+
+        @if (
+          form.controls.userNameOrEmail.touched &&
+          form.controls.userNameOrEmail.invalid
+        ) {
+
+          <small class="validation-error">
+            Kullanıcı adı veya e-posta zorunludur.
+          </small>
+
+        }
+
+      </div>
+
+      <div class="form-field">
+
+        <label for="password">
+          Parola
+        </label>
+
+        <p-password
+          inputId="password"
+          formControlName="password"
+          [feedback]="false"
+          [toggleMask]="true"
+          autocomplete="current-password"
+          placeholder="Parolanız"
+          styleClass="password-field"
+          inputStyleClass="password-input">
+        </p-password>
+
+      </div>
+
+      <div class="forgot-password">
+
+        <a routerLink="/forgot-password">
+          Parolamı unuttum
+        </a>
+
+      </div>
+
+      @if (errorMessage()) {
+
+        <p-message
+          severity="error"
+          [text]="errorMessage()!">
+        </p-message>
+
+      }
+
+      <p-button
+        type="submit"
+        label="Giriş Yap"
+        icon="pi pi-sign-in"
+        [loading]="loading()"
+        [disabled]="loading()"
+        styleClass="login-button">
+      </p-button>
+
+    </form>
+
+  </p-card>
+
+</div>
+
+3. Login SCSS son hali
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.login-page {
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 1.5rem;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f8fafc 0%,
+      #eef2f7 100%
+    );
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.login-header {
+  padding-top: 1.5rem;
+  text-align: center;
+
+  h1 {
+    margin: 0;
+    font-size: 2rem;
+  }
+
+  p {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    color: #64748b;
+  }
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  input {
+    width: 100%;
+  }
+}
+
+.forgot-password {
+  margin-top: -0.5rem;
+  text-align: right;
+
+  a {
+    font-size: 0.9rem;
+    text-decoration: none;
+  }
+}
+
+.validation-error {
+  color: #dc2626;
+}
+
+:host ::ng-deep .password-field,
+:host ::ng-deep .password-input,
+:host ::ng-deep .login-button {
+  width: 100%;
+}
+
+4. Reset Password başarılı olduğunda setTimeout kullanmayalım
+Önce verdiğimiz kodda 2 saniye bekletmiştik. Bunu istemiyorum. Kullanıcı kendisi butona bassın veya doğrudan login'e yönlendirelim.
+
+Daha temiz olanı:
+
+reset-password.component.ts içerisindeki next bloğunu değiştir:
+
+next: () => {
+
+  void this.router.navigate(
+    ['/login'],
+    {
+      queryParams: {
+        passwordReset: true
+      }
+    }
+  );
+},
+
+Şunları tamamen kaldır:
+
+this.completed.set(true);
+
+setTimeout(() => {
+  ...
+}, 2000);
+
+Ve artık:
+
+completed
+
+signal'ına ihtiyacımız yok.
+
+Şunu da kaldır:
+
+public readonly completed =
+  signal(false);
+
+5. Reset HTML'i de sadeleştir
+Önce:
+
+@else if (completed()) {
+
+bloğumuz vardı.
+
+Onu kaldır.
+
+Yani yapı:
+
+@if (!token) {
+
+  ...
+
+}
+@else {
+
+  <form>
+     ...
+  </form>
+
+}
+
+olacak.
+
+Bu daha temiz.
+
+6. Logout All'ı da tamamlayalım
+Bu backend endpoint'imiz zaten var:
+
+POST /api/auth/logout-all
+Bunu test ekranımızdan kullanabilelim.
+
+home.component.ts içine:
+
+/**
+ * Kullanıcının bütün cihazlardaki aktif oturumlarını
+ * sonlandırır ve login ekranına yönlendirir.
+ */
+public logoutAll(): void {
+
+  this.authService.logoutAll()
+    .subscribe({
+
+      next: () => {
+
+        void this.router.navigate(
+          ['/login'],
+          {
+            queryParams: {
+              loggedOut: true
+            }
+          }
+        );
+      },
+
+      error: error => {
+
+        console.error(
+          '[MSKBS AUTH] Logout all error:',
+          error
+        );
+
+        /*
+         * Local authentication state AuthService tarafından
+         * finalize içerisinde temizlenmiştir.
+         */
+        void this.router.navigate(
+          ['/login']
+        );
+      }
+    });
+}
+
+7. Normal logout'u da mesajlı yapalım
+Mevcut:
+
+public logout(): void {
+
+  this.authService.logout()
+    .subscribe({
+
+      next: () => {
+
+        void this.router.navigate(
+          ['/login']
+        );
+      },
+
+      error: () => {
+
+        void this.router.navigate(
+          ['/login']
+        );
+      }
+    });
+}
+
+yerine:
+
+/**
+ * Kullanıcının mevcut cihazdaki oturumunu sonlandırır.
+ */
+public logout(): void {
+
+  this.authService.logout()
+    .subscribe({
+
+      next: () => {
+
+        void this.router.navigate(
+          ['/login'],
+          {
+            queryParams: {
+              loggedOut: true
+            }
+          }
+        );
+      },
+
+      error: error => {
+
+        console.error(
+          '[MSKBS AUTH] Logout error:',
+          error
+        );
+
+        void this.router.navigate(
+          ['/login']
+        );
+      }
+    });
+}
+
+8. Home HTML final test ekranı
+Şimdilik dashboard yapmadan önce elimizde güzel bir authentication test ekranı olsun.
+
+<div class="home-page">
+
+  <h2>
+    MSKBS
+  </h2>
+
+  @if (user()) {
+
+    <h3>
+      Hoş geldiniz, {{ user()!.fullName }}
+    </h3>
+
+    <p>
+      {{ user()!.email }}
+    </p>
+
+    <p>
+      Roller:
+      {{ user()!.roles.join(', ') }}
+    </p>
+
+  }
+
+  <div class="actions">
+
+    <p-button
+      label="Session Console"
+      icon="pi pi-code"
+      severity="secondary"
+      (onClick)="writeSessionToConsole()">
+    </p-button>
+
+    <p-button
+      label="/auth/me Test"
+      icon="pi pi-user"
+      severity="secondary"
+      (onClick)="testMeEndpoint()">
+    </p-button>
+
+    <p-button
+      label="Parola Değiştir"
+      icon="pi pi-key"
+      severity="secondary"
+      (onClick)="changePassword()">
+    </p-button>
+
+    <p-button
+      label="Bu Cihazdan Çıkış"
+      icon="pi pi-sign-out"
+      severity="secondary"
+      (onClick)="logout()">
+    </p-button>
+
+    <p-button
+      label="Tüm Cihazlardan Çıkış"
+      icon="pi pi-power-off"
+      severity="danger"
+      (onClick)="logoutAll()">
+    </p-button>
+
+  </div>
+
+</div>
+
+9. AuthService'te logout davranışını biraz iyileştirelim
+Şu anda:
+
+finalize(() => {
+  this.store.clearSession();
+})
+
+kullanıyoruz.
+
+Bu iyi.
+
+Final hali:
+
+/**
+ * Mevcut cihazdaki refresh token'ı revoke eder ve
+ * local authentication state'ini temizler.
+ *
+ * @returns Logout işlemini temsil eden Observable.
+ */
+public logout(): Observable<void> {
+
+  return this.http.post<void>(
+    `${this.apiBaseUrl}/auth/logout`,
+    {},
+    {
+      withCredentials: true
+    }
+  )
+  .pipe(
+    finalize(() => {
+
+      this.store.clearSession();
+    })
+  );
+}
+
+/**
+ * Kullanıcının bütün refresh token'larını revoke eder
+ * ve local authentication state'ini temizler.
+ *
+ * Backend ayrıca SecurityStamp değerini değiştirerek
+ * mevcut access token'ların da geçersiz hale gelmesini sağlar.
+ *
+ * @returns Logout-all işlemini temsil eden Observable.
+ */
+public logoutAll(): Observable<void> {
+
+  return this.http.post<void>(
+    `${this.apiBaseUrl}/auth/logout-all`,
+    {},
+    {
+      withCredentials: true
+    }
+  )
+  .pipe(
+    finalize(() => {
+
+      this.store.clearSession();
+    })
+  );
+}
+
+10. Change Password sonrasında neden yeniden login yapıyoruz?
+Bizim backend:
+
+ChangePassword
+↓
+PasswordHash değişir
+↓
+PasswordChangedDate değişir
+↓
+SecurityStamp değişir
+↓
+RefreshToken'ların tamamı revoke edilir
+yapıyor.
+
+Dolayısıyla eski JWT:
+
+security_stamp = ABC
+taşıyor.
+
+DB:
+
+SecurityStamp = XYZ
+oluyor.
+
+Sonraki API isteğinde bizim:
+
+OnTokenValidated
+kontrolü:
+
+ABC != XYZ
+görüp token'ı reddediyor.
+
+Bu yüzden frontend'in:
+
+change password
+↓
+AuthStore temizle
+↓
+login
+yapması tam doğru.
+
+11. Reset Password için de aynı mantık
+Backend reset yaptıktan sonra:
+
+PasswordHash
+PasswordChangedDate
+SecurityStamp
+
+RefreshTokens → revoke
+PasswordResetToken → UsedAt
+Diğer reset token'lar → revoke
+oluyor.
+
+Bu nedenle reset sonrası:
+
+/login?passwordReset=true
+doğru.
+
+12. Forgot Password'ta response'u özellikle generic tutuyoruz
+Doğru ekran davranışı:
+
+Kayıtlı e-posta:
+
+test@example.com
+girildiğinde:
+
+Bu e-posta adresi sistemde kayıtlıysa parola sıfırlama bağlantısı gönderilmiştir.
+Kayıtlı olmayan:
+
+abc123@example.com
+girildiğinde de aynı mesaj.
+
+Şunu kesinlikle yazmayacağız:
+
+Bu e-posta sistemde kayıtlı değil.
+Çünkü dışarıdan hesap keşfine izin verir.
+
+13. Reset token URL encode konusu
+Backend mail link'i oluştururken açık token doğrudan string birleştirme ile eklenmemeli.
+
+Örneğin backend:
+
+var resetUrl =
+    $"{settings.ResetUrlBase}?token={Uri.EscapeDataString(token)}";
+
+kullanmalı.
+
+XML comment ile:
+
+/// <summary>
+/// Parola sıfırlama token'ını URL-safe hale getirerek
+/// Angular reset password bağlantısını oluşturur.
+/// </summary>
+var resetUrl =
+    $"{settings.ResetUrlBase}?token={Uri.EscapeDataString(token)}";
+
+Angular:
+
+this.activatedRoute
+    .snapshot
+    .queryParamMap
+    .get('token');
+
+ile decoded halini alır.
+
+Bu önemli; random token içerisinde +, /, = benzeri karakter kullanıyorsak URL bozulmasını önler.
+
+Eğer backend Base64Url token üretiyorsa zaten daha rahattır.
+
+14. Interceptor'da endpoint listemiz son hali
+Şu metodumuz:
+
+function shouldSkipAutomaticRefresh(
+  url: string
+): boolean {
+
+  return [
+    '/auth/login',
+    '/auth/refresh',
+    '/auth/forgot-password',
+    '/auth/reset-password'
+  ]
+  .some(path => url.includes(path));
+}
+
+doğru.
+
+change-password burada yok.
+
+Çünkü kullanıcı change-password isteğini expired access token ile yaparsa:
+
+change-password → 401
+↓
+refresh
+↓
+change-password tekrar
+çalışabilsin.
+
+Bu istediğimiz davranış.
+
+15. Angular route'larımız final
+Bu auth fazında route listemiz:
+
+/login
+/forgot-password
+/reset-password
+/change-password
+/app
+Ve erişimler:
+
+Route	Anonymous	Authenticated
+/login	✅	/app yönlenir
+/forgot-password	✅	/app yönlenir
+/reset-password	✅	✅
+/change-password	❌	✅
+/app	❌	✅
+Bu yeterli.
+
+16. Authentication tarafını burada kilitliyoruz
+Bu yapıdan sonra auth için ayrıca:
+
+TokenManagerService
+SessionManagerService
+CookieService
+StorageService
+RefreshManagerService
+AuthenticationFacade
+gibi 5-6 tane gereksiz class çıkarmıyoruz.
+
+Bizim yeterli yapımız:
+
+AuthService
+    ↓
+AuthStoreService
+    ↓
+AuthDebugService
+
+authInterceptor
+
+authGuard
+guestGuard
+Bu proje için temiz ve yönetilebilir.
+
+17. Login tamamlandığında test edeceğimiz tam senaryo
+Kodları ekledikten sonra tek tek şunları yapacağız:
+
+1. İlk açılış
+   refresh → 401
+   login ekranı
+
+2. Hatalı parola
+   → 401
+   → hata mesajı
+
+3. 5 kez hatalı parola
+   → lockout
+   → 423
+
+4. Doğru login
+   → 200
+   → JWT
+   → HttpOnly refresh cookie
+   → /app
+
+5. /auth/me
+   → Bearer JWT
+   → 200
+
+6. F5
+   → access token memory silinir
+   → refresh
+   → session restore
+
+7. Access token expire
+   → API 401
+   → automatic refresh
+   → original request retry
+
+8. Logout
+   → current refresh revoke
+   → cookie delete
+   → login
+
+9. Logout All
+   → bütün refresh token'lar revoke
+   → SecurityStamp değişir
+   → eski access token'lar ölür
+
+10. Forgot Password
+    → generic response
+
+11. Reset Password
+    → token kontrol
+    → yeni password
+    → eski session'lar revoke
+    → login
+
+12. Change Password
+    → current password doğrula
+    → password değiştir
+    → bütün session'lar revoke
+    → login
+Bunlar çalıştığında MSKBS Authentication/JWT Fazı frontend + backend olarak tamamlanmış olacak. Bundan sonra auth'a yeni mimari eklemek yerine sadece çıkacak compile/API uyumsuzluklarını düzeltiriz; ardından ana uygulama layout'u, sidebar, kullanıcı bilgisi ve permission bazlı menüye geçeriz.
+
+
+
+
+
+
+
+
+
+
+
+
+ana uygulama layout'u, sidebar, kullanıcı bilgisi ve permission bazlı menüye geç.
+
+52s düşündü
+Tamam, şimdi auth kısmının üzerine ana uygulama kabuğunu oturtuyoruz. Yapıyı gereksiz büyütmeden şu mantıkta ilerleyeceğiz:
+
+AppLayout
+├── Sidebar
+├── Topbar
+└── RouterOutlet
+Sidebar menüsü tek merkezden üretilecek, kullanıcıya ait permissions üzerinden filtrelenecek. ADMIN kullanıcı zaten PermissionService tarafında tüm menüleri görebilecek.
+
+1. Klasör yapısı
+src/app/layout altında sadece ihtiyacımız olanları oluşturalım:
+
+src/app
+│
+├── layout
+│   ├── models
+│   │   └── navigation-item.model.ts
+│   │
+│   ├── services
+│   │   └── navigation.service.ts
+│   │
+│   ├── app-layout
+│   │   ├── app-layout.component.ts
+│   │   ├── app-layout.component.html
+│   │   └── app-layout.component.scss
+│   │
+│   ├── sidebar
+│   │   ├── sidebar.component.ts
+│   │   ├── sidebar.component.html
+│   │   └── sidebar.component.scss
+│   │
+│   └── topbar
+│       ├── topbar.component.ts
+│       ├── topbar.component.html
+│       └── topbar.component.scss
+│
+├── core
+│   └── permissions
+│       ├── constants
+│       │   └── permission-codes.ts
+│       ├── services
+│       │   └── permission.service.ts
+│       └── guards
+│           └── permission.guard.ts
+│
+└── features
+    └── home
+2. Angular tarafındaki PermissionCodes
+Backend'deki permission kodlarını frontend'de magic string olarak her yere yazmayalım.
+
+Dosya:
+
+src/app/core/permissions/constants/permission-codes.ts
+/**
+ * MSKBS backend tarafından kullanılan permission kodlarının
+ * Angular tarafındaki karşılıklarını merkezi olarak tanımlar.
+ *
+ * Bu değerler yalnızca kullanıcı arayüzü yetkilendirmesi için kullanılır.
+ * Gerçek güvenlik kontrolü backend tarafından gerçekleştirilir.
+ */
+export const PermissionCodes = {
+
+  Users: {
+    View: 'Users.View',
+    Query: 'Users.Query',
+    Create: 'Users.Create',
+    Update: 'Users.Update',
+    Delete: 'Users.Delete',
+    Activate: 'Users.Activate',
+    AssignRole: 'Users.AssignRole',
+    ManagePermissions: 'Users.ManagePermissions'
+  },
+
+  Roles: {
+    View: 'Roles.View',
+    Query: 'Roles.Query',
+    Create: 'Roles.Create',
+    Update: 'Roles.Update',
+    Delete: 'Roles.Delete'
+  },
+
+  Organizations: {
+    View: 'Organizations.View',
+    Query: 'Organizations.Query',
+    Create: 'Organizations.Create',
+    Update: 'Organizations.Update',
+    Delete: 'Organizations.Delete'
+  },
+
+  Investigations: {
+    View: 'Investigations.View',
+    Query: 'Investigations.Query',
+    Create: 'Investigations.Create',
+    Update: 'Investigations.Update',
+    Delete: 'Investigations.Delete'
+  },
+
+  Reports: {
+    View: 'Reports.View',
+    Query: 'Reports.Query'
+  }
+
+} as const;
+
+Backend'deki PermissionCodes.cs ile kod isimleri birebir aynı kalmalı.
+
+3. NavigationItem modeli
+Dosya:
+
+src/app/layout/models/navigation-item.model.ts
+/**
+ * MSKBS ana navigasyon menüsünde gösterilecek
+ * bir menü elemanını temsil eder.
+ */
+export interface NavigationItem {
+
+  /**
+   * Menüde kullanıcıya gösterilecek başlıktır.
+   */
+  label: string;
+
+  /**
+   * PrimeIcons formatındaki menü ikonudur.
+   *
+   * Örnek:
+   * pi pi-home
+   */
+  icon?: string;
+
+  /**
+   * Menü seçildiğinde yönlendirilecek Angular route değeridir.
+   *
+   * Henüz ekranı geliştirilmemiş menüler için boş bırakılabilir.
+   */
+  route?: string;
+
+  /**
+   * Menü elemanının görüntülenebilmesi için gereken
+   * permission kodlarını içerir.
+   */
+  requiredPermissions?: readonly string[];
+
+  /**
+   * Birden fazla permission tanımlandığında kontrol şeklidir.
+   *
+   * all:
+   * Bütün permission'lar gerekli.
+   *
+   * any:
+   * Permission'lardan en az birisi yeterlidir.
+   */
+  permissionMode?: 'all' | 'any';
+
+  /**
+   * Menü elemanının alt menülerini içerir.
+   */
+  children?: readonly NavigationItem[];
+}
+
+Böylece ileride:
+
+Kullanıcı Yönetimi
+   ├── Kullanıcılar
+   ├── Roller
+   └── Yetkiler
+gibi yapı da kolayca kurulabilir.
+
+Şimdilik düz tutacağız.
+
+4. NavigationService
+Menüyü component içine gömmeyeceğiz.
+
+Dosya:
+
+src/app/layout/services/navigation.service.ts
+import {
+  computed,
+  inject,
+  Injectable
+} from '@angular/core';
+
+import {
+  PermissionCodes
+} from '../../core/permissions/constants/permission-codes';
+
+import {
+  PermissionService
+} from '../../core/permissions/services/permission.service';
+
+import {
+  NavigationItem
+} from '../models/navigation-item.model';
+
+/**
+ * MSKBS ana uygulama menüsünü merkezi olarak tanımlar
+ * ve mevcut kullanıcının permission bilgilerine göre filtreler.
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class NavigationService {
+
+  private readonly permissionService =
+    inject(PermissionService);
+
+  /**
+   * MSKBS uygulamasındaki ana navigasyon tanımlarını içerir.
+   *
+   * Feature ekranları geliştirildikçe route değerleri
+   * bu merkezi liste üzerinden tanımlanacaktır.
+   */
+  private readonly navigationItems:
+    readonly NavigationItem[] = [
+
+    {
+      label: 'Ana Sayfa',
+      icon: 'pi pi-home',
+      route: '/app'
+    },
+
+    {
+      label: 'Kullanıcılar',
+      icon: 'pi pi-users',
+
+      requiredPermissions: [
+        PermissionCodes.Users.View
+      ]
+
+      /*
+       * Kullanıcı ekranını geliştirdiğimizde:
+       *
+       * route: '/app/users'
+       */
+    },
+
+    {
+      label: 'Roller',
+      icon: 'pi pi-shield',
+
+      requiredPermissions: [
+        PermissionCodes.Roles.View
+      ]
+    },
+
+    {
+      label: 'Organizasyon',
+      icon: 'pi pi-sitemap',
+
+      requiredPermissions: [
+        PermissionCodes.Organizations.View
+      ]
+    },
+
+    {
+      label: 'İncelemeler',
+      icon: 'pi pi-search',
+
+      requiredPermissions: [
+        PermissionCodes.Investigations.View
+      ]
+    },
+
+    {
+      label: 'Raporlar',
+      icon: 'pi pi-chart-bar',
+
+      requiredPermissions: [
+        PermissionCodes.Reports.View
+      ]
+    }
+  ];
+
+  /**
+   * Mevcut kullanıcının permission bilgilerine göre
+   * görüntüleyebileceği navigasyon elemanlarını döndürür.
+   *
+   * Kullanıcının authentication state'i değiştiğinde
+   * Signal otomatik olarak yeniden hesaplanır.
+   */
+  public readonly visibleItems =
+    computed<readonly NavigationItem[]>(
+      () =>
+        this.filterItems(
+          this.navigationItems
+        )
+    );
+
+  /**
+   * Navigasyon listesini permission kurallarına göre filtreler.
+   *
+   * @param items Filtrelenecek navigasyon elemanlarıdır.
+   * @returns Kullanıcının görüntüleyebileceği menü elemanları.
+   */
+  private filterItems(
+    items: readonly NavigationItem[]
+  ): NavigationItem[] {
+
+    const result: NavigationItem[] = [];
+
+    for (const item of items) {
+
+      if (!this.canView(item)) {
+        continue;
+      }
+
+      const children =
+        item.children
+          ? this.filterItems(item.children)
+          : undefined;
+
+      /*
+       * Sadece alt menülerden oluşan bir başlıkta
+       * görüntülenecek hiçbir child kalmadıysa parent da gizlenir.
+       */
+      if (
+        item.children &&
+        !item.route &&
+        (!children || children.length === 0)
+      ) {
+        continue;
+      }
+
+      result.push({
+        ...item,
+        children
+      });
+    }
+
+    return result;
+  }
+
+  /**
+   * Belirtilen navigasyon elemanının mevcut kullanıcı tarafından
+   * görüntülenip görüntülenemeyeceğini kontrol eder.
+   *
+   * @param item Kontrol edilecek navigasyon elemanıdır.
+   * @returns Kullanıcı menüyü görebiliyorsa true.
+   */
+  private canView(
+    item: NavigationItem
+  ): boolean {
+
+    const permissions =
+      item.requiredPermissions;
+
+    if (
+      !permissions ||
+      permissions.length === 0
+    ) {
+      return true;
+    }
+
+    if (
+      item.permissionMode === 'any'
+    ) {
+
+      return this.permissionService.hasAny(
+        ...permissions
+      );
+    }
+
+    return this.permissionService.hasAll(
+      ...permissions
+    );
+  }
+}
+
+Burada önemli mimari şu:
+
+Sidebar
+   ↓
+NavigationService
+   ↓
+PermissionService
+   ↓
+AuthStore
+   ↓
+currentUser.permissions
+Sidebar'ın içinde:
+
+if ADMIN...
+if Users.View...
+
+gibi karmaşa olmayacak.
+
+5. Sidebar Component
+Dosya:
+
+src/app/layout/sidebar/sidebar.component.ts
+import {
+  Component,
+  EventEmitter,
+  inject,
+  Output
+} from '@angular/core';
+
+import {
+  RouterLink,
+  RouterLinkActive
+} from '@angular/router';
+
+import {
+  NavigationService
+} from '../services/navigation.service';
+
+/**
+ * MSKBS ana uygulama navigasyonunu gösteren
+ * sidebar bileşenidir.
+ */
+@Component({
+  selector: 'app-sidebar',
+  standalone: true,
+
+  imports: [
+    RouterLink,
+    RouterLinkActive
+  ],
+
+  templateUrl: './sidebar.component.html',
+  styleUrl: './sidebar.component.scss'
+})
+export class SidebarComponent {
+
+  private readonly navigationService =
+    inject(NavigationService);
+
+  /**
+   * Mevcut kullanıcının görüntüleyebileceği
+   * sidebar menü elemanlarıdır.
+   */
+  public readonly menuItems =
+    this.navigationService.visibleItems;
+
+  /**
+   * Mobil görünümde menü seçildikten sonra
+   * sidebar'ın kapatılması için parent component'e bildirim gönderir.
+   */
+  @Output()
+  public readonly navigationSelected =
+    new EventEmitter<void>();
+
+  /**
+   * Bir navigasyon linki seçildiğinde parent layout'a
+   * bilgi gönderir.
+   */
+  public onNavigationSelected(): void {
+
+    this.navigationSelected.emit();
+  }
+}
+
+6. Sidebar HTML
+Dosya:
+
+src/app/layout/sidebar/sidebar.component.html
+<aside class="sidebar">
+
+  <div class="sidebar-brand">
+
+    <div class="brand-icon">
+      M
+    </div>
+
+    <div class="brand-text">
+
+      <strong>
+        MSKBS
+      </strong>
+
+      <span>
+        Yönetim Sistemi
+      </span>
+
+    </div>
+
+  </div>
+
+  <nav class="sidebar-navigation">
+
+    @for (
+      item of menuItems();
+      track item.label
+    ) {
+
+      @if (item.route) {
+
+        <a
+          class="menu-item"
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{
+            exact: item.route === '/app'
+          }"
+          (click)="onNavigationSelected()">
+
+          @if (item.icon) {
+
+            <i
+              class="menu-icon"
+              [class]="item.icon">
+            </i>
+
+          }
+
+          <span>
+            {{ item.label }}
+          </span>
+
+        </a>
+
+      }
+      @else {
+
+        <!--
+          Henüz feature ekranı geliştirilmeyen ancak kullanıcının
+          permission'ı bulunan menüleri şimdilik pasif gösteriyoruz.
+        -->
+        <div
+          class="menu-item menu-item-disabled">
+
+          @if (item.icon) {
+
+            <i
+              class="menu-icon"
+              [class]="item.icon">
+            </i>
+
+          }
+
+          <span>
+            {{ item.label }}
+          </span>
+
+        </div>
+
+      }
+
+    }
+
+  </nav>
+
+</aside>
+
+Bu sayede örneğin Users.View olmayan kişi:
+
+Kullanıcılar
+menüsünü hiç görmez.
+
+ADMIN hepsini görür.
+
+7. Sidebar SCSS
+src/app/layout/sidebar/sidebar.component.scss
+:host {
+  display: block;
+  height: 100%;
+}
+
+.sidebar {
+  width: 260px;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  background: #111827;
+  color: #ffffff;
+
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-brand {
+  min-height: 72px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 0.75rem;
+
+  padding: 0 1.25rem;
+
+  border-bottom:
+    1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand-icon {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+  color: #111827;
+
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+
+  strong {
+    font-size: 1rem;
+  }
+
+  span {
+    margin-top: 0.15rem;
+
+    font-size: 0.72rem;
+    color: #9ca3af;
+  }
+}
+
+.sidebar-navigation {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.25rem;
+
+  padding: 1rem 0.75rem;
+
+  overflow-y: auto;
+}
+
+.menu-item {
+  min-height: 44px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 0.85rem;
+
+  padding: 0 0.9rem;
+
+  border-radius: 8px;
+
+  color: #d1d5db;
+
+  text-decoration: none;
+
+  font-size: 0.92rem;
+
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.07);
+    color: #ffffff;
+  }
+
+  &.active {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+  }
+}
+
+.menu-icon {
+  width: 20px;
+
+  text-align: center;
+
+  font-size: 1rem;
+}
+
+.menu-item-disabled {
+  opacity: 0.45;
+
+  cursor: default;
+
+  &:hover {
+    background: transparent;
+    color: #d1d5db;
+  }
+}
+
+8. Topbar Component
+Şimdi sağ üstte kullanıcı bilgisi olacak.
+
+Dosya:
+
+src/app/layout/topbar/topbar.component.ts
+import {
+  Component,
+  computed,
+  EventEmitter,
+  inject,
+  Output
+} from '@angular/core';
+
+import {
+  Router
+} from '@angular/router';
+
+import {
+  MenuItem
+} from 'primeng/api';
+
+import {
+  AvatarModule
+} from 'primeng/avatar';
+
+import {
+  ButtonModule
+} from 'primeng/button';
+
+import {
+  MenuModule
+} from 'primeng/menu';
+
+import {
+  AuthService
+} from '../../core/auth/services/auth.service';
+
+/**
+ * MSKBS ana uygulamasının üst navigasyon çubuğunu temsil eder.
+ *
+ * Kullanıcı bilgisi, parola değiştirme ve logout işlemlerini içerir.
+ */
+@Component({
+  selector: 'app-topbar',
+  standalone: true,
+
+  imports: [
+    AvatarModule,
+    ButtonModule,
+    MenuModule
+  ],
+
+  templateUrl: './topbar.component.html',
+  styleUrl: './topbar.component.scss'
+})
+export class TopbarComponent {
+
+  private readonly authService =
+    inject(AuthService);
+
+  private readonly router =
+    inject(Router);
+
+  /**
+   * Sidebar açma/kapama isteğini parent layout'a bildirir.
+   */
+  @Output()
+  public readonly sidebarToggle =
+    new EventEmitter<void>();
+
+  /**
+   * Oturum açmış kullanıcının güncel bilgileridir.
+   */
+  public readonly user =
+    this.authService.currentUser;
+
+  /**
+   * Kullanıcının avatar içerisinde gösterilecek
+   * baş harflerini üretir.
+   */
+  public readonly userInitials =
+    computed(() => {
+
+      const user =
+        this.user();
+
+      if (!user) {
+        return '?';
+      }
+
+      const firstName =
+        user.firstName?.trim();
+
+      const lastName =
+        user.lastName?.trim();
+
+      const firstInitial =
+        firstName
+          ? firstName.charAt(0)
+          : '';
+
+      const lastInitial =
+        lastName
+          ? lastName.charAt(0)
+          : '';
+
+      return (
+        firstInitial + lastInitial
+      ).toUpperCase();
+    });
+
+  /**
+   * Kullanıcı işlemleri popup menüsünü temsil eder.
+   */
+  public readonly userMenuItems:
+    MenuItem[] = [
+
+    {
+      label: 'Parola Değiştir',
+      icon: 'pi pi-key',
+
+      command: () => {
+
+        void this.router.navigate(
+          ['/app/change-password']
+        );
+      }
+    },
+
+    {
+      separator: true
+    },
+
+    {
+      label: 'Çıkış Yap',
+      icon: 'pi pi-sign-out',
+
+      command: () => {
+
+        this.logout();
+      }
+    }
+  ];
+
+  /**
+   * Sidebar açma/kapama isteği oluşturur.
+   */
+  public toggleSidebar(): void {
+
+    this.sidebarToggle.emit();
+  }
+
+  /**
+   * Kullanıcının mevcut cihazdaki oturumunu kapatır
+   * ve login ekranına yönlendirir.
+   */
+  private logout(): void {
+
+    this.authService.logout()
+      .subscribe({
+
+        next: () => {
+
+          void this.router.navigate(
+            ['/login'],
+            {
+              queryParams: {
+                loggedOut: true
+              }
+            }
+          );
+        },
+
+        error: error => {
+
+          console.error(
+            '[MSKBS AUTH] Logout error:',
+            error
+          );
+
+          void this.router.navigate(
+            ['/login']
+          );
+        }
+      });
+  }
+}
+
+9. Topbar HTML
+src/app/layout/topbar/topbar.component.html
+<header class="topbar">
+
+  <div class="topbar-left">
+
+    <p-button
+      icon="pi pi-bars"
+      [text]="true"
+      severity="secondary"
+      ariaLabel="Menüyü aç veya kapat"
+      (onClick)="toggleSidebar()">
+    </p-button>
+
+    <div class="page-title">
+      MSKBS
+    </div>
+
+  </div>
+
+  <div class="topbar-right">
+
+    @if (user(); as currentUser) {
+
+      <div
+        class="user-area"
+        (click)="userMenu.toggle($event)">
+
+        <p-avatar
+          [label]="userInitials()"
+          shape="circle"
+          size="normal">
+        </p-avatar>
+
+        <div class="user-info">
+
+          <strong>
+            {{ currentUser.fullName }}
+          </strong>
+
+          <span>
+            {{ currentUser.email }}
+          </span>
+
+        </div>
+
+        <i class="pi pi-chevron-down"></i>
+
+      </div>
+
+    }
+
+    <p-menu
+      #userMenu
+      [model]="userMenuItems"
+      [popup]="true">
+    </p-menu>
+
+  </div>
+
+</header>
+
+10. Topbar SCSS
+src/app/layout/topbar/topbar.component.scss
+:host {
+  display: block;
+}
+
+.topbar {
+  height: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 1.5rem;
+
+  background: #ffffff;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.topbar-left,
+.topbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.topbar-left {
+  gap: 0.75rem;
+}
+
+.page-title {
+  font-size: 1rem;
+  font-weight: 700;
+
+  color: #111827;
+}
+
+.user-area {
+  display: flex;
+  align-items: center;
+
+  gap: 0.75rem;
+
+  padding: 0.4rem 0.65rem;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.15s ease;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+}
+
+.user-info {
+  min-width: 160px;
+
+  display: flex;
+  flex-direction: column;
+
+  strong {
+    font-size: 0.88rem;
+    color: #111827;
+  }
+
+  span {
+    margin-top: 0.15rem;
+
+    max-width: 220px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-size: 0.72rem;
+
+    color: #6b7280;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .user-info {
+    display: none;
+  }
+
+  .topbar {
+    padding: 0 0.75rem;
+  }
+}
+
+11. Ana AppLayout
+Şimdi sidebar + topbar + child route'ları bir araya getiriyoruz.
+
+Dosya:
+
+src/app/layout/app-layout/app-layout.component.ts
+import {
+  Component,
+  signal
+} from '@angular/core';
+
+import {
+  RouterOutlet
+} from '@angular/router';
+
+import {
+  SidebarComponent
+} from '../sidebar/sidebar.component';
+
+import {
+  TopbarComponent
+} from '../topbar/topbar.component';
+
+/**
+ * Authentication sonrasında kullanılan MSKBS ana uygulama
+ * yerleşimini temsil eder.
+ *
+ * Sidebar, topbar ve feature route içeriklerini bir araya getirir.
+ */
+@Component({
+  selector: 'app-layout',
+  standalone: true,
+
+  imports: [
+    RouterOutlet,
+    SidebarComponent,
+    TopbarComponent
+  ],
+
+  templateUrl: './app-layout.component.html',
+  styleUrl: './app-layout.component.scss'
+})
+export class AppLayoutComponent {
+
+  /**
+   * Mobil görünümde sidebar'ın açık olup olmadığını belirtir.
+   */
+  public readonly sidebarOpen =
+    signal(false);
+
+  /**
+   * Sidebar görünürlüğünü değiştirir.
+   */
+  public toggleSidebar(): void {
+
+    this.sidebarOpen.update(
+      current => !current
+    );
+  }
+
+  /**
+   * Sidebar'ı kapatır.
+   */
+  public closeSidebar(): void {
+
+    this.sidebarOpen.set(false);
+  }
+}
+
+12. AppLayout HTML
+src/app/layout/app-layout/app-layout.component.html
+<div
+  class="app-shell"
+  [class.sidebar-open]="sidebarOpen()">
+
+  <div class="sidebar-container">
+
+    <app-sidebar
+      (navigationSelected)="closeSidebar()">
+    </app-sidebar>
+
+  </div>
+
+  @if (sidebarOpen()) {
+
+    <div
+      class="sidebar-overlay"
+      (click)="closeSidebar()">
+    </div>
+
+  }
+
+  <div class="app-main">
+
+    <app-topbar
+      (sidebarToggle)="toggleSidebar()">
+    </app-topbar>
+
+    <main class="content">
+
+      <router-outlet />
+
+    </main>
+
+  </div>
+
+</div>
+
+13. AppLayout SCSS
+src/app/layout/app-layout/app-layout.component.scss
+:host {
+  display: block;
+
+  height: 100vh;
+
+  overflow: hidden;
+}
+
+.app-shell {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+
+  background: #f3f4f6;
+}
+
+.sidebar-container {
+  flex: 0 0 260px;
+
+  height: 100%;
+}
+
+.app-main {
+  min-width: 0;
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  height: 100%;
+}
+
+.content {
+  flex: 1;
+
+  overflow: auto;
+
+  padding: 1.5rem;
+}
+
+.sidebar-overlay {
+  display: none;
+}
+
+@media (max-width: 992px) {
+
+  .sidebar-container {
+    position: fixed;
+
+    top: 0;
+    bottom: 0;
+    left: 0;
+
+    z-index: 1001;
+
+    transform: translateX(-100%);
+
+    transition:
+      transform 0.2s ease;
+  }
+
+  .app-shell.sidebar-open {
+
+    .sidebar-container {
+      transform: translateX(0);
+    }
+
+    .sidebar-overlay {
+      position: fixed;
+
+      inset: 0;
+
+      z-index: 1000;
+
+      display: block;
+
+      background: rgba(0, 0, 0, 0.35);
+    }
+  }
+}
+
+Desktop:
+
+Sidebar | Topbar
+        | Content
+Mobil:
+
+☰
+↓
+Sidebar overlay
+olacak.
+
+14. Routing yapısını değiştirelim
+Şimdi önemli nokta bu.
+
+Eskiden:
+
+/app → HomeComponent
+idi.
+
+Artık:
+
+/app
+   ↓
+AppLayoutComponent
+   ↓
+children
+olacak.
+
+src/app/app.routes.ts
+
+dosyasını şu hale getir:
+
+import {
+  Routes
+} from '@angular/router';
+
+import {
+  authGuard
+} from './core/auth/guards/auth.guard';
+
+import {
+  guestGuard
+} from './core/auth/guards/guest.guard';
+
+/**
+ * MSKBS Angular uygulamasının ana route tanımlarını içerir.
+ */
+export const routes: Routes = [
+
+  /*
+   * Anonymous authentication ekranları.
+   */
+
+  {
+    path: 'login',
+
+    canActivate: [
+      guestGuard
+    ],
+
+    loadComponent: () =>
+      import(
+        './features/authentication/login/login.component'
+      )
+      .then(
+        component =>
+          component.LoginComponent
+      )
+  },
+
+  {
+    path: 'forgot-password',
+
+    canActivate: [
+      guestGuard
+    ],
+
+    loadComponent: () =>
+      import(
+        './features/authentication/forgot-password/forgot-password.component'
+      )
+      .then(
+        component =>
+          component.ForgotPasswordComponent
+      )
+  },
+
+  {
+    path: 'reset-password',
+
+    loadComponent: () =>
+      import(
+        './features/authentication/reset-password/reset-password.component'
+      )
+      .then(
+        component =>
+          component.ResetPasswordComponent
+      )
+  },
+
+  /*
+   * Authentication gerektiren ana uygulama.
+   */
+
+  {
+    path: 'app',
+
+    canActivate: [
+      authGuard
+    ],
+
+    loadComponent: () =>
+      import(
+        './layout/app-layout/app-layout.component'
+      )
+      .then(
+        component =>
+          component.AppLayoutComponent
+      ),
+
+    children: [
+
+      {
+        path: '',
+
+        pathMatch: 'full',
+
+        loadComponent: () =>
+          import(
+            './features/home/home.component'
+          )
+          .then(
+            component =>
+              component.HomeComponent
+          )
+      },
+
+      {
+        path: 'change-password',
+
+        loadComponent: () =>
+          import(
+            './features/authentication/change-password/change-password.component'
+          )
+          .then(
+            component =>
+              component.ChangePasswordComponent
+          )
+      }
+
+    ]
+  },
+
+  {
+    path: '',
+
+    pathMatch: 'full',
+
+    redirectTo: 'app'
+  },
+
+  {
+    path: '**',
+
+    redirectTo: 'app'
+  }
+];
+
+Artık:
+
+/app/change-password
+kullanacağız.
+
+Eski:
+
+/change-password
+kalkıyor.
+
+15. HomeComponent'i dashboard başlangıcına çevirelim
+Artık test butonları olan boş ekran yerine ana ekran gibi görünmeye başlasın.
+
+src/app/features/home/home.component.ts
+
+import {
+  Component,
+  inject
+} from '@angular/core';
+
+import {
+  CardModule
+} from 'primeng/card';
+
+import {
+  AuthService
+} from '../../core/auth/services/auth.service';
+
+/**
+ * MSKBS ana uygulama giriş ekranını temsil eder.
+ *
+ * İlerleyen aşamalarda dashboard kartları ve özet
+ * bilgiler bu ekran üzerine eklenecektir.
+ */
+@Component({
+  selector: 'app-home',
+  standalone: true,
+
+  imports: [
+    CardModule
+  ],
+
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.scss'
+})
+export class HomeComponent {
+
+  private readonly authService =
+    inject(AuthService);
+
+  /**
+   * Oturum açmış güncel kullanıcı bilgisidir.
+   */
+  public readonly user =
+    this.authService.currentUser;
+}
+
+16. Home HTML
+<div class="dashboard">
+
+  <div class="welcome">
+
+    <div>
+
+      <h1>
+        Hoş geldiniz
+      </h1>
+
+      @if (user(); as currentUser) {
+
+        <p>
+          {{ currentUser.fullName }}
+        </p>
+
+      }
+
+    </div>
+
+  </div>
+
+  <div class="dashboard-grid">
+
+    <p-card>
+
+      <div class="dashboard-card">
+
+        <i class="pi pi-user"></i>
+
+        <div>
+
+          <span>
+            Kullanıcı
+          </span>
+
+          @if (user(); as currentUser) {
+
+            <strong>
+              {{ currentUser.userName }}
+            </strong>
+
+          }
+
+        </div>
+
+      </div>
+
+    </p-card>
+
+    <p-card>
+
+      <div class="dashboard-card">
+
+        <i class="pi pi-shield"></i>
+
+        <div>
+
+          <span>
+            Roller
+          </span>
+
+          @if (user(); as currentUser) {
+
+            <strong>
+              {{ currentUser.roles.join(', ') }}
+            </strong>
+
+          }
+
+        </div>
+
+      </div>
+
+    </p-card>
+
+    <p-card>
+
+      <div class="dashboard-card">
+
+        <i class="pi pi-key"></i>
+
+        <div>
+
+          <span>
+            Yetki Sayısı
+          </span>
+
+          @if (user(); as currentUser) {
+
+            <strong>
+              {{ currentUser.permissions.length }}
+            </strong>
+
+          }
+
+        </div>
+
+      </div>
+
+    </p-card>
+
+  </div>
+
+</div>
+
+17. Home SCSS
+.dashboard {
+  display: flex;
+  flex-direction: column;
+
+  gap: 1.5rem;
+}
+
+.welcome {
+
+  h1 {
+    margin: 0;
+
+    font-size: 1.65rem;
+    color: #111827;
+  }
+
+  p {
+    margin:
+      0.4rem 0 0;
+
+    color: #6b7280;
+  }
+}
+
+.dashboard-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 1rem;
+}
+
+.dashboard-card {
+  min-height: 80px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 1rem;
+
+  > i {
+    font-size: 1.6rem;
+
+    color: #4b5563;
+  }
+
+  > div {
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.3rem;
+
+    span {
+      font-size: 0.8rem;
+
+      color: #6b7280;
+    }
+
+    strong {
+      color: #111827;
+    }
+  }
+}
+
+@media (max-width: 900px) {
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+18. Permission bazlı route koruması nasıl olacak?
+Sidebar'da gizlemek güvenlik değildir.
+
+Örneğin ileride kullanıcı ekranını yapınca route:
+
+{
+  path: 'users',
+
+  canActivate: [
+    permissionGuard
+  ],
+
+  data: {
+    permissions: [
+      PermissionCodes.Users.View
+    ]
+  },
+
+  loadComponent: () =>
+    import(
+      './features/users/user-list/user-list.component'
+    )
+    .then(
+      component =>
+        component.UserListComponent
+    )
+}
+
+olacak.
+
+Sidebar:
+
+Users.View yok
+→ menü görünmez
+Birisi elle:
+
+/app/users
+yazarsa:
+
+PermissionGuard
+→ deny
+Backend çağrısına kadar ulaşırsa:
+
+[HasPermission(PermissionCodes.Users.View)]
+→ IPermissionChecker
+→ DB
+→ deny
+Yani üç katman:
+
+MENU
+UI kolaylığı
+
+↓
+
+ANGULAR GUARD
+Navigation kontrolü
+
+↓
+
+BACKEND
+Gerçek güvenlik
+Bu istediğimiz yapı.
+
+19. Kullanıcı bilgisi nereden geliyor?
+Topbar ayrıca DB'ye istek atmıyor.
+
+Akış:
+
+Login
+↓
+AuthSessionResponse
+↓
+AuthStoreService
+↓
+AuthUser
+↓
+Topbar
+F5:
+
+Refresh Cookie
+↓
+/auth/refresh
+↓
+yeni AuthSessionResponse
+↓
+AuthStore
+↓
+Topbar tekrar dolar
+Dolayısıyla:
+
+Burak Tekin
+mail
+avatar
+bilgileri otomatik geliyor.
+
+20. Sidebar permission değişince ne olur?
+Örneğin kullanıcı başlangıçta:
+
+Users.View
+Reports.View
+sahibi.
+
+Sidebar:
+
+Ana Sayfa
+Kullanıcılar
+Raporlar
+gösterir.
+
+Admin sonradan kullanıcıya:
+
+Organizations.View
+verirse bir sonraki refresh/login ile güncel effective permission listesi gelir.
+
+AuthStore değişir.
+
+NavigationService.visibleItems bir computed() olduğu için otomatik yeniden hesaplanır.
+
+Sidebar:
+
+Ana Sayfa
+Kullanıcılar
+Organizasyon
+Raporlar
+haline gelir.
+
+Sayfayı yeniden yüklemek zorunda değiliz.
+
+Bu fazdan sonra yapı
+Şu anda uygulama tarafında temel iskeletimiz şu noktaya gelmiş oluyor:
+
+LOGIN
+   ↓
+JWT + Refresh
+   ↓
+APP LAYOUT
+   │
+   ├── SIDEBAR
+   │      ↓
+   │   Permission bazlı
+   │
+   ├── TOPBAR
+   │      ↓
+   │   User
+   │   Change Password
+   │   Logout
+   │
+   └── CONTENT
+          ↓
+       RouterOutlet
+          ↓
+       Features
+Bu noktadan sonra layout'u tekrar tekrar değiştirmemize gerek kalmaz. Bundan sonraki mantıklı feature Kullanıcı Yönetimi olur: kullanıcı listeleme, arama/query, create/update, aktif-pasif, soft delete, rol atama ve kullanıcıya özel permission override ekranları. Bu da elimizdeki Users.*, Role, UserRole ve UserPermission altyapısını ilk kez gerçek iş ekranında kullanmamızı sağlar.
+
+
+
+
+
+
+devam edelim.
+Devam ediyoruz. Şimdi layout’un üzerine ilk gerçek feature’ı oturtalım: Kullanıcı Yönetimi → Kullanıcı Listesi / Sorgulama. Önce listeyi tam çalışır hale getireceğiz; ardından aynı feature içine kullanıcı oluşturma, düzenleme, aktif/pasif, silme, rol atama ve kişisel permission override gelecek.
+
+Bu ekranda Users.Query permission’ını kullanacağım. Users.View daha sonra tek kullanıcı detayını açarken kullanılacak.
+
+Kullanıcı Yönetimi klasör yapısı
+Backend:
+
+MSKBS.Application
+├── Common
+│   └── Models
+│       └── PagedResult.cs
+│
+└── Users
+    └── Queries
+        └── GetUsers
+            ├── GetUsersQuery.cs
+            ├── GetUsersQueryValidator.cs
+            ├── GetUsersQueryHandler.cs
+            └── UserListItemResponse.cs
+
+MSKBS.Api
+└── Controllers
+    └── UsersController.cs
+Frontend:
+
+src/app/features/users
+├── models
+│   ├── user-list-item.model.ts
+│   └── user-query.model.ts
+│
+├── services
+│   └── user.service.ts
+│
+└── user-list
+    ├── user-list.component.ts
+    ├── user-list.component.html
+    └── user-list.component.scss
+
+src/app/core/models
+└── paged-result.model.ts
+1. Backend ortak pagination modeli
+Dosya:
+
+MSKBS.Application/Common/Models/PagedResult.cs
+namespace MSKBS.Application.Common.Models;
+
+/// <summary>
+/// Sayfalı sorguların standart response modelini temsil eder.
+/// </summary>
+/// <typeparam name="T">
+/// Sayfalama içerisinde döndürülecek kayıt tipidir.
+/// </typeparam>
+public sealed class PagedResult<T>
+{
+    /// <summary>
+    /// İstenen sayfaya ait kayıtları içerir.
+    /// </summary>
+    public IReadOnlyCollection<T> Items { get; init; } = [];
+
+    /// <summary>
+    /// Uygulanan filtrelere uyan toplam kayıt sayısını belirtir.
+    /// </summary>
+    public int TotalCount { get; init; }
+
+    /// <summary>
+    /// Mevcut sayfa numarasını belirtir.
+    /// </summary>
+    public int PageNumber { get; init; }
+
+    /// <summary>
+    /// Bir sayfada döndürülecek maksimum kayıt sayısını belirtir.
+    /// </summary>
+    public int PageSize { get; init; }
+
+    /// <summary>
+    /// Toplam sayfa sayısını hesaplar.
+    /// </summary>
+    public int TotalPages =>
+        PageSize <= 0
+            ? 0
+            : (int)Math.Ceiling(
+                TotalCount / (double)PageSize);
+}
+
+Bunu bundan sonra diğer liste ekranlarında da kullanacağız.
+
+2. UserListItemResponse
+Dosya:
+
+MSKBS.Application/Users/Queries/GetUsers/UserListItemResponse.cs
+namespace MSKBS.Application.Users.Queries.GetUsers;
+
+/// <summary>
+/// Kullanıcı listeleme ekranında gösterilecek özet kullanıcı
+/// bilgilerini temsil eder.
+/// </summary>
+public sealed class UserListItemResponse
+{
+    /// <summary>
+    /// Kullanıcının benzersiz kimliğidir.
+    /// </summary>
+    public Guid Id { get; init; }
+
+    /// <summary>
+    /// Kullanıcının kullanıcı adıdır.
+    /// </summary>
+    public string UserName { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Kullanıcının adıdır.
+    /// </summary>
+    public string FirstName { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Kullanıcının soyadıdır.
+    /// </summary>
+    public string LastName { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Kullanıcının ad ve soyadından oluşan tam adıdır.
+    /// </summary>
+    public string FullName { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Kullanıcının e-posta adresidir.
+    /// </summary>
+    public string Email { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Kullanıcının telefon numarasıdır.
+    /// </summary>
+    public string? PhoneNumber { get; init; }
+
+    /// <summary>
+    /// Kullanıcının bağlı olduğu organizasyon biriminin
+    /// benzersiz kimliğidir.
+    /// </summary>
+    public Guid? OrganizationUnitId { get; init; }
+
+    /// <summary>
+    /// Kullanıcının bağlı olduğu organizasyon biriminin kodudur.
+    /// </summary>
+    public string? OrganizationUnitCode { get; init; }
+
+    /// <summary>
+    /// Kullanıcının bağlı olduğu organizasyon biriminin adıdır.
+    /// </summary>
+    public string? OrganizationUnitName { get; init; }
+
+    /// <summary>
+    /// Kullanıcının sahip olduğu aktif rol kodlarını içerir.
+    /// </summary>
+    public IReadOnlyCollection<string> Roles { get; init; } = [];
+
+    /// <summary>
+    /// Kullanıcının aktif durumda olup olmadığını belirtir.
+    /// </summary>
+    public bool IsActive { get; init; }
+
+    /// <summary>
+    /// Kullanıcının hesabının kilitli olup olmadığını belirtir.
+    /// </summary>
+    public bool IsLocked { get; init; }
+
+    /// <summary>
+    /// Kullanıcı hesabının oluşturulma tarihidir.
+    /// </summary>
+    public DateTime CreatedDate { get; init; }
+
+    /// <summary>
+    /// PostgreSQL optimistic concurrency kontrolünde kullanılan
+    /// xmin tabanlı versiyon bilgisidir.
+    /// </summary>
+    public uint Version { get; init; }
+}
+
+Version'ı şimdiden response’a koyuyoruz. Düzenleme ekranına geçtiğimizde update command ile geri göndereceğiz.
+
+3. GetUsersQuery
+Dosya:
+
+MSKBS.Application/Users/Queries/GetUsers/GetUsersQuery.cs
+using MediatR;
+using MSKBS.Application.Common.Models;
+
+namespace MSKBS.Application.Users.Queries.GetUsers;
+
+/// <summary>
+/// Kullanıcıların filtrelenmiş ve sayfalanmış şekilde
+/// sorgulanması için kullanılan CQRS request modelidir.
+/// </summary>
+public sealed class GetUsersQuery
+    : IRequest<PagedResult<UserListItemResponse>>
+{
+    /// <summary>
+    /// Kullanıcı adı, ad, soyad veya e-posta üzerinden
+    /// uygulanacak arama metnidir.
+    /// </summary>
+    public string? Search { get; init; }
+
+    /// <summary>
+    /// Pasif kullanıcıların sorgu sonucuna dahil edilip
+    /// edilmeyeceğini belirtir.
+    ///
+    /// Soft delete edilmiş kullanıcılar hiçbir durumda
+    /// bu sorguya dahil edilmez.
+    /// </summary>
+    public bool IncludeInactive { get; init; }
+
+    /// <summary>
+    /// İstenen sayfa numarasıdır.
+    /// </summary>
+    public int PageNumber { get; init; } = 1;
+
+    /// <summary>
+    /// Bir sayfada döndürülecek kayıt sayısıdır.
+    /// </summary>
+    public int PageSize { get; init; } = 20;
+}
+
+4. Validator
+Dosya:
+
+MSKBS.Application/Users/Queries/GetUsers/GetUsersQueryValidator.cs
+using FluentValidation;
+
+namespace MSKBS.Application.Users.Queries.GetUsers;
+
+/// <summary>
+/// Kullanıcı listeleme sorgusunun doğrulama kurallarını tanımlar.
+/// </summary>
+public sealed class GetUsersQueryValidator
+    : AbstractValidator<GetUsersQuery>
+{
+    /// <summary>
+    /// Kullanıcı listeleme sorgusu için validation
+    /// kurallarını oluşturur.
+    /// </summary>
+    public GetUsersQueryValidator()
+    {
+        RuleFor(x => x.PageNumber)
+            .GreaterThanOrEqualTo(1);
+
+        RuleFor(x => x.PageSize)
+            .InclusiveBetween(10, 100);
+
+        RuleFor(x => x.Search)
+            .MaximumLength(200)
+            .When(x =>
+                !string.IsNullOrWhiteSpace(x.Search));
+    }
+}
+
+5. GetUsersQueryHandler
+Dosya:
+
+MSKBS.Application/Users/Queries/GetUsers/GetUsersQueryHandler.cs
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using MSKBS.Application.Common.Interfaces.Persistence;
+using MSKBS.Application.Common.Models;
+
+namespace MSKBS.Application.Users.Queries.GetUsers;
+
+/// <summary>
+/// Kullanıcı listeleme ve sorgulama işlemini gerçekleştirir.
+/// </summary>
+internal sealed class GetUsersQueryHandler
+    : IRequestHandler<
+        GetUsersQuery,
+        PagedResult<UserListItemResponse>>
+{
+    private readonly IMSKBSDbContext _dbContext;
+
+    /// <summary>
+    /// Kullanıcı sorgu handler'ını oluşturur.
+    /// </summary>
+    /// <param name="dbContext">
+    /// MSKBS uygulama veritabanı context abstraction'ıdır.
+    /// </param>
+    public GetUsersQueryHandler(
+        IMSKBSDbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
+    /// <summary>
+    /// Kullanıcıları filtreleyerek ve sayfalayarak döndürür.
+    /// </summary>
+    /// <param name="request">
+    /// Kullanıcı sorgu kriterlerini içerir.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// İşlemin iptal token'ıdır.
+    /// </param>
+    /// <returns>
+    /// Sayfalanmış kullanıcı listesini döndürür.
+    /// </returns>
+    public async Task<PagedResult<UserListItemResponse>> Handle(
+        GetUsersQuery request,
+        CancellationToken cancellationToken)
+    {
+        IQueryable<Domain.Entities.Identity.User> query =
+            _dbContext.Users
+                .AsNoTracking();
+
+        /*
+         * Normal sorgularda ActiveFilter ve SoftDeleteFilter
+         * otomatik çalışır.
+         *
+         * Admin pasif kullanıcıları da görmek istediğinde yalnızca
+         * ActiveFilter kapatılır. SoftDeleteFilter çalışmaya devam eder.
+         *
+         * Buradaki string EF Core modelinde tanımladığımız named
+         * filter adı ile birebir aynıdır.
+         */
+        if (request.IncludeInactive)
+        {
+            query = query.IgnoreQueryFilters(
+                ["ActiveFilter"]);
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
+            var search =
+                request.Search
+                    .Trim()
+                    .ToLowerInvariant();
+
+            query = query.Where(user =>
+                user.UserName.ToLower().Contains(search) ||
+                user.Email.ToLower().Contains(search) ||
+                user.FirstName.ToLower().Contains(search) ||
+                user.LastName.ToLower().Contains(search));
+        }
+
+        var totalCount =
+            await query.CountAsync(
+                cancellationToken);
+
+        var skip =
+            (request.PageNumber - 1) *
+            request.PageSize;
+
+        var items =
+            await query
+                .OrderBy(user => user.FirstName)
+                .ThenBy(user => user.LastName)
+                .ThenBy(user => user.UserName)
+                .Skip(skip)
+                .Take(request.PageSize)
+                .Select(user =>
+                    new UserListItemResponse
+                    {
+                        Id = user.Id,
+
+                        UserName =
+                            user.UserName,
+
+                        FirstName =
+                            user.FirstName,
+
+                        LastName =
+                            user.LastName,
+
+                        FullName =
+                            user.FirstName + " " +
+                            user.LastName,
+
+                        Email =
+                            user.Email,
+
+                        PhoneNumber =
+                            user.PhoneNumber,
+
+                        OrganizationUnitId =
+                            user.OrganizationUnitId,
+
+                        OrganizationUnitCode =
+                            user.OrganizationUnit != null
+                                ? user.OrganizationUnit.Code
+                                : null,
+
+                        OrganizationUnitName =
+                            user.OrganizationUnit != null
+                                ? user.OrganizationUnit.Name
+                                : null,
+
+                        Roles =
+                            user.UserRoles
+                                .Where(userRole =>
+                                    !userRole.IsDeleted &&
+                                    userRole.IsActive &&
+                                    !userRole.Role.IsDeleted &&
+                                    userRole.Role.IsActive)
+                                .OrderBy(userRole =>
+                                    userRole.Role.Name)
+                                .Select(userRole =>
+                                    userRole.Role.Code)
+                                .ToArray(),
+
+                        IsActive =
+                            user.IsActive,
+
+                        IsLocked =
+                            user.IsLocked,
+
+                        CreatedDate =
+                            user.CreatedDate,
+
+                        Version =
+                            user.Version
+                    })
+                .ToListAsync(
+                    cancellationToken);
+
+        return new PagedResult<UserListItemResponse>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize
+        };
+    }
+}
+
+Burada özellikle:
+
+
+
+
+IgnoreQueryFilters(
+    ["ActiveFilter"])
+
+kullanıyoruz.
+Yani:
+ActiveFilter      → kapatılabilir
+SoftDeleteFilter  → çalışmaya devam eder
+
+Silinmiş kullanıcı kullanıcı yönetimi ekranında bile gelmeyecek.
+6. UsersController
+Dosya:
+MSKBS.Api/Controllers/UsersController.cs
+
+Mevcut controller base yapın varsa ona uyarlayabilirsin. Standart hali:
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using MSKBS.Api.Authorization;
+using MSKBS.Application.Common.Models;
+using MSKBS.Application.Users.Queries.GetUsers;
+using MSKBS.Domain.Constants;
+
+namespace MSKBS.Api.Controllers;
+
+/// <summary>
+/// MSKBS kullanıcı yönetimi işlemlerini sağlayan
+/// API controller'ıdır.
+/// </summary>
+[ApiController]
+[Route("api/users")]
+public sealed class UsersController : ControllerBase
+{
+    private readonly ISender _sender;
+
+    /// <summary>
+    /// Kullanıcı yönetimi controller'ını oluşturur.
+    /// </summary>
+    /// <param name="sender">
+    /// MediatR request sender servisidir.
+    /// </param>
+    public UsersController(
+        ISender sender)
+    {
+        _sender = sender;
+    }
+
+    /// <summary>
+    /// Kullanıcıları filtrelenmiş ve sayfalanmış
+    /// şekilde sorgular.
+    /// </summary>
+    /// <param name="query">
+    /// Arama ve sayfalama kriterlerini içerir.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Request iptal token'ıdır.
+    /// </param>
+    /// <returns>
+    /// Sayfalanmış kullanıcı listesini döndürür.
+    /// </returns>
+    [HttpGet]
+    [HasPermission(
+        PermissionCodes.Users.Query)]
+    public async Task<ActionResult<
+        PagedResult<UserListItemResponse>>> GetUsers(
+        [FromQuery] GetUsersQuery query,
+        CancellationToken cancellationToken)
+    {
+        var result =
+            await _sender.Send(
+                query,
+                cancellationToken);
+
+        return Ok(result);
+    }
+}
+
+Eğer HasPermissionAttribute namespace’i sende farklıysa sadece import’u kendi path’ine göre düzelt.
+7. Swagger'da endpoint
+API ayağa kalkınca:
+GET /api/users
+
+oluşacak.
+Örneğin:
+/api/users?pageNumber=1&pageSize=20
+
+Arama:
+/api/users?search=burak&pageNumber=1&pageSize=20
+
+Pasifler dahil:
+/api/users?includeInactive=true&pageNumber=1&pageSize=20
+
+Response:
+{
+  "items": [
+    {
+      "id": "...",
+      "userName": "admin",
+      "firstName": "Burak",
+      "lastName": "Tekin",
+      "fullName": "Burak Tekin",
+      "email": "burak@example.com",
+      "phoneNumber": null,
+      "organizationUnitId": null,
+      "organizationUnitCode": null,
+      "organizationUnitName": null,
+      "roles": [
+        "ADMIN"
+      ],
+      "isActive": true,
+      "isLocked": false,
+      "createdDate": "2026-10-06T...",
+      "version": 123456
+    }
+  ],
+  "totalCount": 1,
+  "pageNumber": 1,
+  "pageSize": 20,
+  "totalPages": 1
+}
+
+Şimdi Angular’a geçiyoruz.
+8. Angular generic PagedResult
+Dosya:
+src/app/core/models/paged-result.model.ts
+
+/**
+ * Backend tarafından döndürülen standart sayfalı
+ * response modelini temsil eder.
+ */
+export interface PagedResult<T> {
+
+  /**
+   * Mevcut sayfaya ait kayıtları içerir.
+   */
+  items: T[];
+
+  /**
+   * Filtreye uyan toplam kayıt sayısıdır.
+   */
+  totalCount: number;
+
+  /**
+   * Mevcut sayfa numarasıdır.
+   */
+  pageNumber: number;
+
+  /**
+   * Sayfa başına kayıt sayısıdır.
+   */
+  pageSize: number;
+
+  /**
+   * Toplam sayfa sayısıdır.
+   */
+  totalPages: number;
+}
+
+9. UserListItem modeli
+Dosya:
+src/app/features/users/models/user-list-item.model.ts
+
+/**
+ * Kullanıcı listeleme ekranında gösterilecek
+ * özet kullanıcı bilgilerini temsil eder.
+ */
+export interface UserListItem {
+
+  /**
+   * Kullanıcının benzersiz kimliğidir.
+   */
+  id: string;
+
+  /**
+   * Kullanıcının kullanıcı adıdır.
+   */
+  userName: string;
+
+  /**
+   * Kullanıcının adıdır.
+   */
+  firstName: string;
+
+  /**
+   * Kullanıcının soyadıdır.
+   */
+  lastName: string;
+
+  /**
+   * Kullanıcının görüntülenecek tam adıdır.
+   */
+  fullName: string;
+
+  /**
+   * Kullanıcının e-posta adresidir.
+   */
+  email: string;
+
+  /**
+   * Kullanıcının telefon numarasıdır.
+   */
+  phoneNumber: string | null;
+
+  /**
+   * Organizasyon birimi kimliğidir.
+   */
+  organizationUnitId: string | null;
+
+  /**
+   * Organizasyon birimi kodudur.
+   */
+  organizationUnitCode: string | null;
+
+  /**
+   * Organizasyon birimi adıdır.
+   */
+  organizationUnitName: string | null;
+
+  /**
+   * Kullanıcının aktif rol kodlarını içerir.
+   */
+  roles: string[];
+
+  /**
+   * Kullanıcının aktif durumda olup olmadığını belirtir.
+   */
+  isActive: boolean;
+
+  /**
+   * Kullanıcı hesabının kilitli olup olmadığını belirtir.
+   */
+  isLocked: boolean;
+
+  /**
+   * Kullanıcı hesabının oluşturulma tarihidir.
+   */
+  createdDate: string;
+
+  /**
+   * Optimistic concurrency kontrolünde kullanılacak
+   * PostgreSQL xmin versiyon bilgisidir.
+   */
+  version: number;
+}
+
+10. UserQuery modeli
+Dosya:
+src/app/features/users/models/user-query.model.ts
+
+/**
+ * Kullanıcı listeleme endpoint'ine gönderilecek
+ * sorgu kriterlerini temsil eder.
+ */
+export interface UserQuery {
+
+  /**
+   * Kullanıcı adı, ad, soyad veya e-posta arama metnidir.
+   */
+  search?: string;
+
+  /**
+   * Pasif kullanıcıların da listeye dahil edilip
+   * edilmeyeceğini belirtir.
+   */
+  includeInactive: boolean;
+
+  /**
+   * İstenen sayfa numarasıdır.
+   */
+  pageNumber: number;
+
+  /**
+   * Sayfa başına kayıt sayısıdır.
+   */
+  pageSize: number;
+}
+
+11. UserService
+Dosya:
+src/app/features/users/services/user.service.ts
+
+import {
+  inject,
+  Injectable
+} from '@angular/core';
+
+import {
+  HttpClient,
+  HttpParams
+} from '@angular/common/http';
+
+import {
+  Observable
+} from 'rxjs';
+
+import {
+  API_BASE_URL
+} from '../../../core/config/api.tokens';
+
+import {
+  PagedResult
+} from '../../../core/models/paged-result.model';
+
+import {
+  UserListItem
+} from '../models/user-list-item.model';
+
+import {
+  UserQuery
+} from '../models/user-query.model';
+
+/**
+ * Kullanıcı yönetimi API işlemlerini gerçekleştiren
+ * Angular servisidir.
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class UserService {
+
+  private readonly http =
+    inject(HttpClient);
+
+  private readonly apiBaseUrl =
+    inject(API_BASE_URL);
+
+  /**
+   * Kullanıcıları filtrelenmiş ve sayfalanmış
+   * şekilde backend'den getirir.
+   *
+   * @param query Kullanıcı sorgu kriterleridir.
+   * @returns Sayfalanmış kullanıcı listesi.
+   */
+  public getUsers(
+    query: UserQuery
+  ): Observable<PagedResult<UserListItem>> {
+
+    let params =
+      new HttpParams()
+        .set(
+          'pageNumber',
+          query.pageNumber
+        )
+        .set(
+          'pageSize',
+          query.pageSize
+        )
+        .set(
+          'includeInactive',
+          query.includeInactive
+        );
+
+    const search =
+      query.search?.trim();
+
+    if (search) {
+
+      params = params.set(
+        'search',
+        search
+      );
+    }
+
+    return this.http.get<
+      PagedResult<UserListItem>
+    >(
+      `${this.apiBaseUrl}/users`,
+      {
+        params
+      }
+    );
+  }
+}
+
+Authorization header'ını burada elle eklemiyoruz.
+Çünkü:
+UserService
+↓
+HttpClient
+↓
+authInterceptor
+↓
+Authorization: Bearer ...
+
+zaten çalışıyor.
+12. UserListComponent
+Dosya:
+src/app/features/users/user-list/user-list.component.ts
+
+import {
+  Component,
+  inject,
+  OnInit,
+  signal
+} from '@angular/core';
+
+import {
+  DatePipe
+} from '@angular/common';
+
+import {
+  FormBuilder,
+  ReactiveFormsModule
+} from '@angular/forms';
+
+import {
+  HttpErrorResponse
+} from '@angular/common/http';
+
+import {
+  finalize
+} from 'rxjs';
+
+import {
+  TableModule
+} from 'primeng/table';
+
+import {
+  ButtonModule
+} from 'primeng/button';
+
+import {
+  InputTextModule
+} from 'primeng/inputtext';
+
+import {
+  TagModule
+} from 'primeng/tag';
+
+import {
+  CheckboxModule
+} from 'primeng/checkbox';
+
+import {
+  PaginatorModule,
+  PaginatorState
+} from 'primeng/paginator';
+
+import {
+  MessageModule
+} from 'primeng/message';
+
+import {
+  UserListItem
+} from '../models/user-list-item.model';
+
+import {
+  UserService
+} from '../services/user.service';
+
+/**
+ * MSKBS kullanıcı yönetimi listeleme ve sorgulama
+ * ekranını temsil eder.
+ */
+@Component({
+  selector: 'app-user-list',
+  standalone: true,
+
+  imports: [
+    DatePipe,
+    ReactiveFormsModule,
+    TableModule,
+    ButtonModule,
+    InputTextModule,
+    TagModule,
+    CheckboxModule,
+    PaginatorModule,
+    MessageModule
+  ],
+
+  templateUrl: './user-list.component.html',
+  styleUrl: './user-list.component.scss'
+})
+export class UserListComponent
+  implements OnInit {
+
+  private readonly userService =
+    inject(UserService);
+
+  private readonly formBuilder =
+    inject(FormBuilder);
+
+  /**
+   * Kullanıcı listesini içerir.
+   */
+  public readonly users =
+    signal<UserListItem[]>([]);
+
+  /**
+   * Filtrelere uyan toplam kullanıcı sayısıdır.
+   */
+  public readonly totalCount =
+    signal(0);
+
+  /**
+   * Aktif sayfa numarasıdır.
+   */
+  public readonly pageNumber =
+    signal(1);
+
+  /**
+   * Sayfa başına gösterilecek kayıt sayısıdır.
+   */
+  public readonly pageSize =
+    signal(20);
+
+  /**
+   * Kullanıcı sorgusunun devam edip etmediğini belirtir.
+   */
+  public readonly loading =
+    signal(false);
+
+  /**
+   * Listeleme sırasında kullanıcıya gösterilecek
+   * hata mesajıdır.
+   */
+  public readonly errorMessage =
+    signal<string | null>(null);
+
+  /**
+   * Kullanıcı arama ve filtreleme formudur.
+   */
+  public readonly filterForm =
+    this.formBuilder.nonNullable.group({
+
+      search: [''],
+
+      includeInactive: [false]
+    });
+
+  /**
+   * Component başlangıcında ilk kullanıcı listesini yükler.
+   */
+  public ngOnInit(): void {
+
+    this.loadUsers();
+  }
+
+  /**
+   * Kullanıcı listesini mevcut filtre ve sayfalama
+   * kriterlerine göre backend'den getirir.
+   */
+  public loadUsers(): void {
+
+    this.loading.set(true);
+    this.errorMessage.set(null);
+
+    const filters =
+      this.filterForm.getRawValue();
+
+    this.userService
+      .getUsers({
+        search:
+          filters.search,
+
+        includeInactive:
+          filters.includeInactive,
+
+        pageNumber:
+          this.pageNumber(),
+
+        pageSize:
+          this.pageSize()
+      })
+      .pipe(
+        finalize(() => {
+
+          this.loading.set(false);
+        })
+      )
+      .subscribe({
+
+        next: response => {
+
+          this.users.set(
+            response.items
+          );
+
+          this.totalCount.set(
+            response.totalCount
+          );
+        },
+
+        error: (
+          error: HttpErrorResponse
+        ) => {
+
+          console.error(
+            '[MSKBS USERS] User query error:',
+            error
+          );
+
+          this.users.set([]);
+
+          this.totalCount.set(0);
+
+          this.errorMessage.set(
+            error.error?.detail ??
+            'Kullanıcılar yüklenirken bir hata oluştu.'
+          );
+        }
+      });
+  }
+
+  /**
+   * Arama butonuna basıldığında sayfayı başa alır
+   * ve kullanıcı sorgusunu tekrar çalıştırır.
+   */
+  public search(): void {
+
+    this.pageNumber.set(1);
+
+    this.loadUsers();
+  }
+
+  /**
+   * Kullanıcı filtrelerini varsayılan değerlere döndürür
+   * ve listeyi yeniden yükler.
+   */
+  public clearFilters(): void {
+
+    this.filterForm.reset({
+      search: '',
+      includeInactive: false
+    });
+
+    this.pageNumber.set(1);
+
+    this.loadUsers();
+  }
+
+  /**
+   * PrimeNG paginator değişikliğini işler.
+   *
+   * @param event PrimeNG paginator state bilgisidir.
+   */
+  public onPageChange(
+    event: PaginatorState
+  ): void {
+
+    const rows =
+      event.rows ?? this.pageSize();
+
+    const first =
+      event.first ?? 0;
+
+    const newPageNumber =
+      Math.floor(first / rows) + 1;
+
+    this.pageSize.set(rows);
+
+    this.pageNumber.set(
+      newPageNumber
+    );
+
+    this.loadUsers();
+  }
+}
+
+Şimdilik edit/delete action eklemiyorum. Önce liste route'u ve API’si çalışsın. Sonraki adımda sağ tarafa işlemler kolonu koyacağız.
+13. UserList HTML
+Dosya:
+src/app/features/users/user-list/user-list.component.html
+
+<div class="users-page">
+
+  <div class="page-header">
+
+    <div>
+
+      <h1>
+        Kullanıcılar
+      </h1>
+
+      <p>
+        Sistem kullanıcılarını görüntüleyin ve yönetin.
+      </p>
+
+    </div>
+
+    <div class="page-actions">
+
+      <p-button
+        label="Yeni Kullanıcı"
+        icon="pi pi-plus">
+      </p-button>
+
+    </div>
+
+  </div>
+
+  <div class="filter-panel">
+
+    <form
+      [formGroup]="filterForm"
+      (ngSubmit)="search()">
+
+      <div class="search-field">
+
+        <i class="pi pi-search"></i>
+
+        <input
+          type="text"
+          pInputText
+          formControlName="search"
+          placeholder="Ad, soyad, kullanıcı adı veya e-posta ara..." />
+
+      </div>
+
+      <div class="inactive-filter">
+
+        <p-checkbox
+          inputId="includeInactive"
+          formControlName="includeInactive"
+          [binary]="true">
+        </p-checkbox>
+
+        <label for="includeInactive">
+          Pasif kullanıcıları dahil et
+        </label>
+
+      </div>
+
+      <div class="filter-actions">
+
+        <p-button
+          type="submit"
+          label="Ara"
+          icon="pi pi-search"
+          [loading]="loading()">
+        </p-button>
+
+        <p-button
+          type="button"
+          label="Temizle"
+          icon="pi pi-times"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="clearFilters()">
+        </p-button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+  @if (errorMessage()) {
+
+    <p-message
+      severity="error"
+      [text]="errorMessage()!">
+    </p-message>
+
+  }
+
+  <div class="table-container">
+
+    <p-table
+      [value]="users()"
+      [loading]="loading()"
+      [tableStyle]="{
+        'min-width': '900px'
+      }">
+
+      <ng-template pTemplate="header">
+
+        <tr>
+
+          <th>
+            Kullanıcı
+          </th>
+
+          <th>
+            Kullanıcı Adı
+          </th>
+
+          <th>
+            E-posta
+          </th>
+
+          <th>
+            Organizasyon
+          </th>
+
+          <th>
+            Roller
+          </th>
+
+          <th>
+            Durum
+          </th>
+
+          <th>
+            Oluşturulma
+          </th>
+
+        </tr>
+
+      </ng-template>
+
+      <ng-template
+        pTemplate="body"
+        let-user>
+
+        <tr>
+
+          <td>
+
+            <div class="user-cell">
+
+              <strong>
+                {{ user.fullName }}
+              </strong>
+
+              @if (user.phoneNumber) {
+
+                <span>
+                  {{ user.phoneNumber }}
+                </span>
+
+              }
+
+            </div>
+
+          </td>
+
+          <td>
+            {{ user.userName }}
+          </td>
+
+          <td>
+            {{ user.email }}
+          </td>
+
+          <td>
+
+            @if (user.organizationUnitName) {
+
+              <div class="organization-cell">
+
+                <strong>
+                  {{ user.organizationUnitName }}
+                </strong>
+
+                @if (user.organizationUnitCode) {
+
+                  <span>
+                    {{ user.organizationUnitCode }}
+                  </span>
+
+                }
+
+              </div>
+
+            }
+            @else {
+
+              <span class="empty-value">
+                -
+              </span>
+
+            }
+
+          </td>
+
+          <td>
+
+            @if (user.roles.length > 0) {
+
+              <div class="role-list">
+
+                @for (
+                  role of user.roles;
+                  track role
+                ) {
+
+                  <p-tag
+                    [value]="role"
+                    severity="secondary">
+                  </p-tag>
+
+                }
+
+              </div>
+
+            }
+            @else {
+
+              <span class="empty-value">
+                -
+              </span>
+
+            }
+
+          </td>
+
+          <td>
+
+            @if (user.isActive) {
+
+              <p-tag
+                value="Aktif"
+                severity="success">
+              </p-tag>
+
+            }
+            @else {
+
+              <p-tag
+                value="Pasif"
+                severity="secondary">
+              </p-tag>
+
+            }
+
+            @if (user.isLocked) {
+
+              <p-tag
+                value="Kilitli"
+                severity="danger">
+              </p-tag>
+
+            }
+
+          </td>
+
+          <td>
+            {{ user.createdDate | date:'dd.MM.yyyy HH:mm' }}
+          </td>
+
+        </tr>
+
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+
+        <tr>
+
+          <td
+            colspan="7"
+            class="empty-table">
+
+            Kullanıcı bulunamadı.
+
+          </td>
+
+        </tr>
+
+      </ng-template>
+
+    </p-table>
+
+    <p-paginator
+      [first]="
+        (pageNumber() - 1) *
+        pageSize()
+      "
+      [rows]="pageSize()"
+      [totalRecords]="totalCount()"
+      [rowsPerPageOptions]="[
+        10,
+        20,
+        50,
+        100
+      ]"
+      (onPageChange)="onPageChange($event)">
+    </p-paginator>
+
+  </div>
+
+</div>
+
+14. UserList SCSS
+Dosya:
+src/app/features/users/user-list/user-list.component.scss
+
+.users-page {
+  display: flex;
+  flex-direction: column;
+
+  gap: 1.25rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 1rem;
+
+  h1 {
+    margin: 0;
+
+    font-size: 1.5rem;
+    color: #111827;
+  }
+
+  p {
+    margin:
+      0.35rem 0 0;
+
+    color: #6b7280;
+  }
+}
+
+.filter-panel {
+  padding: 1rem;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+
+  form {
+    display: flex;
+    align-items: center;
+
+    gap: 1rem;
+
+    flex-wrap: wrap;
+  }
+}
+
+.search-field {
+  position: relative;
+
+  min-width: 280px;
+  flex: 1;
+
+  > i {
+    position: absolute;
+
+    top: 50%;
+    left: 0.8rem;
+
+    transform: translateY(-50%);
+
+    color: #9ca3af;
+  }
+
+  input {
+    width: 100%;
+
+    padding-left: 2.4rem;
+  }
+}
+
+.inactive-filter {
+  display: flex;
+  align-items: center;
+
+  gap: 0.5rem;
+
+  label {
+    cursor: pointer;
+
+    font-size: 0.9rem;
+
+    color: #374151;
+  }
+}
+
+.filter-actions {
+  display: flex;
+
+  gap: 0.5rem;
+}
+
+.table-container {
+  overflow: hidden;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.user-cell,
+.organization-cell {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.2rem;
+
+  strong {
+    font-size: 0.9rem;
+  }
+
+  span {
+    font-size: 0.75rem;
+
+    color: #6b7280;
+  }
+}
+
+.role-list {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 0.35rem;
+}
+
+.empty-value {
+  color: #9ca3af;
+}
+
+.empty-table {
+  padding: 2rem !important;
+
+  text-align: center;
+
+  color: #6b7280;
+}
+
+@media (max-width: 768px) {
+
+  .page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .page-actions {
+    width: 100%;
+  }
+
+  .search-field {
+    min-width: 100%;
+  }
+
+  .filter-actions {
+    width: 100%;
+  }
+}
+
+
+
+
+15. Sidebar'daki Kullanıcılar menüsünü aktif hale getir
+navigation.service.ts içerisindeki:
+{
+  label: 'Kullanıcılar',
+  icon: 'pi pi-users',
+
+  requiredPermissions: [
+    PermissionCodes.Users.View
+  ]
+}
+
+kısmını değiştir:
+{
+  label: 'Kullanıcılar',
+
+  icon: 'pi pi-users',
+
+  route: '/app/users',
+
+  requiredPermissions: [
+    PermissionCodes.Users.Query
+  ]
+},
+
+Böylece Users.Query yetkisi olmayan kullanıcı menüyü görmez.
+16. Users route'unu ekleyelim
+app.routes.ts importlarına:
+import {
+  permissionGuard
+} from './core/permissions/guards/permission.guard';
+
+import {
+  PermissionCodes
+} from './core/permissions/constants/permission-codes';
+
+Sonra /app children içerisine, home'dan sonra:
+{
+  path: 'users',
+
+  canActivate: [
+    permissionGuard
+  ],
+
+  data: {
+    permissions: [
+      PermissionCodes.Users.Query
+    ]
+  },
+
+  loadComponent: () =>
+    import(
+      './features/users/user-list/user-list.component'
+    )
+    .then(
+      component =>
+        component.UserListComponent
+    )
+},
+
+Son hali kabaca:
+children: [
+
+  {
+    path: '',
+
+    pathMatch: 'full',
+
+    loadComponent: () =>
+      import(
+        './features/home/home.component'
+      )
+      .then(
+        component =>
+          component.HomeComponent
+      )
+  },
+
+  {
+    path: 'users',
+
+    canActivate: [
+      permissionGuard
+    ],
+
+    data: {
+      permissions: [
+        PermissionCodes.Users.Query
+      ]
+    },
+
+    loadComponent: () =>
+      import(
+        './features/users/user-list/user-list.component'
+      )
+      .then(
+        component =>
+          component.UserListComponent
+      )
+  },
+
+  {
+    path: 'change-password',
+
+    loadComponent: () =>
+      import(
+        './features/authentication/change-password/change-password.component'
+      )
+      .then(
+        component =>
+          component.ChangePasswordComponent
+      )
+  }
+]
+
+Bu noktada beklediğimiz akış
+Admin ile login:
+Login
+↓
+/app
+↓
+Sidebar
+↓
+Kullanıcılar
+↓
+/app/users
+↓
+permissionGuard
+↓
+Users.Query
+↓
+UserListComponent
+↓
+GET /api/users
+↓
+authInterceptor
+↓
+Bearer JWT
+↓
+HasPermission(Users.Query)
+↓
+IPermissionChecker
+↓
+PostgreSQL
+↓
+200 OK
+↓
+PrimeNG tablo
+
+Burada özellikle artık gerçek permission altyapımızı uçtan uca kullanmış oluyoruz.
+Bir sonraki adımda bu ekranı yarım bırakmadan Yeni Kullanıcı butonunu çalıştıracağız: CreateUserCommand + Validator + Handler, e-posta/kullanıcı adı unique kontrolü, parola hashleme, organizasyon seçimi, rol seçimi ve Angular user-form ekranı. Ardından aynı formu update için de kullanıp Version üzerinden gerçek PostgreSQL optimistic concurrency testimizi yapacağız.
