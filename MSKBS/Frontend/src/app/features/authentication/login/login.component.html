@@ -1,0 +1,83 @@
+<div class="login-page">
+  <p-card styleClass="login-card">
+    <ng-template pTemplate="header">
+      <div class="login-header">
+        <h1>MSKBS</h1>
+        <p>Sisteme giriş yapın</p>
+      </div>
+    </ng-template>
+
+    <form
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      class="login-form">
+
+      @if (informationMessage()) {
+        <p-message
+          severity="success"
+          [text]="informationMessage()!">
+        </p-message>
+      }
+
+      <div class="form-field">
+        <label for="userNameOrEmail">
+          Kullanıcı Adı veya E-posta
+        </label>
+
+        <input
+          id="userNameOrEmail"
+          type="text"
+          pInputText
+          formControlName="userNameOrEmail"
+          autocomplete="username"
+          placeholder="Kullanıcı adı veya e-posta" />
+
+        @if (
+          form.controls.userNameOrEmail.touched &&
+          form.controls.userNameOrEmail.invalid
+        ) {
+          <small class="validation-error">
+            Kullanıcı adı veya e-posta zorunludur.
+          </small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="password">Parola</label>
+
+        <p-password
+          inputId="password"
+          formControlName="password"
+          [feedback]="false"
+          [toggleMask]="true"
+          autocomplete="current-password"
+          placeholder="Parolanız"
+          styleClass="password-field"
+          inputStyleClass="password-input">
+        </p-password>
+      </div>
+
+      <div class="forgot-password">
+        <a routerLink="/forgot-password">
+          Parolamı unuttum
+        </a>
+      </div>
+
+      @if (errorMessage()) {
+        <p-message
+          severity="error"
+          [text]="errorMessage()!">
+        </p-message>
+      }
+
+      <p-button
+        type="submit"
+        label="Giriş Yap"
+        icon="pi pi-sign-in"
+        [loading]="loading()"
+        [disabled]="loading()"
+        styleClass="login-button">
+      </p-button>
+    </form>
+  </p-card>
+</div>

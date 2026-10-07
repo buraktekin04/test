@@ -1,0 +1,37 @@
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">M</div>
+    <div class="brand-text">
+      <strong>MSKBS</strong>
+      <span>Yönetim Sistemi</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-navigation">
+    @for (item of menuItems(); track item.label) {
+      @if (item.route) {
+        <a
+          class="menu-item"
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.route === '/app' }"
+          (click)="onNavigationSelected()">
+
+          @if (item.icon) {
+            <i class="menu-icon" [class]="item.icon"></i>
+          }
+
+          <span>{{ item.label }}</span>
+        </a>
+      }
+      @else {
+        <div class="menu-item menu-item-disabled">
+          @if (item.icon) {
+            <i class="menu-icon" [class]="item.icon"></i>
+          }
+          <span>{{ item.label }}</span>
+        </div>
+      }
+    }
+  </nav>
+</aside>

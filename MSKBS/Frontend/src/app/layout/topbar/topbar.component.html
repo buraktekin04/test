@@ -1,0 +1,38 @@
+<header class="topbar">
+  <div class="topbar-left">
+    <p-button
+      icon="pi pi-bars"
+      [text]="true"
+      severity="secondary"
+      ariaLabel="Menüyü aç veya kapat"
+      (onClick)="toggleSidebar()">
+    </p-button>
+
+    <div class="page-title">MSKBS</div>
+  </div>
+
+  <div class="topbar-right">
+    @if (user(); as currentUser) {
+      <div class="user-area" (click)="userMenu.toggle($event)">
+        <p-avatar
+          [label]="userInitials()"
+          shape="circle"
+          size="normal">
+        </p-avatar>
+
+        <div class="user-info">
+          <strong>{{ currentUser.fullName }}</strong>
+          <span>{{ currentUser.email }}</span>
+        </div>
+
+        <i class="pi pi-chevron-down"></i>
+      </div>
+    }
+
+    <p-menu
+      #userMenu
+      [model]="userMenuItems"
+      [popup]="true">
+    </p-menu>
+  </div>
+</header>
