@@ -1,0 +1,17 @@
+using KLMN.Domain.Common;
+
+namespace KLMN.Domain.Entities.Identity;
+
+/// <summary>
+/// Kullanıcı ile rol arasındaki ilişkiyi temsil eder.
+/// </summary>
+public sealed class UserRole : BaseEntity
+{
+    public Guid UserId { get; set; }
+
+    public Guid RoleId { get; set; }
+
+    public User User { get; set; } = null!;
+
+    public Role Role { get; set; } = null!;
+}
