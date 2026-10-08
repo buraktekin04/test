@@ -39,6 +39,15 @@ public static class DependencyInjection
         services.AddScoped<IPasswordResetTokenService, PasswordResetTokenService>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
 
+        /*
+         * Jwt, Authentication, PasswordReset ve Smtp ayarları
+         * ayrı bir kullanıcı sırrı deposundan değil, merkezi
+         * KLMN.Api/appsettings.json dosyasındaki JSON bölümlerinden
+         * IOptions<T> modellerine aktarılır.
+         *
+         * Settings sınıfları değer saklayan harici dosyalar değil,
+         * uygulama tarafında tip güvenliği ve doğrulama sağlayan DTO'lardır.
+         */
         services
             .AddOptions<JwtSettings>()
             .Bind(configuration.GetSection(JwtSettings.SectionName))
@@ -74,7 +83,7 @@ public static class DependencyInjection
             .Validate(x => !string.IsNullOrWhiteSpace(x.FromAddress), "Smtp:FromAddress zorunludur.")
             .ValidateOnStart();
 
-        // jwt settings bilgisini sonraki işlem adımları için hesaplar.
+        // Jwt bölümünden okunan imza, issuer, audience ve ömür değerleri Bearer doğrulama kurallarını oluşturur.
         var jwtSettings =
             configuration
                 .GetSection(JwtSettings.SectionName)

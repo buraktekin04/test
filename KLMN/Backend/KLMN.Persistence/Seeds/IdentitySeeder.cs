@@ -26,7 +26,7 @@ internal sealed class IdentitySeeder
     /// </summary>
     private readonly IPasswordHasherService _passwordHasherService;
     /// <summary>
-    /// Güvenli yapılandırmadan başlangıç yönetici bilgilerini okuyan sağlayıcıdır.
+    /// appsettings.json içindeki InitialAdmin bölümünün kullanıcı adı, e-posta ve parola alanlarını okur.
     /// </summary>
     private readonly IConfiguration _configuration;
 
@@ -140,11 +140,16 @@ internal sealed class IdentitySeeder
     }
 
     /// <summary>
-    /// Configuration'dan gelen kimlikle ilk yöneticiyi oluşturur; mevcut parolasını değiştirmez.
+    /// appsettings.json içindeki InitialAdmin bilgilerinden ilk yöneticiyi oluşturur; mevcut hesabın parolasını her açılışta değiştirmez.
     /// </summary>
     private async Task SeedInitialAdminAsync(CancellationToken cancellationToken)
     {
         // Yönetici hesabı için yapılandırmadan alınan kullanıcı adıdır.
+        /*
+         * Kullanıcı adı, e-posta ve başlangıç parolası aynı JSON dosyasında
+         * InitialAdmin altında tanımlanır. Eksik alan varsa admin
+         * otomatik oluşturulmaz; mevcut ADMIN rolü/izinleri seed edilir.
+         */
         var userName = _configuration["InitialAdmin:UserName"];
         // İlk yönetici hesabının yapılandırılmış e-posta adresidir.
         var email = _configuration["InitialAdmin:Email"];

@@ -20,9 +20,18 @@ public static class DependencyInjection
     {
         // PostgreSQL bağlantısının güvenli yapılandırmadan okunan bilgisidir.
         var connectionString =
-            configuration.GetConnectionString("PostgreSQL")
-            ?? throw new InvalidOperationException(
-                "PostgreSQL connection string bulunamadı.");
+            configuration.GetConnectionString("PostgreSQL");
+
+        /*
+         * Veritabanı sunucusu, port, veritabanı adı, kullanıcı ve
+         * parola KLMN.Api/appsettings.json içindeki
+         * ConnectionStrings:PostgreSQL değerinde tanımlanır.
+         */
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException(
+                "appsettings.json içindeki ConnectionStrings:PostgreSQL boş bırakılamaz.");
+        }
 
         services.AddScoped<AuditableEntitySaveChangesInterceptor>();
 

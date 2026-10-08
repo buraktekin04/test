@@ -1,6 +1,6 @@
 namespace KLMN.Infrastructure.Authentication;
 
-/// <summary>JWT access ve refresh token ayarlarını temsil eder.</summary>
+/// <summary>JWT access ve refresh token ayarlarını appsettings.json içerisindeki Jwt bölümünden tip güvenli olarak okuyan modeldir; bağımsız bir ayar dosyası değildir.</summary>
 public sealed class JwtSettings
 {
     /// <summary>
@@ -8,7 +8,7 @@ public sealed class JwtSettings
     /// </summary>
     public const string SectionName = "Jwt";
     /// <summary>
-    /// JWT imzasında kullanılan, güvenli yapılandırmadan alınması gereken gizli anahtardır.
+    /// appsettings.json dosyasındaki Jwt:SecretKey alanından okunan JWT imzalama anahtarıdır. En az 32 byte olmalıdır.
     /// </summary>
     public string SecretKey { get; init; } = string.Empty;
     /// <summary>

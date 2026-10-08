@@ -24,3 +24,7 @@ Bu doküman Backend ve Frontend üzerinde uygulanan **kod açıklama yaklaşım�
 ## Kontrol yöntemi
 
 Bu dokümantasyon düzenlemesinde kaynak kodun mevcut işlevsel satırları korunarak açıklama satırları eklendi. Gerçek .NET SDK ve node_modules kullanılarak yapılacak `dotnet build` ve `npm run build` kontrolleri, uygulamanın çalışma ortamında ayrıca yürütülmelidir.
+
+## Merkezi yapılandırma
+
+JWT, SMTP, PasswordReset, Authentication, InitialAdmin, PostgreSQL bağlantısı, CORS ve log ayarlarının kaynak dosyası `KLMN.Api/appsettings.json` şeklindedir. `*Settings` C# sınıfları bu dosyadan binding yapılan tipli modellerdir; başka bir konfigürasyon dosyası gerektirmezler. Kod içi yeni açıklamalarda bu ayrımı koruyun.

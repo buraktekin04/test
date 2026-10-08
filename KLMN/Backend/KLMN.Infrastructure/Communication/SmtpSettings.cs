@@ -1,6 +1,6 @@
 namespace KLMN.Infrastructure.Communication;
 
-/// <summary>SMTP bağlantı ve gönderen hesap ayarlarını temsil eder.</summary>
+/// <summary>SMTP sunucu, port, hesap, parola ve gönderen bilgilerini appsettings.json içerisindeki Smtp bölümünden eşleyen modeldir; ayrı bir settings dosyası oluşturmaz.</summary>
 public sealed class SmtpSettings
 {
     /// <summary>
@@ -20,7 +20,7 @@ public sealed class SmtpSettings
     /// </summary>
     public string? UserName { get; init; }
     /// <summary>
-    /// SMTP hesap parolasıdır; secrets altyapısında tutulmalıdır.
+    /// SMTP sunucusu parola gerektiriyorsa appsettings.json içindeki Smtp:Password alanına yazılan paroladır.
     /// </summary>
     public string? Password { get; init; }
     /// <summary>

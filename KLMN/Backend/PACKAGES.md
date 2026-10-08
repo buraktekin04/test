@@ -1,9 +1,8 @@
-# KLMN Backend Paket / Referans Notları
+# KLMN Backend paket / referans notları
 
-Kapalı ağdaki gerçek projede paket sürümlerini mevcut .NET 10 / EF Core 10 sürümleriyle uyumlu tutun.
+Kurumun kapalı ağında .NET 10 ve EF Core 10 ile uyumlu paket sürümlerini kullanın.
 
 ## KLMN.Application
-
 - MediatR
 - FluentValidation
 - FluentValidation.DependencyInjectionExtensions
@@ -11,13 +10,11 @@ Kapalı ağdaki gerçek projede paket sürümlerini mevcut .NET 10 / EF Core 10 
 - Microsoft.Extensions.Options.ConfigurationExtensions
 
 ## KLMN.Persistence
-
 - Microsoft.EntityFrameworkCore
 - Microsoft.EntityFrameworkCore.Relational
 - Npgsql.EntityFrameworkCore.PostgreSQL
 
 ## KLMN.Infrastructure
-
 - Microsoft.AspNetCore.Authentication.JwtBearer
 - Microsoft.AspNetCore.Identity
 - Microsoft.IdentityModel.Tokens / System.IdentityModel.Tokens.Jwt
@@ -25,15 +22,13 @@ Kapalı ağdaki gerçek projede paket sürümlerini mevcut .NET 10 / EF Core 10 
 - MailKit
 
 ## KLMN.Api
-
 - Microsoft.AspNetCore.OpenApi
-- Swagger UI paketi (mevcut projede `UseSwaggerUI` sağlayan paket)
+- Swashbuckle.AspNetCore.SwaggerUI
 
-## Source control'e yazılmaması gerekenler
+## Yapılandırma politikası
 
-- `ConnectionStrings:PostgreSQL`
-- `Jwt:SecretKey`
-- `InitialAdmin:Password`
-- `Smtp:Password`
+Uygulama, tüm bağlantı ve kimlik doğrulama bilgilerini **KLMN.Api/appsettings.json** dosyasından okur. JWT, SMTP, PasswordReset ve Authentication Settings/Options sınıfları bağımsız ayar deposu değildir; appsettings bölümlerine tip güvenli erişim sağlar.
 
-Bu değerleri user-secrets, environment variable veya kurumun güvenli configuration mekanizması üzerinden verin.
+`user-secrets`, ek JSON ayar dosyası veya kullanıcı ortam değişkeni üzerinden yapılandırma adımı gerekmemektedir.
+
+**Önemli:** GitHub reposu public olduğu için gerçek `ConnectionStrings:PostgreSQL`, `Jwt:SecretKey`, `InitialAdmin:Password` ve `Smtp:Password` değerleri repoya commit edilmemelidir. Kapalı ağda bu alanlar `appsettings.json` içinde doldurulur.
