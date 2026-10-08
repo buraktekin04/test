@@ -103,22 +103,12 @@ export class LoginComponent {
       deviceName: 'Web'
     };
 
-    console.log(
-      '[KLMN AUTH] Login request:',
-      {
-        identifier: request.identifier,
-        password: '********'
-      }
-    );
-
     this.authService.login(request)
       .pipe(
         finalize(() => this.loading.set(false))
       )
       .subscribe({
         next: response => {
-          console.log('[KLMN AUTH] Login başarılı:', response);
-
           const returnUrl =
             this.activatedRoute.snapshot.queryParamMap.get('returnUrl');
 
@@ -176,3 +166,4 @@ export class LoginComponent {
     return url.startsWith('/') && !url.startsWith('//');
   }
 }
+

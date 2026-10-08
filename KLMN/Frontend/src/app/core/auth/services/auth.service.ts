@@ -101,7 +101,6 @@ export class AuthService {
     .pipe(
       tap(user => {
         this.store.setUser(user);
-        console.log('[KLMN AUTH] /auth/me response:', user);
       })
     );
   }
@@ -174,6 +173,13 @@ export class AuthService {
   }
 
   public debugCurrentSession(): void {
-    console.log('[KLMN AUTH] Current Auth State:', this.store.state());
+    const state = this.store.state();
+    console.info('[KLMN AUTH] Oturum durumu:', {
+      isInitialized: state.isInitialized,
+      isAuthenticated: state.isAuthenticated,
+      accessTokenExpiresAt: state.accessTokenExpiresAt,
+      userId: state.user?.id ?? null
+    });
   }
 }
+

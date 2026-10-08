@@ -17,11 +17,13 @@ export class PermissionService {
       return false;
     }
 
-    if (user.roles.includes('ADMIN')) {
+    if (user.roles.some(role => role.toUpperCase() === 'ADMIN')) {
       return true;
     }
 
-    return user.permissions.includes(permission);
+    return user.permissions.some(
+      granted => granted.toLowerCase() === permission.toLowerCase()
+    );
   }
 
   public hasAny(...permissions: string[]): boolean {
@@ -32,3 +34,4 @@ export class PermissionService {
     return permissions.every(permission => this.has(permission));
   }
 }
+

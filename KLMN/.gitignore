@@ -1,0 +1,15 @@
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+**/.angular/
+**/.vs/
+**/.vscode/
+**/TestResults/
+**/coverage/
+**/appsettings.Local.json
+**/appsettings.Production.local.json
+**/.env
+**/.env.*
+!**/.env.example
+

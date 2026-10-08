@@ -26,6 +26,12 @@ public abstract class BaseEntityConfiguration<TEntity>
             .IsRequired()
             .HasColumnType("timestamp with time zone");
 
+        builder.Property(x => x.CreatedBy);
+
+        builder.Property(x => x.UpdatedBy);
+
+        builder.Property(x => x.DeletedBy);
+
         builder.Property(x => x.UpdatedDate)
             .HasColumnType("timestamp with time zone");
 
@@ -47,3 +53,4 @@ public abstract class BaseEntityConfiguration<TEntity>
 
     protected abstract void ConfigureEntity(EntityTypeBuilder<TEntity> builder);
 }
+

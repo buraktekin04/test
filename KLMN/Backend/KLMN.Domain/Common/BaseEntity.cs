@@ -10,10 +10,13 @@ public abstract class BaseEntity
     /// <summary>Kaydın sistem genelindeki benzersiz kimliğidir.</summary>
     public Guid Id { get; set; } = Guid.NewGuid();
 
-    /// <summary>Kaydın oluşturulduğu UTC tarih ve saattir.</summary>
+    /// <summary>
+    /// Kaydın oluşturulduğu UTC tarih ve saattir.
+    /// AuditableEntitySaveChangesInterceptor tarafından doldurulur.
+    /// </summary>
     public DateTime CreatedDate { get; set; }
 
-    /// <summary>Kaydı oluşturan kullanıcının kimliğidir.</summary>
+    /// <summary>Kaydı oluşturan kullanıcı kimliğidir. Sistem işlemlerinde boş olabilir.</summary>
     public Guid? CreatedBy { get; set; }
 
     /// <summary>Kaydın son güncellendiği UTC tarih ve saattir.</summary>
@@ -22,22 +25,22 @@ public abstract class BaseEntity
     /// <summary>Kaydı son güncelleyen kullanıcının kimliğidir.</summary>
     public Guid? UpdatedBy { get; set; }
 
-    /// <summary>Kaydın iş süreçlerinde kullanılabilir durumda olup olmadığını belirtir.</summary>
+    /// <summary>İş süreçlerinde kullanılabilirliğini belirtir; pasiflik silinmek değildir.</summary>
     public bool IsActive { get; set; } = true;
 
-    /// <summary>Kaydın soft delete ile silinmiş olup olmadığını belirtir.</summary>
-    public bool IsDeleted { get; set; }
+    /// <summary>Kaydın soft delete ile silinmiş olarak işaretlenip işaretlenmediğidir.</summary>
+    public bool IsDeleted { get; set; } = false;
 
-    /// <summary>Kaydın soft delete tarihidir.</summary>
+    /// <summary>Soft delete işleminin UTC tarih ve saatidir.</summary>
     public DateTime? DeletedDate { get; set; }
 
-    /// <summary>Kaydı soft delete yapan kullanıcının kimliğidir.</summary>
+    /// <summary>Soft delete işlemini gerçekleştiren kullanıcının kimliğidir.</summary>
     public Guid? DeletedBy { get; set; }
 
     /// <summary>
     /// Optimistic concurrency kontrolünde kullanılan satır versiyonudur.
-    /// PostgreSQL tarafında fiziksel Version kolonu oluşturulmaz;
-    /// Npgsql tarafından xmin sistem kolonuna map edilir.
+    /// PostgreSQL'de fiziksel Version kolonu oluşturulmaz; Npgsql bu alanı
+    /// PostgreSQL'in xmin sistem kolonuna eşler.
     /// </summary>
     public uint Version { get; set; }
 }

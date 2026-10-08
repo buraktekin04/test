@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="KLMN.Api/KLMN.Api.csproj" />
+  <Project Path="KLMN.Application/KLMN.Application.csproj" />
+  <Project Path="KLMN.Domain/KLMN.Domain.csproj" />
+  <Project Path="KLMN.Infrastructure/KLMN.Infrastructure.csproj" />
+  <Project Path="KLMN.Persistence/KLMN.Persistence.csproj" />
+</Solution>

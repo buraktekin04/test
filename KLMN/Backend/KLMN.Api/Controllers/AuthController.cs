@@ -80,7 +80,7 @@ public sealed class AuthController : ControllerBase
 
     /// <summary>Mevcut refresh token oturumunu sonlandırır.</summary>
     [HttpPost("logout")]
-    [Authorize]
+    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Logout(
         CancellationToken cancellationToken)
@@ -214,3 +214,4 @@ public sealed class AuthController : ControllerBase
             });
     }
 }
+

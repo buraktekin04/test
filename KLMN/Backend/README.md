@@ -1,63 +1,52 @@
-# KLMN Backend - Güncel Aktarım Paketi
+# KLMN Backend – .NET 10 / EF Core 10
 
-Bu klasör kapalı ağdaki gerçek KLMN projesine manuel aktarım için tutulur.
+Bu klasör, orijinal MSKBS sınıflarının **KLMN ad alanına uyarlanmış** katmanlı sürümüdür.
 
-## Mimari
+## Projeler
+- **KLMN.Domain:** BaseEntity, kullanıcı, rol, permission, organizasyon ve token entity'leri.
+- **KLMN.Application:** CQRS/MediatR, FluentValidation, kullanıcı yetkilendirme ve auth akışları.
+- **KLMN.Persistence:** PostgreSQL EF Core, `xmin` optimistic concurrency, named filtreler, soft delete ve seed.
+- **KLMN.Infrastructure:** JWT, security stamp, MailKit SMTP ve teknik servisler.
+- **KLMN.Api:** HTTP endpointleri, ProblemDetails ve JWT middleware.
 
-```text
-KLMN.Api
-KLMN.Application
-KLMN.Domain
-KLMN.Infrastructure
-KLMN.Persistence
+## İlk kurulum
+.NET 10 SDK ve PostgreSQL sunucusu gerekir.
+
+```powershell
+cd KLMN/Backend
+dotnet restore KLMN.slnx
+dotnet build KLMN.slnx
+cd KLMN.Api
+dotnet user-secrets init
+dotnet user-secrets set "ConnectionStrings:PostgreSQL" "Host=localhost;Port=5432;Database=klmn;Username=YOUR_USER;Password=YOUR_PASSWORD"
+dotnet user-secrets set "Jwt:SecretKey" "YOUR_SECURE_RANDOM_SECRET_AT_LEAST_32_BYTES"
 ```
 
-## Güncel authentication akışı
+`InitialAdmin:UserName`, `InitialAdmin:Email`, `InitialAdmin:Password`, `Smtp:Host`, `Smtp:FromAddress` ve gerekiyorsa `Smtp:Password` değerlerini güvenli yapılandırmaya girin. **Şifreleri Git'e göndermeyin.**
 
-- Access token JWT olarak response body'de döner ve Angular memory state'te tutulur.
-- Refresh token yalnızca HttpOnly cookie'de tutulur.
-- Refresh token DB'de açık değer olarak değil SHA-256 hash olarak saklanır.
-- Refresh rotation ve reuse detection vardır.
-- JWT içerisine `security_stamp` claim'i yazılır.
-- `OnTokenValidated`, JWT security stamp ile DB'deki güncel `User.SecurityStamp` değerini karşılaştırır.
-- Change password, reset password ve logout-all SecurityStamp'i yeniler.
-- Change password başarılı olursa bütün refresh token'lar revoke edilir.
-- Yanlış mevcut parola `400`; gerçek authentication problemi `401` döner.
+### Migration (önemli)
+Depoda henüz **EF Core migration bulunmuyor**. API başlangıçta `MigrateAsync` ve `IdentitySeeder` çalıştırır; ilk migration üretilmeden boş DB üzerinde çalıştırmayın.
 
-### Önemli 401 düzeltmesi
-
-Eski kodda `OnTokenValidated` security stamp claim'ini zorunlu tutarken
-`JwtTokenService` access token'a bu claim'i eklemiyordu. Bu durumda
-`[Authorize]` action'ları controller'a ulaşmadan 401 oluyordu.
-
-Güncel sürümde token üretilirken:
-
-```csharp
-new(CustomClaimTypes.SecurityStamp, user.SecurityStamp)
+```powershell
+# KLMN/Backend klasöründe
+dotnet tool install --global dotnet-ef --version 10.0.0
+dotnet ef migrations add InitialCreate --project KLMN.Persistence --startup-project KLMN.Api --output-dir Migrations
+dotnet ef database update --project KLMN.Persistence --startup-project KLMN.Api
+dotnet run --project KLMN.Api
 ```
 
-claim'i eklenmektedir.
+Design-time komutlarında veritabanı ve JWT ayarları erişilebilir olmalıdır.
 
-Bu güncellemeden sonra eski access token'lar kullanılmamalıdır. Tarayıcı session/cookie temizlenip yeniden login olunmalıdır.
+## Authentication
+- JWT access token response gövdesindedir; Angular'da yalnızca bellekte tutulur.
+- SHA-256 hashed refresh token DB'de; açık değer HttpOnly cookie'dedir.
+- Refresh rotation/reuse detection; password change/reset/logout-all security stamp yeniler.
+- `POST /api/auth/logout`, access token süresi dolsa da cookie ile session revoke edebilir.
+- Permission kontrolleri anlık DB verisine göre çalışır; ADMIN bypass, kullanıcı override ve rol permission önceliği korunur.
+- `GlobalExceptionHandler` concurrency çatışmasını HTTP 409 olarak döndürür.
+- `xmin` PostgreSQL sistem kolonudur; fiziksel `Version` kolonu eklemeyin.
 
-## Public auth endpointleri
+## Ortam ayrımı
+`appsettings.json` içinde gerçek secret bırakmayın. Angular development proxy `/api` yolunu yerel API'ye yönlendirir. HTTPS ve cookie ayarlarını production ortamında doğrulayın.
 
-```text
-POST /api/auth/login
-POST /api/auth/refresh
-POST /api/auth/forgot-password
-POST /api/auth/reset-password
-```
-
-Authenticated endpointler:
-
-```text
-POST /api/auth/logout
-POST /api/auth/logout-all
-GET  /api/auth/me
-POST /api/auth/change-password
-```
-
-## Secret değerleri
-
-Connection string, JWT secret, initial admin parolası ve SMTP parolası source control'e yazılmamalıdır.
+Bu commit, GitHub dosyalarının kaynak sözleşmelerini düzenler; gerçek kurum/kapalı ağ veritabanında migration ve uygulama testi ayrıca yapılmalıdır.

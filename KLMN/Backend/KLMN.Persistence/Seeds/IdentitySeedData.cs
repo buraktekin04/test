@@ -7,10 +7,10 @@ internal static class IdentitySeedData
 {
     public static IReadOnlyCollection<RoleSeedItem> Roles { get; } =
     [
-        new("Yönetici", SystemRoles.Admin, "Sistem genelinde tam yetkili yönetici rolüdür.", true),
-        new("Standart Kullanıcı", SystemRoles.StandardUser, "Standart kullanıcı temel rolüdür.", true),
-        new("İnceleme Görevlisi", "INVESTIGATION_OFFICER", "İnceleme süreçlerini yürüten kullanıcı rolüdür.", false),
-        new("Şube Müdürü", "BRANCH_MANAGER", "Şube seviyesinde yönetim rolüdür.", false)
+        new("Yönetici", SystemRoles.Admin, "Sistem genelinde tam yetkiye sahip yönetici rolüdür.", true),
+        new("Standart Kullanıcı", SystemRoles.StandardUser, "Sistemdeki standart kullanıcılar için temel roldür.", true),
+        new("İnceleme Görevlisi", "INVESTIGATION_OFFICER", "İnceleme ve soruşturma süreçlerini yürüten kullanıcı rolüdür.", false),
+        new("Şube Müdürü", "BRANCH_MANAGER", "Şube seviyesindeki yönetim ve iş akışı süreçlerinde kullanılan roldür.", false)
     ];
 
     public static IReadOnlyCollection<PermissionSeedItem> Permissions { get; } =
@@ -66,3 +66,4 @@ internal sealed record PermissionSeedItem(
     string Code,
     string Module,
     int SortOrder);
+
