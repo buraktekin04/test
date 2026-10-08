@@ -1,6 +1,6 @@
-# KLMN Backend Aktarım Paketi
+# KLMN Backend - Güncel Aktarım Paketi
 
-Bu klasör, kapalı ağdaki gerçek KLMN projesine manuel aktarım için hazırlanmış güncel backend dosyalarını içerir.
+Bu klasör kapalı ağdaki gerçek KLMN projesine manuel aktarım için tutulur.
 
 ## Mimari
 
@@ -12,38 +12,52 @@ KLMN.Infrastructure
 KLMN.Persistence
 ```
 
-## Teknoloji ve kararlar
+## Güncel authentication akışı
 
-- .NET 10
-- EF Core 10
-- PostgreSQL / Npgsql
-- Clean Architecture
-- CQRS + MediatR
-- FluentValidation
-- Generic Repository / UnitOfWork yok
-- Handler -> IKLMNDbContext -> DbSet -> LINQ -> EF Core
-- JWT access token
-- HttpOnly refresh token cookie
-- Refresh token rotation + reuse detection
-- Password reset token hash storage
-- Role + Permission authorization
-- ADMIN > UserPermission override > RolePermission > deny
-- PostgreSQL xmin optimistic concurrency
-- Named Global Query Filters: SoftDeleteFilter + ActiveFilter
-- Soft delete + audit SaveChanges interceptor
-- Access token memory-only frontend yaklaşımı
+- Access token JWT olarak response body'de döner ve Angular memory state'te tutulur.
+- Refresh token yalnızca HttpOnly cookie'de tutulur.
+- Refresh token DB'de açık değer olarak değil SHA-256 hash olarak saklanır.
+- Refresh rotation ve reuse detection vardır.
+- JWT içerisine `security_stamp` claim'i yazılır.
+- `OnTokenValidated`, JWT security stamp ile DB'deki güncel `User.SecurityStamp` değerini karşılaştırır.
+- Change password, reset password ve logout-all SecurityStamp'i yeniler.
+- Change password başarılı olursa bütün refresh token'lar revoke edilir.
+- Yanlış mevcut parola `400`; gerçek authentication problemi `401` döner.
 
-## Auth endpointleri
+### Önemli 401 düzeltmesi
+
+Eski kodda `OnTokenValidated` security stamp claim'ini zorunlu tutarken
+`JwtTokenService` access token'a bu claim'i eklemiyordu. Bu durumda
+`[Authorize]` action'ları controller'a ulaşmadan 401 oluyordu.
+
+Güncel sürümde token üretilirken:
+
+```csharp
+new(CustomClaimTypes.SecurityStamp, user.SecurityStamp)
+```
+
+claim'i eklenmektedir.
+
+Bu güncellemeden sonra eski access token'lar kullanılmamalıdır. Tarayıcı session/cookie temizlenip yeniden login olunmalıdır.
+
+## Public auth endpointleri
 
 ```text
 POST /api/auth/login
 POST /api/auth/refresh
-POST /api/auth/logout
-POST /api/auth/logout-all
-GET  /api/auth/me
-POST /api/auth/change-password
 POST /api/auth/forgot-password
 POST /api/auth/reset-password
 ```
 
-> Bu repository gerçek proje repository'si değildir. Dosyalar kapalı ağdaki projeye manuel aktarım amacıyla tutulmaktadır.
+Authenticated endpointler:
+
+```text
+POST /api/auth/logout
+POST /api/auth/logout-all
+GET  /api/auth/me
+POST /api/auth/change-password
+```
+
+## Secret değerleri
+
+Connection string, JWT secret, initial admin parolası ve SMTP parolası source control'e yazılmamalıdır.
