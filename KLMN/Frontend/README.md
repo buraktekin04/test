@@ -9,7 +9,14 @@ npm install
 npm start
 ```
 
-`npm start`, `/api` çağrılarını `proxy.conf.json` dosyasındaki API adresine yönlendirir. API farklı portta çalışıyorsa proxy `target` değerini değiştirin.
+Angular CLI **proxy kullanılmıyor**. `npm start`, `https://localhost:4200` adresinde uygulamayı başlatır. Angular'dan API çağrıları doğrudan `src/environments/environment.development.ts` dosyasındaki `https://localhost:7145/api` adresine gider. Backend portu değişirse yalnızca `apiBaseUrl` değerini güncelleyin.
+
+`environment.ts` içindeki `/api`, yalnızca production'da API frontend ile **aynı origin** altında sunuluyorsa geçerlidir; ayrı bir API domain'i kullanılıyorsa tam HTTPS URL yazılmalıdır.
+
+### CORS ve refresh cookie
+Angular ile API ayrı portlarda çalıştığından backend `https://localhost:4200` origin'ine CORS izni verir ve `AllowCredentials()` kullanır. HttpOnly refresh cookie'nin gönderilebilmesi için Angular ve API'dyi HTTPS ile çalıştırın (farklı şemalar `SameSite=Lax` cookie akışını bozabilir). Local geliştirme sertifikalarının tarayıcı tarafından güvenilir olmasını sağlayın. Backend API'de örnek port `7145` kullanılır; gerçek HTTPS portunu doğrulayın.
+
+İleride proxy istenirse ayrıca yapılandırılabilir; bu sürümde Angular proxy dosyası veya proxy script'i yoktur.
 
 ## Yapı
 - `core/auth`: Login, refresh, /me, logout, reset/change password, memory-based access token.

@@ -22,14 +22,9 @@ public sealed class AuthController : ControllerBase
     private const string RefreshTokenCookieName = "klmn_refresh_token";
 
     private readonly ISender _sender;
-    private readonly IWebHostEnvironment _environment;
-
-    public AuthController(
-        ISender sender,
-        IWebHostEnvironment environment)
+    public AuthController(ISender sender)
     {
         _sender = sender;
-        _environment = environment;
     }
 
     /// <summary>Kullanıcı adı/e-posta ve parola ile giriş yapar.</summary>
@@ -188,7 +183,7 @@ public sealed class AuthController : ControllerBase
             new CookieOptions
             {
                 HttpOnly = true,
-                Secure = !_environment.IsDevelopment(),
+                Secure = true,
                 SameSite = SameSiteMode.Lax,
                 Expires = new DateTimeOffset(
                     DateTime.SpecifyKind(
@@ -207,11 +202,10 @@ public sealed class AuthController : ControllerBase
             new CookieOptions
             {
                 HttpOnly = true,
-                Secure = !_environment.IsDevelopment(),
+                Secure = true,
                 SameSite = SameSiteMode.Lax,
                 IsEssential = true,
                 Path = "/api/auth"
             });
     }
 }
-

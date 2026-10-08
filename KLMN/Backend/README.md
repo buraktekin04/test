@@ -47,6 +47,6 @@ Design-time komutlarında veritabanı ve JWT ayarları erişilebilir olmalıdır
 - `xmin` PostgreSQL sistem kolonudur; fiziksel `Version` kolonu eklemeyin.
 
 ## Ortam ayrımı
-`appsettings.json` içinde gerçek secret bırakmayın. Angular development proxy `/api` yolunu yerel API'ye yönlendirir. HTTPS ve cookie ayarlarını production ortamında doğrulayın.
+`appsettings.json` içinde gerçek secret bırakmayın. Angular development proxy kullanılmaz: frontend `https://localhost:4200` adresinden, API'ye `https://localhost:7145/api` üzerinden doğrudan HTTPS istek gönderir. `Program.cs` içinde CORS için Angular HTTPS origin tanımlanmıştır; farklı port, origin veya production domain'i varsa CORS'u güncelleyin. Refresh cookie `Secure=true` ve `SameSite=Lax` olarak ayarlanmıştır. HTTPS geliştirici sertifikaları güvenilir olmalıdır.
 
 Bu commit, GitHub dosyalarının kaynak sözleşmelerini düzenler; gerçek kurum/kapalı ağ veritabanında migration ve uygulama testi ayrıca yapılmalıdır.
