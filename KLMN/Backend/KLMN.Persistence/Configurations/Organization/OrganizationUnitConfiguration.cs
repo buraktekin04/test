@@ -5,34 +5,26 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace KLMN.Persistence.Configurations.Organization;
 
-/// <summary>
-/// OrganizationUnit entity EF Core configuration'ıdır.
-/// </summary>
-internal sealed class OrganizationUnitConfiguration
-    : BaseEntityConfiguration<OrganizationUnit>
+/// <summary>OrganizationUnit hiyerarşi ve index mapping'ini tanımlar.</summary>
+public sealed class OrganizationUnitConfiguration : BaseEntityConfiguration<OrganizationUnit>
 {
-    public override void Configure(
-        EntityTypeBuilder<OrganizationUnit> builder)
+    protected override void ConfigureEntity(EntityTypeBuilder<OrganizationUnit> builder)
     {
-        base.Configure(builder);
-
         builder.ToTable("OrganizationUnits");
 
-        builder.Property(x => x.Code)
-            .HasMaxLength(100)
-            .IsRequired();
-
-        builder.Property(x => x.Name)
-            .HasMaxLength(250)
-            .IsRequired();
-
-        builder.HasIndex(x => x.Code)
-            .IsUnique()
-            .HasFilter(""IsDeleted" = FALSE");
+        builder.Property(x => x.Code).IsRequired().HasMaxLength(100);
+        builder.Property(x => x.Name).IsRequired().HasMaxLength(250);
 
         builder.HasOne(x => x.ParentOrganizationUnit)
             .WithMany(x => x.Children)
             .HasForeignKey(x => x.ParentOrganizationUnitId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(x => x.Code)
+            .IsUnique()
+            .HasFilter(PostgreSqlIndexFilters.NotDeleted);
+
+        builder.HasIndex(x => x.ParentOrganizationUnitId);
+        builder.HasIndex(x => x.Name);
     }
 }

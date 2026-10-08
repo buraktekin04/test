@@ -5,86 +5,81 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace KLMN.Persistence.Interceptors;
 
-/// <summary>
-/// BaseEntity audit alanlarını otomatik yönetir ve fiziksel delete işlemini
-/// soft delete'e dönüştürür.
-/// </summary>
-public sealed class AuditableEntitySaveChangesInterceptor(
-    ICurrentUserService currentUserService)
-    : SaveChangesInterceptor
+/// <summary>Audit alanlarını yönetir ve fiziksel delete'i soft delete'e dönüştürür.</summary>
+public sealed class AuditableEntitySaveChangesInterceptor : SaveChangesInterceptor
 {
-    /// <inheritdoc />
+    private readonly ICurrentUserService _currentUserService;
+
+    public AuditableEntitySaveChangesInterceptor(ICurrentUserService currentUserService)
+    {
+        _currentUserService = currentUserService;
+    }
+
     public override InterceptionResult<int> SavingChanges(
         DbContextEventData eventData,
         InterceptionResult<int> result)
     {
-        ApplyAuditInformation(eventData.Context);
-
-        return base.SavingChanges(
-            eventData,
-            result);
-    }
-
-    /// <inheritdoc />
-    public override ValueTask<InterceptionResult<int>>
-        SavingChangesAsync(
-            DbContextEventData eventData,
-            InterceptionResult<int> result,
-            CancellationToken cancellationToken = default)
-    {
-        ApplyAuditInformation(eventData.Context);
-
-        return base.SavingChangesAsync(
-            eventData,
-            result,
-            cancellationToken);
-    }
-
-    private void ApplyAuditInformation(
-        DbContext? context)
-    {
-        if (context is null)
+        if (eventData.Context is not null)
         {
-            return;
+            ApplyAuditInformation(eventData.Context);
         }
 
-        var now = DateTime.UtcNow;
-        var userId = currentUserService.UserId;
+        return base.SavingChanges(eventData, result);
+    }
 
-        var entries =
-            context.ChangeTracker
-                .Entries<BaseEntity>();
+    public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
+        DbContextEventData eventData,
+        InterceptionResult<int> result,
+        CancellationToken cancellationToken = default)
+    {
+        if (eventData.Context is not null)
+        {
+            ApplyAuditInformation(eventData.Context);
+        }
+
+        return base.SavingChangesAsync(eventData, result, cancellationToken);
+    }
+
+    private void ApplyAuditInformation(DbContext dbContext)
+    {
+        var utcNow = DateTime.UtcNow;
+        var currentUserId = _currentUserService.UserId;
+
+        var entries = dbContext.ChangeTracker
+            .Entries<BaseEntity>()
+            .Where(x => x.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+            .ToList();
 
         foreach (var entry in entries)
         {
             switch (entry.State)
             {
                 case EntityState.Added:
-                    entry.Entity.CreatedDate = now;
-                    entry.Entity.CreatedBy = userId;
+                    entry.Entity.CreatedDate = utcNow;
+                    entry.Entity.CreatedBy = currentUserId;
+                    entry.Entity.IsActive = true;
                     entry.Entity.IsDeleted = false;
+                    entry.Entity.UpdatedDate = null;
+                    entry.Entity.UpdatedBy = null;
+                    entry.Entity.DeletedDate = null;
+                    entry.Entity.DeletedBy = null;
                     break;
 
                 case EntityState.Modified:
-                    entry.Entity.UpdatedDate = now;
-                    entry.Entity.UpdatedBy = userId;
-
-                    entry.Property(x => x.CreatedDate)
-                        .IsModified = false;
-
-                    entry.Property(x => x.CreatedBy)
-                        .IsModified = false;
+                    entry.Entity.UpdatedDate = utcNow;
+                    entry.Entity.UpdatedBy = currentUserId;
+                    entry.Property(x => x.CreatedDate).IsModified = false;
+                    entry.Property(x => x.CreatedBy).IsModified = false;
                     break;
 
                 case EntityState.Deleted:
                     entry.State = EntityState.Modified;
-
                     entry.Entity.IsDeleted = true;
                     entry.Entity.IsActive = false;
-                    entry.Entity.DeletedDate = now;
-                    entry.Entity.DeletedBy = userId;
-                    entry.Entity.UpdatedDate = now;
-                    entry.Entity.UpdatedBy = userId;
+                    entry.Entity.DeletedDate = utcNow;
+                    entry.Entity.DeletedBy = currentUserId;
+                    entry.Entity.UpdatedDate = utcNow;
+                    entry.Entity.UpdatedBy = currentUserId;
                     break;
             }
         }

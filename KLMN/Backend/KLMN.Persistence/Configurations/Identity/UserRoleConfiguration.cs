@@ -5,27 +5,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace KLMN.Persistence.Configurations.Identity;
 
-/// <summary>
-/// UserRole entity EF Core configuration'ıdır.
-/// </summary>
-internal sealed class UserRoleConfiguration
-    : BaseEntityConfiguration<UserRole>
+/// <summary>UserRole ilişki mapping'ini tanımlar.</summary>
+public sealed class UserRoleConfiguration : BaseEntityConfiguration<UserRole>
 {
-    public override void Configure(
-        EntityTypeBuilder<UserRole> builder)
+    protected override void ConfigureEntity(EntityTypeBuilder<UserRole> builder)
     {
-        base.Configure(builder);
-
         builder.ToTable("UserRoles");
-
-        builder.HasIndex(x =>
-                new
-                {
-                    x.UserId,
-                    x.RoleId
-                })
-            .IsUnique()
-            .HasFilter(""IsDeleted" = FALSE");
 
         builder.HasOne(x => x.User)
             .WithMany(x => x.UserRoles)
@@ -36,5 +21,11 @@ internal sealed class UserRoleConfiguration
             .WithMany(x => x.UserRoles)
             .HasForeignKey(x => x.RoleId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(x => new { x.UserId, x.RoleId })
+            .IsUnique()
+            .HasFilter(PostgreSqlIndexFilters.NotDeleted);
+
+        builder.HasIndex(x => x.RoleId);
     }
 }

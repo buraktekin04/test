@@ -1,48 +1,41 @@
 using KLMN.Application.Common.Interfaces.Persistence;
+using KLMN.Persistence.Contexts;
 using KLMN.Persistence.Interceptors;
 using KLMN.Persistence.Seeds;
-using KLMN.Persistence.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace KLMN.Persistence;
 
-/// <summary>
-/// Persistence katmanı dependency injection kayıtlarını içerir.
-/// </summary>
+/// <summary>Persistence katmanının DI kayıtlarını içerir.</summary>
 public static class DependencyInjection
 {
-    /// <summary>
-    /// PostgreSQL DbContext, interceptor ve seed servislerini kaydeder.
-/// </summary>
     public static IServiceCollection AddPersistence(
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.Configure<InitialAdminSettings>(
-            configuration.GetSection(
-                InitialAdminSettings.SectionName));
+        var connectionString =
+            configuration.GetConnectionString("PostgreSQL")
+            ?? throw new InvalidOperationException(
+                "PostgreSQL connection string bulunamadı.");
 
-        services.AddScoped<
-            AuditableEntitySaveChangesInterceptor>();
+        services.AddScoped<AuditableEntitySaveChangesInterceptor>();
 
         services.AddDbContext<KLMNDbContext>(
             (serviceProvider, options) =>
             {
-                var connectionString =
-                    configuration.GetConnectionString(
-                        "DefaultConnection")
-                    ?? throw new InvalidOperationException(
-                        "DefaultConnection bulunamadı.");
-
                 options.UseNpgsql(
                     connectionString,
                     npgsqlOptions =>
                     {
-                        npgsqlOptions.MigrationsHistoryTable(
-                            "__EFMigrationsHistory",
-                            "klmn");
+                        npgsqlOptions.MigrationsAssembly(
+                            typeof(KLMNDbContext).Assembly.FullName);
+
+                        npgsqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 5,
+                            maxRetryDelay: TimeSpan.FromSeconds(10),
+                            errorCodesToAdd: null);
                     });
 
                 options.AddInterceptors(
@@ -51,9 +44,7 @@ public static class DependencyInjection
             });
 
         services.AddScoped<IKLMNDbContext>(
-            serviceProvider =>
-                serviceProvider.GetRequiredService<
-                    KLMNDbContext>());
+            sp => sp.GetRequiredService<KLMNDbContext>());
 
         services.AddScoped<PermissionSeeder>();
         services.AddScoped<IdentitySeeder>();

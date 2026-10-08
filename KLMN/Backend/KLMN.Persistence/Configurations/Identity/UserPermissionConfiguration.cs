@@ -5,27 +5,14 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace KLMN.Persistence.Configurations.Identity;
 
-/// <summary>
-/// UserPermission entity EF Core configuration'ıdır.
-/// </summary>
-internal sealed class UserPermissionConfiguration
-    : BaseEntityConfiguration<UserPermission>
+/// <summary>UserPermission override mapping'ini tanımlar.</summary>
+public sealed class UserPermissionConfiguration : BaseEntityConfiguration<UserPermission>
 {
-    public override void Configure(
-        EntityTypeBuilder<UserPermission> builder)
+    protected override void ConfigureEntity(EntityTypeBuilder<UserPermission> builder)
     {
-        base.Configure(builder);
-
         builder.ToTable("UserPermissions");
 
-        builder.HasIndex(x =>
-                new
-                {
-                    x.UserId,
-                    x.PermissionId
-                })
-            .IsUnique()
-            .HasFilter(""IsDeleted" = FALSE");
+        builder.Property(x => x.IsGranted).IsRequired();
 
         builder.HasOne(x => x.User)
             .WithMany(x => x.UserPermissions)
@@ -36,5 +23,11 @@ internal sealed class UserPermissionConfiguration
             .WithMany(x => x.UserPermissions)
             .HasForeignKey(x => x.PermissionId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(x => new { x.UserId, x.PermissionId })
+            .IsUnique()
+            .HasFilter(PostgreSqlIndexFilters.NotDeleted);
+
+        builder.HasIndex(x => x.PermissionId);
     }
 }

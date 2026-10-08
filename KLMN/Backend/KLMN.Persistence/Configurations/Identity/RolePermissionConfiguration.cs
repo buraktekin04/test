@@ -5,27 +5,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace KLMN.Persistence.Configurations.Identity;
 
-/// <summary>
-/// RolePermission entity EF Core configuration'ıdır.
-/// </summary>
-internal sealed class RolePermissionConfiguration
-    : BaseEntityConfiguration<RolePermission>
+/// <summary>RolePermission ilişki mapping'ini tanımlar.</summary>
+public sealed class RolePermissionConfiguration : BaseEntityConfiguration<RolePermission>
 {
-    public override void Configure(
-        EntityTypeBuilder<RolePermission> builder)
+    protected override void ConfigureEntity(EntityTypeBuilder<RolePermission> builder)
     {
-        base.Configure(builder);
-
         builder.ToTable("RolePermissions");
-
-        builder.HasIndex(x =>
-                new
-                {
-                    x.RoleId,
-                    x.PermissionId
-                })
-            .IsUnique()
-            .HasFilter(""IsDeleted" = FALSE");
 
         builder.HasOne(x => x.Role)
             .WithMany(x => x.RolePermissions)
@@ -36,5 +21,11 @@ internal sealed class RolePermissionConfiguration
             .WithMany(x => x.RolePermissions)
             .HasForeignKey(x => x.PermissionId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(x => new { x.RoleId, x.PermissionId })
+            .IsUnique()
+            .HasFilter(PostgreSqlIndexFilters.NotDeleted);
+
+        builder.HasIndex(x => x.PermissionId);
     }
 }

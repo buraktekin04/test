@@ -1,99 +1,53 @@
-using System.Reflection;
-using KLMN.Application.Common.Interfaces.Persistence;
-using KLMN.Domain.Constants;
 using KLMN.Domain.Entities.Identity;
+using KLMN.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 
 namespace KLMN.Persistence.Seeds;
 
-/// <summary>
-/// PermissionCodes sınıfındaki permission tanımlarını veritabanına seed eder.
-/// </summary>
-internal sealed class PermissionSeeder(
-    IKLMNDbContext dbContext)
+/// <summary>Permission seed kayıtlarını idempotent olarak senkronize eder.</summary>
+internal sealed class PermissionSeeder
 {
-    /// <summary>
-    /// Eksik permission kayıtlarını ekler.
-/// </summary>
-    public async Task SeedAsync(
-        CancellationToken cancellationToken = default)
+    private readonly KLMNDbContext _dbContext;
+
+    public PermissionSeeder(KLMNDbContext dbContext)
     {
-        var definitions =
-            GetPermissionDefinitions();
+        _dbContext = dbContext;
+    }
 
-        var existingCodes =
-            await dbContext.Permissions
-                .IgnoreQueryFilters()
-                .Select(x => x.Code)
-                .ToListAsync(cancellationToken);
+    public async Task SeedAsync(CancellationToken cancellationToken = default)
+    {
+        var existingPermissions = await _dbContext.Permissions
+            .IgnoreQueryFilters()
+            .ToDictionaryAsync(
+                x => x.Code,
+                StringComparer.OrdinalIgnoreCase,
+                cancellationToken);
 
-        var existingSet =
-            existingCodes.ToHashSet(
-                StringComparer.OrdinalIgnoreCase);
-
-        var sortOrder = 1;
-
-        foreach (var definition in definitions)
+        foreach (var seedItem in IdentitySeedData.Permissions)
         {
-            if (existingSet.Contains(definition.Code))
+            if (existingPermissions.TryGetValue(seedItem.Code, out var permission))
             {
-                sortOrder++;
+                permission.Name = seedItem.Name;
+                permission.Module = seedItem.Module;
+                permission.SortOrder = seedItem.SortOrder;
+                permission.IsDeleted = false;
+                permission.IsActive = true;
+                permission.DeletedDate = null;
+                permission.DeletedBy = null;
                 continue;
             }
 
-            dbContext.Permissions.Add(
+            await _dbContext.Permissions.AddAsync(
                 new Permission
                 {
-                    Name = definition.Code,
-                    Code = definition.Code,
-                    Module = definition.Module,
-                    SortOrder = sortOrder++
-                });
+                    Name = seedItem.Name,
+                    Code = seedItem.Code,
+                    Module = seedItem.Module,
+                    SortOrder = seedItem.SortOrder
+                },
+                cancellationToken);
         }
 
-        await dbContext.SaveChangesAsync(cancellationToken);
-    }
-
-    private static IReadOnlyCollection<
-        (string Module, string Code)>
-        GetPermissionDefinitions()
-    {
-        var result =
-            new List<(string Module, string Code)>();
-
-        var nestedTypes =
-            typeof(PermissionCodes)
-                .GetNestedTypes(
-                    BindingFlags.Public);
-
-        foreach (var nestedType in nestedTypes)
-        {
-            var module = nestedType.Name;
-
-            var fields =
-                nestedType.GetFields(
-                    BindingFlags.Public |
-                    BindingFlags.Static |
-                    BindingFlags.FlattenHierarchy);
-
-            foreach (var field in fields)
-            {
-                if (!field.IsLiteral ||
-                    field.FieldType != typeof(string))
-                {
-                    continue;
-                }
-
-                if (field.GetRawConstantValue() is string code)
-                {
-                    result.Add((module, code));
-                }
-            }
-        }
-
-        return result
-            .OrderBy(x => x.Module)
-            .ThenBy(x => x.Code)
-            .ToArray();
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }

@@ -1,62 +1,58 @@
-using System.Reflection;
-using KLMN.Application.Common.Constants;
+using System.Linq.Expressions;
 using KLMN.Domain.Common;
+using KLMN.Persistence.Configurations.Common;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace KLMN.Persistence.Extensions;
 
-/// <summary>
-/// KLMN EF Core model oluşturma yardımcılarını içerir.
-/// </summary>
+/// <summary>EF Core model oluşturma extension'larını içerir.</summary>
 public static class ModelBuilderExtensions
 {
     /// <summary>
-    /// BaseEntity türevlerine named global query filter'ları merkezi olarak uygular.
+    /// BaseEntity root tiplerine SoftDeleteFilter ve ActiveFilter named
+    /// global query filter'larını uygular.
     /// </summary>
-    public static void ApplyKLMNGlobalQueryFilters(
-        this ModelBuilder modelBuilder)
+    public static void ApplyGlobalQueryFilters(this ModelBuilder modelBuilder)
     {
-        var method =
-            typeof(ModelBuilderExtensions)
-                .GetMethod(
-                    nameof(ApplyBaseEntityFilters),
-                    BindingFlags.Static |
-                    BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException(
-                "Global query filter helper bulunamadı.");
-
-        var entityTypes =
-            modelBuilder.Model
-                .GetEntityTypes()
-                .Select(x => x.ClrType)
-                .Where(x =>
-                    typeof(BaseEntity)
-                        .IsAssignableFrom(x))
-                .Distinct()
-                .ToArray();
+        var entityTypes = modelBuilder.Model
+            .GetEntityTypes()
+            .Where(IsBaseEntityRootType)
+            .ToList();
 
         foreach (var entityType in entityTypes)
         {
-            method
-                .MakeGenericMethod(entityType)
-                .Invoke(
-                    null,
-                    [modelBuilder]);
+            var softDeleteFilter = CreateBooleanFilter(
+                entityType.ClrType,
+                nameof(BaseEntity.IsDeleted),
+                false);
+
+            var activeFilter = CreateBooleanFilter(
+                entityType.ClrType,
+                nameof(BaseEntity.IsActive),
+                true);
+
+            modelBuilder.Entity(entityType.ClrType)
+                .HasQueryFilter(QueryFilterNames.SoftDelete, softDeleteFilter);
+
+            modelBuilder.Entity(entityType.ClrType)
+                .HasQueryFilter(QueryFilterNames.Active, activeFilter);
         }
     }
 
-    private static void ApplyBaseEntityFilters<TEntity>(
-        ModelBuilder modelBuilder)
-        where TEntity : BaseEntity
-    {
-        modelBuilder.Entity<TEntity>()
-            .HasQueryFilter(
-                QueryFilterNames.SoftDeleteFilter,
-                entity => !entity.IsDeleted);
+    private static bool IsBaseEntityRootType(IReadOnlyEntityType entityType) =>
+        typeof(BaseEntity).IsAssignableFrom(entityType.ClrType) &&
+        entityType.BaseType is null;
 
-        modelBuilder.Entity<TEntity>()
-            .HasQueryFilter(
-                QueryFilterNames.ActiveFilter,
-                entity => entity.IsActive);
+    private static LambdaExpression CreateBooleanFilter(
+        Type entityType,
+        string propertyName,
+        bool expectedValue)
+    {
+        var parameter = Expression.Parameter(entityType, "entity");
+        var property = Expression.Property(parameter, propertyName);
+        var expected = Expression.Constant(expectedValue);
+        var body = Expression.Equal(property, expected);
+        return Expression.Lambda(body, parameter);
     }
 }

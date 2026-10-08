@@ -4,19 +4,18 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace KLMN.Persistence.Configurations.Common;
 
-/// <summary>
-/// BaseEntity ortak EF Core configuration alanlarını tanımlar.
-/// Query filter'lar burada değil ModelBuilderExtensions içerisinde uygulanır.
-/// </summary>
+/// <summary>BaseEntity türevlerinin ortak EF Core mapping kurallarını tanımlar.</summary>
 public abstract class BaseEntityConfiguration<TEntity>
     : IEntityTypeConfiguration<TEntity>
     where TEntity : BaseEntity
 {
-    /// <summary>
-    /// Entity'nin ortak alanlarını configure eder.
-/// </summary>
-    public virtual void Configure(
-        EntityTypeBuilder<TEntity> builder)
+    public void Configure(EntityTypeBuilder<TEntity> builder)
+    {
+        ConfigureBaseEntity(builder);
+        ConfigureEntity(builder);
+    }
+
+    protected virtual void ConfigureBaseEntity(EntityTypeBuilder<TEntity> builder)
     {
         builder.HasKey(x => x.Id);
 
@@ -24,15 +23,27 @@ public abstract class BaseEntityConfiguration<TEntity>
             .ValueGeneratedNever();
 
         builder.Property(x => x.CreatedDate)
-            .IsRequired();
+            .IsRequired()
+            .HasColumnType("timestamp with time zone");
+
+        builder.Property(x => x.UpdatedDate)
+            .HasColumnType("timestamp with time zone");
+
+        builder.Property(x => x.DeletedDate)
+            .HasColumnType("timestamp with time zone");
 
         builder.Property(x => x.IsActive)
-            .IsRequired();
+            .IsRequired()
+            .HasDefaultValue(true);
 
         builder.Property(x => x.IsDeleted)
-            .IsRequired();
+            .IsRequired()
+            .HasDefaultValue(false);
 
+        // Npgsql uint + IsRowVersion() => PostgreSQL xmin.
         builder.Property(x => x.Version)
             .IsRowVersion();
     }
+
+    protected abstract void ConfigureEntity(EntityTypeBuilder<TEntity> builder);
 }

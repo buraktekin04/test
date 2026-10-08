@@ -4,36 +4,23 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace KLMN.Persistence.Configurations.Identity;
 
-/// <summary>
-/// Permission entity EF Core configuration'ıdır.
-/// </summary>
-internal sealed class PermissionConfiguration
-    : BaseEntityConfiguration<Permission>
+/// <summary>Permission entity EF Core configuration'ıdır.</summary>
+public sealed class PermissionConfiguration : BaseEntityConfiguration<Permission>
 {
-    public override void Configure(
-        EntityTypeBuilder<Permission> builder)
+    protected override void ConfigureEntity(EntityTypeBuilder<Permission> builder)
     {
-        base.Configure(builder);
-
         builder.ToTable("Permissions");
 
-        builder.Property(x => x.Name)
-            .HasMaxLength(150)
-            .IsRequired();
-
-        builder.Property(x => x.Code)
-            .HasMaxLength(150)
-            .IsRequired();
-
-        builder.Property(x => x.Module)
-            .HasMaxLength(100)
-            .IsRequired();
-
-        builder.Property(x => x.Description)
-            .HasMaxLength(500);
+        builder.Property(x => x.Name).IsRequired().HasMaxLength(150);
+        builder.Property(x => x.Code).IsRequired().HasMaxLength(150);
+        builder.Property(x => x.Module).IsRequired().HasMaxLength(100);
+        builder.Property(x => x.Description).HasMaxLength(500);
+        builder.Property(x => x.SortOrder).IsRequired().HasDefaultValue(0);
 
         builder.HasIndex(x => x.Code)
             .IsUnique()
-            .HasFilter(""IsDeleted" = FALSE");
+            .HasFilter(PostgreSqlIndexFilters.NotDeleted);
+
+        builder.HasIndex(x => new { x.Module, x.SortOrder });
     }
 }

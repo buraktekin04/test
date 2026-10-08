@@ -4,32 +4,24 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace KLMN.Persistence.Configurations.Identity;
 
-/// <summary>
-/// Role entity EF Core configuration'ıdır.
-/// </summary>
-internal sealed class RoleConfiguration
-    : BaseEntityConfiguration<Role>
+/// <summary>Role entity EF Core configuration'ıdır.</summary>
+public sealed class RoleConfiguration : BaseEntityConfiguration<Role>
 {
-    public override void Configure(
-        EntityTypeBuilder<Role> builder)
+    protected override void ConfigureEntity(EntityTypeBuilder<Role> builder)
     {
-        base.Configure(builder);
-
         builder.ToTable("Roles");
 
-        builder.Property(x => x.Name)
-            .HasMaxLength(150)
-            .IsRequired();
-
-        builder.Property(x => x.Code)
-            .HasMaxLength(100)
-            .IsRequired();
-
-        builder.Property(x => x.Description)
-            .HasMaxLength(500);
+        builder.Property(x => x.Name).IsRequired().HasMaxLength(100);
+        builder.Property(x => x.Code).IsRequired().HasMaxLength(100);
+        builder.Property(x => x.Description).HasMaxLength(500);
+        builder.Property(x => x.IsSystemRole).IsRequired().HasDefaultValue(false);
 
         builder.HasIndex(x => x.Code)
             .IsUnique()
-            .HasFilter(""IsDeleted" = FALSE");
+            .HasFilter(PostgreSqlIndexFilters.NotDeleted);
+
+        builder.HasIndex(x => x.Name)
+            .IsUnique()
+            .HasFilter(PostgreSqlIndexFilters.NotDeleted);
     }
 }

@@ -1,169 +1,132 @@
-using KLMN.Application.Common.Interfaces.Persistence;
-using KLMN.Application.Common.Interfaces.Security;
+using KLMN.Application.Common.Interfaces.Identity;
 using KLMN.Domain.Constants;
 using KLMN.Domain.Entities.Identity;
-using KLMN.Persistence.Settings;
+using KLMN.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
 
 namespace KLMN.Persistence.Seeds;
 
 /// <summary>
-/// Sistem rollerini ve ilk ADMIN kullanıcısını seed eder.
-/// Mevcut ADMIN parolası seed sırasında değiştirilmez.
+/// Sistem rollerini, ADMIN permission ilişkilerini ve ilk yönetici hesabını seed eder.
+/// Mevcut admin parolası startup sırasında değiştirilmez.
 /// </summary>
-internal sealed class IdentitySeeder(
-    IKLMNDbContext dbContext,
-    IPasswordHasherService passwordHasherService,
-    IOptions<InitialAdminSettings> adminOptions)
+internal sealed class IdentitySeeder
 {
-    /// <summary>
-    /// Rol ve ilk yönetici seed işlemlerini çalıştırır.
-/// </summary>
-    public async Task SeedAsync(
-        CancellationToken cancellationToken = default)
+    private readonly KLMNDbContext _dbContext;
+    private readonly PermissionSeeder _permissionSeeder;
+    private readonly IPasswordHasherService _passwordHasherService;
+    private readonly IConfiguration _configuration;
+
+    public IdentitySeeder(
+        KLMNDbContext dbContext,
+        PermissionSeeder permissionSeeder,
+        IPasswordHasherService passwordHasherService,
+        IConfiguration configuration)
     {
-        var adminRole =
-            await EnsureRoleAsync(
-                SystemRoles.Admin,
-                "Administrator",
-                true,
-                cancellationToken);
-
-        await EnsureRoleAsync(
-            SystemRoles.StandardUser,
-            "Standard User",
-            true,
-            cancellationToken);
-
-        await EnsureRoleAsync(
-            SystemRoles.InvestigationOfficer,
-            "Investigation Officer",
-            false,
-            cancellationToken);
-
-        await EnsureRoleAsync(
-            SystemRoles.BranchManager,
-            "Branch Manager",
-            false,
-            cancellationToken);
-
-        await EnsureAdminPermissionsAsync(
-            adminRole,
-            cancellationToken);
-
-        await EnsureInitialAdminAsync(
-            adminRole,
-            cancellationToken);
-
-        await dbContext.SaveChangesAsync(
-            cancellationToken);
+        _dbContext = dbContext;
+        _permissionSeeder = permissionSeeder;
+        _passwordHasherService = passwordHasherService;
+        _configuration = configuration;
     }
 
-    private async Task<Role> EnsureRoleAsync(
-        string code,
-        string name,
-        bool isSystemRole,
-        CancellationToken cancellationToken)
+    public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        var role = await dbContext.Roles
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(
-                x => x.Code == code,
-                cancellationToken);
+        await _permissionSeeder.SeedAsync(cancellationToken);
+        await SeedRolesAsync(cancellationToken);
+        await AssignAdminPermissionsAsync(cancellationToken);
+        await SeedInitialAdminAsync(cancellationToken);
+    }
 
-        if (role is not null)
+    private async Task SeedRolesAsync(CancellationToken cancellationToken)
+    {
+        var existingRoles = await _dbContext.Roles
+            .IgnoreQueryFilters()
+            .ToDictionaryAsync(x => x.Code, StringComparer.OrdinalIgnoreCase, cancellationToken);
+
+        foreach (var seedItem in IdentitySeedData.Roles)
         {
-            if (role.IsDeleted)
+            if (existingRoles.TryGetValue(seedItem.Code, out var role))
             {
-                role.IsDeleted = false;
+                role.Name = seedItem.Name;
+                role.Description = seedItem.Description;
+                role.IsSystemRole = seedItem.IsSystemRole;
                 role.IsActive = true;
+                role.IsDeleted = false;
                 role.DeletedDate = null;
                 role.DeletedBy = null;
-            }
-
-            role.IsSystemRole = isSystemRole;
-
-            return role;
-        }
-
-        role = new Role
-        {
-            Code = code,
-            Name = name,
-            IsSystemRole = isSystemRole
-        };
-
-        dbContext.Roles.Add(role);
-
-        return role;
-    }
-
-    private async Task EnsureAdminPermissionsAsync(
-        Role adminRole,
-        CancellationToken cancellationToken)
-    {
-        var permissionIds =
-            await dbContext.Permissions
-                .Select(x => x.Id)
-                .ToListAsync(cancellationToken);
-
-        var assigned =
-            await dbContext.RolePermissions
-                .IgnoreQueryFilters()
-                .Where(x => x.RoleId == adminRole.Id)
-                .ToListAsync(cancellationToken);
-
-        var assignedByPermission =
-            assigned.ToDictionary(
-                x => x.PermissionId);
-
-        foreach (var permissionId in permissionIds)
-        {
-            if (assignedByPermission.TryGetValue(
-                    permissionId,
-                    out var existing))
-            {
-                if (existing.IsDeleted)
-                {
-                    existing.IsDeleted = false;
-                    existing.IsActive = true;
-                    existing.DeletedDate = null;
-                    existing.DeletedBy = null;
-                }
-
                 continue;
             }
 
-            dbContext.RolePermissions.Add(
+            await _dbContext.Roles.AddAsync(
+                new Role
+                {
+                    Name = seedItem.Name,
+                    Code = seedItem.Code,
+                    Description = seedItem.Description,
+                    IsSystemRole = seedItem.IsSystemRole
+                },
+                cancellationToken);
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task AssignAdminPermissionsAsync(CancellationToken cancellationToken)
+    {
+        var adminRole = await _dbContext.Roles
+            .SingleAsync(x => x.Code == SystemRoles.Admin, cancellationToken);
+
+        var permissions = await _dbContext.Permissions
+            .ToListAsync(cancellationToken);
+
+        var existing = await _dbContext.RolePermissions
+            .IgnoreQueryFilters()
+            .Where(x => x.RoleId == adminRole.Id)
+            .ToListAsync(cancellationToken);
+
+        var byPermission = existing.ToDictionary(x => x.PermissionId);
+
+        foreach (var permission in permissions)
+        {
+            if (byPermission.TryGetValue(permission.Id, out var relation))
+            {
+                relation.IsActive = true;
+                relation.IsDeleted = false;
+                relation.DeletedDate = null;
+                relation.DeletedBy = null;
+                continue;
+            }
+
+            await _dbContext.RolePermissions.AddAsync(
                 new RolePermission
                 {
                     RoleId = adminRole.Id,
-                    PermissionId = permissionId
-                });
+                    PermissionId = permission.Id
+                },
+                cancellationToken);
         }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task EnsureInitialAdminAsync(
-        Role adminRole,
-        CancellationToken cancellationToken)
+    private async Task SeedInitialAdminAsync(CancellationToken cancellationToken)
     {
-        var settings = adminOptions.Value;
+        var userName = _configuration["InitialAdmin:UserName"];
+        var email = _configuration["InitialAdmin:Email"];
+        var password = _configuration["InitialAdmin:Password"];
 
-        if (string.IsNullOrWhiteSpace(settings.UserName) ||
-            string.IsNullOrWhiteSpace(settings.Email) ||
-            string.IsNullOrWhiteSpace(settings.Password))
+        if (string.IsNullOrWhiteSpace(userName) ||
+            string.IsNullOrWhiteSpace(email) ||
+            string.IsNullOrWhiteSpace(password))
         {
             return;
         }
 
-        var normalizedUserName =
-            settings.UserName.Trim().ToUpperInvariant();
+        var normalizedUserName = Normalize(userName);
+        var normalizedEmail = Normalize(email);
 
-        var normalizedEmail =
-            settings.Email.Trim().ToUpperInvariant();
-
-        var user = await dbContext.Users
+        var adminUser = await _dbContext.Users
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(
                 x =>
@@ -171,56 +134,62 @@ internal sealed class IdentitySeeder(
                     x.NormalizedEmail == normalizedEmail,
                 cancellationToken);
 
-        if (user is null)
+        if (adminUser is null)
         {
-            user = new User
+            adminUser = new User
             {
-                UserName = settings.UserName.Trim(),
+                UserName = userName.Trim(),
                 NormalizedUserName = normalizedUserName,
-                Email = settings.Email.Trim(),
+                Email = email.Trim(),
                 NormalizedEmail = normalizedEmail,
-                FirstName = settings.FirstName.Trim(),
-                LastName = settings.LastName.Trim(),
-                PasswordHash =
-                    passwordHasherService.HashPassword(
-                        settings.Password),
+                FirstName = _configuration["InitialAdmin:FirstName"]?.Trim() ?? "System",
+                LastName = _configuration["InitialAdmin:LastName"]?.Trim() ?? "Administrator",
+                PasswordHash = _passwordHasherService.HashPassword(password),
+                SecurityStamp = Guid.NewGuid().ToString("N"),
                 PasswordChangedDate = DateTime.UtcNow
             };
 
-            dbContext.Users.Add(user);
+            await _dbContext.Users.AddAsync(adminUser, cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
-        else if (user.IsDeleted)
+        else
         {
-            user.IsDeleted = false;
-            user.IsActive = true;
-            user.DeletedDate = null;
-            user.DeletedBy = null;
+            adminUser.IsDeleted = false;
+            adminUser.IsActive = true;
+            adminUser.DeletedDate = null;
+            adminUser.DeletedBy = null;
         }
 
-        var hasAdminRole =
-            await dbContext.UserRoles
-                .IgnoreQueryFilters()
-                .FirstOrDefaultAsync(
-                    x =>
-                        x.UserId == user.Id &&
-                        x.RoleId == adminRole.Id,
-                    cancellationToken);
+        var adminRole = await _dbContext.Roles
+            .SingleAsync(x => x.Code == SystemRoles.Admin, cancellationToken);
 
-        if (hasAdminRole is null)
+        var existingUserRole = await _dbContext.UserRoles
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(
+                x => x.UserId == adminUser.Id && x.RoleId == adminRole.Id,
+                cancellationToken);
+
+        if (existingUserRole is null)
         {
-            dbContext.UserRoles.Add(
+            await _dbContext.UserRoles.AddAsync(
                 new UserRole
                 {
-                    UserId = user.Id,
+                    UserId = adminUser.Id,
                     RoleId = adminRole.Id
-                });
+                },
+                cancellationToken);
         }
-        else if (hasAdminRole.IsDeleted)
+        else
         {
-            hasAdminRole.IsDeleted = false;
-            hasAdminRole.IsActive = true;
-            hasAdminRole.DeletedDate = null;
-            hasAdminRole.DeletedBy = null;
+            existingUserRole.IsActive = true;
+            existingUserRole.IsDeleted = false;
+            existingUserRole.DeletedDate = null;
+            existingUserRole.DeletedBy = null;
         }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
+
+    private static string Normalize(string value) =>
+        value.Trim().ToUpperInvariant();
 }
