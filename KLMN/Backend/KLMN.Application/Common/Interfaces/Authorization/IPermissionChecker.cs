@@ -1,8 +1,6 @@
 namespace KLMN.Application.Common.Interfaces.Authorization;
 
-/// <summary>
-/// Gerçek endpoint permission kararını DB üzerinden verir.
-/// </summary>
+/// <summary>Mevcut kullanıcının permission durumunu DB üzerinden kontrol eder.</summary>
 public interface IPermissionChecker
 {
     Task<bool> HasPermissionAsync(

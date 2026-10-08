@@ -1,27 +1,14 @@
 namespace KLMN.Domain.Constants;
 
 /// <summary>
-/// KLMN sisteminde özel anlam taşıyan rol kodlarını tanımlar.
+/// Uygulamanın özel davranış uyguladığı sistem rol kodlarını içerir.
+/// Dinamik olarak oluşturulan normal roller bu sınıfa eklenmez.
 /// </summary>
 public static class SystemRoles
 {
-    /// <summary>
-    /// Tam yetkili sistem yöneticisi rol kodudur.
-    /// </summary>
+    /// <summary>Sistem genelinde tam yetkili yönetici rol kodudur.</summary>
     public const string Admin = "ADMIN";
 
-    /// <summary>
-    /// Standart kullanıcı sistem rol kodudur.
-    /// </summary>
+    /// <summary>Standart kullanıcı temel sistem rol kodudur.</summary>
     public const string StandardUser = "STANDARD_USER";
-
-    /// <summary>
-    /// İnceleme görevlisi rol kodudur.
-    /// </summary>
-    public const string InvestigationOfficer = "INVESTIGATION_OFFICER";
-
-    /// <summary>
-    /// Şube müdürü rol kodudur.
-    /// </summary>
-    public const string BranchManager = "BRANCH_MANAGER";
 }

@@ -3,45 +3,39 @@ using MediatR;
 
 namespace KLMN.Application.Common.Behaviors;
 
-/// <summary>
-/// MediatR request'lerini handler çalışmadan önce FluentValidation ile doğrular.
-/// </summary>
-public sealed class ValidationBehavior<TRequest, TResponse>(
-    IEnumerable<IValidator<TRequest>> validators)
+/// <summary>MediatR request'lerini FluentValidation ile merkezi olarak doğrular.</summary>
+public sealed class ValidationBehavior<TRequest, TResponse>
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
-    /// <summary>
-    /// Request validation pipeline adımını çalıştırır.
-    /// </summary>
+    private readonly IEnumerable<IValidator<TRequest>> _validators;
+
+    public ValidationBehavior(IEnumerable<IValidator<TRequest>> validators)
+    {
+        _validators = validators;
+    }
+
     public async Task<TResponse> Handle(
         TRequest request,
         RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
-        if (!validators.Any())
+        if (!_validators.Any())
         {
             return await next();
         }
 
-        var context =
-            new ValidationContext<TRequest>(request);
+        var context = new ValidationContext<TRequest>(request);
 
-        var validationResults =
-            await Task.WhenAll(
-                validators.Select(
-                    validator =>
-                        validator.ValidateAsync(
-                            context,
-                            cancellationToken)));
+        var results = await Task.WhenAll(
+            _validators.Select(x => x.ValidateAsync(context, cancellationToken)));
 
-        var failures =
-            validationResults
-                .SelectMany(x => x.Errors)
-                .Where(x => x is not null)
-                .ToArray();
+        var failures = results
+            .SelectMany(x => x.Errors)
+            .Where(x => x is not null)
+            .ToList();
 
-        if (failures.Length > 0)
+        if (failures.Count != 0)
         {
             throw new ValidationException(failures);
         }

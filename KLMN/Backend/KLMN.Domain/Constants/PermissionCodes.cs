@@ -1,13 +1,12 @@
 namespace KLMN.Domain.Constants;
 
 /// <summary>
-/// KLMN uygulamasında kullanılan merkezi permission kodlarını tanımlar.
+/// Uygulama genelinde kullanılan permission kodlarını merkezi ve
+/// type-safe şekilde tanımlar.
 /// </summary>
 public static class PermissionCodes
 {
-    /// <summary>
-    /// Kullanıcı yönetimi permission kodlarıdır.
-    /// </summary>
+    /// <summary>Kullanıcı yönetimi permission kodlarını içerir.</summary>
     public static class Users
     {
         public const string View = "Users.View";
@@ -20,9 +19,7 @@ public static class PermissionCodes
         public const string ManagePermissions = "Users.ManagePermissions";
     }
 
-    /// <summary>
-    /// Rol yönetimi permission kodlarıdır.
-    /// </summary>
+    /// <summary>Rol yönetimi permission kodlarını içerir.</summary>
     public static class Roles
     {
         public const string View = "Roles.View";
@@ -33,9 +30,7 @@ public static class PermissionCodes
         public const string ManagePermissions = "Roles.ManagePermissions";
     }
 
-    /// <summary>
-    /// Organizasyon yönetimi permission kodlarıdır.
-    /// </summary>
+    /// <summary>Organizasyon yönetimi permission kodlarını içerir.</summary>
     public static class Organizations
     {
         public const string View = "Organizations.View";
@@ -43,22 +38,18 @@ public static class PermissionCodes
         public const string Create = "Organizations.Create";
         public const string Update = "Organizations.Update";
         public const string Delete = "Organizations.Delete";
-        public const string Activate = "Organizations.Activate";
     }
 
-    /// <summary>
-    /// Rapor permission kodlarıdır.
-    /// </summary>
+    /// <summary>Raporlama permission kodlarını içerir.</summary>
     public static class Reports
     {
         public const string View = "Reports.View";
         public const string Query = "Reports.Query";
         public const string Export = "Reports.Export";
+        public const string Print = "Reports.Print";
     }
 
-    /// <summary>
-    /// İnceleme modülü permission kodlarıdır.
-    /// </summary>
+    /// <summary>İnceleme ve soruşturma permission kodlarını içerir.</summary>
     public static class Investigations
     {
         public const string View = "Investigations.View";
@@ -68,5 +59,8 @@ public static class PermissionCodes
         public const string Delete = "Investigations.Delete";
         public const string Approve = "Investigations.Approve";
         public const string Reject = "Investigations.Reject";
+        public const string Close = "Investigations.Close";
+        public const string Export = "Investigations.Export";
+        public const string Print = "Investigations.Print";
     }
 }
