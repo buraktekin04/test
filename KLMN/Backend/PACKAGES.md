@@ -1,37 +1,39 @@
-# KLMN Backend NuGet / Framework Notları
+# KLMN Backend Paket / Referans Notları
 
-Kapalı ağdaki gerçek projede mevcut paket sürümlerini koruyun. Bu aktarım klasörü source-code referansıdır.
+Kapalı ağdaki gerçek projede paket sürümlerini mevcut .NET 10 / EF Core 10 sürümleriyle uyumlu tutun.
 
-Başlıca gereken paket/özellikler:
+## KLMN.Application
 
-```text
-KLMN.Application
 - MediatR
 - FluentValidation
 - FluentValidation.DependencyInjectionExtensions
 - Microsoft.EntityFrameworkCore
+- Microsoft.Extensions.Options.ConfigurationExtensions
 
-KLMN.Persistence
+## KLMN.Persistence
+
 - Microsoft.EntityFrameworkCore
 - Microsoft.EntityFrameworkCore.Relational
 - Npgsql.EntityFrameworkCore.PostgreSQL
 
-KLMN.Infrastructure
+## KLMN.Infrastructure
+
 - Microsoft.AspNetCore.Authentication.JwtBearer
 - Microsoft.AspNetCore.Identity
-- System.IdentityModel.Tokens.Jwt
+- Microsoft.IdentityModel.Tokens / System.IdentityModel.Tokens.Jwt
+- Microsoft.Extensions.Options.ConfigurationExtensions
 - MailKit
 
-KLMN.Api
+## KLMN.Api
+
 - Microsoft.AspNetCore.OpenApi
-- Swagger UI / Swashbuckle.AspNetCore (UseSwaggerUI için)
-```
+- Swagger UI paketi (mevcut projede `UseSwaggerUI` sağlayan paket)
 
-Secret değerleri source control'e yazmayın:
+## Source control'e yazılmaması gerekenler
 
-- ConnectionStrings:DefaultConnection
-- Jwt:SecretKey
-- InitialAdmin:Password
-- Smtp:Password
+- `ConnectionStrings:PostgreSQL`
+- `Jwt:SecretKey`
+- `InitialAdmin:Password`
+- `Smtp:Password`
 
-Development ortamında user-secrets veya kurumun güvenli configuration mekanizması kullanılmalıdır.
+Bu değerleri user-secrets, environment variable veya kurumun güvenli configuration mekanizması üzerinden verin.
