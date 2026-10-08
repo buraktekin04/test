@@ -1,6 +1,6 @@
 namespace KLMN.Application.Common.Options;
 
-/// <summary>appsettings.json içindeki Authentication bölümünde tanımlanan başarısız giriş limiti ve hesap kilitleme sürelerini tip güvenli olarak temsil eder.</summary>
+/// <summary>seçili ortamın Authentication bölümünde tanımlanan başarısız giriş limiti ve hesap kilitleme sürelerini tip güvenli olarak temsil eder.</summary>
 public sealed class AuthenticationSettings
 {
     /// <summary>

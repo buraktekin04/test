@@ -11,22 +11,25 @@ const string AngularCorsPolicy = "AngularCors";
 var builder = WebApplication.CreateBuilder(args);
 
 /*
- * KLMN'nin bütün uygulama ayarları tek dosyada tutulur:
- * KLMN.Api/appsettings.json
+ * ASP.NET Core'un standart ortam bazlı configuration yüklemesi kullanılır:
  *
- * Bu dosyayı varsayılan configuration provider'larından sonra yeniden
- * eklemek, aynı anahtarın başka bir provider tarafından (örneğin
- * development ortamındaki eski ayarlar veya user-secrets) yanlışlıkla
- * override edilmesini engeller. Appsettings bütün KLMN ayarlarında önceliklidir.
+ * Production:
+ *   appsettings.json
+ *
+ * Development (geliştirme / test):
+ *   appsettings.json + appsettings.Development.json
+ *
+ * Development dosyasındaki aynı anahtarlar, appsettings.json içindeki
+ * değerleri geçersiz kılar. Böylece PostgreSQL, JWT, SMTP, InitialAdmin,
+ * PasswordReset ve CORS ayarları iki ortamda birbirinden bağımsızdır.
+ *
+ * WebApplication.CreateBuilder(args) bu davranışı otomatik sağlar;
+ * appsettings.json dosyasını burada tekrar AddJsonFile ile eklemiyoruz.
  */
-builder.Configuration.AddJsonFile(
-    "appsettings.json",
-    optional: false,
-    reloadOnChange: true);
 
 /*
- * İzin verilen Angular origin'leri sabit kod yerine appsettings.json
- * dosyasındaki Cors:AllowedOrigins bölümünden okunur.
+ * İzin verilen Angular origin'leri seçili ortamın appsettings dosyasındaki
+ * Cors:AllowedOrigins bölümünden okunur.
  *
  * Angular tarafında proxy kullanılmadığı için frontend HTTPS adresinin
  * burada tanımlanmış olması gerekir.
@@ -40,7 +43,7 @@ if (allowedOrigins is null ||
     allowedOrigins.Any(string.IsNullOrWhiteSpace))
 {
     throw new InvalidOperationException(
-        "appsettings.json içerisindeki Cors:AllowedOrigins bölümüne en az bir geçerli origin ekleyiniz.");
+        "Seçili ortamın appsettings dosyasındaki Cors:AllowedOrigins bölümüne en az bir geçerli origin ekleyiniz.");
 }
 
 builder.Services.AddControllers();

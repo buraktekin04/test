@@ -18,19 +18,20 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // PostgreSQL bağlantısının güvenli yapılandırmadan okunan bilgisidir.
+        // Ortama göre appsettings.json veya appsettings.Development.json üzerinden alınan PostgreSQL bağlantısıdır.
         var connectionString =
             configuration.GetConnectionString("PostgreSQL");
 
         /*
          * Veritabanı sunucusu, port, veritabanı adı, kullanıcı ve
-         * parola KLMN.Api/appsettings.json içindeki
-         * ConnectionStrings:PostgreSQL değerinde tanımlanır.
+         * parola seçili ortamın appsettings.json veya
+         * appsettings.Development.json içindeki
+         * ConnectionStrings:PostgreSQL alanında tanımlanır.
          */
         if (string.IsNullOrWhiteSpace(connectionString))
         {
             throw new InvalidOperationException(
-                "appsettings.json içindeki ConnectionStrings:PostgreSQL boş bırakılamaz.");
+                "Seçili ortamın appsettings dosyasındaki ConnectionStrings:PostgreSQL boş bırakılamaz.");
         }
 
         services.AddScoped<AuditableEntitySaveChangesInterceptor>();

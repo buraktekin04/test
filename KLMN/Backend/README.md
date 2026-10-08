@@ -2,81 +2,92 @@
 
 Bu klasör, orijinal MSKBS sınıflarının **KLMN** ad alanına uyarlanmış katmanlı sürümüdür.
 
-## Tek yapılandırma dosyası: appsettings.json
+## Ortama göre appsettings dosyaları
 
-**Uygulamanın bütün teknik ve başlangıç ayarları** `KLMN/Backend/KLMN.Api/appsettings.json` içerisinde yönetilir. `user-secrets`, ayrı `appsettings.Development.json` dosyası veya uygulamaya özgü environment variable tanımlamak **zorunlu değildir**. Bu projede tüm KLMN ayarlarının önceliği `appsettings.json` olacak biçimde düzenlenmiştir.
+KLMN projesinin **iki ayrı ayar dosyası** vardır:
 
-Yönetilecek bölümler:
+| Ortam | Dosya | Kullanım |
+| --- | --- | --- |
+| **Production (canlı)** | `KLMN.Api/appsettings.json` | Canlı bağlantılar ve uygulama ayarları |
+| **Development (geliştirme/test)** | `KLMN.Api/appsettings.Development.json` | Geliştirme ve test bağlantıları ve ayarları |
+
+`WebApplication.CreateBuilder(args)` bu dosyaları varsayılan olarak yükler. **Development** ortamında `appsettings.Development.json` aynı isimli `appsettings.json` değerlerini ezer. **Production** ortamında `appsettings.json` kullanılır. Artık `Program.cs` içerisinde ikinci kez `AddJsonFile("appsettings.json")` yapılmaz; önceki hatalı öncelik davranışı düzeltildi.
+
+Her iki dosyada da aynı bölümler bulunur. Her ortamın parolası ve bağlantı ayarları ayrı tutulabilir:
 
 | Bölüm | İçerik |
 | --- | --- |
-| `ConnectionStrings:PostgreSQL` | PostgreSQL host, port, veritabanı, kullanıcı adı, parola |
-| `Jwt` | İmza anahtarı, issuer, audience, access/refresh token süreleri |
-| `Authentication` | Hatalı giriş limiti, geçici hesap kilidi süresi |
-| `PasswordReset` | Token süresi, Angular sıfırlama ekranı URL'si |
-| `InitialAdmin` | İlk yönetici kullanıcı adı, e-posta, parola, ad ve soyad |
-| `Smtp` | Sunucu, port, kimlik doğrulama hesabı/parola, gönderen adresi/adı |
-| `Cors:AllowedOrigins` | Proxy kullanılmadan API'ye erişecek Angular HTTPS origin'leri |
-| `Logging` | Log seviye ayarları |
-| `AllowedHosts` | ASP.NET Core host filtreleme ayarı |
+| `ConnectionStrings:PostgreSQL` | PostgreSQL sunucusu, port, veritabanı, kullanıcı adı ve parola |
+| `Jwt` | SecretKey, issuer, audience, access/refresh token süreleri |
+| `Authentication` | Giriş başarısızlık limiti ve hesap kilitleme süresi |
+| `PasswordReset` | Sıfırlama token süresi ve Angular reset ekranı URL'si |
+| `InitialAdmin` | Ortamın ilk yönetici kullanıcı adı/e-posta/parolası |
+| `Smtp` | SMTP host, port, kullanıcı, parola, gönderen adresi/adı |
+| `Cors:AllowedOrigins` | İlgili ortamdan API'ye erişebilen Angular origin'leri |
+| `Logging` | Log seviyeleri |
+| `AllowedHosts` | ASP.NET Core host filtresi |
 
-`JwtSettings`, `AuthenticationSettings`, `PasswordResetSettings` ve `SmtpSettings` sınıfları ayrı dosyada konfigürasyon **saklamaz**. Bunlar yalnızca `appsettings.json` içindeki değerleri tip güvenli biçimde uygulamaya bağlayan ve doğrulayan C# modelleridir. Bu sayede mevcut DI/Options kullanan sınıflar değişmeden çalışır.
+`JwtSettings`, `AuthenticationSettings`, `PasswordResetSettings` ve `SmtpSettings` **ayrı ayar deposu değildir**. Etkin ortamın JSON dosyasındaki değerleri C# tarafında güçlü tiple sunan ve `ValidateOnStart` ile kontrol eden modellerdir.
 
-### appsettings.json nasıl doldurulacak?
+### Geliştirme ve test ortamı
 
-Dosya içerisindeki boş alanları **kurum ağındaki gerçek bilgilerle** değiştirin:
-
-- `ConnectionStrings:PostgreSQL`: Şablonda host/port/veritabanı bilgisi vardır; `Username` ve `Password` dahil tamamını kuruma göre düzenleyin.
-- `Jwt:SecretKey`: En az 32 byte uzunluğunda **rastgele oluşturulmuş** bir imza anahtarı yazın. Uygulama boş anahtarla başlatılmaz.
-- `InitialAdmin:UserName`, `Email`, `Password`: İlk yönetici oluşturulacaksa bu üç alanı doldurun. Boş bırakıldığında ilk admin kullanıcısı oluşturulmaz; roller ve permission'lar oluşturulabilir. Seeder mevcut yöneticinin parolasını her açılışta sıfırlamaz.
-- `Smtp:Host` ve `Smtp:FromAddress`: E-posta sunucusu ve gönderen adresini girin; SMTP authentication varsa `Smtp:UserName` ve `Password` alanlarını da doldurun.
-- `PasswordReset:ResetUrlBase`: Angular parola yenileme sayfası. Geliştirmede `https://localhost:4200/reset-password`, kurumda yayın adresiniz.
-- `Cors:AllowedOrigins`: Angular'ın tam origin'i (`https://localhost:4200` gibi). CORS wildcard yerine belirtilen adresleri ve credential'lı istekleri destekler.
-
-**Güvenlik ve GitHub:** Bu GitHub deposu şu anda **public**. Bu yüzden gerçek admin/SMTP/PostgreSQL parolaları ve JWT imza anahtarı commit'e eklenmemiştir. Uygulamayı kapalı ağda çalıştırırken gerçek bilgileri yalnızca oradaki `appsettings.json` dosyasına yazabilirsiniz. Bu dosyanın gerçek parolalı halini public GitHub'a göndermeyin; kapalı ağda olması, GitHub deposunun erişimini değiştirmez.
-
-## Projeler
-
-- **KLMN.Domain:** BaseEntity, kullanıcı, rol, permission, organizasyon ve token entity'leri.
-- **KLMN.Application:** CQRS/MediatR, FluentValidation, kullanıcı yetkilendirme ve auth akışları.
-- **KLMN.Persistence:** PostgreSQL EF Core, `xmin` concurrency, named query filter'lar, soft delete ve seed.
-- **KLMN.Infrastructure:** JWT, security stamp, MailKit SMTP ve teknik servisler.
-- **KLMN.Api:** HTTP endpoint'leri, ProblemDetails, CORS ve JWT middleware.
-
-## İlk kurulum
-
-.NET 10 SDK ve PostgreSQL kurulmuş olmalıdır.
+`KLMN.Api/Properties/launchSettings.json` dosyasındaki **KLMN.Api (Development)** profiliyle çalıştırıldığında `ASPNETCORE_ENVIRONMENT=Development` seçilir; uygulama `appsettings.Development.json` dosyasındaki değerleri kullanır. Launch profile yalnızca ortamı ve HTTPS portunu seçer; veritabanı, admin, SMTP veya JWT bilgisi bu dosyada saklanmaz.
 
 ```powershell
 cd KLMN/Backend
-
-# Önce KLMN.Api/appsettings.json dosyasındaki bilgileri doldurun.
 dotnet restore KLMN.slnx
 dotnet build KLMN.slnx
+dotnet run --project KLMN.Api --launch-profile "KLMN.Api (Development)"
 ```
 
-### Migration (önemli)
+Geliştirme API adresi `https://localhost:7145` olarak ayarlıdır. Angular da proxy kullanmadan `https://localhost:7145/api` adresine doğrudan istek gönderir.
 
-Depoda henüz **ilk EF Core migration dosyası bulunmuyor**. API açılışta `MigrateAsync` ve `IdentitySeeder` çalıştırır. Boş veritabanında ilk migration oluşturulmadan API'yi başlatmayın.
+### Canlı ortam
+
+Publish edilen uygulamanın çalışma ortamı **Production** seçili olmalıdır. Visual Studio veya `dotnet run` launch profilini canlıda kullanmayın; development profilini canlı sunucuda başlatırsanız Development ayarları okunur. Production'da `appsettings.json` içerisindeki gerçek host, JWT, SMTP, e-posta ve admin bilgilerini yapılandırın. Dosyadaki `PROD_...` ve `klmn.example.invalid` değerleri **yalnızca değiştirilecek örneklerdir**.
+
+### Doldurulması gereken alanlar
+
+- Her iki ortamda `Jwt:SecretKey`: En az 32 byte uzunlukta, **birbirinden farklı** rastgele secret girin.
+- `ConnectionStrings:PostgreSQL`: Development'ta örnek `KLMN_Dev`, canlıda `KLMN`; iki ortamın veritabanı hesabını ve şifresini gerçek değerlerle doldurun.
+- `InitialAdmin:UserName`, `Email`, `Password`: İlgili ortamda ilk admin oluşturulacaksa doldurun. Seeder mevcut kullanıcının parolasını her startup'ta değiştirmez.
+- `Smtp:Host`, `Smtp:FromAddress`, gerektiğinde `UserName` ve `Password`: İlgili ortamın SMTP sunucusunun bilgilerini yazın.
+- `PasswordReset:ResetUrlBase`: Angular'ın o ortamdaki sıfırlama ekranı adresini yazın.
+- `Cors:AllowedOrigins`: İlgili ortamın Angular adreslerini açıkça listeleyin.
+
+**GitHub güvenliği:** `buraktekin04/test` şu anda public olduğu için gerçek parola ve JWT anahtarları repoya yazılmadı. Kapalı ağda gerçek bilgileri ilgili JSON'a girebilirsin; gerçek parolaları public GitHub'a geri pushlama. İki dosyadaki boş SecretKey/SMTP alanları doldurulmadan API'nin `ValidateOnStart` kontrolleri geçmez.
+
+## Proje katmanları
+
+- **KLMN.Domain:** Ortak entity, kullanıcı, rol, permission, organizasyon ve token modelleri.
+- **KLMN.Application:** MediatR/CQRS, FluentValidation, auth ve authorization işlemleri.
+- **KLMN.Persistence:** PostgreSQL EF Core, `xmin`, named query filter, soft delete ve seeding.
+- **KLMN.Infrastructure:** JWT, MailKit SMTP, current user ve hashleme servisleri.
+- **KLMN.Api:** HTTP endpoint'leri, CORS, ProblemDetails ve auth middleware.
+
+## Migration (önemli)
+
+Bu depoda henüz ilk EF Core migration dosyası bulunmuyor. İlk başlangıçtan önce uygun ortamın bağlantı değerleriyle migration oluşturun:
 
 ```powershell
-# KLMN/Backend klasöründe
+cd KLMN/Backend
 dotnet tool install --global dotnet-ef --version 10.0.0
+
+# EF CLI için Development dosyasını açıkça seçer; bağlantı/parola
+# bilgileri yine appsettings.Development.json üzerinden okunur.
+$env:ASPNETCORE_ENVIRONMENT = "Development"
+
 dotnet ef migrations add InitialCreate --project KLMN.Persistence --startup-project KLMN.Api --output-dir Migrations
 dotnet ef database update --project KLMN.Persistence --startup-project KLMN.Api
-dotnet run --project KLMN.Api
+
+# Sonraki işlemlerin yanlışlıkla Development olarak çalışmaması için:
+Remove-Item Env:ASPNETCORE_ENVIRONMENT
 ```
 
-## Authentication
+Migration ve seed işlemleri **seçili ortamın PostgreSQL veritabanına** uygulanacaktır. Geliştirme/test ve canlı veritabanlarını karıştırmayın.
 
-- Access token Angular'da yalnızca bellekte tutulur; refresh token HttpOnly cookie'dedir.
-- Refresh token veritabanında SHA-256 hash olarak saklanır ve rotation/reuse detection uygulanır.
-- Parola değiştirme/sıfırlama ve tüm cihazlardan çıkış security stamp'i yeniler.
-- Yetki kontrolleri anlık veritabanı bilgisine göre çalışır.
-- EF Core concurrency çatışmaları HTTP 409 olarak döner; `xmin` fiziksel `Version` kolonu gerektirmez.
+## Auth ve frontend notları
 
-## Angular ile bağlantı
+JWT access token Angular belleğindedir, refresh token HttpOnly cookie'dedir; refresh rotation ve security stamp kontrolü korunur. `xmin` optimistic concurrency çatışmaları HTTP 409 ile ele alınır. Angular proxy kullanmaz. Geliştirmede `https://localhost:4200` Angular origin'i, `appsettings.Development.json > Cors:AllowedOrigins` ile eşleşmelidir.
 
-Angular proxy **kullanılmaz**. Frontend `https://localhost:4200` üzerinden API'ye `https://localhost:7145/api` adresinden doğrudan istek gönderir. Farklı origin/port kullanılıyorsa backend `appsettings.json > Cors:AllowedOrigins` ve Angular `environment.development.ts > apiBaseUrl` alanlarını eşleştirin. Refresh cookie `Secure=true` ve `SameSite=Lax` ayarlıdır; yerel HTTPS sertifikalarını güvenilir kılın.
-
-> Derleme, migration ve kurum içi SMTP/DB bağlantıları mevcut çalışma ortamında ayrıca doğrulanmalıdır.
+> Bu değişikliklerde yapılandırma ve dosya tutarlılığı kontrol edilir; gerçek DB/SMTP bağlantısı ve derleme kurum ortamında ayrıca doğrulanmalıdır.

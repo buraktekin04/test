@@ -41,12 +41,14 @@ public static class DependencyInjection
 
         /*
          * Jwt, Authentication, PasswordReset ve Smtp ayarları
-         * ayrı bir kullanıcı sırrı deposundan değil, merkezi
-         * KLMN.Api/appsettings.json dosyasındaki JSON bölümlerinden
-         * IOptions<T> modellerine aktarılır.
+         * seçili ortamın JSON konfigürasyonundan IOptions<T>
+         * modellerine bağlanır:
          *
-         * Settings sınıfları değer saklayan harici dosyalar değil,
-         * uygulama tarafında tip güvenliği ve doğrulama sağlayan DTO'lardır.
+         * Production: appsettings.json
+         * Development: appsettings.Development.json (öncelikli)
+         *
+         * Settings/Options sınıfları ayrı ayar deposu değildir; tipli
+         * erişim ve başlangıç doğrulaması için kullanılan modellerdir.
          */
         services
             .AddOptions<JwtSettings>()

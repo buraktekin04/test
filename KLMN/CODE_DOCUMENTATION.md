@@ -27,4 +27,4 @@ Bu dokümantasyon düzenlemesinde kaynak kodun mevcut işlevsel satırları koru
 
 ## Merkezi yapılandırma
 
-JWT, SMTP, PasswordReset, Authentication, InitialAdmin, PostgreSQL bağlantısı, CORS ve log ayarlarının kaynak dosyası `KLMN.Api/appsettings.json` şeklindedir. `*Settings` C# sınıfları bu dosyadan binding yapılan tipli modellerdir; başka bir konfigürasyon dosyası gerektirmezler. Kod içi yeni açıklamalarda bu ayrımı koruyun.
+JWT, SMTP, PasswordReset, Authentication, InitialAdmin, PostgreSQL bağlantısı, CORS ve log ayarları iki ortamda ayrıdır: **Production** için `KLMN.Api/appsettings.json`, **Development/test** için `KLMN.Api/appsettings.Development.json` kullanılır. `WebApplication.CreateBuilder(args)` standart yükleme ve override sırasını sağlar. `*Settings` C# sınıfları seçili JSON değerlerinin tipli modelleridir; ayrı veri kaynağı değillerdir. Kod içi yeni açıklamalarda ortam ayrımını koruyun.

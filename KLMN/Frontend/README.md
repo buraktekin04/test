@@ -14,7 +14,7 @@ Angular CLI **proxy kullanılmıyor**. `npm start`, `https://localhost:4200` adr
 `environment.ts` içindeki `/api`, yalnızca production'da API frontend ile **aynı origin** altında sunuluyorsa geçerlidir; ayrı bir API domain'i kullanılıyorsa tam HTTPS URL yazılmalıdır.
 
 ### CORS ve refresh cookie
-Angular ile API ayrı portlarda çalıştığından backend `KLMN.Api/appsettings.json` dosyasındaki `Cors:AllowedOrigins` bölümünden Angular adreslerini okur ve `AllowCredentials()` kullanır. HttpOnly refresh cookie'nin gönderilebilmesi için Angular ve API'dyi HTTPS ile çalıştırın (farklı şemalar `SameSite=Lax` cookie akışını bozabilir). Local geliştirme sertifikalarının tarayıcı tarafından güvenilir olmasını sağlayın. Backend API'de örnek port `7145` kullanılır; gerçek HTTPS portunu doğrulayın.
+Angular ile API ayrı portlarda çalıştığından backend geliştirme/test için `KLMN.Api/appsettings.Development.json > Cors:AllowedOrigins`, canlı için `appsettings.json > Cors:AllowedOrigins` bölümünden Angular adreslerini okur ve `AllowCredentials()` kullanır. HttpOnly refresh cookie'nin gönderilebilmesi için Angular ve API'dyi HTTPS ile çalıştırın (farklı şemalar `SameSite=Lax` cookie akışını bozabilir). Local geliştirme sertifikalarının tarayıcı tarafından güvenilir olmasını sağlayın. Backend API'de örnek port `7145` kullanılır; gerçek HTTPS portunu doğrulayın.
 
 İleride proxy istenirse ayrıca yapılandırılabilir; bu sürümde Angular proxy dosyası veya proxy script'i yoktur.
 

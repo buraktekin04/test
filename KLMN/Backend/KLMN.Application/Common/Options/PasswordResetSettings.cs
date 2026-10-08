@@ -1,6 +1,6 @@
 namespace KLMN.Application.Common.Options;
 
-/// <summary>appsettings.json içerisindeki PasswordReset bölümünden okunan token geçerlilik süresi ve Angular sıfırlama bağlantısını temsil eder.</summary>
+/// <summary>seçili ortamın PasswordReset bölümünden okunan token geçerlilik süresi ve Angular sıfırlama bağlantısını temsil eder.</summary>
 public sealed class PasswordResetSettings
 {
     /// <summary>

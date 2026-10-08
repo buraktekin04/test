@@ -1,6 +1,6 @@
 # KLMN Backend paket / referans notları
 
-Kurumun kapalı ağında .NET 10 ve EF Core 10 ile uyumlu paket sürümlerini kullanın.
+Kapalı ağda .NET 10 ve EF Core 10 sürümleriyle uyumlu paketleri kullanın.
 
 ## KLMN.Application
 - MediatR
@@ -25,10 +25,14 @@ Kurumun kapalı ağında .NET 10 ve EF Core 10 ile uyumlu paket sürümlerini ku
 - Microsoft.AspNetCore.OpenApi
 - Swashbuckle.AspNetCore.SwaggerUI
 
-## Yapılandırma politikası
+## İki ayrı appsettings ortamı
 
-Uygulama, tüm bağlantı ve kimlik doğrulama bilgilerini **KLMN.Api/appsettings.json** dosyasından okur. JWT, SMTP, PasswordReset ve Authentication Settings/Options sınıfları bağımsız ayar deposu değildir; appsettings bölümlerine tip güvenli erişim sağlar.
+- **Production:** `KLMN.Api/appsettings.json`.
+- **Development/test:** `KLMN.Api/appsettings.Development.json`.
+- Her ikisinde `ConnectionStrings`, `Jwt`, `Authentication`, `PasswordReset`, `InitialAdmin`, `Smtp`, `Cors`, `Logging` ve `AllowedHosts` bölümleri vardır.
+- `WebApplication.CreateBuilder(args)` aktif ortam dosyasını otomatik seçer; `Program.cs` içine tekrar `AddJsonFile("appsettings.json")` eklemeyin.
+- `launchSettings.json` sadece geliştirme profilinin `Development` ortamında başlatılmasını sağlar. Gizli bilgiler orada tutulmaz.
+- `JwtSettings`, `SmtpSettings` vb. C# sınıfları JSON ayarlarının tip güvenli modelleridir.
+- `user-secrets` üzerinden bağlantı/parola tanımlama adımı gerekmiyor.
 
-`user-secrets`, ek JSON ayar dosyası veya kullanıcı ortam değişkeni üzerinden yapılandırma adımı gerekmemektedir.
-
-**Önemli:** GitHub reposu public olduğu için gerçek `ConnectionStrings:PostgreSQL`, `Jwt:SecretKey`, `InitialAdmin:Password` ve `Smtp:Password` değerleri repoya commit edilmemelidir. Kapalı ağda bu alanlar `appsettings.json` içinde doldurulur.
+**Önemli:** GitHub deposu public olduğundan gerçek `ConnectionStrings:PostgreSQL`, `Jwt:SecretKey`, `InitialAdmin:Password` ve `Smtp:Password` bilgilerini commit etmeyin. İki ortamın gizli değerlerini yalnızca ilgili kapalı ağ yapılandırmasında doldurun.
