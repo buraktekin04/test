@@ -2,10 +2,8 @@ using MediatR;
 
 namespace KLMN.Application.Authentication.Commands.Logout;
 
-/// <summary>
-/// Mevcut cihazdaki refresh token'ı revoke eder.
-/// </summary>
-public sealed record LogoutCommand(
-    string? RefreshToken,
-    string? IpAddress = null)
-    : IRequest;
+/// <summary>Mevcut refresh token oturumunu sonlandırır.</summary>
+public sealed record LogoutCommand : IRequest
+{
+    public required string RefreshToken { get; init; }
+}

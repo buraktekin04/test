@@ -2,11 +2,10 @@ using MediatR;
 
 namespace KLMN.Application.Authentication.Commands.ChangePassword;
 
-/// <summary>
-/// Authenticated kullanıcının kendi parolasını değiştirir.
-/// </summary>
-public sealed record ChangePasswordCommand(
-    string CurrentPassword,
-    string NewPassword,
-    string ConfirmPassword)
-    : IRequest;
+/// <summary>Authenticated kullanıcının parolasını değiştiren command modelidir.</summary>
+public sealed record ChangePasswordCommand : IRequest
+{
+    public required string CurrentPassword { get; init; }
+    public required string NewPassword { get; init; }
+    public required string ConfirmPassword { get; init; }
+}

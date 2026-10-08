@@ -6,47 +6,51 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KLMN.Application.Authentication.Commands.LogoutAll;
 
-/// <summary>
-/// Tüm refresh token'ları revoke eder ve SecurityStamp değerini yeniler.
-/// </summary>
-internal sealed class LogoutAllCommandHandler(
-    IKLMNDbContext dbContext,
-    ICurrentUserService currentUserService)
-    : IRequestHandler<LogoutAllCommand>
+/// <summary>SecurityStamp'i yeniler ve bütün refresh token'ları revoke eder.</summary>
+public sealed class LogoutAllCommandHandler : IRequestHandler<LogoutAllCommand>
 {
+    private readonly IKLMNDbContext _dbContext;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly TimeProvider _timeProvider;
+
+    public LogoutAllCommandHandler(
+        IKLMNDbContext dbContext,
+        ICurrentUserService currentUserService,
+        TimeProvider timeProvider)
+    {
+        _dbContext = dbContext;
+        _currentUserService = currentUserService;
+        _timeProvider = timeProvider;
+    }
+
     public async Task Handle(
         LogoutAllCommand request,
         CancellationToken cancellationToken)
     {
-        if (currentUserService.UserId is not Guid userId)
-        {
-            throw new AuthenticationRequiredException();
-        }
-
-        var now = DateTime.UtcNow;
-
-        var user = await dbContext.Users
-            .FirstOrDefaultAsync(
-                x => x.Id == userId,
-                cancellationToken)
+        var userId = _currentUserService.UserId
             ?? throw new AuthenticationRequiredException();
 
-        var activeTokens = await dbContext.RefreshTokens
-            .Where(x =>
-                x.UserId == userId &&
-                x.RevokedAt == null)
+        var user = await _dbContext.Users
+            .SingleOrDefaultAsync(x => x.Id == userId, cancellationToken)
+            ?? throw new AuthenticationRequiredException();
+
+        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
+
+        user.SecurityStamp = Guid.NewGuid().ToString("N");
+
+        var refreshTokens = await _dbContext.RefreshTokens
+            .IgnoreQueryFilters()
+            .Where(x => x.UserId == userId && !x.RevokedAt.HasValue)
             .ToListAsync(cancellationToken);
 
-        foreach (var token in activeTokens)
+        foreach (var token in refreshTokens)
         {
-            token.RevokedAt = now;
-            token.RevokedByIp = currentUserService.IpAddress;
-            token.RevocationReason = "Logout all";
+            token.RevokedAt = utcNow;
+            token.RevokedByIp = _currentUserService.IpAddress;
+            token.RevocationReason = "Logout from all devices.";
+            token.IsActive = false;
         }
 
-        user.SecurityStamp =
-            Guid.NewGuid().ToString("N");
-
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }

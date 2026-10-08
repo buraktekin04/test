@@ -1,34 +1,51 @@
-using KLMN.Application.Authentication.Models;
+using KLMN.Application.Authentication.Responses;
 using KLMN.Application.Common.Exceptions;
+using KLMN.Application.Common.Interfaces.Authentication;
 using KLMN.Application.Common.Interfaces.Authorization;
+using KLMN.Application.Common.Interfaces.Identity;
 using KLMN.Application.Common.Interfaces.Persistence;
-using KLMN.Application.Common.Interfaces.Security;
-using KLMN.Domain.Entities.Identity;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace KLMN.Application.Authentication.Commands.RefreshToken;
 
 /// <summary>
-/// Refresh token rotation ve reuse detection işlemlerini gerçekleştirir.
+/// Refresh token'ı doğrular, rotation uygular ve reuse durumunda
+/// replacement zincirini revoke eder.
 /// </summary>
-internal sealed class RefreshTokenCommandHandler(
-    IKLMNDbContext dbContext,
-    IJwtTokenService jwtTokenService,
-    IUserAuthorizationService userAuthorizationService)
-    : IRequestHandler<RefreshTokenCommand, AuthSessionResult>
+public sealed class RefreshTokenCommandHandler
+    : IRequestHandler<RefreshTokenCommand, RefreshResult>
 {
-    public async Task<AuthSessionResult> Handle(
+    private readonly IKLMNDbContext _dbContext;
+    private readonly IJwtTokenService _jwtTokenService;
+    private readonly IUserAuthorizationService _authorizationService;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly TimeProvider _timeProvider;
+
+    public RefreshTokenCommandHandler(
+        IKLMNDbContext dbContext,
+        IJwtTokenService jwtTokenService,
+        IUserAuthorizationService authorizationService,
+        ICurrentUserService currentUserService,
+        TimeProvider timeProvider)
+    {
+        _dbContext = dbContext;
+        _jwtTokenService = jwtTokenService;
+        _authorizationService = authorizationService;
+        _currentUserService = currentUserService;
+        _timeProvider = timeProvider;
+    }
+
+    public async Task<RefreshResult> Handle(
         RefreshTokenCommand request,
         CancellationToken cancellationToken)
     {
-        var now = DateTime.UtcNow;
+        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
+        var tokenHash = _jwtTokenService.HashRefreshToken(request.RefreshToken);
 
-        var tokenHash =
-            jwtTokenService.HashRefreshToken(
-                request.RefreshToken);
-
-        var storedToken = await dbContext.RefreshTokens
+        var storedToken = await _dbContext.RefreshTokens
+            .IgnoreQueryFilters()
+            .Include(x => x.User)
             .FirstOrDefaultAsync(
                 x => x.TokenHash == tokenHash,
                 cancellationToken);
@@ -41,92 +58,92 @@ internal sealed class RefreshTokenCommandHandler(
         if (storedToken.RevokedAt.HasValue)
         {
             await RevokeReplacementChainAsync(
-                storedToken.ReplacedByTokenId,
-                now,
-                request.IpAddress,
+                storedToken,
+                utcNow,
                 cancellationToken);
 
-            await dbContext.SaveChangesAsync(cancellationToken);
-
             throw new InvalidRefreshTokenException();
         }
 
-        if (storedToken.ExpiresAt <= now)
+        if (storedToken.IsDeleted ||
+            !storedToken.IsActive ||
+            storedToken.ExpiresAt <= utcNow)
         {
             throw new InvalidRefreshTokenException();
         }
 
-        var user = await dbContext.Users
-            .FirstOrDefaultAsync(
-                x => x.Id == storedToken.UserId,
-                cancellationToken)
-            ?? throw new InvalidRefreshTokenException();
+        var user = storedToken.User;
 
-        if (user.IsLocked &&
-            (!user.LockoutEnd.HasValue ||
-             user.LockoutEnd.Value > now))
-        {
-            throw new AccountLockedException();
-        }
-
-        if ((user.ValidFrom.HasValue &&
-             user.ValidFrom.Value > now) ||
-            (user.ValidTo.HasValue &&
-             user.ValidTo.Value < now))
+        if (user.IsDeleted || !user.IsActive)
         {
             throw new InvalidRefreshTokenException();
         }
 
-        var authorization =
-            await userAuthorizationService.GetSnapshotAsync(
-                user.Id,
-                cancellationToken);
-
-        var accessToken =
-            jwtTokenService.GenerateAccessToken(
-                user,
-                authorization.Roles,
-                authorization.Permissions);
-
-        var newRefreshToken =
-            jwtTokenService.GenerateRefreshToken();
-
-        var replacement =
-            new RefreshToken
+        if (user.IsLocked)
+        {
+            if (!user.LockoutEnd.HasValue || user.LockoutEnd.Value > utcNow)
             {
-                UserId = user.Id,
-                TokenHash = newRefreshToken.TokenHash,
-                ExpiresAt = newRefreshToken.ExpiresAt,
-                CreatedByIp = request.IpAddress,
-                UserAgent = request.UserAgent,
-                DeviceName = request.DeviceName
-            };
+                throw new AccountLockedException(user.LockoutEnd);
+            }
 
-        dbContext.RefreshTokens.Add(replacement);
+            user.IsLocked = false;
+            user.LockoutEnd = null;
+            user.AccessFailedCount = 0;
+        }
 
-        storedToken.RevokedAt = now;
-        storedToken.RevokedByIp = request.IpAddress;
-        storedToken.RevocationReason = "Refresh token rotation";
-        storedToken.ReplacedByTokenId = replacement.Id;
+        if ((user.ValidFrom.HasValue && user.ValidFrom.Value > utcNow) ||
+            (user.ValidTo.HasValue && user.ValidTo.Value <= utcNow))
+        {
+            throw new InvalidRefreshTokenException();
+        }
 
-        await dbContext.SaveChangesAsync(cancellationToken);
+        var authorization = await _authorizationService.GetAsync(
+            user.Id,
+            cancellationToken);
 
-        return new AuthSessionResult
+        var accessToken = _jwtTokenService.GenerateAccessToken(
+            user,
+            authorization.Roles,
+            authorization.Permissions);
+
+        var newRefreshToken = _jwtTokenService.GenerateRefreshToken();
+
+        var newEntity = new KLMN.Domain.Entities.Identity.RefreshToken
+        {
+            UserId = user.Id,
+            TokenHash = newRefreshToken.TokenHash,
+            ExpiresAt = newRefreshToken.ExpiresAt,
+            CreatedByIp = _currentUserService.IpAddress,
+            UserAgent = _currentUserService.UserAgent,
+            DeviceName = storedToken.DeviceName
+        };
+
+        await _dbContext.RefreshTokens.AddAsync(newEntity, cancellationToken);
+
+        storedToken.RevokedAt = utcNow;
+        storedToken.RevokedByIp = _currentUserService.IpAddress;
+        storedToken.RevocationReason = "Refresh token rotated.";
+        storedToken.ReplacedByTokenId = newEntity.Id;
+        storedToken.IsActive = false;
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return new RefreshResult
         {
             RefreshToken = newRefreshToken.Token,
             RefreshTokenExpiresAt = newRefreshToken.ExpiresAt,
-            Response = new AuthSessionResponse
+            Response = new RefreshResponse
             {
                 AccessToken = accessToken.Token,
                 AccessTokenExpiresAt = accessToken.ExpiresAt,
-                User = new AuthUserResponse
+                User = new LoginUserResponse
                 {
                     Id = user.Id,
                     UserName = user.UserName,
+                    Email = user.Email,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     FullName = $"{user.FirstName} {user.LastName}".Trim(),
-                    Email = user.Email,
                     OrganizationUnitId = user.OrganizationUnitId,
                     Roles = authorization.Roles,
                     Permissions = authorization.Permissions
@@ -136,35 +153,37 @@ internal sealed class RefreshTokenCommandHandler(
     }
 
     private async Task RevokeReplacementChainAsync(
-        Guid? replacementTokenId,
-        DateTime now,
-        string? revokedByIp,
+        KLMN.Domain.Entities.Identity.RefreshToken token,
+        DateTime utcNow,
         CancellationToken cancellationToken)
     {
-        var currentId = replacementTokenId;
+        var nextTokenId = token.ReplacedByTokenId;
+        var visitedIds = new HashSet<Guid>();
 
-        while (currentId.HasValue)
+        while (nextTokenId.HasValue && visitedIds.Add(nextTokenId.Value))
         {
-            var token = await dbContext.RefreshTokens
+            var replacementToken = await _dbContext.RefreshTokens
                 .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(
-                    x => x.Id == currentId.Value,
+                    x => x.Id == nextTokenId.Value,
                     cancellationToken);
 
-            if (token is null)
+            if (replacementToken is null)
             {
                 break;
             }
 
-            if (!token.RevokedAt.HasValue)
+            if (!replacementToken.RevokedAt.HasValue)
             {
-                token.RevokedAt = now;
-                token.RevokedByIp = revokedByIp;
-                token.RevocationReason =
-                    "Refresh token reuse detected";
+                replacementToken.RevokedAt = utcNow;
+                replacementToken.RevokedByIp = _currentUserService.IpAddress;
+                replacementToken.RevocationReason = "Refresh token reuse detected.";
+                replacementToken.IsActive = false;
             }
 
-            currentId = token.ReplacedByTokenId;
+            nextTokenId = replacementToken.ReplacedByTokenId;
         }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }

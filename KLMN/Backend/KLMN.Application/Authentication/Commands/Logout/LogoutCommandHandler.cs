@@ -1,18 +1,31 @@
+using KLMN.Application.Common.Interfaces.Authentication;
+using KLMN.Application.Common.Interfaces.Identity;
 using KLMN.Application.Common.Interfaces.Persistence;
-using KLMN.Application.Common.Interfaces.Security;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace KLMN.Application.Authentication.Commands.Logout;
 
-/// <summary>
-/// Mevcut refresh token'ı revoke eder.
-/// </summary>
-internal sealed class LogoutCommandHandler(
-    IKLMNDbContext dbContext,
-    IJwtTokenService jwtTokenService)
-    : IRequestHandler<LogoutCommand>
+/// <summary>Mevcut refresh token'ı idempotent şekilde revoke eder.</summary>
+public sealed class LogoutCommandHandler : IRequestHandler<LogoutCommand>
 {
+    private readonly IKLMNDbContext _dbContext;
+    private readonly IJwtTokenService _jwtTokenService;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly TimeProvider _timeProvider;
+
+    public LogoutCommandHandler(
+        IKLMNDbContext dbContext,
+        IJwtTokenService jwtTokenService,
+        ICurrentUserService currentUserService,
+        TimeProvider timeProvider)
+    {
+        _dbContext = dbContext;
+        _jwtTokenService = jwtTokenService;
+        _currentUserService = currentUserService;
+        _timeProvider = timeProvider;
+    }
+
     public async Task Handle(
         LogoutCommand request,
         CancellationToken cancellationToken)
@@ -22,25 +35,24 @@ internal sealed class LogoutCommandHandler(
             return;
         }
 
-        var hash =
-            jwtTokenService.HashRefreshToken(
-                request.RefreshToken);
+        var tokenHash = _jwtTokenService.HashRefreshToken(request.RefreshToken);
 
-        var token = await dbContext.RefreshTokens
+        var refreshToken = await _dbContext.RefreshTokens
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(
-                x => x.TokenHash == hash,
+                x => x.TokenHash == tokenHash,
                 cancellationToken);
 
-        if (token is null ||
-            token.RevokedAt.HasValue)
+        if (refreshToken is null || refreshToken.RevokedAt.HasValue)
         {
             return;
         }
 
-        token.RevokedAt = DateTime.UtcNow;
-        token.RevokedByIp = request.IpAddress;
-        token.RevocationReason = "User logout";
+        refreshToken.RevokedAt = _timeProvider.GetUtcNow().UtcDateTime;
+        refreshToken.RevokedByIp = _currentUserService.IpAddress;
+        refreshToken.RevocationReason = "User logout.";
+        refreshToken.IsActive = false;
 
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }

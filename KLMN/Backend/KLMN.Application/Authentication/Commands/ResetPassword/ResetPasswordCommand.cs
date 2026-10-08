@@ -2,11 +2,10 @@ using MediatR;
 
 namespace KLMN.Application.Authentication.Commands.ResetPassword;
 
-/// <summary>
-/// Parola sıfırlama token'ı ile yeni parola belirler.
-/// </summary>
-public sealed record ResetPasswordCommand(
-    string Token,
-    string NewPassword,
-    string ConfirmPassword)
-    : IRequest;
+/// <summary>Reset token kullanarak yeni parola belirleme command modelidir.</summary>
+public sealed record ResetPasswordCommand : IRequest
+{
+    public required string Token { get; init; }
+    public required string NewPassword { get; init; }
+    public required string ConfirmPassword { get; init; }
+}

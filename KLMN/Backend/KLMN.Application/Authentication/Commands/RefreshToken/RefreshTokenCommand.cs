@@ -1,14 +1,10 @@
-using KLMN.Application.Authentication.Models;
+using KLMN.Application.Authentication.Responses;
 using MediatR;
 
 namespace KLMN.Application.Authentication.Commands.RefreshToken;
 
-/// <summary>
-/// HttpOnly cookie içerisindeki refresh token ile session yeniler.
-/// </summary>
-public sealed record RefreshTokenCommand(
-    string RefreshToken,
-    string? IpAddress = null,
-    string? UserAgent = null,
-    string? DeviceName = null)
-    : IRequest<AuthSessionResult>;
+/// <summary>Refresh token ile yeni access/refresh token üretme command modelidir.</summary>
+public sealed record RefreshTokenCommand : IRequest<RefreshResult>
+{
+    public required string RefreshToken { get; init; }
+}

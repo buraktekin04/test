@@ -1,83 +1,105 @@
 using KLMN.Application.Common.Exceptions;
+using KLMN.Application.Common.Interfaces.Authentication;
+using KLMN.Application.Common.Interfaces.Identity;
 using KLMN.Application.Common.Interfaces.Persistence;
-using KLMN.Application.Common.Interfaces.Security;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace KLMN.Application.Authentication.Commands.ResetPassword;
 
 /// <summary>
-/// Geçerli reset token ile parolayı değiştirir ve mevcut session'ları sonlandırır.
+/// Reset token'ı doğrular, parolayı değiştirir ve mevcut authentication
+/// oturumlarını geçersiz hale getirir.
 /// </summary>
-internal sealed class ResetPasswordCommandHandler(
-    IKLMNDbContext dbContext,
-    IPasswordResetTokenService passwordResetTokenService,
-    IPasswordHasherService passwordHasherService)
-    : IRequestHandler<ResetPasswordCommand>
+public sealed class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand>
 {
+    private readonly IKLMNDbContext _dbContext;
+    private readonly IPasswordResetTokenService _tokenService;
+    private readonly IPasswordHasherService _passwordHasherService;
+    private readonly TimeProvider _timeProvider;
+
+    public ResetPasswordCommandHandler(
+        IKLMNDbContext dbContext,
+        IPasswordResetTokenService tokenService,
+        IPasswordHasherService passwordHasherService,
+        TimeProvider timeProvider)
+    {
+        _dbContext = dbContext;
+        _tokenService = tokenService;
+        _passwordHasherService = passwordHasherService;
+        _timeProvider = timeProvider;
+    }
+
     public async Task Handle(
         ResetPasswordCommand request,
         CancellationToken cancellationToken)
     {
-        var now = DateTime.UtcNow;
-        var tokenHash =
-            passwordResetTokenService.HashToken(
-                request.Token);
+        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
+        var tokenHash = _tokenService.HashToken(request.Token);
 
-        var resetToken = await dbContext.PasswordResetTokens
-            .FirstOrDefaultAsync(
-                x =>
-                    x.TokenHash == tokenHash &&
-                    x.UsedAt == null &&
-                    x.RevokedAt == null &&
-                    x.ExpiresAt > now,
-                cancellationToken)
-            ?? throw new InvalidPasswordResetTokenException();
+        var resetToken = await _dbContext.PasswordResetTokens
+            .IgnoreQueryFilters()
+            .Include(x => x.User)
+            .SingleOrDefaultAsync(x => x.TokenHash == tokenHash, cancellationToken);
 
-        var user = await dbContext.Users
-            .FirstOrDefaultAsync(
-                x => x.Id == resetToken.UserId,
-                cancellationToken)
-            ?? throw new InvalidPasswordResetTokenException();
+        if (resetToken is null ||
+            resetToken.IsDeleted ||
+            !resetToken.IsActive ||
+            resetToken.UsedAt.HasValue ||
+            resetToken.RevokedAt.HasValue ||
+            resetToken.ExpiresAt <= utcNow)
+        {
+            throw new InvalidPasswordResetTokenException();
+        }
 
-        user.PasswordHash =
-            passwordHasherService.HashPassword(
-                request.NewPassword);
+        var user = resetToken.User;
 
-        user.PasswordChangedDate = now;
-        user.SecurityStamp =
-            Guid.NewGuid().ToString("N");
+        if (user.IsDeleted || !user.IsActive)
+        {
+            throw new InvalidPasswordResetTokenException();
+        }
 
-        resetToken.UsedAt = now;
+        user.PasswordHash = _passwordHasherService.HashPassword(request.NewPassword);
+        user.PasswordChangedDate = utcNow;
+        user.SecurityStamp = Guid.NewGuid().ToString("N");
+        user.AccessFailedCount = 0;
 
-        var otherResetTokens =
-            await dbContext.PasswordResetTokens
-                .Where(x =>
-                    x.UserId == user.Id &&
-                    x.Id != resetToken.Id &&
-                    x.UsedAt == null &&
-                    x.RevokedAt == null)
-                .ToListAsync(cancellationToken);
+        if (user.IsLocked && user.LockoutEnd.HasValue)
+        {
+            user.IsLocked = false;
+            user.LockoutEnd = null;
+        }
+
+        resetToken.UsedAt = utcNow;
+        resetToken.IsActive = false;
+
+        var otherResetTokens = await _dbContext.PasswordResetTokens
+            .IgnoreQueryFilters()
+            .Where(x =>
+                x.UserId == user.Id &&
+                x.Id != resetToken.Id &&
+                !x.UsedAt.HasValue &&
+                !x.RevokedAt.HasValue)
+            .ToListAsync(cancellationToken);
 
         foreach (var token in otherResetTokens)
         {
-            token.RevokedAt = now;
+            token.RevokedAt = utcNow;
+            token.IsActive = false;
         }
 
-        var refreshTokens =
-            await dbContext.RefreshTokens
-                .Where(x =>
-                    x.UserId == user.Id &&
-                    x.RevokedAt == null)
-                .ToListAsync(cancellationToken);
+        var refreshTokens = await _dbContext.RefreshTokens
+            .IgnoreQueryFilters()
+            .Where(x => x.UserId == user.Id && !x.RevokedAt.HasValue)
+            .ToListAsync(cancellationToken);
 
-        foreach (var refreshToken in refreshTokens)
+        foreach (var token in refreshTokens)
         {
-            refreshToken.RevokedAt = now;
-            refreshToken.RevocationReason =
-                "Password reset";
+            token.RevokedAt = utcNow;
+            token.RevocationReason = "Password reset.";
+            token.IsActive = false;
         }
 
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }
