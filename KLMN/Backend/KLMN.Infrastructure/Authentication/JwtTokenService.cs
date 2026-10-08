@@ -2,9 +2,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using KLMN.Application.Common.Interfaces.Security;
-using KLMN.Application.Common.Models;
-using KLMN.Domain.Constants;
+using KLMN.Application.Common.Constants;
+using KLMN.Application.Common.Interfaces.Authentication;
+using KLMN.Application.Common.Models.Authentication;
 using KLMN.Domain.Entities.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -12,58 +12,105 @@ using Microsoft.IdentityModel.Tokens;
 namespace KLMN.Infrastructure.Authentication;
 
 /// <summary>
-/// JWT access token ve cryptographic refresh token üretir.
+/// HMAC SHA-256 ile JWT access token ve güvenli refresh token üretir.
 /// </summary>
-internal sealed class JwtTokenService(
-    IOptions<JwtSettings> jwtOptions)
-    : IJwtTokenService
+public sealed class JwtTokenService : IJwtTokenService
 {
-    private readonly JwtSettings _settings =
-        jwtOptions.Value;
+    private const int RefreshTokenByteLength = 64;
 
-    /// <inheritdoc />
+    private readonly JwtSettings _settings;
+    private readonly TimeProvider _timeProvider;
+    private readonly SigningCredentials _signingCredentials;
+
+    public JwtTokenService(
+        IOptions<JwtSettings> options,
+        TimeProvider timeProvider)
+    {
+        _settings = options.Value;
+        _timeProvider = timeProvider;
+
+        var securityKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(_settings.SecretKey));
+
+        _signingCredentials = new SigningCredentials(
+            securityKey,
+            SecurityAlgorithms.HmacSha256);
+    }
+
     public AccessTokenResult GenerateAccessToken(
         User user,
         IReadOnlyCollection<string> roles,
         IReadOnlyCollection<string> permissions)
     {
-        var now = DateTime.UtcNow;
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(roles);
+        ArgumentNullException.ThrowIfNull(permissions);
 
-        var expiresAt =
-            now.AddMinutes(
-                _settings.AccessTokenExpirationMinutes);
+        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
+        var expiresAt = utcNow.AddMinutes(_settings.AccessTokenExpirationMinutes);
 
-        var claims =
-            new List<Claim>
-            {
-                new(
-                    JwtRegisteredClaimNames.Jti,
-                    Guid.NewGuid().ToString("N")),
+        var token = new JwtSecurityToken(
+            issuer: _settings.Issuer,
+            audience: _settings.Audience,
+            claims: CreateUserClaims(user, roles, permissions),
+            notBefore: utcNow,
+            expires: expiresAt,
+            signingCredentials: _signingCredentials);
 
-                new(
-                    ClaimTypes.NameIdentifier,
-                    user.Id.ToString()),
+        return new AccessTokenResult
+        {
+            Token = new JwtSecurityTokenHandler().WriteToken(token),
+            ExpiresAt = expiresAt
+        };
+    }
 
-                new(
-                    ClaimTypes.Name,
-                    user.UserName),
+    public RefreshTokenResult GenerateRefreshToken()
+    {
+        var randomBytes = RandomNumberGenerator.GetBytes(RefreshTokenByteLength);
+        var token = Base64UrlEncoder.Encode(randomBytes);
+        var expiresAt = _timeProvider
+            .GetUtcNow()
+            .UtcDateTime
+            .AddDays(_settings.RefreshTokenExpirationDays);
 
-                new(
-                    ClaimTypes.Email,
-                    user.Email),
+        return new RefreshTokenResult
+        {
+            Token = token,
+            TokenHash = HashRefreshToken(token),
+            ExpiresAt = expiresAt
+        };
+    }
 
-                new(
-                    ClaimTypes.GivenName,
-                    user.FirstName),
+    public string HashRefreshToken(string token)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(token);
 
-                new(
-                    ClaimTypes.Surname,
-                    user.LastName),
+        var hashBytes = SHA256.HashData(
+            Encoding.UTF8.GetBytes(token));
 
-                new(
-                    CustomClaimTypes.SecurityStamp,
-                    user.SecurityStamp)
-            };
+        return Convert.ToHexString(hashBytes);
+    }
+
+    /// <summary>
+    /// JWT claim koleksiyonunu oluşturur.
+    /// SecurityStamp claim'i özellikle eklenir; OnTokenValidated bu değeri
+    /// DB'deki güncel SecurityStamp ile karşılaştırır.
+    /// </summary>
+    private static List<Claim> CreateUserClaims(
+        User user,
+        IReadOnlyCollection<string> roles,
+        IReadOnlyCollection<string> permissions)
+    {
+        var claims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new(ClaimTypes.Name, user.UserName),
+            new(ClaimTypes.Email, user.Email),
+            new(ClaimTypes.GivenName, user.FirstName),
+            new(ClaimTypes.Surname, user.LastName),
+            new(CustomClaimTypes.SecurityStamp, user.SecurityStamp)
+        };
 
         if (user.OrganizationUnitId.HasValue)
         {
@@ -73,77 +120,20 @@ internal sealed class JwtTokenService(
                     user.OrganizationUnitId.Value.ToString()));
         }
 
-        claims.AddRange(
-            roles
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(
-                    role =>
-                        new Claim(
-                            ClaimTypes.Role,
-                            role)));
+        foreach (var role in roles
+                     .Where(x => !string.IsNullOrWhiteSpace(x))
+                     .Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
 
-        claims.AddRange(
-            permissions
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(
-                    permission =>
-                        new Claim(
-                            CustomClaimTypes.Permission,
-                            permission)));
+        foreach (var permission in permissions
+                     .Where(x => !string.IsNullOrWhiteSpace(x))
+                     .Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            claims.Add(new Claim(CustomClaimTypes.Permission, permission));
+        }
 
-        var signingKey =
-            new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(
-                    _settings.SecretKey));
-
-        var credentials =
-            new SigningCredentials(
-                signingKey,
-                SecurityAlgorithms.HmacSha256);
-
-        var token =
-            new JwtSecurityToken(
-                issuer: _settings.Issuer,
-                audience: _settings.Audience,
-                claims: claims,
-                notBefore: now,
-                expires: expiresAt,
-                signingCredentials: credentials);
-
-        return new AccessTokenResult(
-            new JwtSecurityTokenHandler()
-                .WriteToken(token),
-            expiresAt);
-    }
-
-    /// <inheritdoc />
-    public GeneratedRefreshToken GenerateRefreshToken()
-    {
-        var bytes =
-            RandomNumberGenerator.GetBytes(64);
-
-        var token =
-            Convert.ToBase64String(bytes);
-
-        var expiresAt =
-            DateTime.UtcNow.AddDays(
-                _settings.RefreshTokenExpirationDays);
-
-        return new GeneratedRefreshToken(
-            token,
-            HashRefreshToken(token),
-            expiresAt);
-    }
-
-    /// <inheritdoc />
-    public string HashRefreshToken(string token)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(token);
-
-        var bytes =
-            SHA256.HashData(
-                Encoding.UTF8.GetBytes(token));
-
-        return Convert.ToHexString(bytes);
+        return claims;
     }
 }

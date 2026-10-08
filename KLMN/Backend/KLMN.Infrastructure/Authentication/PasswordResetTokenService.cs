@@ -1,47 +1,52 @@
 using System.Security.Cryptography;
 using System.Text;
-using KLMN.Application.Common.Interfaces.Security;
-using KLMN.Application.Common.Models;
-using KLMN.Application.Common.Settings;
+using KLMN.Application.Common.Interfaces.Authentication;
+using KLMN.Application.Common.Models.Authentication;
+using KLMN.Application.Common.Options;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace KLMN.Infrastructure.Authentication;
 
-/// <summary>
-/// Güvenli parola sıfırlama token'ları üretir ve hashler.
-/// </summary>
-internal sealed class PasswordResetTokenService(
-    IOptions<PasswordResetSettings> passwordResetOptions)
-    : IPasswordResetTokenService
+/// <summary>Kriptografik parola sıfırlama token'ı üretir ve hashler.</summary>
+public sealed class PasswordResetTokenService : IPasswordResetTokenService
 {
-    private readonly PasswordResetSettings _settings =
-        passwordResetOptions.Value;
+    private const int TokenByteLength = 64;
 
-    /// <inheritdoc />
-    public GeneratedPasswordResetToken GenerateToken()
+    private readonly PasswordResetSettings _settings;
+    private readonly TimeProvider _timeProvider;
+
+    public PasswordResetTokenService(
+        IOptions<PasswordResetSettings> options,
+        TimeProvider timeProvider)
     {
-        var bytes =
-            RandomNumberGenerator.GetBytes(48);
-
-        var token =
-            Convert.ToBase64String(bytes);
-
-        return new GeneratedPasswordResetToken(
-            token,
-            HashToken(token),
-            DateTime.UtcNow.AddMinutes(
-                _settings.TokenExpirationMinutes));
+        _settings = options.Value;
+        _timeProvider = timeProvider;
     }
 
-    /// <inheritdoc />
+    public PasswordResetTokenResult GenerateToken()
+    {
+        var randomBytes = RandomNumberGenerator.GetBytes(TokenByteLength);
+        var token = Base64UrlEncoder.Encode(randomBytes);
+
+        return new PasswordResetTokenResult
+        {
+            Token = token,
+            TokenHash = HashToken(token),
+            ExpiresAt = _timeProvider
+                .GetUtcNow()
+                .UtcDateTime
+                .AddMinutes(_settings.TokenExpirationMinutes)
+        };
+    }
+
     public string HashToken(string token)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(token);
 
-        var bytes =
-            SHA256.HashData(
-                Encoding.UTF8.GetBytes(token));
+        var hash = SHA256.HashData(
+            Encoding.UTF8.GetBytes(token));
 
-        return Convert.ToHexString(bytes);
+        return Convert.ToHexString(hash);
     }
 }

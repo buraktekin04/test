@@ -2,16 +2,14 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace KLMN.Infrastructure.Authorization;
 
-/// <summary>
-/// Tek bir permission kodunu gerektiren authorization requirement'tır.
-/// </summary>
-public sealed class PermissionRequirement(
-    string permissionCode)
-    : IAuthorizationRequirement
+/// <summary>Tek permission kodu gerektiren authorization requirement'tır.</summary>
+public sealed class PermissionRequirement : IAuthorizationRequirement
 {
-    /// <summary>
-    /// Endpoint için gerekli permission kodudur.
-    /// </summary>
-    public string PermissionCode { get; } =
-        permissionCode;
+    public PermissionRequirement(string permissionCode)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(permissionCode);
+        PermissionCode = permissionCode;
+    }
+
+    public string PermissionCode { get; }
 }

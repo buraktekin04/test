@@ -1,103 +1,89 @@
 using System.Security.Claims;
+using KLMN.Application.Common.Constants;
 using KLMN.Application.Common.Interfaces.Identity;
-using KLMN.Domain.Constants;
 using Microsoft.AspNetCore.Http;
 
 namespace KLMN.Infrastructure.Identity;
 
-/// <summary>
-/// Mevcut HTTP request'in JWT claim bilgilerini okur.
-/// Bu servis veritabanına sorgu göndermez.
-/// </summary>
-internal sealed class CurrentUserService(
-    IHttpContextAccessor httpContextAccessor)
-    : ICurrentUserService
+/// <summary>ClaimsPrincipal üzerinden mevcut kullanıcı ve istemci bilgilerini sağlar.</summary>
+public sealed class CurrentUserService : ICurrentUserService
 {
-    private ClaimsPrincipal? Principal =>
-        httpContextAccessor.HttpContext?.User;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public Guid? UserId =>
-        Guid.TryParse(
-            Principal?.FindFirstValue(
-                ClaimTypes.NameIdentifier),
-            out var value)
-            ? value
-            : null;
+    public CurrentUserService(IHttpContextAccessor httpContextAccessor)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
 
-    public string? UserName =>
-        Principal?.FindFirstValue(
-            ClaimTypes.Name);
+    private ClaimsPrincipal? User => _httpContextAccessor.HttpContext?.User;
 
-    public string? Email =>
-        Principal?.FindFirstValue(
-            ClaimTypes.Email);
+    public Guid? UserId
+    {
+        get
+        {
+            var value = GetClaimValue(ClaimTypes.NameIdentifier);
+            return Guid.TryParse(value, out var userId) ? userId : null;
+        }
+    }
 
-    public string? FirstName =>
-        Principal?.FindFirstValue(
-            ClaimTypes.GivenName);
+    public string? UserName => GetClaimValue(ClaimTypes.Name);
+    public string? Email => GetClaimValue(ClaimTypes.Email);
+    public string? FirstName => GetClaimValue(ClaimTypes.GivenName);
+    public string? LastName => GetClaimValue(ClaimTypes.Surname);
 
-    public string? LastName =>
-        Principal?.FindFirstValue(
-            ClaimTypes.Surname);
+    public string? FullName
+    {
+        get
+        {
+            var value = string.Join(
+                " ",
+                new[] { FirstName, LastName }
+                    .Where(x => !string.IsNullOrWhiteSpace(x)));
 
-    public string? FullName =>
-        string.Join(
-            " ",
-            new[]
-            {
-                FirstName,
-                LastName
-            }
-            .Where(x =>
-                !string.IsNullOrWhiteSpace(x)));
+            return string.IsNullOrWhiteSpace(value) ? null : value;
+        }
+    }
 
-    public Guid? OrganizationUnitId =>
-        Guid.TryParse(
-            Principal?.FindFirstValue(
-                CustomClaimTypes.OrganizationUnitId),
-            out var value)
-            ? value
-            : null;
+    public Guid? OrganizationUnitId
+    {
+        get
+        {
+            var value = GetClaimValue(CustomClaimTypes.OrganizationUnitId);
+            return Guid.TryParse(value, out var id) ? id : null;
+        }
+    }
 
     public IReadOnlyCollection<string> Roles =>
-        Principal?
-            .FindAll(ClaimTypes.Role)
-            .Select(x => x.Value)
-            .Distinct(
-                StringComparer.OrdinalIgnoreCase)
-            .ToArray()
-        ?? [];
+        GetClaimValues(ClaimTypes.Role);
 
     public IReadOnlyCollection<string> Permissions =>
-        Principal?
-            .FindAll(
-                CustomClaimTypes.Permission)
-            .Select(x => x.Value)
-            .Distinct(
-                StringComparer.OrdinalIgnoreCase)
-            .ToArray()
-        ?? [];
-
-    public string? SecurityStamp =>
-        Principal?.FindFirstValue(
-            CustomClaimTypes.SecurityStamp);
+        GetClaimValues(CustomClaimTypes.Permission);
 
     public bool IsAuthenticated =>
-        Principal?.Identity?.IsAuthenticated ==
-        true;
+        User?.Identity?.IsAuthenticated == true;
 
     public string? IpAddress =>
-        httpContextAccessor
-            .HttpContext?
+        _httpContextAccessor.HttpContext?
             .Connection
             .RemoteIpAddress?
             .ToString();
 
     public string? UserAgent =>
-        httpContextAccessor
-            .HttpContext?
+        _httpContextAccessor.HttpContext?
             .Request
             .Headers
             .UserAgent
-            .ToString();
+            .FirstOrDefault();
+
+    private string? GetClaimValue(string claimType) =>
+        User?.FindFirst(claimType)?.Value;
+
+    private IReadOnlyCollection<string> GetClaimValues(string claimType) =>
+        User?
+            .FindAll(claimType)
+            .Select(x => x.Value)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray()
+        ?? Array.Empty<string>();
 }

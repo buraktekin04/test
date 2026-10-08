@@ -3,20 +3,27 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace KLMN.Infrastructure.Authorization;
 
-/// <summary>
-/// Permission requirement'ını IPermissionChecker üzerinden DB-backed olarak doğrular.
-/// </summary>
-internal sealed class PermissionAuthorizationHandler(
-    IPermissionChecker permissionChecker)
+/// <summary>Permission requirement'ını DB-backed checker ile doğrular.</summary>
+public sealed class PermissionAuthorizationHandler
     : AuthorizationHandler<PermissionRequirement>
 {
-    /// <inheritdoc />
+    private readonly IPermissionChecker _permissionChecker;
+
+    public PermissionAuthorizationHandler(IPermissionChecker permissionChecker)
+    {
+        _permissionChecker = permissionChecker;
+    }
+
     protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         PermissionRequirement requirement)
     {
-        if (await permissionChecker.HasPermissionAsync(
-                requirement.PermissionCode))
+        if (context.User.Identity?.IsAuthenticated != true)
+        {
+            return;
+        }
+
+        if (await _permissionChecker.HasPermissionAsync(requirement.PermissionCode))
         {
             context.Succeed(requirement);
         }

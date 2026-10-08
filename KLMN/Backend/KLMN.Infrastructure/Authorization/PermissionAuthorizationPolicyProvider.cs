@@ -1,45 +1,41 @@
-using KLMN.Domain.Constants;
+using KLMN.Application.Common.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 
 namespace KLMN.Infrastructure.Authorization;
 
-/// <summary>
-/// Permission:&lt;code&gt; formatındaki policy'leri çalışma zamanında üretir.
-/// </summary>
-internal sealed class PermissionAuthorizationPolicyProvider(
-    IOptions<AuthorizationOptions> options)
-    : DefaultAuthorizationPolicyProvider(options)
+/// <summary>"Permission:" prefix'li policy'leri çalışma zamanında üretir.</summary>
+public sealed class PermissionAuthorizationPolicyProvider
+    : DefaultAuthorizationPolicyProvider
 {
-    /// <inheritdoc />
-    public override async Task<AuthorizationPolicy?> GetPolicyAsync(
-        string policyName)
+    public PermissionAuthorizationPolicyProvider(
+        IOptions<AuthorizationOptions> options)
+        : base(options)
+    {
+    }
+
+    public override Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
     {
         if (!policyName.StartsWith(
                 AuthorizationPolicyNames.PermissionPrefix,
-                StringComparison.Ordinal))
+                StringComparison.OrdinalIgnoreCase))
         {
-            return await base.GetPolicyAsync(
-                policyName);
+            return base.GetPolicyAsync(policyName);
         }
 
         var permissionCode =
-            policyName[
-                AuthorizationPolicyNames
-                    .PermissionPrefix
-                    .Length..];
+            policyName[AuthorizationPolicyNames.PermissionPrefix.Length..];
 
-        if (string.IsNullOrWhiteSpace(
-            permissionCode))
+        if (string.IsNullOrWhiteSpace(permissionCode))
         {
-            return null;
+            return Task.FromResult<AuthorizationPolicy?>(null);
         }
 
-        return new AuthorizationPolicyBuilder()
+        var policy = new AuthorizationPolicyBuilder()
             .RequireAuthenticatedUser()
-            .AddRequirements(
-                new PermissionRequirement(
-                    permissionCode))
+            .AddRequirements(new PermissionRequirement(permissionCode))
             .Build();
+
+        return Task.FromResult<AuthorizationPolicy?>(policy);
     }
 }
