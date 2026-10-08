@@ -64,15 +64,11 @@ public sealed class AuthController : ControllerBase
     [ProducesResponseType<AuthSessionResponse>(
         StatusCodes.Status200OK)]
     public async Task<ActionResult<AuthSessionResponse>> Login(
-        [FromBody] LoginRequest request,
+        [FromBody] LoginCommand command,
         CancellationToken cancellationToken)
     {
         var result = await _sender.Send(
-            new LoginCommand(
-                request.UserNameOrEmail,
-                request.Password,
-                GetIpAddress(),
-                Request.Headers.UserAgent.ToString()),
+            command,
             cancellationToken);
 
         SetRefreshTokenCookie(

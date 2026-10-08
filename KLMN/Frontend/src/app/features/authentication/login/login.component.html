@@ -20,21 +20,21 @@
       }
 
       <div class="form-field">
-        <label for="userNameOrEmail">
+        <label for="identifier">
           Kullanıcı Adı veya E-posta
         </label>
 
         <input
-          id="userNameOrEmail"
+          id="identifier"
           type="text"
           pInputText
-          formControlName="userNameOrEmail"
+          formControlName="identifier"
           autocomplete="username"
           placeholder="Kullanıcı adı veya e-posta" />
 
         @if (
-          form.controls.userNameOrEmail.touched &&
-          form.controls.userNameOrEmail.invalid
+          form.controls.identifier.touched &&
+          form.controls.identifier.invalid
         ) {
           <small class="validation-error">
             Kullanıcı adı veya e-posta zorunludur.

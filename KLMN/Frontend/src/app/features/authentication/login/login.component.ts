@@ -53,7 +53,7 @@ export class LoginComponent {
 
   public readonly form =
     this.formBuilder.nonNullable.group({
-      userNameOrEmail: ['', [Validators.required]],
+      identifier: ['', [Validators.required]],
       password: ['', [Validators.required]]
     });
 
@@ -98,12 +98,15 @@ export class LoginComponent {
 
     this.loading.set(true);
 
-    const request = this.form.getRawValue();
+    const request = {
+      ...this.form.getRawValue(),
+      deviceName: 'Web'
+    };
 
     console.log(
       '[KLMN AUTH] Login request:',
       {
-        userNameOrEmail: request.userNameOrEmail,
+        identifier: request.identifier,
         password: '********'
       }
     );

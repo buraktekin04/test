@@ -1,6 +1,7 @@
 using KLMN.Application.Authentication.Models;
 using KLMN.Application.Common.Exceptions;
 using KLMN.Application.Common.Interfaces.Authorization;
+using KLMN.Application.Common.Interfaces.Identity;
 using KLMN.Application.Common.Interfaces.Persistence;
 using KLMN.Application.Common.Interfaces.Security;
 using KLMN.Application.Common.Settings;
@@ -19,9 +20,11 @@ internal sealed class LoginCommandHandler(
     IPasswordHasherService passwordHasherService,
     IJwtTokenService jwtTokenService,
     IUserAuthorizationService userAuthorizationService,
+    ICurrentUserService currentUserService,
     IOptions<AuthenticationSettings> authenticationOptions)
     : IRequestHandler<LoginCommand, AuthSessionResult>
 {
+    /// <inheritdoc />
     public async Task<AuthSessionResult> Handle(
         LoginCommand request,
         CancellationToken cancellationToken)
@@ -29,7 +32,7 @@ internal sealed class LoginCommandHandler(
         var now = DateTime.UtcNow;
 
         var normalized =
-            request.UserNameOrEmail
+            request.Identifier
                 .Trim()
                 .ToUpperInvariant();
 
@@ -75,7 +78,8 @@ internal sealed class LoginCommandHandler(
 
         if (!passwordValid)
         {
-            var settings = authenticationOptions.Value;
+            var settings =
+                authenticationOptions.Value;
 
             user.AccessFailedCount++;
 
@@ -84,7 +88,8 @@ internal sealed class LoginCommandHandler(
             {
                 user.IsLocked = true;
                 user.LockoutEnd =
-                    now.AddMinutes(settings.LockoutMinutes);
+                    now.AddMinutes(
+                        settings.LockoutMinutes);
 
                 await dbContext.SaveChangesAsync(
                     cancellationToken);
@@ -104,9 +109,10 @@ internal sealed class LoginCommandHandler(
         user.LastLoginDate = now;
 
         var authorization =
-            await userAuthorizationService.GetSnapshotAsync(
-                user.Id,
-                cancellationToken);
+            await userAuthorizationService
+                .GetSnapshotAsync(
+                    user.Id,
+                    cancellationToken);
 
         var accessToken =
             jwtTokenService.GenerateAccessToken(
@@ -123,8 +129,8 @@ internal sealed class LoginCommandHandler(
                 UserId = user.Id,
                 TokenHash = refreshToken.TokenHash,
                 ExpiresAt = refreshToken.ExpiresAt,
-                CreatedByIp = request.IpAddress,
-                UserAgent = request.UserAgent,
+                CreatedByIp = currentUserService.IpAddress,
+                UserAgent = currentUserService.UserAgent,
                 DeviceName = request.DeviceName
             });
 
@@ -133,36 +139,39 @@ internal sealed class LoginCommandHandler(
 
         return new AuthSessionResult
         {
-            RefreshToken = refreshToken.Token,
-            RefreshTokenExpiresAt = refreshToken.ExpiresAt,
-            Response = new AuthSessionResponse
-            {
-                AccessToken = accessToken.Token,
-                AccessTokenExpiresAt = accessToken.ExpiresAt,
-                User = CreateUserResponse(
-                    user,
-                    authorization.Roles,
-                    authorization.Permissions)
-            }
-        };
-    }
+            RefreshToken =
+                refreshToken.Token,
 
-    private static AuthUserResponse CreateUserResponse(
-        User user,
-        IReadOnlyCollection<string> roles,
-        IReadOnlyCollection<string> permissions)
-    {
-        return new AuthUserResponse
-        {
-            Id = user.Id,
-            UserName = user.UserName,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            FullName = $"{user.FirstName} {user.LastName}".Trim(),
-            Email = user.Email,
-            OrganizationUnitId = user.OrganizationUnitId,
-            Roles = roles,
-            Permissions = permissions
+            RefreshTokenExpiresAt =
+                refreshToken.ExpiresAt,
+
+            Response =
+                new AuthSessionResponse
+                {
+                    AccessToken =
+                        accessToken.Token,
+
+                    AccessTokenExpiresAt =
+                        accessToken.ExpiresAt,
+
+                    User =
+                        new AuthUserResponse
+                        {
+                            Id = user.Id,
+                            UserName = user.UserName,
+                            FirstName = user.FirstName,
+                            LastName = user.LastName,
+                            FullName =
+                                $"{user.FirstName} {user.LastName}".Trim(),
+                            Email = user.Email,
+                            OrganizationUnitId =
+                                user.OrganizationUnitId,
+                            Roles =
+                                authorization.Roles,
+                            Permissions =
+                                authorization.Permissions
+                        }
+                }
         };
     }
 }
