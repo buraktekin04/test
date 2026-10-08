@@ -11,17 +11,27 @@ namespace KLMN.Application.Common.Authorization;
 /// </summary>
 public sealed class UserAuthorizationService : IUserAuthorizationService
 {
+    /// <summary>
+    /// EF Core üzerinden veriye erişimi sağlayan Application katmanı veritabanı sözleşmesidir.
+    /// </summary>
     private readonly IKLMNDbContext _dbContext;
 
+    /// <summary>
+    /// user authorization service işlemini uygulama kurallarına göre gerçekleştirir.
+    /// </summary>
     public UserAuthorizationService(IKLMNDbContext dbContext)
     {
         _dbContext = dbContext;
     }
 
+    /// <summary>
+    /// get async işlemini uygulama kurallarına göre gerçekleştirir.
+    /// </summary>
     public async Task<UserAuthorizationSnapshot> GetAsync(
         Guid userId,
         CancellationToken cancellationToken = default)
     {
+        // Kullanıcının atandığı geçerli rol kodlarıdır.
         var roles = await _dbContext.UserRoles
             .AsNoTracking()
             .Where(x => x.UserId == userId)
@@ -29,12 +39,14 @@ public sealed class UserAuthorizationService : IUserAuthorizationService
             .Distinct()
             .ToListAsync(cancellationToken);
 
+        // ADMIN rolü ile tam yetki sahibi olma durumudur.
         var isAdmin = roles.Contains(
             SystemRoles.Admin,
             StringComparer.OrdinalIgnoreCase);
 
         if (isAdmin)
         {
+            // Yönetici rolünün erişebileceği tüm etkin permission kodlarıdır.
             var allPermissions = await _dbContext.Permissions
                 .AsNoTracking()
                 .Select(x => x.Code)
@@ -49,6 +61,7 @@ public sealed class UserAuthorizationService : IUserAuthorizationService
             };
         }
 
+        // Kullanıcının rollerinden hesaplanan başlangıç izin listesidir.
         var rolePermissions = await _dbContext.RolePermissions
             .AsNoTracking()
             .Where(rp =>
@@ -59,10 +72,12 @@ public sealed class UserAuthorizationService : IUserAuthorizationService
             .Distinct()
             .ToListAsync(cancellationToken);
 
+        // Kullanıcı override'larının da uygulandığı nihai izin kümesidir.
         var effectivePermissions = new HashSet<string>(
             rolePermissions,
             StringComparer.OrdinalIgnoreCase);
 
+        // overrides değerini ilgili kontrol ve işlem adımlarında kullanılmak üzere hesaplar.
         var overrides = await _dbContext.UserPermissions
             .AsNoTracking()
             .Where(x => x.UserId == userId)

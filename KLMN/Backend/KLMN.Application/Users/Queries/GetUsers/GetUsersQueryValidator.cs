@@ -8,6 +8,9 @@ namespace KLMN.Application.Users.Queries.GetUsers;
 public sealed class GetUsersQueryValidator
     : AbstractValidator<GetUsersQuery>
 {
+    /// <summary>
+    /// get users query validator işlemini ilgili güvenlik ve doğrulama kurallarına uygun yürütür.
+    /// </summary>
     public GetUsersQueryValidator()
     {
         RuleFor(x => x.PageNumber)

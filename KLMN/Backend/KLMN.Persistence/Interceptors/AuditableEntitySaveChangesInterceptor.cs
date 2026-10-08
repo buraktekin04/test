@@ -8,13 +8,22 @@ namespace KLMN.Persistence.Interceptors;
 /// <summary>Audit alanlarını yönetir ve fiziksel delete'i soft delete'e dönüştürür.</summary>
 public sealed class AuditableEntitySaveChangesInterceptor : SaveChangesInterceptor
 {
+    /// <summary>
+    /// Oluşturma, değiştirme ve silme audit'ini yapan kullanıcı bilgisini sağlar.
+    /// </summary>
     private readonly ICurrentUserService _currentUserService;
 
+    /// <summary>
+    /// auditable entity save changes interceptor işlemini ilgili persistence sorumluluğuyla yerine getirir.
+    /// </summary>
     public AuditableEntitySaveChangesInterceptor(ICurrentUserService currentUserService)
     {
         _currentUserService = currentUserService;
     }
 
+    /// <summary>
+    /// saving changes işlemini ilgili persistence sorumluluğuyla yerine getirir.
+    /// </summary>
     public override InterceptionResult<int> SavingChanges(
         DbContextEventData eventData,
         InterceptionResult<int> result)
@@ -27,6 +36,9 @@ public sealed class AuditableEntitySaveChangesInterceptor : SaveChangesIntercept
         return base.SavingChanges(eventData, result);
     }
 
+    /// <summary>
+    /// saving changes async işlemini ilgili persistence sorumluluğuyla yerine getirir.
+    /// </summary>
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
         InterceptionResult<int> result,
@@ -40,11 +52,17 @@ public sealed class AuditableEntitySaveChangesInterceptor : SaveChangesIntercept
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
+    /// <summary>
+    /// ChangeTracker'daki ekleme, değiştirme ve silme durumlarını audit ile soft delete'e dönüştürür.
+    /// </summary>
     private void ApplyAuditInformation(DbContext dbContext)
     {
+        // Audit alanlarında kullanılacak tutarlı UTC zamanıdır.
         var utcNow = DateTime.UtcNow;
+        // Değişiklik kaydına yazılacak geçerli kullanıcı kimliğidir.
         var currentUserId = _currentUserService.UserId;
 
+        // SaveChanges sırasında eklenen, değiştirilen ve silinen BaseEntity kayıtlarıdır.
         var entries = dbContext.ChangeTracker
             .Entries<BaseEntity>()
             .Where(x => x.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)

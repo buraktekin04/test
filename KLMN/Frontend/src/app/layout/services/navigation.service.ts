@@ -13,9 +13,11 @@ import { NavigationItem } from '../models/navigation-item.model';
  */
 @Injectable({ providedIn: 'root' })
 export class NavigationService {
+  /** Menü, guard ve butonların yetki görünürlüğünü hesaplayan servistir. */
   private readonly permissionService =
     inject(PermissionService);
 
+  /** Sol menüde yer alabilecek sayfaların yetki ve route metadata listesidir. */
   private readonly navigationItems:
     readonly NavigationItem[] = [
     {
@@ -61,14 +63,17 @@ export class NavigationService {
     }
   ];
 
+  /** Geçerli role ve permission'lara göre görülebilir menü öğelerini hesaplar. */
   public readonly visibleItems =
     computed<readonly NavigationItem[]>(
       () => this.filterItems(this.navigationItems)
     );
 
+  /** Hiyerarşik menü öğelerini kullanıcı izinlerine göre rekürsif olarak filtreler. */
   private filterItems(
     items: readonly NavigationItem[]
   ): NavigationItem[] {
+    // Permission filtrelemesinden geçen görünür menü öğelerinin listesidir.
     const result: NavigationItem[] = [];
 
     for (const item of items) {
@@ -76,6 +81,7 @@ export class NavigationService {
         continue;
       }
 
+      // Alt menüde gruplanmış iç içe navigasyon öğeleridir.
       const children =
         item.children
           ? this.filterItems(item.children)
@@ -98,7 +104,9 @@ export class NavigationService {
     return result;
   }
 
+  /** Menü öğesinin gerekli yetkilerinin mevcut kullanıcıda bulunup bulunmadığını belirler. */
   private canView(item: NavigationItem): boolean {
+    // Bir menü veya route'un gerektirdiği izin kodlarıdır.
     const permissions = item.requiredPermissions;
 
     if (!permissions || permissions.length === 0) {

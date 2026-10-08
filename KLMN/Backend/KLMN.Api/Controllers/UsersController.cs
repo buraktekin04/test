@@ -11,8 +11,14 @@ namespace KLMN.Api.Controllers;
 [Route("api/users")]
 public sealed class UsersController : ControllerBase
 {
+    /// <summary>
+    /// MediatR üzerinden CQRS command ve query işlemlerini çalıştıran mesaj göndericisidir.
+    /// </summary>
     private readonly ISender _sender;
 
+    /// <summary>
+    /// users controller işlemini ilgili katmanın sorumluluğuna göre gerçekleştirir.
+    /// </summary>
     public UsersController(ISender sender)
     {
         _sender = sender;

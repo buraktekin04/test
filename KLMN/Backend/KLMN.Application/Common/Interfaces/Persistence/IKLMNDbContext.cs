@@ -17,5 +17,8 @@ public interface IKLMNDbContext
     DbSet<PasswordResetToken> PasswordResetTokens { get; }
     DbSet<OrganizationUnit> OrganizationUnits { get; }
 
+    /// <summary>
+    /// save changes async işlemini çağıran katmana belirtilen sözleşmeyle sunar.
+    /// </summary>
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

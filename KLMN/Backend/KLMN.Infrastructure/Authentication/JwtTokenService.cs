@@ -16,12 +16,27 @@ namespace KLMN.Infrastructure.Authentication;
 /// </summary>
 public sealed class JwtTokenService : IJwtTokenService
 {
+    /// <summary>
+    /// refresh token byte length özelliğini sınıfın veri sözleşmesinde taşır.
+    /// </summary>
     private const int RefreshTokenByteLength = 64;
 
+    /// <summary>
+    /// JWT veya SMTP güvenlik ve bağlantı ayarlarının doğrulanmış nesnesidir.
+    /// </summary>
     private readonly JwtSettings _settings;
+    /// <summary>
+    /// Tarihler için test edilebilir UTC zaman kaynağıdır.
+    /// </summary>
     private readonly TimeProvider _timeProvider;
+    /// <summary>
+    /// JWT tokenına HMAC-SHA256 imzası eklemek için kullanılan kimlik bilgileridir.
+    /// </summary>
     private readonly SigningCredentials _signingCredentials;
 
+    /// <summary>
+    /// jwt token service işlemini ilgili güvenlik ve doğrulama kurallarına uygun yürütür.
+    /// </summary>
     public JwtTokenService(
         IOptions<JwtSettings> options,
         TimeProvider timeProvider)
@@ -29,6 +44,7 @@ public sealed class JwtTokenService : IJwtTokenService
         _settings = options.Value;
         _timeProvider = timeProvider;
 
+        // JWT imzasında kullanılmak üzere oluşturulmuş simetrik güvenlik anahtarıdır.
         var securityKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(_settings.SecretKey));
 
@@ -37,6 +53,9 @@ public sealed class JwtTokenService : IJwtTokenService
             SecurityAlgorithms.HmacSha256);
     }
 
+    /// <summary>
+    /// Kullanıcı rol ve etkin izin claimlerini imzalayarak kısa ömürlü JWT erişim tokenı üretir.
+    /// </summary>
     public AccessTokenResult GenerateAccessToken(
         User user,
         IReadOnlyCollection<string> roles,
@@ -46,9 +65,12 @@ public sealed class JwtTokenService : IJwtTokenService
         ArgumentNullException.ThrowIfNull(roles);
         ArgumentNullException.ThrowIfNull(permissions);
 
+        // Token bitiş zamanlarını UTC üzerinden hesaplamak için güncel zamandır.
         var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
+        // Oluşturulan tokenın geçerliliğinin sona ereceği UTC zamanıdır.
         var expiresAt = utcNow.AddMinutes(_settings.AccessTokenExpirationMinutes);
 
+        // İstemciye bir kez iletilecek rastgele ve tahmin edilemez açık token değeridir.
         var token = new JwtSecurityToken(
             issuer: _settings.Issuer,
             audience: _settings.Audience,
@@ -64,10 +86,16 @@ public sealed class JwtTokenService : IJwtTokenService
         };
     }
 
+    /// <summary>
+    /// Kriptografik rastgele token üretir; açık değer ve saklanacak hashini birlikte döndürür.
+    /// </summary>
     public RefreshTokenResult GenerateRefreshToken()
     {
+        // Kriptografik rastgele sayı üreteci tarafından sağlanan token baytlarıdır.
         var randomBytes = RandomNumberGenerator.GetBytes(RefreshTokenByteLength);
+        // İstemciye bir kez iletilecek rastgele ve tahmin edilemez açık token değeridir.
         var token = Base64UrlEncoder.Encode(randomBytes);
+        // Oluşturulan tokenın geçerliliğinin sona ereceği UTC zamanıdır.
         var expiresAt = _timeProvider
             .GetUtcNow()
             .UtcDateTime
@@ -81,10 +109,14 @@ public sealed class JwtTokenService : IJwtTokenService
         };
     }
 
+    /// <summary>
+    /// Açık refresh tokenı SHA-256 hashine dönüştürür.
+    /// </summary>
     public string HashRefreshToken(string token)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(token);
 
+        // Açık tokenın SHA-256 işleminden dönen ikili özetidir.
         var hashBytes = SHA256.HashData(
             Encoding.UTF8.GetBytes(token));
 
@@ -101,6 +133,7 @@ public sealed class JwtTokenService : IJwtTokenService
         IReadOnlyCollection<string> roles,
         IReadOnlyCollection<string> permissions)
     {
+        // JWT'ye eklenecek kullanıcı kimlik ve yetki iddialarının koleksiyonudur.
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),

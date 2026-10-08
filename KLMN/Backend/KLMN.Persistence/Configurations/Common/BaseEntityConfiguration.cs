@@ -9,12 +9,18 @@ public abstract class BaseEntityConfiguration<TEntity>
     : IEntityTypeConfiguration<TEntity>
     where TEntity : BaseEntity
 {
+    /// <summary>
+    /// Ortak BaseEntity mapping'ini ve türeyen entity mapping'ini sırayla yürütür.
+    /// </summary>
     public void Configure(EntityTypeBuilder<TEntity> builder)
     {
         ConfigureBaseEntity(builder);
         ConfigureEntity(builder);
     }
 
+    /// <summary>
+    /// Tüm BaseEntity türevleri için ortak anahtar, audit, soft delete ve xmin mapping kurallarını uygular.
+    /// </summary>
     protected virtual void ConfigureBaseEntity(EntityTypeBuilder<TEntity> builder)
     {
         builder.HasKey(x => x.Id);
@@ -51,6 +57,9 @@ public abstract class BaseEntityConfiguration<TEntity>
             .IsRowVersion();
     }
 
+    /// <summary>
+    /// İlgili entity'nin PostgreSQL tablo, sütun, foreign key ve indeks kurallarını uygular.
+    /// </summary>
     protected abstract void ConfigureEntity(EntityTypeBuilder<TEntity> builder);
 }
 

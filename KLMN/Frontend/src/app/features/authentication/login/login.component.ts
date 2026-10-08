@@ -42,28 +42,40 @@ import { ProblemDetails } from '../../../core/models/problem-details.model';
   styleUrl: './login.component.scss'
 })
 export class LoginComponent {
+  /** Reactive Forms alanlarını tip güvenli şekilde oluşturan Angular servisidir. */
   private readonly formBuilder = inject(FormBuilder);
+  /** Giriş, parola sıfırlama ve mevcut oturum işlemlerini yöneten auth servisidir. */
   private readonly authService = inject(AuthService);
+  /** Başarılı işlem veya oturum kaybı sonrası ekran geçişlerini gerçekleştirir. */
   private readonly router = inject(Router);
+  /** URL parametrelerini ve geri dönüş yönlendirmesini sağlayan etkin route'dur. */
   private readonly activatedRoute = inject(ActivatedRoute);
 
+  /** HTTP isteği devam ederken formun tekrar gönderilmesini engelleyen signal'dır. */
   public readonly loading = signal(false);
+  /** Backend ProblemDetails veya doğrulama hatasını kullanıcıya gösteren mesaj signal'ıdır. */
   public readonly errorMessage = signal<string | null>(null);
+  /** Başarılı parola değişimi, sıfırlama veya çıkış mesajını ekrana taşır. */
   public readonly informationMessage = signal<string | null>(null);
 
+  /** Alanları ve validation kurallarını içeren reaktif form grubudur. */
   public readonly form =
     this.formBuilder.nonNullable.group({
       identifier: ['', [Validators.required]],
       password: ['', [Validators.required]]
     });
 
+  /** function Object() { [native code] } */
   public constructor() {
+    // Giriş ekranında parola değişikliği sonrası gösterilecek bilginin URL bayrağıdır.
     const passwordChanged =
       this.activatedRoute.snapshot.queryParamMap.get('passwordChanged');
 
+    // Giriş ekranında reset sonrası gösterilecek bilginin URL bayrağıdır.
     const passwordReset =
       this.activatedRoute.snapshot.queryParamMap.get('passwordReset');
 
+    // Giriş ekranında çıkış sonrası gösterilecek bilginin URL bayrağıdır.
     const loggedOut =
       this.activatedRoute.snapshot.queryParamMap.get('loggedOut');
 
@@ -88,6 +100,7 @@ export class LoginComponent {
     }
   }
 
+  /** Form alanları doğrulandıktan sonra API isteğini çalıştırır ve sonucu kullanıcıya bildirir. */
   public submit(): void {
     this.errorMessage.set(null);
 
@@ -98,6 +111,7 @@ export class LoginComponent {
 
     this.loading.set(true);
 
+    // Form alanlarından API sözleşmesine göre oluşturulan istek nesnesidir.
     const request = {
       ...this.form.getRawValue(),
       deviceName: 'Web'
@@ -109,6 +123,7 @@ export class LoginComponent {
       )
       .subscribe({
         next: response => {
+          // Login sonrası dönülmek istenen dahili uygulama yönlendirmesidir.
           const returnUrl =
             this.activatedRoute.snapshot.queryParamMap.get('returnUrl');
 
@@ -132,9 +147,11 @@ export class LoginComponent {
       });
   }
 
+  /** API durum kodunu ve ProblemDetails alanlarını anlaşılır Türkçe mesaja dönüştürür. */
   private resolveErrorMessage(
     error: HttpErrorResponse
   ): string {
+    // Backend'in alan bazlı hata ve mesajlarını içeren ProblemDetails nesnesidir.
     const problem =
       error.error as ProblemDetails | null;
 
@@ -162,6 +179,7 @@ export class LoginComponent {
       'Giriş sırasında beklenmeyen bir hata oluştu.';
   }
 
+  /** Harici siteye yönlendirmeyi engellemek için yalnızca güvenli dahili URL'leri kabul eder. */
   private isSafeReturnUrl(url: string): boolean {
     return url.startsWith('/') && !url.startsWith('//');
   }

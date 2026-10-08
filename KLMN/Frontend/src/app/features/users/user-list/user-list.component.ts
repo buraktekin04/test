@@ -47,30 +47,42 @@ import { UserService } from '../services/user.service';
   styleUrl: './user-list.component.scss'
 })
 export class UserListComponent implements OnInit {
+  /** Kullanıcı listeleme sorgularını yöneten REST API servisidir. */
   private readonly userService = inject(UserService);
+  /** Arama ve filtreleme için reactive form alanlarını oluşturan servistir. */
   private readonly formBuilder = inject(FormBuilder);
 
+  /** Kullanıcı listeleme ekranında gösterilecek kayıtları tutan signal'dır. */
   public readonly users = signal<UserListItem[]>([]);
+  /** Filtrelenmiş kullanıcı kayıtlarının toplam sayısını tutan signal'dır. */
   public readonly totalCount = signal(0);
+  /** Bir tabanlı mevcut sayfa numarasıdır. */
   public readonly pageNumber = signal(1);
+  /** Sayfa başına alınacak kullanıcı kayıt sayısıdır. */
   public readonly pageSize = signal(20);
+  /** Liste veya form yüklenirken arayüzün durumunu bildiren signal'dır. */
   public readonly loading = signal(false);
+  /** API hata durumunda kullanıcıya gösterilen hata metnini tutan signal'dır. */
   public readonly errorMessage = signal<string | null>(null);
 
+  /** Kullanıcı arama metni ve pasifleri dahil etme seçimlerini tutan formdur. */
   public readonly filterForm =
     this.formBuilder.nonNullable.group({
       search: [''],
       includeInactive: [false]
     });
 
+  /** Component ilk açıldığında gerekli kullanıcı listesini veya ekran verisini yükler. */
   public ngOnInit(): void {
     this.loadUsers();
   }
 
+  /** Seçili filtrelerle API sorgusu başlatır; sonuç veya hata signal'larını günceller. */
   public loadUsers(): void {
     this.loading.set(true);
     this.errorMessage.set(null);
 
+    // Reactive formdan okunan güncel kullanıcı listeleme filtreleridir.
     const filters = this.filterForm.getRawValue();
 
     this.userService
@@ -103,11 +115,13 @@ export class UserListComponent implements OnInit {
       });
   }
 
+  /** Kullanıcı listesi için uygulanacak serbest metin filtre kriteridir. */
   public search(): void {
     this.pageNumber.set(1);
     this.loadUsers();
   }
 
+  /** Arama kriterlerini varsayılan duruma sıfırlar ve listeyi yeniler. */
   public clearFilters(): void {
     this.filterForm.reset({
       search: '',
@@ -118,8 +132,11 @@ export class UserListComponent implements OnInit {
     this.loadUsers();
   }
 
+  /** Paginator değişikliğinden sayfa boyutu ve numarasını hesaplayarak sorgular. */
   public onPageChange(event: PaginatorState): void {
+    // Paginator olayından alınan yeni sayfa başına satır sayısıdır.
     const rows = event.rows ?? this.pageSize();
+    // Paginator olayında gösterilen ilk kaydın sıfır tabanlı indeksidir.
     const first = event.first ?? 0;
 
     this.pageSize.set(rows);

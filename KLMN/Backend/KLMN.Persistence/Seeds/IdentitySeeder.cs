@@ -13,11 +13,26 @@ namespace KLMN.Persistence.Seeds;
 /// </summary>
 internal sealed class IdentitySeeder
 {
+    /// <summary>
+    /// EF Core üzerinden identity, rol ve permission kayıtlarına erişen PostgreSQL DbContext'tir.
+    /// </summary>
     private readonly KLMNDbContext _dbContext;
+    /// <summary>
+    /// Başlangıç yetki kodlarını veritabanıyla eşitleyen seed servisidir.
+    /// </summary>
     private readonly PermissionSeeder _permissionSeeder;
+    /// <summary>
+    /// İlk yönetici hesabına ait parolayı hashlemek için kullanılan servistir.
+    /// </summary>
     private readonly IPasswordHasherService _passwordHasherService;
+    /// <summary>
+    /// Güvenli yapılandırmadan başlangıç yönetici bilgilerini okuyan sağlayıcıdır.
+    /// </summary>
     private readonly IConfiguration _configuration;
 
+    /// <summary>
+    /// identity seeder işlemini ilgili persistence sorumluluğuyla yerine getirir.
+    /// </summary>
     public IdentitySeeder(
         KLMNDbContext dbContext,
         PermissionSeeder permissionSeeder,
@@ -30,6 +45,9 @@ internal sealed class IdentitySeeder
         _configuration = configuration;
     }
 
+    /// <summary>
+    /// Merkezi rollerin ve izinlerin idempotent veritabanı başlangıç kayıtlarını oluşturur.
+    /// </summary>
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
         await _permissionSeeder.SeedAsync(cancellationToken);
@@ -38,8 +56,12 @@ internal sealed class IdentitySeeder
         await SeedInitialAdminAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Var olan rol kodlarını koruyarak başlangıç rollerini ekler veya yeniden etkinleştirir.
+    /// </summary>
     private async Task SeedRolesAsync(CancellationToken cancellationToken)
     {
+        // Soft delete edilmiş kayıtlar dahil kodla eşleşen mevcut rollerin sözlüğüdür.
         var existingRoles = await _dbContext.Roles
             .IgnoreQueryFilters()
             .ToDictionaryAsync(x => x.Code, StringComparer.OrdinalIgnoreCase, cancellationToken);
@@ -72,19 +94,26 @@ internal sealed class IdentitySeeder
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// ADMIN rolüne sistemde tanımlı tüm güncel yetki kodlarını ilişkilendirir.
+    /// </summary>
     private async Task AssignAdminPermissionsAsync(CancellationToken cancellationToken)
     {
+        // Sistem genelinde tam yetkili ADMIN rolünün veritabanı kaydıdır.
         var adminRole = await _dbContext.Roles
             .SingleAsync(x => x.Code == SystemRoles.Admin, cancellationToken);
 
+        // ADMIN rolüne atanması gereken güncel sistem izinlerini içerir.
         var permissions = await _dbContext.Permissions
             .ToListAsync(cancellationToken);
 
+        // Rol izin ilişkilerinin aktif ve silinmiş kayıtlar dahil mevcut listesidir.
         var existing = await _dbContext.RolePermissions
             .IgnoreQueryFilters()
             .Where(x => x.RoleId == adminRole.Id)
             .ToListAsync(cancellationToken);
 
+        // Permission kimliğine göre hızlı erişim sağlayan ilişki sözlüğüdür.
         var byPermission = existing.ToDictionary(x => x.PermissionId);
 
         foreach (var permission in permissions)
@@ -110,10 +139,16 @@ internal sealed class IdentitySeeder
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Configuration'dan gelen kimlikle ilk yöneticiyi oluşturur; mevcut parolasını değiştirmez.
+    /// </summary>
     private async Task SeedInitialAdminAsync(CancellationToken cancellationToken)
     {
+        // Yönetici hesabı için yapılandırmadan alınan kullanıcı adıdır.
         var userName = _configuration["InitialAdmin:UserName"];
+        // İlk yönetici hesabının yapılandırılmış e-posta adresidir.
         var email = _configuration["InitialAdmin:Email"];
+        // İlk kurulum için yapılandırmadan alınan açık parola; hashlenmeden saklanmaz.
         var password = _configuration["InitialAdmin:Password"];
 
         if (string.IsNullOrWhiteSpace(userName) ||
@@ -123,9 +158,12 @@ internal sealed class IdentitySeeder
             return;
         }
 
+        // Kullanıcı adının karşılaştırma için normalize edilmiş versiyonudur.
         var normalizedUserName = Normalize(userName);
+        // E-posta adresinin karşılaştırma için normalize edilmiş versiyonudur.
         var normalizedEmail = Normalize(email);
 
+        // İlk kurulum yönetici rolü atanacak mevcut veya yeni kullanıcıdır.
         var adminUser = await _dbContext.Users
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(
@@ -160,9 +198,11 @@ internal sealed class IdentitySeeder
             adminUser.DeletedBy = null;
         }
 
+        // Sistem genelinde tam yetkili ADMIN rolünün veritabanı kaydıdır.
         var adminRole = await _dbContext.Roles
             .SingleAsync(x => x.Code == SystemRoles.Admin, cancellationToken);
 
+        // Aynı yöneticiye daha önce atanmış ADMIN rol ilişkisi kaydıdır.
         var existingUserRole = await _dbContext.UserRoles
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(
@@ -190,6 +230,9 @@ internal sealed class IdentitySeeder
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Kullanıcı adı ve e-posta karşılaştırmaları için kültürden bağımsız normalleştirme yapar.
+    /// </summary>
     private static string Normalize(string value) =>
         value.Trim().ToUpperInvariant();
 }

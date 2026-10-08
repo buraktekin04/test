@@ -11,6 +11,9 @@ internal sealed class GetUsersQueryHandler(
     IKLMNDbContext dbContext)
     : IRequestHandler<GetUsersQuery, PagedResult<UserListItemResponse>>
 {
+    /// <summary>
+    /// Filtreleme, sayfalama ve izin kurallarına uygun kullanıcı listesini sorgular.
+    /// </summary>
     public async Task<PagedResult<UserListItemResponse>> Handle(
         GetUsersQuery request,
         CancellationToken cancellationToken)
@@ -28,10 +31,12 @@ internal sealed class GetUsersQueryHandler(
                 .Where(x => !x.IsDeleted);
         }
 
+        // Kullanıcının arama metninden temizlenmiş sorgu anahtarıdır.
         var search = request.Search?.Trim();
 
         if (!string.IsNullOrWhiteSpace(search))
         {
+            // Karşılaştırma için normalize edilmiş kullanıcı adı veya e-posta metnidir.
             var normalized = search.ToUpperInvariant();
 
             query = query.Where(x =>
@@ -41,8 +46,10 @@ internal sealed class GetUsersQueryHandler(
                 x.LastName.ToUpper().Contains(normalized));
         }
 
+        // Filtreleme sonrası eşleşen kullanıcı sayısıdır.
         var totalCount = await query.CountAsync(cancellationToken);
 
+        // Seçili sayfada döndürülecek kullanıcı DTO kayıtlarıdır.
         var items = await query
             .OrderBy(x => x.FirstName)
             .ThenBy(x => x.LastName)

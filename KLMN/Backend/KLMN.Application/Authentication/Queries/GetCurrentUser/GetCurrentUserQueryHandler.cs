@@ -12,10 +12,22 @@ namespace KLMN.Application.Authentication.Queries.GetCurrentUser;
 public sealed class GetCurrentUserQueryHandler
     : IRequestHandler<GetCurrentUserQuery, CurrentUserResponse>
 {
+    /// <summary>
+    /// EF Core üzerinden veriye erişimi sağlayan Application katmanı veritabanı sözleşmesidir.
+    /// </summary>
     private readonly IKLMNDbContext _dbContext;
+    /// <summary>
+    /// İstek yapan kullanıcının kimliği ve istemci bilgilerine erişir.
+    /// </summary>
     private readonly ICurrentUserService _currentUserService;
+    /// <summary>
+    /// Rol izinlerini ve kullanıcı override'larını birleştirerek geçerli yetkileri hesaplar.
+    /// </summary>
     private readonly IUserAuthorizationService _authorizationService;
 
+    /// <summary>
+    /// get current user query handler işlemini uygulama kurallarına göre gerçekleştirir.
+    /// </summary>
     public GetCurrentUserQueryHandler(
         IKLMNDbContext dbContext,
         ICurrentUserService currentUserService,
@@ -26,13 +38,18 @@ public sealed class GetCurrentUserQueryHandler
         _authorizationService = authorizationService;
     }
 
+    /// <summary>
+    /// MediatR komutunu güvenlik ve iş kurallarına göre yürütür.
+    /// </summary>
     public async Task<CurrentUserResponse> Handle(
         GetCurrentUserQuery request,
         CancellationToken cancellationToken)
     {
+        // Güncel oturumdan elde edilen kullanıcının benzersiz kimliğidir.
         var userId = _currentUserService.UserId
             ?? throw new AuthenticationRequiredException();
 
+        // İlgili işlemin sahibi ve güvenlik durumu kontrol edilen kullanıcıdır.
         var user = await _dbContext.Users
             .AsNoTracking()
             .Where(x => x.Id == userId)
@@ -54,6 +71,7 @@ public sealed class GetCurrentUserQueryHandler
             .SingleOrDefaultAsync(cancellationToken)
             ?? throw new AuthenticationRequiredException();
 
+        // Kullanıcının o anki rol ve effective permission bilgileridir.
         var authorization = await _authorizationService.GetAsync(
             user.Id,
             cancellationToken);

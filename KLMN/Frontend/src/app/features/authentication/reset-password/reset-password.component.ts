@@ -40,17 +40,25 @@ import { AuthService } from '../../../core/auth/services/auth.service';
   styleUrl: './reset-password.component.scss'
 })
 export class ResetPasswordComponent {
+  /** Reactive Forms alanlarını tip güvenli şekilde oluşturan Angular servisidir. */
   private readonly formBuilder = inject(FormBuilder);
+  /** Giriş, parola sıfırlama ve mevcut oturum işlemlerini yöneten auth servisidir. */
   private readonly authService = inject(AuthService);
+  /** URL parametrelerini ve geri dönüş yönlendirmesini sağlayan etkin route'dur. */
   private readonly activatedRoute = inject(ActivatedRoute);
+  /** Başarılı işlem veya oturum kaybı sonrası ekran geçişlerini gerçekleştirir. */
   private readonly router = inject(Router);
 
+  /** Sıfırlama isteğinin e-posta bağlantısında taşınan tek kullanımlık tokenıdır. */
   public readonly token =
     this.activatedRoute.snapshot.queryParamMap.get('token');
 
+  /** HTTP isteği devam ederken formun tekrar gönderilmesini engelleyen signal'dır. */
   public readonly loading = signal(false);
+  /** Backend ProblemDetails veya doğrulama hatasını kullanıcıya gösteren mesaj signal'ıdır. */
   public readonly errorMessage = signal<string | null>(null);
 
+  /** Alanları ve validation kurallarını içeren reaktif form grubudur. */
   public readonly form =
     this.formBuilder.nonNullable.group(
       {
@@ -62,6 +70,7 @@ export class ResetPasswordComponent {
       }
     );
 
+  /** Form alanları doğrulandıktan sonra API isteğini çalıştırır ve sonucu kullanıcıya bildirir. */
   public submit(): void {
     this.errorMessage.set(null);
 
@@ -79,6 +88,7 @@ export class ResetPasswordComponent {
 
     this.loading.set(true);
 
+    // value değerini form veya HTTP iş akışının sonraki kontrollerinde kullanır.
     const value = this.form.getRawValue();
 
     this.authService
@@ -121,9 +131,11 @@ function passwordsMatchValidator(): ValidatorFn {
   return (
     control: AbstractControl
   ): ValidationErrors | null => {
+    // Kullanıcının belirlemek istediği yeni paroladır.
     const newPassword =
       control.get('newPassword')?.value;
 
+    // Yeni parola ile aynı girilmesi gereken doğrulama alanıdır.
     const confirmPassword =
       control.get('confirmPassword')?.value;
 

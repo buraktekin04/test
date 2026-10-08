@@ -10,6 +10,9 @@ namespace KLMN.Api.Authorization;
     Inherited = true)]
 public sealed class HasPermissionAttribute : AuthorizeAttribute
 {
+    /// <summary>
+    /// has permission attribute işlemini ilgili katmanın sorumluluğuna göre gerçekleştirir.
+    /// </summary>
     public HasPermissionAttribute(string permissionCode)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(permissionCode);
@@ -18,5 +21,8 @@ public sealed class HasPermissionAttribute : AuthorizeAttribute
         Policy = AuthorizationPolicyNames.CreatePermissionPolicy(permissionCode);
     }
 
+    /// <summary>
+    /// İlgili endpoint için aranan yetki kodudur.
+    /// </summary>
     public string Permission { get; }
 }

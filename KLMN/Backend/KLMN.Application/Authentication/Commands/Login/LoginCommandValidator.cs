@@ -5,6 +5,9 @@ namespace KLMN.Application.Authentication.Commands.Login;
 /// <summary>LoginCommand validation kurallarını tanımlar.</summary>
 public sealed class LoginCommandValidator : AbstractValidator<LoginCommand>
 {
+    /// <summary>
+    /// Komutun çalıştırılmasından önce giriş alanlarının doğrulama kurallarını tanımlar.
+    /// </summary>
     public LoginCommandValidator()
     {
         RuleFor(x => x.Identifier)

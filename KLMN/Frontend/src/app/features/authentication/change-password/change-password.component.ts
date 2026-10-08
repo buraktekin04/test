@@ -35,13 +35,19 @@ import { AuthService } from '../../../core/auth/services/auth.service';
   styleUrl: './change-password.component.scss'
 })
 export class ChangePasswordComponent {
+  /** Reactive Forms alanlarını tip güvenli şekilde oluşturan Angular servisidir. */
   private readonly formBuilder = inject(FormBuilder);
+  /** Giriş, parola sıfırlama ve mevcut oturum işlemlerini yöneten auth servisidir. */
   private readonly authService = inject(AuthService);
+  /** Başarılı işlem veya oturum kaybı sonrası ekran geçişlerini gerçekleştirir. */
   private readonly router = inject(Router);
 
+  /** HTTP isteği devam ederken formun tekrar gönderilmesini engelleyen signal'dır. */
   public readonly loading = signal(false);
+  /** Backend ProblemDetails veya doğrulama hatasını kullanıcıya gösteren mesaj signal'ıdır. */
   public readonly errorMessage = signal<string | null>(null);
 
+  /** Alanları ve validation kurallarını içeren reaktif form grubudur. */
   public readonly form =
     this.formBuilder.nonNullable.group(
       {
@@ -128,9 +134,11 @@ function passwordsMatchValidator(): ValidatorFn {
   return (
     control: AbstractControl
   ): ValidationErrors | null => {
+    // Kullanıcının belirlemek istediği yeni paroladır.
     const newPassword =
       control.get('newPassword')?.value;
 
+    // Yeni parola ile aynı girilmesi gereken doğrulama alanıdır.
     const confirmPassword =
       control.get('confirmPassword')?.value;
 

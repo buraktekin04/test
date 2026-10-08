@@ -12,10 +12,22 @@ namespace KLMN.Application.Common.Authorization;
 /// </summary>
 public sealed class PermissionChecker : IPermissionChecker
 {
+    /// <summary>
+    /// EF Core üzerinden veriye erişimi sağlayan Application katmanı veritabanı sözleşmesidir.
+    /// </summary>
     private readonly IKLMNDbContext _dbContext;
+    /// <summary>
+    /// İstek yapan kullanıcının kimliği ve istemci bilgilerine erişir.
+    /// </summary>
     private readonly ICurrentUserService _currentUserService;
+    /// <summary>
+    /// UTC zamanını sistem saatine doğrudan bağımlı olmadan sağlar.
+    /// </summary>
     private readonly TimeProvider _timeProvider;
 
+    /// <summary>
+    /// permission checker işlemini uygulama kurallarına göre gerçekleştirir.
+    /// </summary>
     public PermissionChecker(
         IKLMNDbContext dbContext,
         ICurrentUserService currentUserService,
@@ -26,6 +38,9 @@ public sealed class PermissionChecker : IPermissionChecker
         _timeProvider = timeProvider;
     }
 
+    /// <summary>
+    /// has permission async işlemini uygulama kurallarına göre gerçekleştirir.
+    /// </summary>
     public async Task<bool> HasPermissionAsync(
         string permissionCode,
         CancellationToken cancellationToken = default)
@@ -36,8 +51,10 @@ public sealed class PermissionChecker : IPermissionChecker
             return false;
         }
 
+        // Hesap geçerliliği ve token süreleri için ortak UTC zaman değeridir.
         var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
 
+        // Kullanıcının kilit ve hesap geçerliliği kontrolünde gereken verileridir.
         var userState = await _dbContext.Users
             .AsNoTracking()
             .Where(x => x.Id == userId)
@@ -68,6 +85,7 @@ public sealed class PermissionChecker : IPermissionChecker
             return false;
         }
 
+        // ADMIN rolü ile tam yetki sahibi olma durumudur.
         var isAdmin = await _dbContext.UserRoles
             .AsNoTracking()
             .AnyAsync(
@@ -80,6 +98,7 @@ public sealed class PermissionChecker : IPermissionChecker
             return true;
         }
 
+        // user override değerini ilgili kontrol ve işlem adımlarında kullanılmak üzere hesaplar.
         var userOverride = await _dbContext.UserPermissions
             .AsNoTracking()
             .Where(x =>

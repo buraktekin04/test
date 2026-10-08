@@ -16,12 +16,30 @@ namespace KLMN.Application.Authentication.Commands.RefreshToken;
 public sealed class RefreshTokenCommandHandler
     : IRequestHandler<RefreshTokenCommand, RefreshResult>
 {
+    /// <summary>
+    /// Kullanıcı, yetki ve oturum verilerine erişen EF Core context sözleşmesidir.
+    /// </summary>
     private readonly IKLMNDbContext _dbContext;
+    /// <summary>
+    /// İmzalı erişim tokenı ve rastgele refresh token üretme hizmetidir.
+    /// </summary>
     private readonly IJwtTokenService _jwtTokenService;
+    /// <summary>
+    /// Rol ve kullanıcı override kayıtlarından geçerli yetki kümesini hesaplar.
+    /// </summary>
     private readonly IUserAuthorizationService _authorizationService;
+    /// <summary>
+    /// İsteği gerçekleştiren kullanıcının kimliğini ve istemci bilgilerini sağlar.
+    /// </summary>
     private readonly ICurrentUserService _currentUserService;
+    /// <summary>
+    /// UTC saatini test edilebilir biçimde sağlayan zaman kaynağıdır.
+    /// </summary>
     private readonly TimeProvider _timeProvider;
 
+    /// <summary>
+    /// refresh token command handler işlemini uygulamanın ilgili kurallarına göre gerçekleştirir.
+    /// </summary>
     public RefreshTokenCommandHandler(
         IKLMNDbContext dbContext,
         IJwtTokenService jwtTokenService,
@@ -36,13 +54,19 @@ public sealed class RefreshTokenCommandHandler
         _timeProvider = timeProvider;
     }
 
+    /// <summary>
+    /// Refresh tokenı doğrular ve rotation yaparak yeni token çiftini üretir.
+    /// </summary>
     public async Task<RefreshResult> Handle(
         RefreshTokenCommand request,
         CancellationToken cancellationToken)
     {
+        // İşlem sırasında tüm tarih karşılaştırmalarında kullanılacak UTC zamanıdır.
         var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
+        // Açık tokenın veritabanı ile karşılaştırılacak tek yönlü SHA-256 özetidir.
         var tokenHash = _jwtTokenService.HashRefreshToken(request.RefreshToken);
 
+        // Gönderilen hash ile eşleşen veritabanı refresh token kaydıdır.
         var storedToken = await _dbContext.RefreshTokens
             .IgnoreQueryFilters()
             .Include(x => x.User)
@@ -72,6 +96,7 @@ public sealed class RefreshTokenCommandHandler
             throw new InvalidRefreshTokenException();
         }
 
+        // İşlem yapılacak kullanıcı hesabının takip edilen EF Core kaydıdır.
         var user = storedToken.User;
 
         if (user.IsDeleted || !user.IsActive)
@@ -97,17 +122,21 @@ public sealed class RefreshTokenCommandHandler
             throw new InvalidRefreshTokenException();
         }
 
+        // Kullanıcının güncel rol ve effective permission bilgilerinin özetidir.
         var authorization = await _authorizationService.GetAsync(
             user.Id,
             cancellationToken);
 
+        // Kullanıcının yetkileriyle imzalanan kısa ömürlü erişim tokenı bilgisidir.
         var accessToken = _jwtTokenService.GenerateAccessToken(
             user,
             authorization.Roles,
             authorization.Permissions);
 
+        // Rotation işlemiyle eski oturum tokenının yerine geçen yeni token bilgileridir.
         var newRefreshToken = _jwtTokenService.GenerateRefreshToken();
 
+        // Rotation sonucu oluşturulan yeni refresh token entity kaydıdır.
         var newEntity = new KLMN.Domain.Entities.Identity.RefreshToken
         {
             UserId = user.Id,
@@ -152,16 +181,22 @@ public sealed class RefreshTokenCommandHandler
         };
     }
 
+    /// <summary>
+    /// revoke replacement chain async işlemini asenkron olarak yürütür; iptal isteğini destekler.
+    /// </summary>
     private async Task RevokeReplacementChainAsync(
         KLMN.Domain.Entities.Identity.RefreshToken token,
         DateTime utcNow,
         CancellationToken cancellationToken)
     {
+        // next token id değerini mevcut işlemin sonraki kontrollerinde kullanmak üzere hesaplar.
         var nextTokenId = token.ReplacedByTokenId;
+        // visited ids değerini mevcut işlemin sonraki kontrollerinde kullanmak üzere hesaplar.
         var visitedIds = new HashSet<Guid>();
 
         while (nextTokenId.HasValue && visitedIds.Add(nextTokenId.Value))
         {
+            // replacement token değerini mevcut işlemin sonraki kontrollerinde kullanmak üzere hesaplar.
             var replacementToken = await _dbContext.RefreshTokens
                 .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(

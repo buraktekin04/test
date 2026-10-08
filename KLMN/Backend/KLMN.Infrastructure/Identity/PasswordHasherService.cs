@@ -6,8 +6,14 @@ namespace KLMN.Infrastructure.Identity;
 /// <summary>ASP.NET Core Identity PasswordHasher tabanlı parola servisidir.</summary>
 public sealed class PasswordHasherService : IPasswordHasherService
 {
+    /// <summary>
+    /// ASP.NET Core Identity'nin güvenli parola hashleme hizmetidir.
+    /// </summary>
     private readonly PasswordHasher<object> _passwordHasher = new();
 
+    /// <summary>
+    /// hash password işlemini ilgili katmanın sorumluluğuna göre gerçekleştirir.
+    /// </summary>
     public string HashPassword(string password)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(password);
@@ -17,6 +23,9 @@ public sealed class PasswordHasherService : IPasswordHasherService
             password);
     }
 
+    /// <summary>
+    /// verify password işlemini ilgili katmanın sorumluluğuna göre gerçekleştirir.
+    /// </summary>
     public bool VerifyPassword(
         string hashedPassword,
         string providedPassword)
@@ -24,6 +33,7 @@ public sealed class PasswordHasherService : IPasswordHasherService
         ArgumentException.ThrowIfNullOrWhiteSpace(hashedPassword);
         ArgumentException.ThrowIfNullOrWhiteSpace(providedPassword);
 
+        // Handler veya servis çağrısından elde edilen doğrulanmış işlem sonucudur.
         var result = _passwordHasher.VerifyHashedPassword(
             user: null!,
             hashedPassword,

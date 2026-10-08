@@ -33,13 +33,19 @@ import { AuthService } from '../../../core/auth/services/auth.service';
   styleUrl: './forgot-password.component.scss'
 })
 export class ForgotPasswordComponent {
+  /** Reactive Forms alanlarını tip güvenli şekilde oluşturan Angular servisidir. */
   private readonly formBuilder = inject(FormBuilder);
+  /** Giriş, parola sıfırlama ve mevcut oturum işlemlerini yöneten auth servisidir. */
   private readonly authService = inject(AuthService);
 
+  /** HTTP isteği devam ederken formun tekrar gönderilmesini engelleyen signal'dır. */
   public readonly loading = signal(false);
+  /** success message durumunu veya bağımlılığını component içerisinde yönetir. */
   public readonly successMessage = signal<string | null>(null);
+  /** Backend ProblemDetails veya doğrulama hatasını kullanıcıya gösteren mesaj signal'ıdır. */
   public readonly errorMessage = signal<string | null>(null);
 
+  /** Alanları ve validation kurallarını içeren reaktif form grubudur. */
   public readonly form =
     this.formBuilder.nonNullable.group({
       email: [
@@ -51,6 +57,7 @@ export class ForgotPasswordComponent {
       ]
     });
 
+  /** Form alanları doğrulandıktan sonra API isteğini çalıştırır ve sonucu kullanıcıya bildirir. */
   public submit(): void {
     this.successMessage.set(null);
     this.errorMessage.set(null);

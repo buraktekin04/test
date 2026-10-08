@@ -5,6 +5,9 @@ namespace KLMN.Application.Authentication.Commands.ResetPassword;
 /// <summary>ResetPasswordCommand validation kurallarını tanımlar.</summary>
 public sealed class ResetPasswordCommandValidator : AbstractValidator<ResetPasswordCommand>
 {
+    /// <summary>
+    /// reset password command validator işlemini uygulama kurallarına göre gerçekleştirir.
+    /// </summary>
     public ResetPasswordCommandValidator()
     {
         RuleFor(x => x.Token).NotEmpty();

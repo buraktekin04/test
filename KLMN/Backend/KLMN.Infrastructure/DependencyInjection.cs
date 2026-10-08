@@ -23,6 +23,9 @@ namespace KLMN.Infrastructure;
 /// <summary>Infrastructure authentication, authorization ve teknik servis kayıtlarını içerir.</summary>
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Kimlik, JWT, SMTP ve altyapı servislerini DI container'a kaydeder.
+    /// </summary>
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
         IConfiguration configuration)
@@ -71,6 +74,7 @@ public static class DependencyInjection
             .Validate(x => !string.IsNullOrWhiteSpace(x.FromAddress), "Smtp:FromAddress zorunludur.")
             .ValidateOnStart();
 
+        // jwt settings bilgisini sonraki işlem adımları için hesaplar.
         var jwtSettings =
             configuration
                 .GetSection(JwtSettings.SectionName)
@@ -112,6 +116,7 @@ public static class DependencyInjection
                     {
                         OnAuthenticationFailed = context =>
                         {
+                            // logger bilgisini sonraki işlem adımları için hesaplar.
                             var logger = context.HttpContext
                                 .RequestServices
                                 .GetRequiredService<Microsoft.Extensions.Logging.ILoggerFactory>()
@@ -127,10 +132,12 @@ public static class DependencyInjection
 
                         OnTokenValidated = async context =>
                         {
+                            // user id value bilgisini sonraki işlem adımları için hesaplar.
                             var userIdValue =
                                 context.Principal?
                                     .FindFirstValue(ClaimTypes.NameIdentifier);
 
+                            // token security stamp bilgisini sonraki işlem adımları için hesaplar.
                             var tokenSecurityStamp =
                                 context.Principal?
                                     .FindFirstValue(CustomClaimTypes.SecurityStamp);
@@ -142,16 +149,20 @@ public static class DependencyInjection
                                 return;
                             }
 
+                            // db context bilgisini sonraki işlem adımları için hesaplar.
                             var dbContext = context.HttpContext
                                 .RequestServices
                                 .GetRequiredService<IKLMNDbContext>();
 
+                            // time provider bilgisini sonraki işlem adımları için hesaplar.
                             var timeProvider = context.HttpContext
                                 .RequestServices
                                 .GetRequiredService<TimeProvider>();
 
+                            // Token bitiş zamanlarını UTC üzerinden hesaplamak için güncel zamandır.
                             var utcNow = timeProvider.GetUtcNow().UtcDateTime;
 
+                            // user bilgisini sonraki işlem adımları için hesaplar.
                             var user = await dbContext.Users
                                 .AsNoTracking()
                                 .Where(x => x.Id == userId)

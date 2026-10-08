@@ -10,9 +10,13 @@ namespace KLMN.Application;
 /// <summary>Application katmanının DI kayıtlarını içerir.</summary>
 public static class DependencyInjection
 {
+    /// <summary>
+    /// MediatR, FluentValidation ve yetkilendirme hizmetlerini DI container'a kaydeder.
+    /// </summary>
     public static IServiceCollection AddApplication(
         this IServiceCollection services)
     {
+        // Application katmanındaki MediatR handler ve FluentValidation validatorlarının bulunduğu derlemedir.
         var assembly = typeof(DependencyInjection).Assembly;
 
         services.AddMediatR(configuration =>

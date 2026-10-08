@@ -5,6 +5,9 @@ namespace KLMN.Application.Authentication.Commands.ChangePassword;
 /// <summary>ChangePasswordCommand validation kurallarını tanımlar.</summary>
 public sealed class ChangePasswordCommandValidator : AbstractValidator<ChangePasswordCommand>
 {
+    /// <summary>
+    /// Komutun çalıştırılmasından önce giriş alanlarının doğrulama kurallarını tanımlar.
+    /// </summary>
     public ChangePasswordCommandValidator()
     {
         RuleFor(x => x.CurrentPassword)

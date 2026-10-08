@@ -8,6 +8,7 @@ import { AuthUser } from '../models/auth-user.model';
  */
 @Injectable({ providedIn: 'root' })
 export class AuthStoreService {
+  /** state durumunu veya bağımlılığını component içerisinde yönetir. */
   private readonly _state = signal<AuthState>({
     isInitialized: false,
     isAuthenticated: false,
@@ -16,10 +17,15 @@ export class AuthStoreService {
     user: null
   });
 
+  /** Store içindeki güncel oturum durumunu temsil eden değişkendir. */
   public readonly state = this._state.asReadonly();
+  /** Uygulama açılışında session kontrolünün tamamlandığını gösteren signal'dır. */
   public readonly isInitialized = computed(() => this._state().isInitialized);
+  /** Kullanıcının doğrulanmış oturum sahibi olduğunu izleyen salt okunur signal'dır. */
   public readonly isAuthenticated = computed(() => this._state().isAuthenticated);
+  /** API isteklerinde Authorization Bearer olarak kullanılan bellekteki JWT'dir. */
   public readonly accessToken = computed(() => this._state().accessToken);
+  /** Oturum sahibine ait profil ve role/permission verileridir. */
   public readonly user = computed(() => this._state().user);
 
   /**

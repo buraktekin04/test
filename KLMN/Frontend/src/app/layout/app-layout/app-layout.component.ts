@@ -19,12 +19,15 @@ import { TopbarComponent } from '../topbar/topbar.component';
   styleUrl: './app-layout.component.scss'
 })
 export class AppLayoutComponent {
+  /** sidebar open alanını component veya servis durumunda kullanır. */
   public readonly sidebarOpen = signal(false);
 
+  /** toggle sidebar işlemini kullanıcı etkileşimi ve servis sonucuna göre yürütür. */
   public toggleSidebar(): void {
     this.sidebarOpen.update(current => !current);
   }
 
+  /** close sidebar işlemini kullanıcı etkileşimi ve servis sonucuna göre yürütür. */
   public closeSidebar(): void {
     this.sidebarOpen.set(false);
   }

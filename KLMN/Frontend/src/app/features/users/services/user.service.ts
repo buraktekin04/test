@@ -15,18 +15,23 @@ import { UserQuery } from '../models/user-query.model';
  */
 @Injectable({ providedIn: 'root' })
 export class UserService {
+  /** Kullanıcı listeleme ve yönetim isteklerini backend'e gönderen HttpClient'tır. */
   private readonly http = inject(HttpClient);
+  /** Angular'ın istek göndereceği proxy kullanılmayan API temel adresidir. */
   private readonly apiBaseUrl = inject(API_BASE_URL);
 
+  /** Backend'den arama metni, aktiflik ve sayfa parametrelerine göre kullanıcıları getirir. */
   public getUsers(
     query: UserQuery
   ): Observable<PagedResult<UserListItem>> {
+    // Arama kriterlerini HTTP query string biçimine dönüştüren HttpParams nesnesidir.
     let params =
       new HttpParams()
         .set('pageNumber', query.pageNumber)
         .set('pageSize', query.pageSize)
         .set('includeInactive', query.includeInactive);
 
+    // Kullanıcı listesi için uygulanacak serbest metin filtre kriteridir.
     const search = query.search?.trim();
 
     if (search) {

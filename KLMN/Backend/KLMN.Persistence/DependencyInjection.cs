@@ -11,10 +11,14 @@ namespace KLMN.Persistence;
 /// <summary>Persistence katmanının DI kayıtlarını içerir.</summary>
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Npgsql DbContext, audit interceptor ve başlangıç seed servislerini DI sistemine ekler.
+    /// </summary>
     public static IServiceCollection AddPersistence(
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        // PostgreSQL bağlantısının güvenli yapılandırmadan okunan bilgisidir.
         var connectionString =
             configuration.GetConnectionString("PostgreSQL")
             ?? throw new InvalidOperationException(

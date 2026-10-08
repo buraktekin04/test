@@ -26,9 +26,11 @@ import { NavigationService } from '../services/navigation.service';
   styleUrl: './sidebar.component.scss'
 })
 export class SidebarComponent {
+  /** navigation service alanını component veya servis durumunda kullanır. */
   private readonly navigationService =
     inject(NavigationService);
 
+  /** menu items alanını component veya servis durumunda kullanır. */
   public readonly menuItems =
     this.navigationService.visibleItems;
 
@@ -36,6 +38,7 @@ export class SidebarComponent {
   public readonly navigationSelected =
     new EventEmitter<void>();
 
+  /** on navigation selected işlemini kullanıcı etkileşimi ve servis sonucuna göre yürütür. */
   public onNavigationSelected(): void {
     this.navigationSelected.emit();
   }

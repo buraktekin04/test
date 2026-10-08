@@ -18,14 +18,38 @@ namespace KLMN.Application.Authentication.Commands.Login;
 /// </summary>
 public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
 {
+    /// <summary>
+    /// Kullanıcı, yetki ve oturum verilerine erişen EF Core context sözleşmesidir.
+    /// </summary>
     private readonly IKLMNDbContext _dbContext;
+    /// <summary>
+    /// Parola karşılaştırma ve güvenli hash üretme hizmetidir.
+    /// </summary>
     private readonly IPasswordHasherService _passwordHasherService;
+    /// <summary>
+    /// İmzalı erişim tokenı ve rastgele refresh token üretme hizmetidir.
+    /// </summary>
     private readonly IJwtTokenService _jwtTokenService;
+    /// <summary>
+    /// Rol ve kullanıcı override kayıtlarından geçerli yetki kümesini hesaplar.
+    /// </summary>
     private readonly IUserAuthorizationService _authorizationService;
+    /// <summary>
+    /// İsteği gerçekleştiren kullanıcının kimliğini ve istemci bilgilerini sağlar.
+    /// </summary>
     private readonly ICurrentUserService _currentUserService;
+    /// <summary>
+    /// Hesap kilitleme eşiği ve sürelerini içeren doğrulanmış ayarlardır.
+    /// </summary>
     private readonly AuthenticationSettings _authenticationSettings;
+    /// <summary>
+    /// UTC saatini test edilebilir biçimde sağlayan zaman kaynağıdır.
+    /// </summary>
     private readonly TimeProvider _timeProvider;
 
+    /// <summary>
+    /// Giriş sürecine gerekli veritabanı, parola doğrulama, JWT, yetkilendirme ve zaman bağımlılıklarını bağlar.
+    /// </summary>
     public LoginCommandHandler(
         IKLMNDbContext dbContext,
         IPasswordHasherService passwordHasherService,
@@ -44,13 +68,19 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
         _timeProvider = timeProvider;
     }
 
+    /// <summary>
+    /// Kullanıcı girişini doğrular, hesap kilitlerini denetler ve JWT/refresh oturumu oluşturur.
+    /// </summary>
     public async Task<LoginResult> Handle(
         LoginCommand request,
         CancellationToken cancellationToken)
     {
+        // İşlem sırasında tüm tarih karşılaştırmalarında kullanılacak UTC zamanıdır.
         var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
+        // Girişte kullanıcı adı/e-posta için oluşturulmuş normalize arama anahtarıdır.
         var normalizedIdentifier = Normalize(request.Identifier);
 
+        // İşlem yapılacak kullanıcı hesabının takip edilen EF Core kaydıdır.
         var user = await _dbContext.Users
             .FirstOrDefaultAsync(
                 x =>
@@ -71,6 +101,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
             throw new AccountLockedException(user.LockoutEnd);
         }
 
+        // Girilen parolanın veritabanındaki hash ile eşleşme sonucudur.
         var passwordValid = _passwordHasherService.VerifyPassword(
             user.PasswordHash,
             request.Password);
@@ -84,15 +115,18 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
         ResetFailedLoginState(user);
         user.LastLoginDate = utcNow;
 
+        // Kullanıcının güncel rol ve effective permission bilgilerinin özetidir.
         var authorization = await _authorizationService.GetAsync(
             user.Id,
             cancellationToken);
 
+        // Kullanıcının yetkileriyle imzalanan kısa ömürlü erişim tokenı bilgisidir.
         var accessToken = _jwtTokenService.GenerateAccessToken(
             user,
             authorization.Roles,
             authorization.Permissions);
 
+        // Yeni oturum için üretilen rastgele refresh token ve hash bilgileridir.
         var refreshToken = _jwtTokenService.GenerateRefreshToken();
 
         await _dbContext.RefreshTokens.AddAsync(
@@ -135,6 +169,9 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
         };
     }
 
+    /// <summary>
+    /// Hesabın başlangıç ve bitiş tarihlerini UTC ile karşılaştırır; geçersiz dönemde girişe izin vermez.
+    /// </summary>
     private static void ValidateAccountPeriod(User user, DateTime utcNow)
     {
         if (user.ValidFrom.HasValue && user.ValidFrom.Value > utcNow)
@@ -148,6 +185,9 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
         }
     }
 
+    /// <summary>
+    /// Süresi dolan geçici giriş kilidini kaldırır; süresiz yönetici kilitlerine dokunmaz.
+    /// </summary>
     private static void HandleExpiredLockout(User user, DateTime utcNow)
     {
         if (!user.IsLocked ||
@@ -162,6 +202,9 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
         user.AccessFailedCount = 0;
     }
 
+    /// <summary>
+    /// Hatalı parola sayacını artırır; eşik aşılırsa geçici kilit koyup güvenlik durumunu veritabanına kaydeder.
+    /// </summary>
     private async Task HandleFailedLoginAsync(
         User user,
         DateTime utcNow,
@@ -178,6 +221,9 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Başarılı girişte hatalı deneme sayısını ve geçici hesap kilitlerini sıfırlar.
+    /// </summary>
     private static void ResetFailedLoginState(User user)
     {
         user.AccessFailedCount = 0;
@@ -185,6 +231,9 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
         user.LockoutEnd = null;
     }
 
+    /// <summary>
+    /// Giriş tanımlayıcısını kullanıcı adı/e-posta aramasına uygun invariant büyük harf formatına dönüştürür.
+    /// </summary>
     private static string Normalize(string value) =>
         value.Trim().ToUpperInvariant();
 }

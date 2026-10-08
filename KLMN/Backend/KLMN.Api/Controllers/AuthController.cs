@@ -19,9 +19,18 @@ namespace KLMN.Api.Controllers;
 [Route("api/auth")]
 public sealed class AuthController : ControllerBase
 {
+    /// <summary>
+    /// Açık refresh tokenı tarayıcıda saklamak için kullanılan HttpOnly cookie adıdır.
+    /// </summary>
     private const string RefreshTokenCookieName = "klmn_refresh_token";
 
+    /// <summary>
+    /// MediatR üzerinden CQRS command ve query işlemlerini çalıştıran mesaj göndericisidir.
+    /// </summary>
     private readonly ISender _sender;
+    /// <summary>
+    /// auth controller işlemini ilgili katmanın sorumluluğuna göre gerçekleştirir.
+    /// </summary>
     public AuthController(ISender sender)
     {
         _sender = sender;
@@ -35,6 +44,7 @@ public sealed class AuthController : ControllerBase
         [FromBody] LoginCommand command,
         CancellationToken cancellationToken)
     {
+        // Handler veya servis çağrısından elde edilen doğrulanmış işlem sonucudur.
         var result = await _sender.Send(command, cancellationToken);
 
         SetRefreshTokenCookie(
@@ -59,6 +69,7 @@ public sealed class AuthController : ControllerBase
             throw new InvalidRefreshTokenException();
         }
 
+        // Handler veya servis çağrısından elde edilen doğrulanmış işlem sonucudur.
         var result = await _sender.Send(
             new RefreshTokenCommand
             {
@@ -104,6 +115,7 @@ public sealed class AuthController : ControllerBase
     public async Task<ActionResult<CurrentUserResponse>> Me(
         CancellationToken cancellationToken)
     {
+        // İstemciye HTTP body ile döndürülen yanıt modelidir.
         var response = await _sender.Send(
             new GetCurrentUserQuery(),
             cancellationToken);

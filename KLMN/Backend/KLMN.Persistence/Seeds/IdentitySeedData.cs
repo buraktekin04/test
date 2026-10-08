@@ -5,6 +5,9 @@ namespace KLMN.Persistence.Seeds;
 /// <summary>Başlangıç rol ve permission tanımlarını içerir.</summary>
 internal static class IdentitySeedData
 {
+    /// <summary>
+    /// Tanımlanan dinamik ve sistem rollerinin EF Core DbSet koleksiyonudur.
+    /// </summary>
     public static IReadOnlyCollection<RoleSeedItem> Roles { get; } =
     [
         new("Yönetici", SystemRoles.Admin, "Sistem genelinde tam yetkiye sahip yönetici rolüdür.", true),
@@ -13,6 +16,9 @@ internal static class IdentitySeedData
         new("Şube Müdürü", "BRANCH_MANAGER", "Şube seviyesindeki yönetim ve iş akışı süreçlerinde kullanılan roldür.", false)
     ];
 
+    /// <summary>
+    /// Uygulamanın başlangıçta tanımlanan permission seed kayıtlarını içerir.
+    /// </summary>
     public static IReadOnlyCollection<PermissionSeedItem> Permissions { get; } =
     [
         new("Kullanıcıları Görüntüleme", PermissionCodes.Users.View, "Users", 10),

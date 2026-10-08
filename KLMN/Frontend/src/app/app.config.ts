@@ -55,6 +55,7 @@ export const appConfig: ApplicationConfig = {
 
     provideAppInitializer(
       () => {
+        // Login, refresh, logout ve mevcut kullanıcı işlemlerini sağlayan servistir.
         const authService = inject(AuthService);
 
         return firstValueFrom(

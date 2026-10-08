@@ -25,17 +25,26 @@ import { AuthStoreService } from './auth-store.service';
  */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  /** Backend'e tip güvenli REST istekleri gönderen Angular HttpClient bağımlılığıdır. */
   private readonly http = inject(HttpClient);
+  /** Environment üzerinden gelen ve proxy kullanmadan API'ye yönelen HTTPS temel adresidir. */
   private readonly apiBaseUrl = inject(API_BASE_URL);
+  /** Access token ve kullanıcı bilgilerini yalnızca bellekte tutan merkezi store'dur. */
   private readonly store = inject(AuthStoreService);
+  /** Gizli token değerini göstermeden güvenli auth durumu kaydeden geliştirme servisidir. */
   private readonly debugService = inject(AuthDebugService);
 
+  /** Çakışan HTTP refresh isteklerini tek çağrıda birleştiren paylaşımlı observable'dır. */
   private refreshInFlight$: Observable<AuthSessionResponse> | null = null;
 
+  /** Kullanıcının doğrulanmış oturum sahibi olduğunu izleyen salt okunur signal'dır. */
   public readonly isAuthenticated = this.store.isAuthenticated;
+  /** Uygulama açılışında session kontrolünün tamamlandığını gösteren signal'dır. */
   public readonly isInitialized = this.store.isInitialized;
+  /** Oturum sahibinin profil ve etkin izinlerini sağlayan salt okunur signal'dır. */
   public readonly currentUser = this.store.user;
 
+  /** Kullanıcı kimlik bilgilerini API'ye gönderip başarılı sonucu oturuma kaydeder. */
   public login(request: LoginRequest): Observable<AuthSessionResponse> {
     return this.http.post<AuthSessionResponse>(
       `${this.apiBaseUrl}/auth/login`,
@@ -50,11 +59,13 @@ export class AuthService {
     );
   }
 
+  /** HttpOnly cookie ile yeni JWT alır ve paralel yenilemeleri tek istekte birleştirir. */
   public refresh(): Observable<AuthSessionResponse> {
     if (this.refreshInFlight$) {
       return this.refreshInFlight$;
     }
 
+    // Paylaşılan token yenileme HTTP çağrısının RxJS observable'ıdır.
     const request$ = this.http.post<AuthSessionResponse>(
       `${this.apiBaseUrl}/auth/refresh`,
       {},
@@ -78,6 +89,7 @@ export class AuthService {
     return request$;
   }
 
+  /** Sayfa açılırken HttpOnly cookie varsa oturumu otomatik olarak geri yükler. */
   public initializeSession(): Observable<void> {
     if (this.store.isInitialized()) {
       return of(void 0);
@@ -93,6 +105,7 @@ export class AuthService {
       );
   }
 
+  /** Güncel profil, rol ve permission bilgilerini sunucudan yükler. */
   public me(): Observable<AuthUser> {
     return this.http.get<AuthUser>(
       `${this.apiBaseUrl}/auth/me`,
@@ -105,6 +118,7 @@ export class AuthService {
     );
   }
 
+  /** Kullanıcı varlığını ifşa etmeden parola sıfırlama e-postası ister. */
   public forgotPassword(
     request: ForgotPasswordRequest
   ): Observable<void> {
@@ -114,6 +128,7 @@ export class AuthService {
     );
   }
 
+  /** Tek kullanımlık bağlantı ile parolayı günceller ve oturum state'ini sıfırlar. */
   public resetPassword(
     request: ResetPasswordRequest
   ): Observable<void> {
@@ -142,6 +157,7 @@ export class AuthService {
     );
   }
 
+  /** Mevcut tarayıcının refresh oturumunu sunucuda kapatır. */
   public logout(): Observable<void> {
     return this.http.post<void>(
       `${this.apiBaseUrl}/auth/logout`,
@@ -153,6 +169,7 @@ export class AuthService {
     );
   }
 
+  /** Bütün cihazların refresh ve access oturumlarını geçersiz kılan endpointi çağırır. */
   public logoutAll(): Observable<void> {
     return this.http.post<void>(
       `${this.apiBaseUrl}/auth/logout-all`,
@@ -164,15 +181,19 @@ export class AuthService {
     );
   }
 
+  /** Interceptor'ın ihtiyaç duyduğu bellekteki JWT değerini döndürür. */
   public getAccessToken(): string | null {
     return this.store.getAccessToken();
   }
 
+  /** JWT ve kullanıcı verilerini bellekten temizleyerek oturum durumunu sıfırlar. */
   public clearSession(): void {
     this.store.clearSession();
   }
 
+  /** Erişim tokenı veya parola gibi gizli değerleri göstermeden güncel oturum özetini loglar. */
   public debugCurrentSession(): void {
+    // Store içindeki güncel oturum durumunu temsil eden değişkendir.
     const state = this.store.state();
     console.info('[KLMN AUTH] Oturum durumu:', {
       isInitialized: state.isInitialized,

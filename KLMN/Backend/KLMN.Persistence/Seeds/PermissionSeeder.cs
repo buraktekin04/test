@@ -7,15 +7,25 @@ namespace KLMN.Persistence.Seeds;
 /// <summary>Permission seed kayıtlarını idempotent olarak senkronize eder.</summary>
 internal sealed class PermissionSeeder
 {
+    /// <summary>
+    /// EF Core üzerinden identity, rol ve permission kayıtlarına erişen PostgreSQL DbContext'tir.
+    /// </summary>
     private readonly KLMNDbContext _dbContext;
 
+    /// <summary>
+    /// permission seeder işlemini ilgili persistence sorumluluğuyla yerine getirir.
+    /// </summary>
     public PermissionSeeder(KLMNDbContext dbContext)
     {
         _dbContext = dbContext;
     }
 
+    /// <summary>
+    /// Merkezi rollerin ve izinlerin idempotent veritabanı başlangıç kayıtlarını oluşturur.
+    /// </summary>
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
+        // Kod eşleştirmesiyle tekrar seed edilmesi önlenen tüm mevcut izinlerin sözlüğüdür.
         var existingPermissions = await _dbContext.Permissions
             .IgnoreQueryFilters()
             .ToDictionaryAsync(

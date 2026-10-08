@@ -14,6 +14,7 @@ import {
 import { API_BASE_URL } from '../../config/api.tokens';
 import { AuthService } from '../services/auth.service';
 
+// auth_retry bilgisini işlem sırasında sonraki kontrol adımları için hazırlar.
 const AUTH_RETRY =
   new HttpContextToken<boolean>(() => false);
 
@@ -24,15 +25,19 @@ const AUTH_RETRY =
  */
 export const authInterceptor: HttpInterceptorFn =
   (request, next) => {
+    // Login, refresh, logout ve mevcut kullanıcı işlemlerini sağlayan servistir.
     const authService = inject(AuthService);
+    // Environment'dan enjekte edilen doğrudan HTTPS API temel adresidir.
     const apiBaseUrl = inject(API_BASE_URL);
 
     if (!request.url.startsWith(apiBaseUrl)) {
       return next(request);
     }
 
+    // API isteklerine Bearer olarak eklenecek, kalıcı depoya yazılmayan JWT'dir.
     const accessToken = authService.getAccessToken();
 
+    // authenticated request bilgisini işlem sırasında sonraki kontrol adımları için hazırlar.
     let authenticatedRequest =
       addAuthentication(request, accessToken);
 
@@ -47,6 +52,7 @@ export const authInterceptor: HttpInterceptorFn =
             return throwError(() => error);
           }
 
+          // current access token bilgisini işlem sırasında sonraki kontrol adımları için hazırlar.
           const currentAccessToken =
             authService.getAccessToken();
 
@@ -73,6 +79,7 @@ export const authInterceptor: HttpInterceptorFn =
           return authService.refresh()
             .pipe(
               switchMap(session => {
+                // retry request bilgisini işlem sırasında sonraki kontrol adımları için hazırlar.
                 const retryRequest =
                   addAuthentication(
                     request.clone({

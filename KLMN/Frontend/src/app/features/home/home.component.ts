@@ -13,8 +13,10 @@ import { AuthService } from '../../core/auth/services/auth.service';
   styleUrl: './home.component.scss'
 })
 export class HomeComponent {
+  /** Oturum durumu, kullanıcı profili ve çıkış işlemlerini yöneten servistir. */
   private readonly authService = inject(AuthService);
 
+  /** Güncel oturum ve rol kontrollerinde kullanılan kullanıcı bilgileridir. */
   public readonly user =
     this.authService.currentUser;
 }

@@ -4,8 +4,10 @@ using KLMN.Infrastructure;
 using KLMN.Persistence;
 using KLMN.Persistence.Extensions;
 
+// angular cors policy değerini sonraki işlem için hesaplar.
 const string AngularCorsPolicy = "AngularCors";
 
+// ASP.NET Core hizmetlerinin ve yapılandırmanın kaydedildiği uygulama oluşturucusudur.
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
@@ -36,6 +38,7 @@ builder.Services.AddCors(options =>
         });
 });
 
+// Middleware ve endpointlerin tanımlandığı çalıştırılabilir ASP.NET Core uygulamasıdır.
 var app = builder.Build();
 
 await app.Services.InitializeDatabaseAsync();

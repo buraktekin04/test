@@ -13,11 +13,26 @@ namespace KLMN.Application.Authentication.Commands.ResetPassword;
 /// </summary>
 public sealed class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand>
 {
+    /// <summary>
+    /// EF Core üzerinden veriye erişimi sağlayan Application katmanı veritabanı sözleşmesidir.
+    /// </summary>
     private readonly IKLMNDbContext _dbContext;
+    /// <summary>
+    /// Parola sıfırlama tokenı oluşturur ve hash değerini hesaplar.
+    /// </summary>
     private readonly IPasswordResetTokenService _tokenService;
+    /// <summary>
+    /// Parola hashleme ve hash doğrulaması işlemlerinde kullanılır.
+    /// </summary>
     private readonly IPasswordHasherService _passwordHasherService;
+    /// <summary>
+    /// UTC zamanını sistem saatine doğrudan bağımlı olmadan sağlar.
+    /// </summary>
     private readonly TimeProvider _timeProvider;
 
+    /// <summary>
+    /// reset password command handler işlemini uygulama kurallarına göre gerçekleştirir.
+    /// </summary>
     public ResetPasswordCommandHandler(
         IKLMNDbContext dbContext,
         IPasswordResetTokenService tokenService,
@@ -30,13 +45,19 @@ public sealed class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordC
         _timeProvider = timeProvider;
     }
 
+    /// <summary>
+    /// Tokenı doğrular; kullanıcı parolasını güncelleyip eski oturumları iptal eder.
+    /// </summary>
     public async Task Handle(
         ResetPasswordCommand request,
         CancellationToken cancellationToken)
     {
+        // Hesap geçerliliği ve token süreleri için ortak UTC zaman değeridir.
         var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
+        // Açık tokenın karşılaştırma için üretilmiş SHA-256 hash değeridir.
         var tokenHash = _tokenService.HashToken(request.Token);
 
+        // Parola sıfırlamada doğrulanan tek kullanımlık token kaydıdır.
         var resetToken = await _dbContext.PasswordResetTokens
             .IgnoreQueryFilters()
             .Include(x => x.User)
@@ -52,6 +73,7 @@ public sealed class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordC
             throw new InvalidPasswordResetTokenException();
         }
 
+        // İlgili işlemin sahibi ve güvenlik durumu kontrol edilen kullanıcıdır.
         var user = resetToken.User;
 
         if (user.IsDeleted || !user.IsActive)
@@ -73,6 +95,7 @@ public sealed class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordC
         resetToken.UsedAt = utcNow;
         resetToken.IsActive = false;
 
+        // Aynı hesaba ait ve tekrar kullanımını engellemek için iptal edilen tokenlardır.
         var otherResetTokens = await _dbContext.PasswordResetTokens
             .IgnoreQueryFilters()
             .Where(x =>
@@ -88,6 +111,7 @@ public sealed class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordC
             token.IsActive = false;
         }
 
+        // İptal edilmesi gereken kullanıcı oturumlarının listesidir.
         var refreshTokens = await _dbContext.RefreshTokens
             .IgnoreQueryFilters()
             .Where(x => x.UserId == user.Id && !x.RevokedAt.HasValue)

@@ -9,19 +9,29 @@ namespace KLMN.Infrastructure.Communication;
 /// <summary>MailKit kullanarak SMTP üzerinden HTML e-posta gönderir.</summary>
 public sealed class SmtpEmailSender : IEmailSender
 {
+    /// <summary>
+    /// JWT veya SMTP güvenlik ve bağlantı ayarlarının doğrulanmış nesnesidir.
+    /// </summary>
     private readonly SmtpSettings _settings;
 
+    /// <summary>
+    /// smtp email sender işlemini ilgili güvenlik ve doğrulama kurallarına uygun yürütür.
+    /// </summary>
     public SmtpEmailSender(IOptions<SmtpSettings> options)
     {
         _settings = options.Value;
     }
 
+    /// <summary>
+    /// Kullanıcıya MIME HTML e-postasını SMTP üzerinden asenkron gönderir.
+    /// </summary>
     public async Task SendAsync(
         string to,
         string subject,
         string htmlBody,
         CancellationToken cancellationToken = default)
     {
+        // SMTP üzerinden gönderilecek MIME e-posta iletisidir.
         var message = new MimeMessage();
 
         message.From.Add(

@@ -7,6 +7,7 @@ import { AuthSessionResponse } from '../models/auth-session-response.model';
  */
 @Injectable({ providedIn: 'root' })
 export class AuthDebugService {
+  /** Geliştirme ortamında tokenı loglamadan oturum süresi ve kullanıcı özetini kaydeder. */
   public logSession(source: string, response: AuthSessionResponse): void {
     if (!isDevMode()) {
       return;
