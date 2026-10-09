@@ -4,6 +4,8 @@ using KLMN.Domain.Entities.Identity;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
+using KLMN.Application.Users.Responses;
+
 namespace KLMN.Application.Users.Queries.GetUsers;
 
 /// <summary>Kullanıcı listeleme sorgusunu EF Core üzerinden çalıştırır.</summary>

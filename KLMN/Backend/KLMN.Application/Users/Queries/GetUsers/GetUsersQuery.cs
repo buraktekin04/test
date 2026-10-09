@@ -1,6 +1,8 @@
 using KLMN.Application.Common.Models;
 using MediatR;
 
+using KLMN.Application.Users.Responses;
+
 namespace KLMN.Application.Users.Queries.GetUsers;
 
 /// <summary>
