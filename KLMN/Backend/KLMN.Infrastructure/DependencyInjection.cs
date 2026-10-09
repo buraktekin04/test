@@ -66,6 +66,18 @@ public static class DependencyInjection
             .Bind(configuration.GetSection(AuthenticationSettings.SectionName))
             .Validate(x => x.MaxFailedAccessAttempts > 0, "Authentication:MaxFailedAccessAttempts sıfırdan büyük olmalıdır.")
             .Validate(x => x.LockoutMinutes > 0, "Authentication:LockoutMinutes sıfırdan büyük olmalıdır.")
+            .Validate(
+                x => !string.IsNullOrWhiteSpace(x.RefreshCookieName) &&
+                     !x.RefreshCookieName.Any(char.IsWhiteSpace) &&
+                     !x.RefreshCookieName.Contains(';'),
+                "Authentication:RefreshCookieName geçerli bir cookie adı olmalıdır.")
+            .Validate(
+                x => Enum.TryParse<Microsoft.AspNetCore.Http.SameSiteMode>(
+                    x.RefreshCookieSameSite, ignoreCase: true, out var mode) &&
+                    mode is Microsoft.AspNetCore.Http.SameSiteMode.Lax
+                        or Microsoft.AspNetCore.Http.SameSiteMode.Strict
+                        or Microsoft.AspNetCore.Http.SameSiteMode.None,
+                "Authentication:RefreshCookieSameSite Lax, Strict veya None olmalıdır.")
             .ValidateOnStart();
 
         services

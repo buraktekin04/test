@@ -6,6 +6,7 @@ using KLMN.Application.Common.Interfaces.Identity;
 using KLMN.Application.Common.Interfaces.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace KLMN.Application.Authentication.Commands.RefreshToken;
 
@@ -38,6 +39,12 @@ public sealed class RefreshTokenCommandHandler
     private readonly TimeProvider _timeProvider;
 
     /// <summary>
+    /// Refresh token eşleşmesi bulunamadığında gizli token değerini ifşa etmeden
+    /// tanılama kaydı oluşturan uygulama logger'ıdır.
+    /// </summary>
+    private readonly ILogger<RefreshTokenCommandHandler> _logger;
+
+    /// <summary>
     /// refresh token command handler işlemini uygulamanın ilgili kurallarına göre gerçekleştirir.
     /// </summary>
     public RefreshTokenCommandHandler(
@@ -45,13 +52,15 @@ public sealed class RefreshTokenCommandHandler
         IJwtTokenService jwtTokenService,
         IUserAuthorizationService authorizationService,
         ICurrentUserService currentUserService,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        ILogger<RefreshTokenCommandHandler> logger)
     {
         _dbContext = dbContext;
         _jwtTokenService = jwtTokenService;
         _authorizationService = authorizationService;
         _currentUserService = currentUserService;
         _timeProvider = timeProvider;
+        _logger = logger;
     }
 
     /// <summary>
@@ -76,6 +85,17 @@ public sealed class RefreshTokenCommandHandler
 
         if (storedToken is null)
         {
+            /*
+             * Token hash eşleşmiyorsa yeni oturum üretilemez. Bu durum
+             * eski cookie, farklı PostgreSQL veritabanı veya başka bir
+             * uygulama örneğinin cookie'si nedeniyle oluşabilir.
+             *
+             * Açık token ya da hash değeri hiçbir zaman loglanmaz.
+             * Controller geçersiz cookie'yi kaldırarak tekrar gönderilmesini önler.
+             */
+            _logger.LogWarning(
+                "Refresh oturum kaydı bulunamadı. Tarayıcı cookie'si ile sunucunun RefreshTokens tablosu eşleşmiyor.");
+
             throw new InvalidRefreshTokenException();
         }
 

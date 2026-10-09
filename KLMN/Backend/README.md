@@ -97,3 +97,51 @@ Migration ve seed işlemleri **seçili ortamın PostgreSQL veritabanına** uygul
 JWT access token Angular belleğindedir, refresh token HttpOnly cookie'dedir; refresh rotation ve security stamp kontrolü korunur. `xmin` optimistic concurrency çatışmaları HTTP 409 ile ele alınır. Angular proxy kullanmaz. Geliştirmede `https://localhost:4200` Angular origin'i, `appsettings.Development.json > Cors:AllowedOrigins` ile eşleşmelidir.
 
 > Bu değişikliklerde yapılandırma ve dosya tutarlılığı kontrol edilir; gerçek DB/SMTP bağlantısı ve derleme kurum ortamında ayrıca doğrulanmalıdır.
+
+## F5 / Refresh token / 401 kontrolü
+
+Sayfa F5 ile yenilendiğinde Angular'ın belleğindeki access token silinir.
+`AuthService.initializeSession()` uygulama açılışında
+`POST /api/auth/refresh` çağırır; HttpOnly cookie geçerliyse token
+rotation işlemi yeni access ve refresh token üretir.
+
+### Development cookie davranışı
+
+- `appsettings.Development.json > Authentication:RefreshCookieName`:
+  `klmn_dev_refresh_token`. Production'daki `klmn_refresh_token` adı
+  kullanılmaz; localhost üzerindeki eski/canlı cookie'lerin çakışması önlenir.
+- `Authentication:RefreshCookieSameSite = "None"`. API HTTPS
+  (`https://localhost:7145`), Angular HTTP (`http://localhost:4200`)
+  ise tarayıcı bunları farklı site sayar. `SameSite=Lax` refresh cookie'nin
+  gönderilmesini engelleyebilir.
+- `Secure = true` ve `HttpOnly = true` korunur. Cross-site cookie
+  kullanılan `refresh/logout` POST isteklerinde `Origin`, 
+  `Cors:AllowedOrigins` listesinden doğrulanır (CSRF koruması).
+- `Cors:AllowedOrigins` hem HTTP hem HTTPS localhost Angular origin'lerini
+  içerir; Angular tarafında proxy kullanılmaz.
+- Bazı tarayıcı ayarları **üçüncü taraf cookie'leri tamamen engelleyebilir**.
+  Bu durumda SameSite=None yeterli değildir; **Angular'ı da HTTPS ile
+  çalıştırmak** önerilen kalıcı çözümdür.
+
+### Veritabanında hash bulunamaması
+
+`RefreshTokenCommandHandler` güvenli uyarı logu üretir. Açık token
+veya hash asla loglanmaz. `AuthController`, sunucuda bulunmayan/geçersiz
+cookie'yi siler ve 401 döndürür; sahte veya kayıp token üzerinden oturum
+oluşturmaz. İlk düzeltmeden sonra **yeniden login** olunması gerekir.
+
+Kontrol sırası:
+1. Eski uygulama cookie'sini tarayıcıdan temizleyin veya çıkış/giriş yapın.
+2. Login isteği response'unda `Set-Cookie: klmn_dev_refresh_token` var mı
+   ve tarayıcı cookie'yi kabul etmiş mi kontrol edin.
+3. F5 sonrası `POST /api/auth/refresh` isteğinin `Cookie` başlığında
+   `klmn_dev_refresh_token` var mı kontrol edin; token değerini paylaşmayın.
+4. `RefreshTokens` tablosunda yeni girişle oluşturulmuş kayıt bulunduğunu,
+   API'nin kullandığı PostgreSQL veritabanıyla aynı DB'ye baktığınızı
+   doğrulayın.
+5. Yanıt 200 ise rotation başarılıdır; 401 ise sunucu logunda
+   `Refresh oturum kaydı bulunamadı` mesajını kontrol edin.
+
+> GitHub'daki örnek projenin namespace ve cookie öneki `KLMN`'dir.
+> Visual Studio'da **MSKBS** çalıştırıyorsanız, güncel GitHub kodunu
+> yerel projeye birebir uyarlamadan sorunun çözüldüğü varsayılamaz.
