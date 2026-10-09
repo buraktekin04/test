@@ -52,10 +52,16 @@ Publish edilen uygulamanın çalışma ortamı **Production** seçili olmalıdı
 - `ConnectionStrings:PostgreSQL`: Development'ta örnek `KLMN_Dev`, canlıda `KLMN`; iki ortamın veritabanı hesabını ve şifresini gerçek değerlerle doldurun.
 - `InitialAdmin:UserName`, `Email`, `Password`: İlgili ortamda ilk admin oluşturulacaksa doldurun. Seeder mevcut kullanıcının parolasını her startup'ta değiştirmez.
 - `Smtp:Host`, `Smtp:FromAddress`, gerektiğinde `UserName` ve `Password`: İlgili ortamın SMTP sunucusunun bilgilerini yazın.
+
+### SMTP test örnekleri
+
+**Development** (`appsettings.Development.json`) örneğinde `localhost:1025` ve `no-reply@klmn.test` kullanılır. Bu yapı **smtp4dev veya MailHog gibi yerel SMTP yakalayıcı** çalıştırıldığında gerçek alıcılara e-posta göndermeden parola sıfırlama e-postalarını test etmek içindir. Yerel test sunucusu kimlik doğrulama gerektirmediğinden `UserName` ve `Password` bilinçli olarak boştur. SMTP yakalayıcı kurulu/çalışır değilse e-posta gönderimi başarısız olur.
+
+**Production** (`appsettings.json`) bölümüne `smtp.example.invalid:587`, `EXAMPLE_SMTP_USER`, `EXAMPLE_PASSWORD_NOT_REAL` ve `no-reply@klmn.example.invalid` gibi **tamamen kurgusal** değerler konuldu. Bu adres kasıtlı olarak çalışmayan örnektir; canlı sistemde host, gönderen adresi ve kullanıcı/parola değerleri gerçek kurum SMTP bilgileriyle değiştirilmelidir. GitHub reposu public olduğundan gerçek parolalar commit edilmez.
 - `PasswordReset:ResetUrlBase`: Angular'ın o ortamdaki sıfırlama ekranı adresini yazın.
 - `Cors:AllowedOrigins`: İlgili ortamın Angular adreslerini açıkça listeleyin.
 
-**GitHub güvenliği:** `buraktekin04/test` şu anda public olduğu için gerçek parola ve JWT anahtarları repoya yazılmadı. Kapalı ağda gerçek bilgileri ilgili JSON'a girebilirsin; gerçek parolaları public GitHub'a geri pushlama. İki dosyadaki boş SecretKey/SMTP alanları doldurulmadan API'nin `ValidateOnStart` kontrolleri geçmez.
+**GitHub güvenliği:** `buraktekin04/test` şu anda public olduğu için gerçek parola ve JWT anahtarları repoya yazılmadı. Kapalı ağda gerçek bilgileri ilgili JSON'a girebilirsin; gerçek parolaları public GitHub'a geri pushlama. Her iki ortamda boş `Jwt:SecretKey` değeri doldurulmadan API'nin `ValidateOnStart` kontrolü geçmez. SMTP alanları artık örneklerle doludur ancak Production SMTP adresi kurgusal olduğundan gerçek e-posta gönderemez.
 
 ## Proje katmanları
 
