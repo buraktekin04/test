@@ -6,9 +6,9 @@ import { PermissionCodes } from './core/permissions/constants/permission-codes';
 import { permissionGuard } from './core/permissions/guards/permission.guard';
 
 /**
- * Uygulamanın bütün route'larıdır. Tanımlamalar alt ekranları
- * '/app/definitions' altında gruplandırılır; backend authorization
- * ayrıca API endpoint seviyesinde uygulanmaya devam eder.
+ * Uygulamanın bütün route'larıdır. Tanımlamalar menüsündeki kullanıcı
+ * ekranı fiziksel dosya yolundan bağımsız olarak '/app/users' URL'sinde
+ * açılır; backend authorization API seviyesinde ayrıca uygulanır.
  */
 export const routes: Routes = [
   {
@@ -46,7 +46,7 @@ export const routes: Routes = [
             .then(component => component.HomeComponent)
       },
       {
-        path: 'definitions/users',
+        path: 'users',
         canActivate: [permissionGuard],
         data: {
           permissions: [PermissionCodes.Users.Query]
@@ -56,10 +56,10 @@ export const routes: Routes = [
             .then(component => component.UserListComponent)
       },
       {
-        // Eski URL ile kaydedilmiş tarayıcı favorilerini bozmuyoruz.
-        path: 'users',
+        // Önceki /app/definitions/users favorilerini yeni adrese yönlendirir.
+        path: 'definitions/users',
         pathMatch: 'full',
-        redirectTo: 'definitions/users'
+        redirectTo: 'users'
       },
       {
         path: 'change-password',

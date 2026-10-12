@@ -26,7 +26,7 @@ export class NavigationService {
         {
           label: 'Kullanıcı Tanımları',
           icon: 'pi pi-users',
-          route: '/app/definitions/users',
+          route: '/app/users',
           requiredPermissions: [PermissionCodes.Users.Query]
         },
         {
