@@ -102,6 +102,25 @@ public sealed class AuthController : ControllerBase
                 out var refreshToken) ||
             string.IsNullOrWhiteSpace(refreshToken))
         {
+            // HttpOnly cookie JavaScript belleğinde görünmez; bu log yalnızca
+            // Development'ta gelen cookie ADLARINI gösterir, token değerini göstermez.
+            // HTTP Angular -> HTTPS API, farklı hostname veya eski cookie adı gibi
+            // durumların tarayıcı tarafından gönderilme davranışını ayırt eder.
+            if (HttpContext.RequestServices
+                .GetRequiredService<IHostEnvironment>()
+                .IsDevelopment())
+            {
+                _logger.LogWarning(
+                    "Refresh cookie eksik. Beklenen ad: {ExpectedName}, gelen uygulama cookie adları: {ReceivedNames}, Origin: {Origin}, RequestHost: {RequestHost}, Scheme: {Scheme}",
+                    _authenticationSettings.RefreshCookieName,
+                    string.Join(", ", Request.Cookies.Keys
+                        .Where(name => name.StartsWith("klmn_", StringComparison.OrdinalIgnoreCase))
+                        .Take(5)),
+                    Request.Headers.Origin.ToString(),
+                    Request.Host.Value,
+                    Request.Scheme);
+            }
+
             DeleteRefreshTokenCookie();
 
             // Exception middleware hata işleme sırasında response header'larını
