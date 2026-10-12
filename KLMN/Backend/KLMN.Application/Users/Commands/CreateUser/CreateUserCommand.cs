@@ -16,6 +16,12 @@ public sealed record CreateUserCommand : IRequest<UserMutationResponse>
     public required string Email { get; init; }
     /// <summary>İsteğe bağlı telefon numarasıdır.</summary>
     public string? PhoneNumber { get; init; }
+
+    /// <summary>
+    /// Kullanıcının görev yeri olarak seçilen organizasyon biriminin GUID'idir.
+    /// Mevcut şemayla uyumluluk için boş olabilir; rol ve yetki ataması değildir.
+    /// </summary>
+    public Guid? OrganizationUnitId { get; init; }
     /// <summary>Yalnızca bu istekte alınan, veritabanına açık yazılmayan ilk paroladır.</summary>
     public required string Password { get; init; }
 

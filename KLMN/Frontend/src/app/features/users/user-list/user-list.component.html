@@ -244,6 +244,34 @@
         <input id="editLastName" pInputText formControlName="lastName" />
       </div>
       <div class="form-field form-field-full">
+        <label for="userOrganizationUnitId">Görev Yeri / Organizasyon</label>
+        <p-select
+          inputId="userOrganizationUnitId"
+          formControlName="organizationUnitId"
+          [options]="organizationOptions()"
+          optionLabel="label"
+          optionValue="id"
+          [filter]="true"
+          filterBy="label"
+          [showClear]="true"
+          [loading]="organizationLoading()"
+          [disabled]="organizationLoading() || (!!selectedUser() && !canUpdate())"
+          [appendTo]="'body'"
+          placeholder="Görev yeri seçiniz (isteğe bağlı)">
+        </p-select>
+        @if (organizationLoadError()) {
+          <small class="organization-error">{{ organizationLoadError() }}</small>
+          <p-button type="button" size="small" label="Tekrar Dene"
+                    icon="pi pi-refresh" severity="secondary" [outlined]="true"
+                    (onClick)="loadOrganizationOptions(selectedUser() ?? undefined)">
+          </p-button>
+        } @else if (!organizationLoading() && organizationOptions().length === 0) {
+          <small>Henüz aktif organizasyon birimi bulunmuyor. Önce organizasyon tanımlarını oluşturabilirsiniz.</small>
+        } @else {
+          <small>Görev yeri kullanıcının birim bilgisidir; rol veya yetki ataması değildir.</small>
+        }
+      </div>
+      <div class="form-field form-field-full">
         <label for="editPhoneNumber">Telefon</label>
         <input id="editPhoneNumber" pInputText formControlName="phoneNumber" />
       </div>

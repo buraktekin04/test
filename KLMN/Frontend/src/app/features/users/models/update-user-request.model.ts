@@ -17,6 +17,11 @@ export interface UpdateUserRequest {
   email: string;
   /** Telefon. */
   phoneNumber: string | null;
+  /**
+   * Kullanıcının görev yeri olarak atanan organizasyon biriminin GUID'idir.
+   * İsteğe bağlıdır ve herhangi bir rol/permission ataması yapmaz.
+   */
+  organizationUnitId: string | null;
   /** true: mesai dışı erişim kısıtlıdır; false: mesai dışı izinlidir. */
   clockLimit: boolean;
 

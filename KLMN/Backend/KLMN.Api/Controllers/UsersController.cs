@@ -8,6 +8,7 @@ using KLMN.Application.Users.Agreements.Responses;
 using KLMN.Application.Users.Commands.CreateUser;
 using KLMN.Application.Users.Commands.DeleteUser;
 using KLMN.Application.Users.Commands.UpdateUser;
+using KLMN.Application.Users.Queries.GetOrganizationUnitOptions;
 using KLMN.Application.Users.Queries.GetUserById;
 using KLMN.Application.Users.Queries.GetUsers;
 using KLMN.Application.Users.Responses;
@@ -31,6 +32,23 @@ public sealed class UsersController(ISender sender) : ControllerBase
     public async Task<IActionResult> GetUsers(
         [FromQuery] GetUsersQuery query, CancellationToken cancellationToken) =>
         Ok(await sender.Send(query, cancellationToken));
+
+    /// <summary>
+    /// Kullanıcı ekleme/düzenleme formunun Görev Yeri seçim listesine
+    /// aktif ve silinmemiş organizasyon birimlerini getirir.
+    /// Kullanıcı listesi iznine sahip olmak yeterlidir; rol atama izni verilmez.
+    /// </summary>
+    [HttpGet("organization-options")]
+    [HasPermission(PermissionCodes.Users.Query)]
+    [ProducesResponseType(typeof(IReadOnlyList<OrganizationUnitOptionResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<OrganizationUnitOptionResponse>>> GetOrganizationOptions(
+        CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(
+            new GetOrganizationUnitOptionsQuery(), cancellationToken);
+
+        return Ok(result);
+    }
 
     /// <summary>Seçilen kullanıcıyı düzenleme ekranı için getirir.</summary>
     [HttpGet("{id:guid}")]

@@ -17,6 +17,11 @@ public sealed class UpdateUserCommandValidator : AbstractValidator<UpdateUserCom
         RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(256);
         RuleFor(x => x.PhoneNumber).MaximumLength(30);
 
+        // İsteğe bağlı görev yeri GUID'i verilirse boş/varsayılan GUID kabul edilmez.
+        RuleFor(x => x.OrganizationUnitId)
+            .Must(id => !id.HasValue || id.Value != Guid.Empty)
+            .WithMessage("Geçerli bir görev yeri (organizasyon birimi) seçiniz.");
+
         // Tarih aralığı açık uçlu olabilir ancak ters/eşit aralığa izin verilmez.
         RuleFor(x => x)
             .Must(x => ValidityPeriod.HasValidBounds(x.ValidFrom, x.ValidTo))

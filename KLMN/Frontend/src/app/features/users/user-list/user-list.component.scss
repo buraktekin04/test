@@ -247,3 +247,15 @@
   max-width: 100%;
   color-scheme: light;
 }
+
+/* Görev yeri seçicisini diğer form alanlarıyla aynı genişlikte tutar. */
+.form-field {
+  p-select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .organization-error {
+    color: #b42318;
+  }
+}

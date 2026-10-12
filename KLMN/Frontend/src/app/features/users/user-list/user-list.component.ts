@@ -14,16 +14,21 @@ import { MessageModule } from 'primeng/message';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
+import { SelectModule } from 'primeng/select';
 
 import { ValidityPeriodUtils } from '../../../core/utils/validity-period.utils';
 import { PermissionCodes } from '../../../core/permissions/constants/permission-codes';
 import { PermissionService } from '../../../core/permissions/services/permission.service';
+import { OrganizationUnitOption } from '../models/organization-unit-option.model';
 import { UserAgreementPdf } from '../models/user-agreement-pdf.model';
 import { CreateUserRequest } from '../models/create-user-request.model';
 import { UpdateUserRequest } from '../models/update-user-request.model';
 import { UserListItem } from '../models/user-list-item.model';
 import { UserMutationResponse } from '../models/user-mutation-response.model';
 import { UserService } from '../services/user.service';
+
+/** Dropdown'un kullanıcıya gösterdiği kod + ad etiketli birim seçeneğidir. */
+type OrganizationSelectOption = OrganizationUnitOption & { label: string };
 
 /**
  * Tanımlamalar > Kullanıcı Tanımları ekranının listeleme, sorgulama,
@@ -34,6 +39,7 @@ import { UserService } from '../services/user.service';
   standalone: true,
   imports: [
     DatePipe,
+    SelectModule,
     ReactiveFormsModule,
     TableModule,
     ButtonModule,
@@ -61,6 +67,15 @@ export class UserListComponent implements OnInit {
 
   /** Silme ve aktifleştirme gibi kritik işlemlerin onay penceresidir. */
   private readonly confirmationService = inject(ConfirmationService);
+
+  /** Formda seçilebilen aktif organizasyon birimleri ve mevcut pasif atamadır. */
+  public readonly organizationOptions = signal<OrganizationSelectOption[]>([]);
+
+  /** Organizasyon seçenekleri yüklenirken true olan UI göstergesidir. */
+  public readonly organizationLoading = signal(false);
+
+  /** Görev yeri kataloğu yüklenemezse form kaydını engelleyen uyarıdır. */
+  public readonly organizationLoadError = signal<string | null>(null);
 
   /** Geçerli sayfanın kullanıcı kayıtlarıdır. */
   public readonly users = signal<UserListItem[]>([]);
@@ -152,6 +167,8 @@ export class UserListComponent implements OnInit {
     lastName: ['', [Validators.required, Validators.maxLength(100)]],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(256)]],
     phoneNumber: ['', [Validators.maxLength(30)]],
+    // Mevcut tabloda organizasyon ataması boş kalabileceği için nullable'dır.
+    organizationUnitId: this.formBuilder.control<string | null>(null),
     clockLimit: [true],
     validFrom: [''],
     validTo: [''],
@@ -161,6 +178,48 @@ export class UserListComponent implements OnInit {
   /** Sayfa açıldığında ilk liste sorgusunu çalıştırır. */
   public ngOnInit(): void {
     this.loadUsers();
+  }
+
+  /**
+   * Açılan formun organizasyon kataloğunu güncel API verisinden doldurur.
+   * Önceden atanmış ama pasif hale gelmiş birimi seçili göstermeye devam eder;
+   * yeni bir pasif organizasyon atamasına API izin vermez.
+   */
+  public loadOrganizationOptions(selectedUser?: UserListItem): void {
+    this.organizationLoading.set(true);
+    this.organizationLoadError.set(null);
+    this.organizationOptions.set([]);
+
+    this.userService.getOrganizationUnitOptions()
+      .pipe(finalize(() => this.organizationLoading.set(false)))
+      .subscribe({
+        next: organizations => {
+          const options: OrganizationSelectOption[] = organizations.map(item => ({
+            ...item,
+            label: `${item.code} — ${item.name}`
+          }));
+
+          // Kullanıcının önceki ataması sonradan pasifleşmiş olabilir.
+          if (selectedUser?.organizationUnitId &&
+              !options.some(item => item.id === selectedUser.organizationUnitId)) {
+            options.unshift({
+              id: selectedUser.organizationUnitId,
+              code: selectedUser.organizationUnitCode ?? 'PASIF',
+              name: selectedUser.organizationUnitName ?? 'Önceden atanmış görev yeri',
+              parentOrganizationUnitId: null,
+              label: `${selectedUser.organizationUnitCode ?? 'Eski'} — ${selectedUser.organizationUnitName ?? 'Görev Yeri'} (Pasif/Arşiv)`
+            });
+          }
+
+          this.organizationOptions.set(options);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.organizationLoadError.set(
+            'Görev yeri listesi yüklenemedi. Lütfen yeniden deneyin. ' +
+            this.getErrorMessage(error)
+          );
+        }
+      });
   }
 
   /** Güncel filtrelerle API'den sayfalanmış kullanıcı listesini yükler. */
@@ -225,6 +284,7 @@ export class UserListComponent implements OnInit {
       lastName: '',
       email: '',
       phoneNumber: '',
+      organizationUnitId: null,
       clockLimit: true,
       validFrom: '',
       validTo: '',
@@ -235,6 +295,7 @@ export class UserListComponent implements OnInit {
     this.selectedPdf.set(null);
     this.pdfError.set(null);
     this.dialogVisible.set(true);
+    this.loadOrganizationOptions();
   }
 
   /** Düzenlemeden önce kaydı yeniden yükleyerek en yeni xmin değerini alır. */
@@ -256,12 +317,14 @@ export class UserListComponent implements OnInit {
             lastName: detail.lastName,
             email: detail.email,
             phoneNumber: detail.phoneNumber ?? '',
+            organizationUnitId: detail.organizationUnitId,
             clockLimit: detail.clockLimit,
             validFrom: ValidityPeriodUtils.toLocalInput(detail.validFrom),
             validTo: ValidityPeriodUtils.toLocalInput(detail.validTo),
             password: ''
           });
           this.dialogVisible.set(true);
+          this.loadOrganizationOptions(detail);
           this.selectedPdf.set(null);
           this.pdfError.set(null);
           if (this.canViewDocuments()) this.loadAgreementPdfs(detail.id);
@@ -278,6 +341,13 @@ export class UserListComponent implements OnInit {
   public saveUser(): void {
     // Salt belge görüntüleme izni kullanıcı profilinin değiştirilmesine izin vermez.
     if (this.selectedUser() && !this.canUpdate()) return;
+
+    // Görev yeri kataloğu yoksa/kritik hata aldıysa atanmış birim
+    // yanlışlıkla null olarak kaydedilmesin veya geçersiz seçim yapılmasın.
+    if (this.organizationLoading() || this.organizationLoadError()) {
+      this.formError.set('Görev yeri listesi henüz hazır değil. Lütfen yeniden deneyin.');
+      return;
+    }
 
     if (this.userForm.invalid) {
       this.userForm.markAllAsTouched();
@@ -307,6 +377,7 @@ export class UserListComponent implements OnInit {
       lastName: value.lastName.trim(),
       email: value.email.trim(),
       phoneNumber: value.phoneNumber.trim() || null,
+      organizationUnitId: value.organizationUnitId,
       clockLimit: value.clockLimit,
       ...ValidityPeriodUtils.fromLocalInputs(value.validFrom, value.validTo)
     };

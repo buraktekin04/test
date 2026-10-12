@@ -40,6 +40,22 @@ public sealed class CreateUserCommandHandler(
             throw new UserConflictException("Kullanıcı adı veya e-posta zaten kullanılmaktadır.");
         }
 
+        // Yeni kullanıcıya görev yeri seçildiyse, pasif veya silinmiş
+        // organizasyon ataması API üzerinden de engellenir.
+        if (request.OrganizationUnitId.HasValue)
+        {
+            var organizationAvailable = await dbContext.OrganizationUnits
+                .IgnoreQueryFilters()
+                .AnyAsync(x => x.Id == request.OrganizationUnitId.Value &&
+                               x.IsActive && !x.IsDeleted, cancellationToken);
+
+            if (!organizationAvailable)
+            {
+                throw new UserConflictException(
+                    "Seçilen görev yeri bulunamadı veya aktif değil. Güncel organizasyon listesinden seçim yapınız.");
+            }
+        }
+
         // Yeni kullanıcıya verilecek varsayılan sistem rolü oluşturulmuş olmalıdır.
         var roleId = await dbContext.Roles
             .Where(x => x.Code == SystemRoles.StandardUser)
@@ -64,6 +80,7 @@ public sealed class CreateUserCommandHandler(
                 ? null : request.PhoneNumber.Trim(),
             PasswordHash = passwordHasherService.HashPassword(request.Password),
             ClockLimit = request.ClockLimit,
+            OrganizationUnitId = request.OrganizationUnitId,
             ValidFrom = request.ValidFrom,
             ValidTo = request.ValidTo,
             PasswordChangedDate = timeProvider.GetUtcNow().UtcDateTime

@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 
 import { API_BASE_URL } from '../../../core/config/api.tokens';
 import { PagedResult } from '../../../core/models/paged-result.model';
+import { OrganizationUnitOption } from '../models/organization-unit-option.model';
 import { UserAgreementPdf } from '../models/user-agreement-pdf.model';
 import { ChangeUserStatusRequest } from '../models/change-user-status-request.model';
 import { CreateUserRequest } from '../models/create-user-request.model';
@@ -36,6 +37,13 @@ export class UserService {
 
     return this.http.get<PagedResult<UserListItem>>(
       `${this.apiBaseUrl}/users`, { params }
+    );
+  }
+
+  /** Kullanıcı formu için aktif ve silinmemiş görev yeri seçeneklerini getirir. */
+  public getOrganizationUnitOptions(): Observable<OrganizationUnitOption[]> {
+    return this.http.get<OrganizationUnitOption[]>(
+      `${this.apiBaseUrl}/users/organization-options`
     );
   }
 

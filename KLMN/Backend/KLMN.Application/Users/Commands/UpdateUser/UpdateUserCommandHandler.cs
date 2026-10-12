@@ -45,6 +45,28 @@ public sealed class UpdateUserCommandHandler(IKLMNDbContext dbContext)
             throw new UserConflictException("Kullanıcı adı veya e-posta zaten kullanılmaktadır.");
         }
 
+        /*
+         * Birim değiştiriliyorsa hedef organizasyon aktif ve silinmemiş olmalı.
+         * Daha önceden atanan birim sonradan pasifleştirildiyse, başka profil
+         * alanlarının değiştirilmesine izin verilir; eski FK korunabilir.
+         * Yeni atamalar için pasif birim kabul edilmez.
+         */
+        if (request.OrganizationUnitId.HasValue &&
+            request.OrganizationUnitId != user.OrganizationUnitId)
+        {
+            var organizationAvailable = await dbContext.OrganizationUnits
+                .IgnoreQueryFilters()
+                .AnyAsync(x => x.Id == request.OrganizationUnitId.Value &&
+                               x.IsActive && !x.IsDeleted, cancellationToken);
+
+            if (!organizationAvailable)
+            {
+                throw new UserConflictException(
+                    "Seçilen görev yeri bulunamadı veya aktif değil. Güncel organizasyon listesinden seçim yapınız.");
+            }
+        }
+
+        user.OrganizationUnitId = request.OrganizationUnitId;
         user.UserName = userName;
         user.NormalizedUserName = normalizedUserName;
         user.FirstName = request.FirstName.Trim();
