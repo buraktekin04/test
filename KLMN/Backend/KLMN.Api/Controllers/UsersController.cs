@@ -25,7 +25,7 @@ namespace KLMN.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/users")]
-public sealed class UsersController(ISender sender) : ControllerBase
+public sealed class UsersController(ISender sender, IExcelExportService excelExportService) : ControllerBase
 {
     /// <summary>Yetki kontrollü ve sayfalı kullanıcı listesi döndürür.</summary>
     [HttpGet]
@@ -76,7 +76,28 @@ public sealed class UsersController(ISender sender) : ControllerBase
             rows.AddRange(batch.Items);
         }
 
-        var content = UserExcelExporter.Create(rows);
+        /*
+         * Excel formatlama ortak servis tarafından yapılır.
+         * Hangi kolonların aktarılacağı bu ekranın endpoint'inde tanımlıdır.
+         * Diğer ekranlar kendi DTO ve kolon listesini göndererek aynı servisi kullanır.
+         */
+        var columns = new ExcelColumn<UserListItemResponse>[]
+        {
+            new("Ad Soyad", user => user.FullName, Width: 27),
+            new("Kullanıcı Adı", user => user.UserName, Width: 23),
+            new("E-posta", user => user.Email, Width: 34),
+            new("Telefon", user => user.PhoneNumber, Width: 21),
+            new("Görev Yeri", user => user.OrganizationUnitName, Width: 32),
+            new("Roller", user => string.Join(", ", user.Roles), Width: 27),
+            new("Durum", user => user.IsActive ? "Aktif" : "Pasif", Width: 16),
+            new("Kilit Durumu", user => user.IsLocked ? "Kilitli" : "Açık", Width: 18),
+            new("Mesai Dışı Erişim", user => user.ClockLimit ? "İzin Yok" : "İzinli", Width: 22),
+            new("Geçerlilik Başlangıcı (UTC)", user => user.ValidFrom, NumberFormat: "dd.MM.yyyy HH:mm", Width: 27),
+            new("Geçerlilik Bitişi (UTC)", user => user.ValidTo, NumberFormat: "dd.MM.yyyy HH:mm", Width: 27),
+            new("Oluşturulma (UTC)", user => user.CreatedDate, NumberFormat: "dd.MM.yyyy HH:mm", Width: 27)
+        };
+
+        var content = excelExportService.Export(rows, columns, "Kullanıcılar");
         var fileName = $"Kullanici_Tanimlari_{DateTime.UtcNow:yyyyMMdd_HHmm}.xlsx";
 
         return File(

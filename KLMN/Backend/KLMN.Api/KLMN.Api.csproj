@@ -5,6 +5,8 @@
     <ProjectReference Include="../KLMN.Persistence/KLMN.Persistence.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Ücretsiz MIT lisanslı, ortak Excel (.xlsx) üretim altyapısı. -->
+    <PackageReference Include="ClosedXML" Version="0.105.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">

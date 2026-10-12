@@ -1,4 +1,5 @@
 using KLMN.Api.ExceptionHandling;
+using KLMN.Api.Exports;
 using KLMN.Application;
 using KLMN.Infrastructure;
 using KLMN.Persistence;
@@ -47,6 +48,10 @@ if (allowedOrigins is null ||
 }
 
 builder.Services.AddControllers();
+
+// Sadece XLSX üretimi ortaktır; ekranlar kendi kolonlarını ve filtrelerini belirler.
+// Servis durum tutmaz, her dışa aktarmada ayrı workbook oluşturur.
+builder.Services.AddSingleton<IExcelExportService, ExcelExportService>();
 
 builder.Services.AddApplication();
 
