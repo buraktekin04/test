@@ -11,7 +11,6 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
-import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { SelectModule } from 'primeng/select';
@@ -47,7 +46,6 @@ type OrganizationSelectOption = OrganizationUnitOption & { label: string };
     InputTextModule,
     TagModule,
     CheckboxModule,
-    PaginatorModule,
     MessageModule,
     DialogModule,
     ConfirmDialogModule
@@ -197,6 +195,27 @@ export class UserListComponent implements OnInit {
     { label: 'İzinli', value: false }
   ];
 
+  /**
+   * Gelişmiş kolon filtreleri tek bir kompakt panelde gösterilir.
+   * Tablo başlığının altında ikinci filtre satırı oluşturulmaz.
+   */
+  public readonly columnFiltersExpanded = signal(false);
+
+  /** Toplam sayfa sayısıdır (boş listede 1). */
+  public readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.totalCount() / this.pageSize()))
+  );
+
+  /** Sayfanın gösterdiği ilk kayıt sırasıdır. */
+  public readonly rangeStart = computed(() =>
+    this.totalCount() === 0 ? 0 : (this.pageNumber() - 1) * this.pageSize() + 1
+  );
+
+  /** Sayfanın gösterdiği son kayıt sırasıdır. */
+  public readonly rangeEnd = computed(() =>
+    Math.min(this.totalCount(), this.pageNumber() * this.pageSize())
+  );
+
   /** XLSX üretimi devam ederken ikinci isteği önleyen göstergedir. */
   public readonly exporting = signal(false);
 
@@ -333,6 +352,11 @@ export class UserListComponent implements OnInit {
     this.loadUsers();
   }
 
+  /** Ekran-özel gelişmiş filtre bölümünün açık/kapalı durumunu değiştirir. */
+  public toggleColumnFilters(): void {
+    this.columnFiltersExpanded.update(open => !open);
+  }
+
   /** Kolon filtreleri değiştiğinde sunucudan ilk sayfayı yeniden sorgular. */
   public applyColumnFilters(): void {
     this.pageNumber.set(1);
@@ -351,13 +375,28 @@ export class UserListComponent implements OnInit {
     this.loadUsers();
   }
 
-  /** PrimeNG paginator olayını bir tabanlı API sayfasına dönüştürür. */
-  public onPageChange(event: PaginatorState): void {
-    const rows = event.rows ?? this.pageSize();
-    const first = event.first ?? 0;
+  /**
+   * Tablonun yatay scroll'undan bağımsız tek satırlık sayfalama kontrolleridir.
+   * Değişmeyen sayfaya gereksiz HTTP sorgusu göndermez.
+   */
+  public goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages() || page === this.pageNumber() || this.loading()) {
+      return;
+    }
 
-    this.pageSize.set(rows);
-    this.pageNumber.set(Math.floor(first / rows) + 1);
+    this.pageNumber.set(page);
+    this.loadUsers();
+  }
+
+  /** Sayfa başına kayıt sayısını değiştirdiğinde ilk sayfayı getirir. */
+  public onPageSizeChange(event: Event): void {
+    const value = Number((event.target as HTMLSelectElement).value);
+    if (![10, 20, 50, 100].includes(value) || value === this.pageSize()) {
+      return;
+    }
+
+    this.pageSize.set(value);
+    this.pageNumber.set(1);
     this.loadUsers();
   }
 

@@ -102,11 +102,10 @@
   overscroll-behavior-x: contain;
 }
 
-.table-container p-paginator {
-  display: block;
-  position: relative;
-  z-index: 1;
-  border-top: 1px solid #edf0f3;
+/* Paginator tablo kaydırma alanına dahil edilmez. */
+.table-container {
+  width: 100%;
+  min-width: 0;
 }
 
 .table-title {
@@ -335,38 +334,6 @@
   &:hover { background: #f2f4f7; color: #344054; }
 }
 
-/* Her kolon kendi filtresini barındırır; Scroll viewport dışına taşılmaz. */
-.user-column-filters {
-  th {
-    vertical-align: top;
-    background: #f8fafc;
-    padding: .45rem !important;
-  }
-
-  input,
-  p-select {
-    display: block;
-    width: 100%;
-    min-width: 0;
-    font-size: .78rem;
-  }
-
-  input { padding: .4rem .5rem; }
-  input[type="date"] { min-width: 130px; }
-
-  .column-status-filters {
-    display: flex;
-    flex-direction: column;
-    gap: .35rem;
-    min-width: 130px;
-  }
-
-  .filter-clear-column {
-    text-align: center;
-    vertical-align: middle;
-  }
-}
-
 .table-title-text {
   display: flex;
   flex-direction: column;
@@ -392,4 +359,202 @@
     right: 16px;
     top: 70px;
   }
+}
+
+
+/* Kullanıcı listesine özel kompakt responsive tablo. */
+:host { display: block; min-width: 0; }
+
+.users-page,
+.table-container,
+.filter-panel {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.users-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  border-top: 1px solid #eef2f6;
+
+  &:focus-visible { outline: 2px solid #3b82f6; outline-offset: -2px; }
+}
+
+/* PrimeNG tablo yapısı içinde başlıklar tek satır; kayıtlar kompakt kalır. */
+:host ::ng-deep .users-table-scroll {
+  .p-datatable-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+  .p-datatable-thead > tr > th {
+    font-size: .8rem;
+    font-weight: 650;
+    white-space: nowrap;
+    padding: .8rem .7rem;
+    background: #f8fafc;
+    color: #344054;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .p-datatable-tbody > tr > td {
+    padding: .8rem .7rem;
+    vertical-align: middle;
+    font-size: .85rem;
+    white-space: nowrap;
+    border-bottom: 1px solid #f0f2f5;
+  }
+  .p-datatable-tbody > tr:hover > td { background: #f9fafb; }
+  .p-datatable-tbody > tr:last-child > td { border-bottom: 0; }
+}
+
+.table-toolbar-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .6rem;
+}
+
+/* Kolon filtreleri tabloya ikinci bir başlık satırı eklemeden sunulur. */
+.column-filter-panel {
+  padding: 1.1rem 1.2rem 1rem;
+  background: #f8fafc;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.column-filter-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: .75rem;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+  }
+  strong { color: #344054; font-size: .92rem; }
+  span { color: #667085; font-size: .78rem; }
+}
+
+.filter-collapse {
+  border: 0;
+  background: transparent;
+  color: #667085;
+  padding: .4rem;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:hover { background: #e9edf3; color: #344054; }
+}
+
+.column-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .9rem;
+}
+
+.column-filter-field {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+
+  > span,
+  > label { font-size: .78rem; font-weight: 600; color: #475467; }
+
+  input,
+  p-select {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  input { height: 39px; font-size: .85rem; }
+}
+
+.column-filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: .6rem;
+}
+
+/* Tek satırda duran, dikey kırpılma problemi olmayan sayfalama. */
+.users-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: .75rem 1.5rem;
+  min-height: 64px;
+  padding: .8rem 1.2rem;
+  background: #fff;
+  border-top: 1px solid #edf0f3;
+  font-size: .85rem;
+}
+
+.pagination-summary { color: #667085; white-space: nowrap; }
+.pagination-controls {
+  display: flex;
+  gap: .3rem;
+  align-items: center;
+  white-space: nowrap;
+}
+.pagination-nav {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: #344054;
+  cursor: pointer;
+
+  &:hover:not(:disabled) { background: #eff6ff; border-color: #dbeafe; }
+  &:disabled { cursor: default; opacity: .32; }
+}
+.pagination-counter {
+  min-width: 72px;
+  text-align: center;
+  font-weight: 600;
+  color: #344054;
+}
+.pagination-size {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  color: #667085;
+  white-space: nowrap;
+
+  select {
+    appearance: auto;
+    width: 76px;
+    height: 36px;
+    padding: .25rem .45rem;
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+    background: #fff;
+    color: #344054;
+    font: inherit;
+    cursor: pointer;
+  }
+}
+
+@media (max-width: 1280px) {
+  .column-filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 850px) {
+  .column-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .users-pagination { justify-content: center; }
+}
+
+@media (max-width: 560px) {
+  .column-filter-grid { grid-template-columns: 1fr; }
+  .table-title, .table-toolbar-actions { align-items: stretch; }
+  .table-toolbar-actions { width: 100%; }
+  .table-toolbar-actions p-button { flex: 1; }
+  .users-pagination { gap: .75rem; }
 }

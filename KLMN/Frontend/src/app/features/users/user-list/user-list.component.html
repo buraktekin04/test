@@ -83,24 +83,115 @@
         <strong>Kullanıcı Listesi</strong>
         <span>Toplam {{ totalCount() }} kayıt</span>
       </div>
-      <p-button
-        type="button"
-        label="Excel'e Aktar"
-        icon="pi pi-file-excel"
-        severity="success"
-        [outlined]="true"
-        [loading]="exporting()"
-        [disabled]="loading() || totalCount() === 0"
-        (onClick)="exportExcel()">
-      </p-button>
+      <div class="table-toolbar-actions">
+        <p-button
+          type="button"
+          [label]="columnFiltersExpanded() ? 'Filtreleri Gizle' : 'Kolon Filtreleri'"
+          icon="pi pi-filter"
+          severity="secondary"
+          [outlined]="!columnFiltersExpanded()"
+          (onClick)="toggleColumnFilters()">
+        </p-button>
+        <p-button
+          type="button"
+          label="Excel'e Aktar"
+          icon="pi pi-file-excel"
+          severity="success"
+          [outlined]="true"
+          [loading]="exporting()"
+          [disabled]="loading() || totalCount() === 0"
+          (onClick)="exportExcel()">
+        </p-button>
+      </div>
     </div>
 
-    <!-- Yatay kaydırma tabloyla sınırlıdır; paginator açılır menüsü kırpılmaz. -->
-    <div class="users-table-scroll">
+    <!-- Kolon filtreleri tablo başlığını/satır hizalarını bozmadan ayrı alanda durur. -->
+    @if (columnFiltersExpanded()) {
+      <form class="column-filter-panel"
+            [formGroup]="columnFilterForm"
+            (ngSubmit)="applyColumnFilters()">
+        <div class="column-filter-heading">
+          <div>
+            <strong>Kolon Bazlı Filtreleme</strong>
+            <span>Filtreler tüm kullanıcılara sunucu tarafında uygulanır.</span>
+          </div>
+          <button type="button" class="filter-collapse"
+                  aria-label="Filtre panelini kapat"
+                  (click)="toggleColumnFilters()">
+            <i class="pi pi-times" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="column-filter-grid">
+          <label class="column-filter-field">
+            <span>Ad Soyad</span>
+            <input pInputText type="text" formControlName="fullName" placeholder="Ad veya soyad" />
+          </label>
+          <label class="column-filter-field">
+            <span>Kullanıcı Adı</span>
+            <input pInputText type="text" formControlName="userName" placeholder="Kullanıcı adı" />
+          </label>
+          <label class="column-filter-field">
+            <span>E-posta</span>
+            <input pInputText type="text" formControlName="email" placeholder="E-posta" />
+          </label>
+          <label class="column-filter-field">
+            <span>Organizasyon</span>
+            <input pInputText type="text" formControlName="organization" placeholder="Birim adı / kodu" />
+          </label>
+          <label class="column-filter-field">
+            <span>Rol</span>
+            <input pInputText type="text" formControlName="role" placeholder="Rol kodu" />
+          </label>
+          <div class="column-filter-field">
+            <label for="usersStatusFilter">Aktiflik</label>
+            <p-select inputId="usersStatusFilter"
+                      [options]="activeFilterOptions" optionLabel="label" optionValue="value"
+                      formControlName="isActive" [appendTo]="'body'"
+                      placeholder="Tümü"></p-select>
+          </div>
+          <div class="column-filter-field">
+            <label for="usersLockFilter">Kilit Durumu</label>
+            <p-select inputId="usersLockFilter"
+                      [options]="lockedFilterOptions" optionLabel="label" optionValue="value"
+                      formControlName="isLocked" [appendTo]="'body'"
+                      placeholder="Tümü"></p-select>
+          </div>
+          <div class="column-filter-field">
+            <label for="usersClockFilter">Mesai Dışı Erişim</label>
+            <p-select inputId="usersClockFilter"
+                      [options]="clockFilterOptions" optionLabel="label" optionValue="value"
+                      formControlName="clockLimit" [appendTo]="'body'"
+                      placeholder="Tümü"></p-select>
+          </div>
+          <label class="column-filter-field">
+            <span>Geçerlilik Başlangıcı (UTC)</span>
+            <input pInputText type="date" formControlName="validFromDate" />
+          </label>
+          <label class="column-filter-field">
+            <span>Geçerlilik Bitişi (UTC)</span>
+            <input pInputText type="date" formControlName="validToDate" />
+          </label>
+          <label class="column-filter-field">
+            <span>Oluşturulma (UTC)</span>
+            <input pInputText type="date" formControlName="createdDate" />
+          </label>
+        </div>
+        <div class="column-filter-actions">
+          <p-button type="button" label="Tümünü Temizle" icon="pi pi-filter-slash"
+                    [outlined]="true" severity="secondary"
+                    (onClick)="clearFilters()"></p-button>
+          <p-button type="submit" label="Filtreleri Uygula" icon="pi pi-check"
+                    [loading]="loading()"></p-button>
+        </div>
+      </form>
+    }
+
+    <!-- Yalnızca tablo yatay kayar; ekranın geri kalanı yerinde kalır. -->
+    <div class="users-table-scroll" tabindex="0" role="region" aria-label="Kullanıcılar tablosu, yatay kaydırılabilir">
     <p-table
       [value]="users()"
       [loading]="loading()"
-      [tableStyle]="{ 'min-width': '1790px' }">
+      [tableStyle]="{ 'min-width': '1330px', 'width': '100%' }">
       <ng-template pTemplate="header">
         <tr>
           <th>Kullanıcı</th>
@@ -115,91 +206,6 @@
           <th>Oluşturulma</th>
           @if (canUpdate() || canDelete() || canActivate() || canViewDocuments()) {
             <th class="actions-column">İşlemler</th>
-          }
-        </tr>
-        <tr class="user-column-filters">
-          <th>
-            <input pInputText type="text" placeholder="Ad Soyad"
-                   aria-label="Ad soyad filtrele"
-                   [formControl]="columnFilterForm.controls.fullName"
-                   (keydown.enter)="applyColumnFilters()" (blur)="applyColumnFilters()" />
-          </th>
-          <th>
-            <input pInputText type="text" placeholder="Kullanıcı adı"
-                   aria-label="Kullanıcı adı filtrele"
-                   [formControl]="columnFilterForm.controls.userName"
-                   (keydown.enter)="applyColumnFilters()" (blur)="applyColumnFilters()" />
-          </th>
-          <th>
-            <input pInputText type="text" placeholder="E-posta"
-                   aria-label="E-posta filtrele"
-                   [formControl]="columnFilterForm.controls.email"
-                   (keydown.enter)="applyColumnFilters()" (blur)="applyColumnFilters()" />
-          </th>
-          <th>
-            <input pInputText type="text" placeholder="Organizasyon"
-                   aria-label="Organizasyon filtrele"
-                   [formControl]="columnFilterForm.controls.organization"
-                   (keydown.enter)="applyColumnFilters()" (blur)="applyColumnFilters()" />
-          </th>
-          <th>
-            <input pInputText type="text" placeholder="Rol kodu"
-                   aria-label="Rol filtrele"
-                   [formControl]="columnFilterForm.controls.role"
-                   (keydown.enter)="applyColumnFilters()" (blur)="applyColumnFilters()" />
-          </th>
-          <th>
-            <div class="column-status-filters">
-              <p-select
-                [options]="activeFilterOptions"
-                optionLabel="label" optionValue="value"
-                [formControl]="columnFilterForm.controls.isActive"
-                placeholder="Aktiflik"
-                [appendTo]="'body'"
-                (onChange)="applyColumnFilters()">
-              </p-select>
-              <p-select
-                [options]="lockedFilterOptions"
-                optionLabel="label" optionValue="value"
-                [formControl]="columnFilterForm.controls.isLocked"
-                placeholder="Kilit"
-                [appendTo]="'body'"
-                (onChange)="applyColumnFilters()">
-              </p-select>
-            </div>
-          </th>
-          <th>
-            <p-select
-              [options]="clockFilterOptions"
-              optionLabel="label" optionValue="value"
-              [formControl]="columnFilterForm.controls.clockLimit"
-              placeholder="Mesai izni"
-              [appendTo]="'body'"
-              (onChange)="applyColumnFilters()">
-            </p-select>
-          </th>
-          <th>
-            <input type="date" pInputText aria-label="Geçerlilik başlangıcı filtrele (UTC)"
-                   [formControl]="columnFilterForm.controls.validFromDate"
-                   (change)="applyColumnFilters()" />
-          </th>
-          <th>
-            <input type="date" pInputText aria-label="Geçerlilik bitişi filtrele (UTC)"
-                   [formControl]="columnFilterForm.controls.validToDate"
-                   (change)="applyColumnFilters()" />
-          </th>
-          <th>
-            <input type="date" pInputText aria-label="Oluşturulma tarihi filtrele (UTC)"
-                   [formControl]="columnFilterForm.controls.createdDate"
-                   (change)="applyColumnFilters()" />
-          </th>
-          @if (canUpdate() || canDelete() || canActivate() || canViewDocuments()) {
-            <th class="filter-clear-column">
-              <p-button type="button" icon="pi pi-filter-slash"
-                        severity="secondary" [text]="true"
-                        ariaLabel="Tüm filtreleri temizle"
-                        (onClick)="clearFilters()"></p-button>
-            </th>
           }
         </tr>
       </ng-template>
@@ -319,13 +325,44 @@
     </p-table>
     </div>
 
-    <p-paginator
-      [first]="(pageNumber() - 1) * pageSize()"
-      [rows]="pageSize()"
-      [totalRecords]="totalCount()"
-      [rowsPerPageOptions]="[10, 20, 50, 100]"
-      (onPageChange)="onPageChange($event)">
-    </p-paginator>
+    <!-- Native page-size dropdown: PrimeNG overlay ve scroll kırpılmasına bağımlı değil. -->
+    <div class="users-pagination" aria-label="Kullanıcı sayfalama">
+      <span class="pagination-summary">
+        {{ rangeStart() }}–{{ rangeEnd() }} / {{ totalCount() }} kayıt
+      </span>
+      <div class="pagination-controls">
+        <button type="button" class="pagination-nav" aria-label="İlk sayfa"
+                [disabled]="loading() || pageNumber() <= 1" (click)="goToPage(1)">
+          <i class="pi pi-angle-double-left" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="pagination-nav" aria-label="Önceki sayfa"
+                [disabled]="loading() || pageNumber() <= 1" (click)="goToPage(pageNumber() - 1)">
+          <i class="pi pi-angle-left" aria-hidden="true"></i>
+        </button>
+        <span class="pagination-counter">{{ pageNumber() }} / {{ totalPages() }}</span>
+        <button type="button" class="pagination-nav" aria-label="Sonraki sayfa"
+                [disabled]="loading() || pageNumber() >= totalPages()"
+                (click)="goToPage(pageNumber() + 1)">
+          <i class="pi pi-angle-right" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="pagination-nav" aria-label="Son sayfa"
+                [disabled]="loading() || pageNumber() >= totalPages()"
+                (click)="goToPage(totalPages())">
+          <i class="pi pi-angle-double-right" aria-hidden="true"></i>
+        </button>
+      </div>
+      <label class="pagination-size">
+        <span>Sayfa başına</span>
+        <select [value]="pageSize()" [disabled]="loading()"
+                (change)="onPageSizeChange($event)"
+                aria-label="Sayfada gösterilecek kullanıcı sayısı">
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </label>
+    </div>
   </section>
 </div>
 
