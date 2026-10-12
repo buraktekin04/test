@@ -465,13 +465,40 @@
   > label { font-size: .78rem; font-weight: 600; color: #475467; }
 
   input,
-  p-select {
+  .column-filter-native-select {
     display: block;
     width: 100%;
     min-width: 0;
+    box-sizing: border-box;
   }
 
   input { height: 39px; font-size: .85rem; }
+
+  /*
+   * Aktiflik, kilit ve mesai filtreleri için sabit yükseklikli native select.
+   * PrimeNG overlay/label daralması nedeniyle sadece ilk harfin görünmesini
+   * ve açılır listenin gereksiz uzamasını engeller.
+   */
+  .column-filter-native-select {
+    height: 39px;
+    min-height: 39px;
+    max-height: 39px;
+    padding: 0 .7rem;
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+    background: #fff;
+    color: #344054;
+    font-family: inherit;
+    font-size: .85rem;
+    line-height: normal;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 1px;
+    }
+  }
 }
 
 .column-filter-actions {

@@ -144,24 +144,30 @@
           </label>
           <div class="column-filter-field">
             <label for="usersStatusFilter">Aktiflik</label>
-            <p-select inputId="usersStatusFilter"
-                      [options]="activeFilterOptions" optionLabel="label" optionValue="value"
-                      formControlName="isActive" [appendTo]="'body'"
-                      placeholder="Tümü"></p-select>
+            <select id="usersStatusFilter" class="column-filter-native-select"
+                    formControlName="isActive">
+              <option [ngValue]="null">Tümü</option>
+              <option [ngValue]="true">Aktif</option>
+              <option [ngValue]="false">Pasif</option>
+            </select>
           </div>
           <div class="column-filter-field">
             <label for="usersLockFilter">Kilit Durumu</label>
-            <p-select inputId="usersLockFilter"
-                      [options]="lockedFilterOptions" optionLabel="label" optionValue="value"
-                      formControlName="isLocked" [appendTo]="'body'"
-                      placeholder="Tümü"></p-select>
+            <select id="usersLockFilter" class="column-filter-native-select"
+                    formControlName="isLocked">
+              <option [ngValue]="null">Tümü</option>
+              <option [ngValue]="true">Kilitli</option>
+              <option [ngValue]="false">Açık</option>
+            </select>
           </div>
           <div class="column-filter-field">
             <label for="usersClockFilter">Mesai Dışı Erişim</label>
-            <p-select inputId="usersClockFilter"
-                      [options]="clockFilterOptions" optionLabel="label" optionValue="value"
-                      formControlName="clockLimit" [appendTo]="'body'"
-                      placeholder="Tümü"></p-select>
+            <select id="usersClockFilter" class="column-filter-native-select"
+                    formControlName="clockLimit">
+              <option [ngValue]="null">Tümü</option>
+              <option [ngValue]="true">İzin Yok</option>
+              <option [ngValue]="false">İzinli</option>
+            </select>
           </div>
           <label class="column-filter-field">
             <span>Geçerlilik Başlangıcı (UTC)</span>

@@ -174,27 +174,6 @@ export class UserListComponent implements OnInit {
     createdDate: this.formBuilder.nonNullable.control('')
   });
 
-  /** PrimeNG Select değerlerini boolean veya null olarak koruyan filtrelerdir. */
-  public readonly activeFilterOptions = [
-    { label: 'Tümü', value: null },
-    { label: 'Aktif', value: true },
-    { label: 'Pasif', value: false }
-  ];
-
-  /** Kullanıcı kilidi kolonunun filtre seçenekleridir. */
-  public readonly lockedFilterOptions = [
-    { label: 'Tümü', value: null },
-    { label: 'Kilitli', value: true },
-    { label: 'Açık', value: false }
-  ];
-
-  /** Mesai dışı kısıt kolonu için filtre seçenekleridir. */
-  public readonly clockFilterOptions = [
-    { label: 'Tümü', value: null },
-    { label: 'İzin Yok', value: true },
-    { label: 'İzinli', value: false }
-  ];
-
   /**
    * Gelişmiş kolon filtreleri tek bir kompakt panelde gösterilir.
    * Tablo başlığının altında ikinci filtre satırı oluşturulmaz.
