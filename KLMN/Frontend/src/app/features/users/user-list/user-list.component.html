@@ -80,6 +80,8 @@
           <th>Roller</th>
           <th>Durum</th>
           <th>Mesai Dışı</th>
+          <th>Başlangıç</th>
+          <th>Bitiş</th>
           <th>Oluşturulma</th>
           @if (canUpdate() || canDelete() || canActivate() || canViewDocuments()) {
             <th class="actions-column">İşlemler</th>
@@ -138,6 +140,8 @@
               [severity]="user.clockLimit ? 'warn' : 'success'">
             </p-tag>
           </td>
+          <td>{{ user.validFrom ? (user.validFrom | date:'dd.MM.yyyy HH:mm') : 'Sınırsız' }}</td>
+          <td>{{ user.validTo ? (user.validTo | date:'dd.MM.yyyy HH:mm') : 'Sınırsız' }}</td>
           <td>{{ user.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
           @if (canUpdate() || canDelete() || canActivate() || canViewDocuments()) {
             <td>
@@ -192,7 +196,7 @@
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td [attr.colspan]="canUpdate() || canDelete() || canActivate() || canViewDocuments() ? 9 : 8"
+          <td [attr.colspan]="canUpdate() || canDelete() || canActivate() || canViewDocuments() ? 11 : 10"
               class="empty-table">Kriterlere uygun kullanıcı bulunamadı.</td>
         </tr>
       </ng-template>
@@ -259,6 +263,20 @@
           Mesai dışı erişimi onaylanan kişiler için işareti kaldırın.
         </small>
       </div>
+      <!-- Her iki tarih isteğe bağlıdır; başlangıç dahil, bitiş hariçtir. -->
+      <div class="form-field">
+        <label for="userValidFrom">Geçerlilik Başlangıcı</label>
+        <input id="userValidFrom" type="datetime-local" pInputText
+               formControlName="validFrom" />
+        <small>Boş bırakılırsa başlangıç sınırı yoktur.</small>
+      </div>
+      <div class="form-field">
+        <label for="userValidTo">Geçerlilik Bitişi</label>
+        <input id="userValidTo" type="datetime-local" pInputText
+               formControlName="validTo" />
+        <small>Seçilen andan itibaren erişim durdurulur.</small>
+      </div>
+
       @if (!selectedUser()) {
         <div class="form-field form-field-full">
           <label for="newUserPassword">İlk Parola *</label>

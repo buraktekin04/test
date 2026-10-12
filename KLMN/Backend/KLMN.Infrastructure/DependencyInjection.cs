@@ -7,6 +7,7 @@ using KLMN.Application.Common.Interfaces.Identity;
 using KLMN.Application.Common.Interfaces.Persistence;
 using KLMN.Application.Common.Options;
 using KLMN.Application.Common.Exceptions;
+using KLMN.Domain.Common;
 using KLMN.Infrastructure.Authentication;
 using KLMN.Infrastructure.Authorization;
 using KLMN.Infrastructure.Communication;
@@ -179,8 +180,22 @@ public static class DependencyInjection
                     {
                         OnChallenge = async context =>
                         {
+                            // Hesap başlangıç/bitiş aralığı dışındaysa açıklayıcı 403 döndür.
+                            if (context.HttpContext.Items["OutsideValidityPeriod"] is true)
+                            {
+                                context.HandleResponse();
+                                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                                context.Response.ContentType = "application/problem+json";
+                                await context.Response.WriteAsJsonAsync(
+                                    new Microsoft.AspNetCore.Mvc.ProblemDetails
+                                    {
+                                        Status = StatusCodes.Status403Forbidden,
+                                        Title = "Hesap geçerlilik süresi dışında.",
+                                        Detail = new OutsideValidityPeriodException().Message
+                                    });
+                            }
                             // Token mesai nedeni ile reddedildiyse 401 yerine açıklayıcı 403 döndür.
-                            if (context.HttpContext.Items["OutsideWorkingHours"] is true)
+                            else if (context.HttpContext.Items["OutsideWorkingHours"] is true)
                             {
                                 context.HandleResponse();
                                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
@@ -282,17 +297,11 @@ public static class DependencyInjection
                                 return;
                             }
 
-                            if (user.ValidFrom.HasValue &&
-                                user.ValidFrom.Value > utcNow)
+                            // Ortak domain kuralı login ve refresh ile aynı davranır.
+                            if (!ValidityPeriod.IsWithin(user.ValidFrom, user.ValidTo, utcNow))
                             {
-                                context.Fail("Kullanıcı hesabı henüz geçerli değildir.");
-                                return;
-                            }
-
-                            if (user.ValidTo.HasValue &&
-                                user.ValidTo.Value <= utcNow)
-                            {
-                                context.Fail("Kullanıcı hesabının geçerlilik süresi dolmuştur.");
+                                context.HttpContext.Items["OutsideValidityPeriod"] = true;
+                                context.Fail("Kullanıcı hesabı geçerlilik süresi dışındadır.");
                                 return;
                             }
 

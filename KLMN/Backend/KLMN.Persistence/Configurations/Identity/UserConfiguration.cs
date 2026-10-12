@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace KLMN.Persistence.Configurations.Identity;
 
 /// <summary>User entity EF Core configuration'ıdır.</summary>
-public sealed class UserConfiguration : BaseEntityConfiguration<User>
+public sealed class UserConfiguration : EffectiveDatedEntityConfiguration<User>
 {
     /// <summary>
     /// Entity'nin tablo, sütun tipi, foreign key, index ve silme davranışlarını yapılandırır.
@@ -31,8 +31,6 @@ public sealed class UserConfiguration : BaseEntityConfiguration<User>
         builder.Property(x => x.IsLocked).IsRequired().HasDefaultValue(false);
         builder.Property(x => x.TwoFactorAuthenticationEnabled).IsRequired().HasDefaultValue(false);
         builder.Property(x => x.LockoutEnd).HasColumnType("timestamp with time zone");
-        builder.Property(x => x.ValidFrom).HasColumnType("timestamp with time zone");
-        builder.Property(x => x.ValidTo).HasColumnType("timestamp with time zone");
         builder.Property(x => x.LastLoginDate).HasColumnType("timestamp with time zone");
         builder.Property(x => x.PasswordChangedDate).HasColumnType("timestamp with time zone");
         builder.Property(x => x.SecurityStamp).IsRequired().HasMaxLength(128);

@@ -26,4 +26,10 @@ public sealed record UpdateUserCommand : IRequest<UserMutationResponse>
 
     /// <summary>true ise mesai dışı giriş engellenir, false ise mesai dışı erişime izin verilir.</summary>
     public bool ClockLimit { get; init; } = true;
+
+    /// <summary>Hesabın kullanılmaya başlanabileceği UTC anıdır (dahil, null sınırsız).</summary>
+    public DateTime? ValidFrom { get; init; }
+
+    /// <summary>Hesabın kullanılabileceği son UTC sınırıdır (hariç, null sınırsız).</summary>
+    public DateTime? ValidTo { get; init; }
 }

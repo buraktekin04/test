@@ -1,4 +1,5 @@
 using FluentValidation;
+using KLMN.Domain.Common;
 
 namespace KLMN.Application.Users.Commands.CreateUser;
 
@@ -13,6 +14,20 @@ public sealed class CreateUserCommandValidator : AbstractValidator<CreateUserCom
         RuleFor(x => x.LastName).NotEmpty().MaximumLength(100);
         RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(256);
         RuleFor(x => x.PhoneNumber).MaximumLength(30);
+
+        // Tarih aralığı açık uçlu olabilir ancak ters/eşit aralığa izin verilmez.
+        RuleFor(x => x)
+            .Must(x => ValidityPeriod.HasValidBounds(x.ValidFrom, x.ValidTo))
+            .WithMessage("Bitiş tarihi başlangıç tarihinden sonra olmalıdır.")
+            .WithName("ValidTo");
+
+        // PostgreSQL timestamptz alanlarına yalnızca UTC değerleri yazılır.
+        RuleFor(x => x.ValidFrom)
+            .Must(x => !x.HasValue || x.Value.Kind == DateTimeKind.Utc)
+            .WithMessage("Başlangıç tarihi UTC formatında gönderilmelidir.");
+        RuleFor(x => x.ValidTo)
+            .Must(x => !x.HasValue || x.Value.Kind == DateTimeKind.Utc)
+            .WithMessage("Bitiş tarihi UTC formatında gönderilmelidir.");
         RuleFor(x => x.Password)
             .NotEmpty()
             .MinimumLength(8)

@@ -34,9 +34,9 @@ export class AuthService {
   /** Gizli token değerini göstermeden güvenli auth durumu kaydeden geliştirme servisidir. */
   private readonly debugService = inject(AuthDebugService);
 
-  /** Refresh 403 olduğunda login sayfasına taşınacak mesai dışı erişim mesajıdır. */
+  /** Refresh 403 olduğunda login sayfasına taşınacak dönem/mesai uyarısıdır. */
   private readonly outsideWorkingHoursMessageState = signal<string | null>(null);
-  /** Login ekranının okuduğu salt okunur mesai erişim uyarısıdır. */
+  /** Login ekranının okuduğu salt okunur erişim engeli uyarısıdır. */
   public readonly outsideWorkingHoursMessage = this.outsideWorkingHoursMessageState.asReadonly();
 
   /** Çakışan HTTP refresh isteklerini tek çağrıda birleştiren paylaşımlı observable'dır. */
@@ -106,7 +106,7 @@ export class AuthService {
       .pipe(
         map(() => void 0),
         catchError((error: HttpErrorResponse) => {
-          // F5 sırasında mesai dışı erişim reddedildiyse kullanıcıya bilgi ver.
+          // F5 sırasında dönem veya mesai dışı erişim reddedildiyse uyarıyı koru.
           if (error.status === 403 && typeof error.error?.detail === 'string') {
             this.outsideWorkingHoursMessageState.set(error.error.detail);
           }
@@ -198,7 +198,7 @@ export class AuthService {
   }
 
   /**
-   * API'nin mesai dışı erişim reddini login ekranına taşır ve bellek oturumunu kapatır.
+   * API'nin mesai veya geçerlilik dönemi reddini login'e taşır ve oturumu kapatır.
    * 403 yetki reddinden ayırt edilerek sadece mesai politikası için çağrılır.
    */
   public handleOutsideWorkingHours(message: string): void {

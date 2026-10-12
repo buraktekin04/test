@@ -130,6 +130,14 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
                     Detail = exception.Message
                 },
 
+            OutsideValidityPeriodException =>
+                new ProblemDetails
+                {
+                    Status = StatusCodes.Status403Forbidden,
+                    Title = "Hesap geçerlilik süresi dışında.",
+                    Detail = exception.Message
+                },
+
             OutsideWorkingHoursException =>
                 new ProblemDetails
                 {

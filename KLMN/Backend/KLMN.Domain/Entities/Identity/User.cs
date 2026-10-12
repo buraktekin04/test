@@ -6,7 +6,7 @@ namespace KLMN.Domain.Entities.Identity;
 /// <summary>
 /// Sistemde kimlik doğrulaması yapılabilen kullanıcı hesabını temsil eder.
 /// </summary>
-public sealed class User : BaseEntity
+public sealed class User : EffectiveDatedEntity
 {
     /// <summary>Oturum açarken kullanılan kullanıcı adıdır.</summary>
     public string UserName { get; set; } = string.Empty;
@@ -47,10 +47,6 @@ public sealed class User : BaseEntity
     public DateTime? LockoutEnd { get; set; }
     /// <summary>Kullanıcı için iki faktörlü kimlik doğrulama seçeneğinin etkinliğidir.</summary>
     public bool TwoFactorAuthenticationEnabled { get; set; }
-    /// <summary>Kullanıcı hesabının kullanılmaya başlanabileceği UTC zamandır.</summary>
-    public DateTime? ValidFrom { get; set; }
-    /// <summary>Kullanıcı hesabının geçerliliğinin biteceği UTC zamandır.</summary>
-    public DateTime? ValidTo { get; set; }
     /// <summary>Kullanıcının en son başarılı giriş yaptığı UTC zamandır.</summary>
     public DateTime? LastLoginDate { get; set; }
     /// <summary>Kullanıcı parolasının en son güncellendiği UTC zamandır.</summary>

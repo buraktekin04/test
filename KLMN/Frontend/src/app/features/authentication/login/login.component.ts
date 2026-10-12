@@ -93,7 +93,7 @@ export class LoginComponent {
       return;
     }
 
-    // Yenilenmiş oturum mesai nedeniyle reddedildiyse login'de uyarı göster.
+    // Yenilenmiş oturum tarih veya mesai kısıtıyla reddedildiyse uyarı göster.
     const accessWarning = this.authService.outsideWorkingHoursMessage();
     if (accessWarning) this.errorMessage.set(accessWarning);
 
@@ -161,7 +161,7 @@ export class LoginComponent {
 
     if (error.status === 403) {
       return problem?.detail ??
-        'Mesai saatleri dışında uygulamaya erişim izniniz bulunmuyor.';
+        'Hesabınızın geçerlilik dönemi veya mesai koşulları nedeniyle erişiminiz reddedildi.';
     }
 
     if (error.status === 423) {

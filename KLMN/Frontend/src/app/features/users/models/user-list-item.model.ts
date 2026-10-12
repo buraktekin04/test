@@ -34,4 +34,10 @@ export interface UserListItem {
   version: number;
   /** true: mesai dışı erişim kısıtlıdır; false: mesai dışı izinlidir. */
   clockLimit: boolean;
+
+  /** Hesap geçerlilik başlangıcı UTC ISO-8601 (dahil; null sınırsız). */
+  validFrom: string | null;
+
+  /** Hesap geçerlilik bitişi UTC ISO-8601 (hariç; null sınırsız). */
+  validTo: string | null;
 }

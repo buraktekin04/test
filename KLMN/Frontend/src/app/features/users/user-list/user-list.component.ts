@@ -15,6 +15,7 @@ import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 
+import { ValidityPeriodUtils } from '../../../core/utils/validity-period.utils';
 import { PermissionCodes } from '../../../core/permissions/constants/permission-codes';
 import { PermissionService } from '../../../core/permissions/services/permission.service';
 import { UserAgreementPdf } from '../models/user-agreement-pdf.model';
@@ -152,6 +153,8 @@ export class UserListComponent implements OnInit {
     email: ['', [Validators.required, Validators.email, Validators.maxLength(256)]],
     phoneNumber: ['', [Validators.maxLength(30)]],
     clockLimit: [true],
+    validFrom: [''],
+    validTo: [''],
     password: ['']
   });
 
@@ -223,6 +226,8 @@ export class UserListComponent implements OnInit {
       email: '',
       phoneNumber: '',
       clockLimit: true,
+      validFrom: '',
+      validTo: '',
       password: ''
     });
     this.formError.set(null);
@@ -252,6 +257,8 @@ export class UserListComponent implements OnInit {
             email: detail.email,
             phoneNumber: detail.phoneNumber ?? '',
             clockLimit: detail.clockLimit,
+            validFrom: ValidityPeriodUtils.toLocalInput(detail.validFrom),
+            validTo: ValidityPeriodUtils.toLocalInput(detail.validTo),
             password: ''
           });
           this.dialogVisible.set(true);
@@ -281,6 +288,12 @@ export class UserListComponent implements OnInit {
     const value = this.userForm.getRawValue();
     const selected = this.selectedUser();
 
+    // Geçerlilik tarihleri için tüm tanım ekranlarının kullanacağı ortak kural.
+    if (!ValidityPeriodUtils.hasValidRange(value.validFrom, value.validTo)) {
+      this.formError.set('Bitiş tarihi başlangıç tarihinden sonra olmalıdır.');
+      return;
+    }
+
     if (!selected && !this.isValidPassword(value.password)) {
       this.formError.set(
         'Parola en az 8 karakter, bir büyük harf, bir küçük harf ve bir rakam içermelidir.'
@@ -294,7 +307,8 @@ export class UserListComponent implements OnInit {
       lastName: value.lastName.trim(),
       email: value.email.trim(),
       phoneNumber: value.phoneNumber.trim() || null,
-      clockLimit: value.clockLimit
+      clockLimit: value.clockLimit,
+      ...ValidityPeriodUtils.fromLocalInputs(value.validFrom, value.validTo)
     };
 
     // Form aynı alanları kullanır, fakat backend'in create ve update

@@ -78,6 +78,12 @@ public sealed class UserListItemResponse
     /// <summary>true ise yalnızca mesai saatlerinde erişilebilir; false ise mesai dışı erişim onaylıdır.</summary>
     public bool ClockLimit { get; init; }
 
+    /// <summary>Kullanıcı erişiminin başladığı UTC anıdır; null ise sınırsızdır.</summary>
+    public DateTime? ValidFrom { get; init; }
+
+    /// <summary>Kullanıcı erişiminin biteceği UTC andır; null ise sınırsızdır.</summary>
+    public DateTime? ValidTo { get; init; }
+
     /// <summary>
     /// Kullanıcı kaydının oluşturulduğu UTC tarih ve saattir.
     /// </summary>

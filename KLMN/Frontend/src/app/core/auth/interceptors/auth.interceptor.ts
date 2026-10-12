@@ -48,15 +48,17 @@ export const authInterceptor: HttpInterceptorFn =
       .pipe(
         catchError((error: HttpErrorResponse) => {
           /*
-           * Mesai bitmişse mevcut JWT ile yapılan istekler 403 döner.
+           * Mesai veya hesabın tarihsel geçerliliği sona erdiyse
+           * mevcut JWT ile yapılan istekler 403 döner.
            * Bu durum normal permission 403'ünden farklıdır:
            * bellek oturumu kapatılır, uyarı login ekranında gösterilir.
            */
           if (error.status === 403 &&
-              error.error?.title === 'Mesai dışı erişim engellendi.') {
+              (error.error?.title === 'Mesai dışı erişim engellendi.' ||
+               error.error?.title === 'Hesap geçerlilik süresi dışında.')) {
             authService.handleOutsideWorkingHours(
               error.error?.detail ??
-              'Mesai saatleri dışında uygulamaya erişim izniniz bulunmuyor.'
+              'Hesabınızın geçerlilik dönemi dışında erişim izniniz bulunmuyor.'
             );
             void router.navigate(['/login']);
             return throwError(() => error);

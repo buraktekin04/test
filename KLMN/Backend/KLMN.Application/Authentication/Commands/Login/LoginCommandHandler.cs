@@ -98,7 +98,6 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
             throw new LoginFailedException();
         }
 
-        ValidateAccountPeriod(user, utcNow);
         HandleExpiredLockout(user, utcNow);
 
         if (user.IsLocked)
@@ -122,6 +121,13 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
          * hatalı şifreyle tahmin edilemez. Mesai izni yoksa access veya
          * refresh token henüz oluşturulmadan işlem durur.
          */
+        // Paroladan sonra ortak tarih aralığı kontrol edilir;
+        // geçerlilik dışındaysa hiçbir token üretilmez.
+        if (!user.IsValidAt(utcNow))
+        {
+            throw new OutsideValidityPeriodException();
+        }
+
         if (!_workingHoursAccess.IsAllowed(user.ClockLimit))
         {
             throw new OutsideWorkingHoursException();
@@ -182,22 +188,6 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
                 }
             }
         };
-    }
-
-    /// <summary>
-    /// Hesabın başlangıç ve bitiş tarihlerini UTC ile karşılaştırır; geçersiz dönemde girişe izin vermez.
-    /// </summary>
-    private static void ValidateAccountPeriod(User user, DateTime utcNow)
-    {
-        if (user.ValidFrom.HasValue && user.ValidFrom.Value > utcNow)
-        {
-            throw new LoginFailedException();
-        }
-
-        if (user.ValidTo.HasValue && user.ValidTo.Value <= utcNow)
-        {
-            throw new LoginFailedException();
-        }
     }
 
     /// <summary>

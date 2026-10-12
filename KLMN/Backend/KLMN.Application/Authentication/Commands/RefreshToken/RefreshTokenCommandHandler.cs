@@ -1,5 +1,6 @@
 using KLMN.Application.Authentication.Responses;
 using KLMN.Application.Common.Exceptions;
+using KLMN.Domain.Common;
 using KLMN.Application.Common.Interfaces.Authentication;
 using KLMN.Application.Common.Interfaces.Authorization;
 using KLMN.Application.Common.Interfaces.Identity;
@@ -141,10 +142,10 @@ public sealed class RefreshTokenCommandHandler
             user.AccessFailedCount = 0;
         }
 
-        if ((user.ValidFrom.HasValue && user.ValidFrom.Value > utcNow) ||
-            (user.ValidTo.HasValue && user.ValidTo.Value <= utcNow))
+        // Refresh token geçerli olsa bile hesabın tarihsel erişim izni güncel olmalıdır.
+        if (!user.IsValidAt(utcNow))
         {
-            throw new InvalidRefreshTokenException();
+            throw new OutsideValidityPeriodException();
         }
 
         // Mesai dışında yetkisiz refresh kabul edilmez; yeni JWT veya cookie üretilmez.
