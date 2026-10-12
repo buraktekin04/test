@@ -84,6 +84,7 @@ internal sealed class GetUsersQueryHandler(
                     .ToArray(),
                 IsActive = x.IsActive,
                 IsLocked = x.IsLocked,
+                ClockLimit = x.ClockLimit,
                 CreatedDate = x.CreatedDate,
                 Version = x.Version
             })

@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 
 import { API_BASE_URL } from '../../../core/config/api.tokens';
 import { PagedResult } from '../../../core/models/paged-result.model';
+import { UserAgreementPdf } from '../models/user-agreement-pdf.model';
 import { ChangeUserStatusRequest } from '../models/change-user-status-request.model';
 import { CreateUserRequest } from '../models/create-user-request.model';
 import { UpdateUserRequest } from '../models/update-user-request.model';
@@ -64,6 +65,29 @@ export class UserService {
     return this.http.patch<UserMutationResponse>(
       `${this.apiBaseUrl}/users/${request.id}/status`, request
     );
+  }
+
+  /** Kullanıcıya bağlı PDF metadata listesini sorgular. */
+  public getAgreementPdfs(userId: string): Observable<UserAgreementPdf[]> {
+    return this.http.get<UserAgreementPdf[]>(`${this.apiBaseUrl}/users/${userId}/agreements`);
+  }
+
+  /** PDF'yi multipart form ile özel sunucu klasörüne yükler. */
+  public uploadAgreementPdf(userId: string, file: File): Observable<UserAgreementPdf> {
+    const body = new FormData();
+    body.append('file', file, file.name);
+    return this.http.post<UserAgreementPdf>(`${this.apiBaseUrl}/users/${userId}/agreements`, body);
+  }
+
+  /** API yetkilendirmesi ile PDF indirme stream'i ister. */
+  public downloadAgreementPdf(userId: string, documentId: string): Observable<Blob> {
+    return this.http.get(`${this.apiBaseUrl}/users/${userId}/agreements/${documentId}/download`,
+      { responseType: 'blob' });
+  }
+
+  /** Kullanıcının PDF belgesini soft delete eder. */
+  public deleteAgreementPdf(userId: string, documentId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiBaseUrl}/users/${userId}/agreements/${documentId}`);
   }
 
   /** Belirtilen versiyondaki kullanıcıyı soft delete yöntemiyle siler. */

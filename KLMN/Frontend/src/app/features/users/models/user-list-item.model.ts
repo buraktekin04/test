@@ -32,4 +32,6 @@ export interface UserListItem {
   createdDate: string;
   /** PostgreSQL xmin'den gelen optimistic concurrency kontrol değeridir. */
   version: number;
+  /** true: mesai dışı erişim kısıtlıdır; false: mesai dışı izinlidir. */
+  clockLimit: boolean;
 }

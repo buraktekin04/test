@@ -29,6 +29,8 @@ internal static class IdentitySeedData
         new("Kullanıcı Aktifleştirme", PermissionCodes.Users.Activate, "Users", 60),
         new("Kullanıcıya Rol Atama", PermissionCodes.Users.AssignRole, "Users", 70),
         new("Kullanıcı Yetkilerini Yönetme", PermissionCodes.Users.ManagePermissions, "Users", 80),
+        new("Kullanıcı PDF Dokümanlarını Görüntüleme", PermissionCodes.Users.ViewDocuments, "Users", 90),
+        new("Kullanıcı PDF Dokümanlarını Yönetme", PermissionCodes.Users.ManageDocuments, "Users", 100),
 
         new("Rolleri Görüntüleme", PermissionCodes.Roles.View, "Roles", 10),
         new("Rol Sorgulama", PermissionCodes.Roles.Query, "Roles", 20),
@@ -72,4 +74,3 @@ internal sealed record PermissionSeedItem(
     string Code,
     string Module,
     int SortOrder);
-

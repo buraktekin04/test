@@ -18,4 +18,10 @@ public sealed record CreateUserCommand : IRequest<UserMutationResponse>
     public string? PhoneNumber { get; init; }
     /// <summary>Yalnızca bu istekte alınan, veritabanına açık yazılmayan ilk paroladır.</summary>
     public required string Password { get; init; }
+
+    /// <summary>
+    /// true olduğunda kullanıcı sadece tanımlanan mesai gün/saatlerinde giriş yapabilir;
+    /// false olduğunda mesai dışı erişimi yöneticisi tarafından onaylanmış kabul edilir.
+    /// </summary>
+    public bool ClockLimit { get; init; } = true;
 }

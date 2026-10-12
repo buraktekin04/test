@@ -25,6 +25,12 @@ public static class PermissionCodes
         public const string AssignRole = "Users.AssignRole";
         /// <summary>Rol veya kullanıcı bazlı yetki yönetimi yapabilme kodudur.</summary>
         public const string ManagePermissions = "Users.ManagePermissions";
+
+        /// <summary>Kullanıcı PDF dokümanlarını listeleme ve indirme yetkisidir.</summary>
+        public const string ViewDocuments = "Users.ViewDocuments";
+
+        /// <summary>Kullanıcı PDF dokümanlarını yükleme ve silme yetkisidir.</summary>
+        public const string ManageDocuments = "Users.ManageDocuments";
     }
 
     /// <summary>Rol yönetimi permission kodlarını içerir.</summary>

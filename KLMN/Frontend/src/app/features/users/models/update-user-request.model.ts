@@ -17,4 +17,6 @@ export interface UpdateUserRequest {
   email: string;
   /** Telefon. */
   phoneNumber: string | null;
+  /** true: mesai dışı erişim kısıtlıdır; false: mesai dışı izinlidir. */
+  clockLimit: boolean;
 }

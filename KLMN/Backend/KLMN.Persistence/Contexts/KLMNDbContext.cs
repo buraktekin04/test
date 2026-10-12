@@ -21,6 +21,9 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     /// Kullanıcı hesaplarına ait EF Core DbSet koleksiyonudur.
     /// </summary>
     public DbSet<User> Users => Set<User>();
+
+    /// <summary>Kullanıcı PDF metadata kayıtlarının EF Core entity kümesidir.</summary>
+    public DbSet<UserAgreementPdf> UserAgreementPdfs => Set<UserAgreementPdf>();
     /// <summary>
     /// Tanımlanan dinamik ve sistem rollerinin EF Core DbSet koleksiyonudur.
     /// </summary>

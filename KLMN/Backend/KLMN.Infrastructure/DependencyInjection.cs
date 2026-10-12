@@ -6,10 +6,14 @@ using KLMN.Application.Common.Interfaces.Communication;
 using KLMN.Application.Common.Interfaces.Identity;
 using KLMN.Application.Common.Interfaces.Persistence;
 using KLMN.Application.Common.Options;
+using KLMN.Application.Common.Exceptions;
 using KLMN.Infrastructure.Authentication;
 using KLMN.Infrastructure.Authorization;
 using KLMN.Infrastructure.Communication;
 using KLMN.Infrastructure.Identity;
+using KLMN.Infrastructure.Storage;
+using KLMN.Application.Common.Interfaces.Storage;
+using System.Globalization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +42,12 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IPasswordResetTokenService, PasswordResetTokenService>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
+
+        // Mesai denetimi uygulama boyunca aynı hizmetten yapılır.
+        services.AddScoped<IWorkingHoursAccessService, WorkingHoursAccessService>();
+
+        // PDF byte'larını veritabanı dışında tutan private dosya deposudur.
+        services.AddSingleton<IUserAgreementPdfStorage, LocalUserAgreementPdfStorage>();
 
         /*
          * Jwt, Authentication, PasswordReset ve Smtp ayarları
@@ -97,6 +107,36 @@ public static class DependencyInjection
             .Validate(x => !string.IsNullOrWhiteSpace(x.FromAddress), "Smtp:FromAddress zorunludur.")
             .ValidateOnStart();
 
+        /*
+         * Mesai saatleri appsettings içindeki WorkingHours bölümünden okunur.
+         * Başlangıç dahil, bitiş hariç ve ISO günleri 1..7 biçimindedir.
+         */
+        services.AddOptions<WorkingHoursSettings>()
+            .Bind(configuration.GetSection(WorkingHoursSettings.SectionName))
+            .Validate(x =>
+                !string.IsNullOrWhiteSpace(x.TimeZoneId) &&
+                IsValidTimeZone(x.TimeZoneId),
+                "WorkingHours:TimeZoneId geçerli bir saat dilimi olmalıdır.")
+            .Validate(x =>
+                TimeOnly.TryParseExact(x.Start, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var start) &&
+                TimeOnly.TryParseExact(x.End, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var end) &&
+                start < end,
+                "WorkingHours:Start ve End HH:mm formatında olmalı, Start < End olmalıdır.")
+            .Validate(x =>
+                x.DaysOfWeek is { Length: > 0 } &&
+                x.DaysOfWeek.All(day => day is >= 1 and <= 7),
+                "WorkingHours:DaysOfWeek 1..7 arasında günler içermelidir.")
+            .ValidateOnStart();
+
+        // Kök klasör yolu ve maksimum yükleme boyutu her ortamda farklıdır.
+        services.AddOptions<DocumentStorageSettings>()
+            .Bind(configuration.GetSection(DocumentStorageSettings.SectionName))
+            .Validate(x => !string.IsNullOrWhiteSpace(x.RootPath),
+                "DocumentStorage:RootPath zorunludur.")
+            .Validate(x => x.MaxFileSizeMb is > 0 and <= 50,
+                "DocumentStorage:MaxFileSizeMb 1-50 arasında olmalıdır.")
+            .ValidateOnStart();
+
         // Jwt bölümünden okunan imza, issuer, audience ve ömür değerleri Bearer doğrulama kurallarını oluşturur.
         var jwtSettings =
             configuration
@@ -137,6 +177,24 @@ public static class DependencyInjection
                 options.Events =
                     new JwtBearerEvents
                     {
+                        OnChallenge = async context =>
+                        {
+                            // Token mesai nedeni ile reddedildiyse 401 yerine açıklayıcı 403 döndür.
+                            if (context.HttpContext.Items["OutsideWorkingHours"] is true)
+                            {
+                                context.HandleResponse();
+                                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                                context.Response.ContentType = "application/problem+json";
+                                await context.Response.WriteAsJsonAsync(
+                                    new Microsoft.AspNetCore.Mvc.ProblemDetails
+                                    {
+                                        Status = StatusCodes.Status403Forbidden,
+                                        Title = "Mesai dışı erişim engellendi.",
+                                        Detail = new OutsideWorkingHoursException().Message
+                                    });
+                            }
+                        },
+
                         OnAuthenticationFailed = context =>
                         {
                             // logger bilgisini sonraki işlem adımları için hesaplar.
@@ -195,7 +253,8 @@ public static class DependencyInjection
                                     x.IsLocked,
                                     x.LockoutEnd,
                                     x.ValidFrom,
-                                    x.ValidTo
+                                    x.ValidTo,
+                                    x.ClockLimit
                                 })
                                 .SingleOrDefaultAsync(
                                     context.HttpContext.RequestAborted);
@@ -234,6 +293,20 @@ public static class DependencyInjection
                                 user.ValidTo.Value <= utcNow)
                             {
                                 context.Fail("Kullanıcı hesabının geçerlilik süresi dolmuştur.");
+                                return;
+                            }
+
+                            /*
+                             * Süresi henüz dolmamış JWT bile mesai sona erince
+                             * erişim veremez. Kullanıcı kısıtı DB'den anlık okunur.
+                             */
+                            var workingHours = context.HttpContext.RequestServices
+                                .GetRequiredService<IWorkingHoursAccessService>();
+
+                            if (!workingHours.IsAllowed(user.ClockLimit))
+                            {
+                                context.HttpContext.Items["OutsideWorkingHours"] = true;
+                                context.Fail("Mesai dışı erişim engellendi.");
                             }
                         }
                     };
@@ -256,5 +329,17 @@ public static class DependencyInjection
             PermissionAuthorizationHandler>();
 
         return services;
+    }
+
+    /// <summary>Çalışma saati ayarındaki IANA/Windows timezone kodunu kontrol eder.</summary>
+    private static bool IsValidTimeZone(string value)
+    {
+        try
+        {
+            _ = TimeZoneInfo.FindSystemTimeZoneById(value);
+            return true;
+        }
+        catch (TimeZoneNotFoundException) { return false; }
+        catch (InvalidTimeZoneException) { return false; }
     }
 }

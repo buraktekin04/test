@@ -22,6 +22,17 @@ public sealed class User : BaseEntity
     public string Email { get; set; } = string.Empty;
     /// <summary>Arama ve benzersizlik kontrollerinde kullanılan normalize edilmiş e-posta adresidir.</summary>
     public string NormalizedEmail { get; set; } = string.Empty;
+    /// <summary>
+    /// Mesai dışı erişim izninin bulunmadığını belirten kısıtlama bayrağıdır.
+    /// true: sadece WorkingHours bölümünde tanımlanan gün ve saatlerde erişebilir.
+    /// false: mesai dışı erişim onaylıdır; saat kısıtlaması uygulanmaz.
+    /// Varsayılan true, yeni kullanıcıların izinsiz biçimde mesai dışı girişini önler.
+    /// </summary>
+    public bool ClockLimit { get; set; } = true;
+
+    /// <summary>Kullanıcının yüklenen PDF doküman kayıtlarını temsil eder; dosya byte'ları DB'ye yazılmaz.</summary>
+    public ICollection<UserAgreementPdf> AgreementPdfs { get; set; } = new List<UserAgreementPdf>();
+
     /// <summary>Kullanıcının isteğe bağlı iletişim numarasıdır.</summary>
     public string? PhoneNumber { get; set; }
     /// <summary>Kullanıcının bağlı olduğu organizasyon biriminin yabancı anahtar değeridir.</summary>

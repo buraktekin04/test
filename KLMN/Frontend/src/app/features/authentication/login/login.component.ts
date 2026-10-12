@@ -93,6 +93,10 @@ export class LoginComponent {
       return;
     }
 
+    // Yenilenmiş oturum mesai nedeniyle reddedildiyse login'de uyarı göster.
+    const accessWarning = this.authService.outsideWorkingHoursMessage();
+    if (accessWarning) this.errorMessage.set(accessWarning);
+
     if (loggedOut === 'true') {
       this.informationMessage.set(
         'Oturumunuz başarıyla kapatıldı.'
@@ -155,6 +159,11 @@ export class LoginComponent {
     const problem =
       error.error as ProblemDetails | null;
 
+    if (error.status === 403) {
+      return problem?.detail ??
+        'Mesai saatleri dışında uygulamaya erişim izniniz bulunmuyor.';
+    }
+
     if (error.status === 423) {
       return problem?.detail ??
         'Hesabınız geçici olarak kilitlenmiştir.';
@@ -184,4 +193,3 @@ export class LoginComponent {
     return url.startsWith('/') && !url.startsWith('//');
   }
 }
-

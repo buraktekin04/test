@@ -24,6 +24,9 @@ public sealed class UserConfiguration : BaseEntityConfiguration<User>
         builder.Property(x => x.Email).IsRequired().HasMaxLength(256);
         builder.Property(x => x.NormalizedEmail).IsRequired().HasMaxLength(256);
         builder.Property(x => x.PhoneNumber).HasMaxLength(30);
+
+        // Mesai saatleri dışında erişimi onaylanmayan kullanıcılar varsayılan olarak kısıtlanır.
+        builder.Property(x => x.ClockLimit).IsRequired().HasDefaultValue(true);
         builder.Property(x => x.AccessFailedCount).IsRequired().HasDefaultValue(0);
         builder.Property(x => x.IsLocked).IsRequired().HasDefaultValue(false);
         builder.Property(x => x.TwoFactorAuthenticationEnabled).IsRequired().HasDefaultValue(false);

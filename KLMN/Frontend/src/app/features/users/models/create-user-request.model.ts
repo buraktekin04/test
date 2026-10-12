@@ -15,4 +15,6 @@ export interface CreateUserRequest {
   phoneNumber: string | null;
   /** En az sekiz karakter ve büyük/küçük harf ile rakam içeren parola. */
   password: string;
+  /** true: mesai dışı erişim kısıtlıdır; false: mesai dışı izinlidir. */
+  clockLimit: boolean;
 }

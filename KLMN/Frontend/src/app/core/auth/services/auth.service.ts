@@ -1,5 +1,5 @@
-import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { inject, Injectable, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import {
   catchError,
   finalize,
@@ -34,6 +34,11 @@ export class AuthService {
   /** Gizli token değerini göstermeden güvenli auth durumu kaydeden geliştirme servisidir. */
   private readonly debugService = inject(AuthDebugService);
 
+  /** Refresh 403 olduğunda login sayfasına taşınacak mesai dışı erişim mesajıdır. */
+  private readonly outsideWorkingHoursMessageState = signal<string | null>(null);
+  /** Login ekranının okuduğu salt okunur mesai erişim uyarısıdır. */
+  public readonly outsideWorkingHoursMessage = this.outsideWorkingHoursMessageState.asReadonly();
+
   /** Çakışan HTTP refresh isteklerini tek çağrıda birleştiren paylaşımlı observable'dır. */
   private refreshInFlight$: Observable<AuthSessionResponse> | null = null;
 
@@ -53,6 +58,7 @@ export class AuthService {
     )
     .pipe(
       tap(response => {
+        this.outsideWorkingHoursMessageState.set(null);
         this.store.setSession(response);
         this.debugService.logSession('Login successful', response);
       })
@@ -73,6 +79,7 @@ export class AuthService {
     )
     .pipe(
       tap(response => {
+        this.outsideWorkingHoursMessageState.set(null);
         this.store.setSession(response);
         this.debugService.logSession('Token refreshed', response);
       }),
@@ -98,7 +105,11 @@ export class AuthService {
     return this.refresh()
       .pipe(
         map(() => void 0),
-        catchError(() => {
+        catchError((error: HttpErrorResponse) => {
+          // F5 sırasında mesai dışı erişim reddedildiyse kullanıcıya bilgi ver.
+          if (error.status === 403 && typeof error.error?.detail === 'string') {
+            this.outsideWorkingHoursMessageState.set(error.error.detail);
+          }
           this.store.clearSession();
           return of(void 0);
         })
@@ -186,6 +197,15 @@ export class AuthService {
     return this.store.getAccessToken();
   }
 
+  /**
+   * API'nin mesai dışı erişim reddini login ekranına taşır ve bellek oturumunu kapatır.
+   * 403 yetki reddinden ayırt edilerek sadece mesai politikası için çağrılır.
+   */
+  public handleOutsideWorkingHours(message: string): void {
+    this.outsideWorkingHoursMessageState.set(message);
+    this.store.clearSession();
+  }
+
   /** JWT ve kullanıcı verilerini bellekten temizleyerek oturum durumunu sıfırlar. */
   public clearSession(): void {
     this.store.clearSession();
@@ -203,4 +223,3 @@ export class AuthService {
     });
   }
 }
-

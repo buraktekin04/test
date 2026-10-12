@@ -47,6 +47,9 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
     /// </summary>
     private readonly TimeProvider _timeProvider;
 
+    /// <summary>Kullanıcının mesai dışı erişim onayını kurum saatlerine göre denetler.</summary>
+    private readonly IWorkingHoursAccessService _workingHoursAccess;
+
     /// <summary>
     /// Giriş sürecine gerekli veritabanı, parola doğrulama, JWT, yetkilendirme ve zaman bağımlılıklarını bağlar.
     /// </summary>
@@ -57,7 +60,8 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
         IUserAuthorizationService authorizationService,
         ICurrentUserService currentUserService,
         IOptions<AuthenticationSettings> authenticationSettings,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        IWorkingHoursAccessService workingHoursAccess)
     {
         _dbContext = dbContext;
         _passwordHasherService = passwordHasherService;
@@ -66,6 +70,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
         _currentUserService = currentUserService;
         _authenticationSettings = authenticationSettings.Value;
         _timeProvider = timeProvider;
+        _workingHoursAccess = workingHoursAccess;
     }
 
     /// <summary>
@@ -110,6 +115,16 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
         {
             await HandleFailedLoginAsync(user, utcNow, cancellationToken);
             throw new LoginFailedException();
+        }
+
+        /*
+         * Önce parola doğrulanır; böylece kullanıcı varlığı/saat izni
+         * hatalı şifreyle tahmin edilemez. Mesai izni yoksa access veya
+         * refresh token henüz oluşturulmadan işlem durur.
+         */
+        if (!_workingHoursAccess.IsAllowed(user.ClockLimit))
+        {
+            throw new OutsideWorkingHoursException();
         }
 
         ResetFailedLoginState(user);

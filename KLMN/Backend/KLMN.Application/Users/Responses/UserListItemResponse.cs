@@ -75,6 +75,9 @@ public sealed class UserListItemResponse
     /// </summary>
     public bool IsLocked { get; init; }
 
+    /// <summary>true ise yalnızca mesai saatlerinde erişilebilir; false ise mesai dışı erişim onaylıdır.</summary>
+    public bool ClockLimit { get; init; }
+
     /// <summary>
     /// Kullanıcı kaydının oluşturulduğu UTC tarih ve saattir.
     /// </summary>

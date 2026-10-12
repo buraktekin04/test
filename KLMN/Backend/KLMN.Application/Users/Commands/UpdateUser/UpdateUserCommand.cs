@@ -23,4 +23,7 @@ public sealed record UpdateUserCommand : IRequest<UserMutationResponse>
     public required string Email { get; init; }
     /// <summary>İsteğe bağlı telefon numarasıdır.</summary>
     public string? PhoneNumber { get; init; }
+
+    /// <summary>true ise mesai dışı giriş engellenir, false ise mesai dışı erişime izin verilir.</summary>
+    public bool ClockLimit { get; init; } = true;
 }

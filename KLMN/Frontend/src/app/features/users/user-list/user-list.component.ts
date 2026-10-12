@@ -17,6 +17,7 @@ import { TagModule } from 'primeng/tag';
 
 import { PermissionCodes } from '../../../core/permissions/constants/permission-codes';
 import { PermissionService } from '../../../core/permissions/services/permission.service';
+import { UserAgreementPdf } from '../models/user-agreement-pdf.model';
 import { CreateUserRequest } from '../models/create-user-request.model';
 import { UpdateUserRequest } from '../models/update-user-request.model';
 import { UserListItem } from '../models/user-list-item.model';
@@ -96,6 +97,24 @@ export class UserListComponent implements OnInit {
   /** İşlemi devam eden kullanıcının ID'sidir; tekrar tıklamayı önler. */
   public readonly actionLoadingId = signal<string | null>(null);
 
+  /** Belge görüntüleme ve indirme yetkisinin UI kontrolüdür. */
+  public readonly canViewDocuments = computed(() =>
+    this.permissionService.has(PermissionCodes.Users.ViewDocuments)
+  );
+  /** Belge yükleme ve silme yetkisinin UI kontrolüdür. */
+  public readonly canManageDocuments = computed(() =>
+    this.permissionService.has(PermissionCodes.Users.ManageDocuments)
+  );
+
+  /** Seçili kullanıcıya ait PDF belge bilgileridir. */
+  public readonly agreementPdfs = signal<UserAgreementPdf[]>([]);
+  /** PDF ekleme veya silme işleminin yükleme durumudur. */
+  public readonly pdfBusy = signal(false);
+  /** Kullanıcının seçtiği ancak henüz yüklenmemiş PDF dosyasıdır. */
+  public readonly selectedPdf = signal<File | null>(null);
+  /** PDF API işleminin hata açıklamasıdır. */
+  public readonly pdfError = signal<string | null>(null);
+
   /** Yeni kullanıcı butonunu görme iznidir; gerçek kontrol API'dedir. */
   public readonly canCreate = computed(() =>
     this.permissionService.has(PermissionCodes.Users.Create)
@@ -132,6 +151,7 @@ export class UserListComponent implements OnInit {
     lastName: ['', [Validators.required, Validators.maxLength(100)]],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(256)]],
     phoneNumber: ['', [Validators.maxLength(30)]],
+    clockLimit: [true],
     password: ['']
   });
 
@@ -202,15 +222,20 @@ export class UserListComponent implements OnInit {
       lastName: '',
       email: '',
       phoneNumber: '',
+      clockLimit: true,
       password: ''
     });
     this.formError.set(null);
+    this.agreementPdfs.set([]);
+    this.selectedPdf.set(null);
+    this.pdfError.set(null);
     this.dialogVisible.set(true);
   }
 
   /** Düzenlemeden önce kaydı yeniden yükleyerek en yeni xmin değerini alır. */
   public openEditDialog(user: UserListItem): void {
-    if (!this.canUpdate()) return;
+    // Sadece belge görme yetkisi olan kullanıcı düzenleme yapmadan belgeleri açabilir.
+    if (!this.canUpdate() && !this.canViewDocuments()) return;
 
     this.actionLoadingId.set(user.id);
     this.formError.set(null);
@@ -226,9 +251,13 @@ export class UserListComponent implements OnInit {
             lastName: detail.lastName,
             email: detail.email,
             phoneNumber: detail.phoneNumber ?? '',
+            clockLimit: detail.clockLimit,
             password: ''
           });
           this.dialogVisible.set(true);
+          this.selectedPdf.set(null);
+          this.pdfError.set(null);
+          if (this.canViewDocuments()) this.loadAgreementPdfs(detail.id);
         },
         error: (error: HttpErrorResponse) =>
           this.errorMessage.set(this.getErrorMessage(error))
@@ -240,6 +269,9 @@ export class UserListComponent implements OnInit {
    * Yeni kayıtta parola güvenlik şartları sağlanmalıdır.
    */
   public saveUser(): void {
+    // Salt belge görüntüleme izni kullanıcı profilinin değiştirilmesine izin vermez.
+    if (this.selectedUser() && !this.canUpdate()) return;
+
     if (this.userForm.invalid) {
       this.userForm.markAllAsTouched();
       this.formError.set('Zorunlu alanları ve e-posta biçimini kontrol ediniz.');
@@ -261,7 +293,8 @@ export class UserListComponent implements OnInit {
       firstName: value.firstName.trim(),
       lastName: value.lastName.trim(),
       email: value.email.trim(),
-      phoneNumber: value.phoneNumber.trim() || null
+      phoneNumber: value.phoneNumber.trim() || null,
+      clockLimit: value.clockLimit
     };
 
     // Form aynı alanları kullanır, fakat backend'in create ve update
@@ -298,6 +331,112 @@ export class UserListComponent implements OnInit {
       },
       error: (error: HttpErrorResponse) =>
         this.formError.set(this.getErrorMessage(error))
+    });
+  }
+
+  /** Seçili kullanıcıya ait PDF metadata listesini sorgular. */
+  public loadAgreementPdfs(userId: string): void {
+    this.pdfError.set(null);
+    this.userService.getAgreementPdfs(userId).subscribe({
+      next: documents => this.agreementPdfs.set(documents),
+      error: (error: HttpErrorResponse) =>
+        this.pdfError.set(this.getErrorMessage(error))
+    });
+  }
+
+  /** Dosya seçimini ve PDF/10 MB istemci ön kontrollerini gerçekleştirir. */
+  public onPdfSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.item(0) ?? null;
+    this.selectedPdf.set(null);
+    this.pdfError.set(null);
+
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      this.pdfError.set('Yalnızca PDF uzantılı dosya yüklenebilir.');
+      input.value = '';
+      return;
+    }
+
+    // Sunucunun ayarındaki boyut sınırı ayrıca kesin olarak doğrulanır.
+    if (file.size === 0 || file.size > 10 * 1024 * 1024) {
+      this.pdfError.set('PDF boş olmamalı ve 10 MB sınırını aşmamalıdır.');
+      input.value = '';
+      return;
+    }
+
+    this.selectedPdf.set(file);
+    // Aynı PDF ikinci kez seçilirse change event'inin tekrar çalışmasını sağlar.
+    input.value = '';
+  }
+
+  /** Sunucu klasörüne PDF yükledikten sonra doküman listesini yeniler. */
+  public uploadPdf(): void {
+    const user = this.selectedUser();
+    const file = this.selectedPdf();
+    if (!user || !file || !this.canManageDocuments() || this.pdfBusy()) return;
+
+    this.pdfBusy.set(true);
+    this.pdfError.set(null);
+    this.userService.uploadAgreementPdf(user.id, file)
+      .pipe(finalize(() => this.pdfBusy.set(false)))
+      .subscribe({
+        next: () => {
+          this.selectedPdf.set(null);
+          this.loadAgreementPdfs(user.id);
+          this.successMessage.set('PDF dokümanı yüklendi.');
+        },
+        error: (error: HttpErrorResponse) =>
+          this.pdfError.set(this.getErrorMessage(error))
+      });
+  }
+
+  /** PDF'yi kimlik doğrulaması olan API'den Blob olarak indirtir. */
+  public downloadPdf(pdf: UserAgreementPdf): void {
+    const user = this.selectedUser();
+    if (!user) return;
+
+    this.pdfError.set(null);
+    this.userService.downloadAgreementPdf(user.id, pdf.id).subscribe({
+      next: data => {
+        const objectUrl = URL.createObjectURL(data);
+        const anchor = document.createElement('a');
+        anchor.href = objectUrl;
+        anchor.download = pdf.fileName;
+        anchor.click();
+        // Download başladığında kullanılan geçici URL sistemden temizlenir.
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      },
+      error: (error: HttpErrorResponse) =>
+        this.pdfError.set(this.getErrorMessage(error))
+    });
+  }
+
+  /** PDF kaydını onay alarak siler ve arayüz listesini günceller. */
+  public confirmDeletePdf(pdf: UserAgreementPdf): void {
+    const user = this.selectedUser();
+    if (!user || !this.canManageDocuments()) return;
+
+    this.confirmationService.confirm({
+      header: 'PDF Dokümanını Sil',
+      message: `${pdf.fileName} dosyasını silmek istiyor musunuz?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sil',
+      rejectLabel: 'Vazgeç',
+      accept: () => {
+        this.pdfBusy.set(true);
+        this.userService.deleteAgreementPdf(user.id, pdf.id)
+          .pipe(finalize(() => this.pdfBusy.set(false)))
+          .subscribe({
+            next: () => {
+              this.loadAgreementPdfs(user.id);
+              this.successMessage.set('PDF dokümanı silindi.');
+            },
+            error: (error: HttpErrorResponse) =>
+              this.pdfError.set(this.getErrorMessage(error))
+          });
+      }
     });
   }
 

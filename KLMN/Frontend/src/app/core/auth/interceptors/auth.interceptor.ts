@@ -1,4 +1,5 @@
 import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import {
   HttpContextToken,
   HttpErrorResponse,
@@ -27,6 +28,8 @@ export const authInterceptor: HttpInterceptorFn =
   (request, next) => {
     // Login, refresh, logout ve mevcut kullanıcı işlemlerini sağlayan servistir.
     const authService = inject(AuthService);
+    /** Mesai kısıtı sonucu kullanıcının login ekranına gönderilmesini sağlar. */
+    const router = inject(Router);
     // Environment'dan enjekte edilen doğrudan HTTPS API temel adresidir.
     const apiBaseUrl = inject(API_BASE_URL);
 
@@ -44,6 +47,21 @@ export const authInterceptor: HttpInterceptorFn =
     return next(authenticatedRequest)
       .pipe(
         catchError((error: HttpErrorResponse) => {
+          /*
+           * Mesai bitmişse mevcut JWT ile yapılan istekler 403 döner.
+           * Bu durum normal permission 403'ünden farklıdır:
+           * bellek oturumu kapatılır, uyarı login ekranında gösterilir.
+           */
+          if (error.status === 403 &&
+              error.error?.title === 'Mesai dışı erişim engellendi.') {
+            authService.handleOutsideWorkingHours(
+              error.error?.detail ??
+              'Mesai saatleri dışında uygulamaya erişim izniniz bulunmuyor.'
+            );
+            void router.navigate(['/login']);
+            return throwError(() => error);
+          }
+
           if (
             error.status !== 401 ||
             shouldSkipAutomaticRefresh(request.url) ||

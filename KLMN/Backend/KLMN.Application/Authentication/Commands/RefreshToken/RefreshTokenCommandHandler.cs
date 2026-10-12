@@ -38,6 +38,9 @@ public sealed class RefreshTokenCommandHandler
     /// </summary>
     private readonly TimeProvider _timeProvider;
 
+    /// <summary>Refresh sırasında da mesai dışı erişim kısıtlamasını uygular.</summary>
+    private readonly IWorkingHoursAccessService _workingHoursAccess;
+
     /// <summary>
     /// Refresh token eşleşmesi bulunamadığında gizli token değerini ifşa etmeden
     /// tanılama kaydı oluşturan uygulama logger'ıdır.
@@ -53,7 +56,8 @@ public sealed class RefreshTokenCommandHandler
         IUserAuthorizationService authorizationService,
         ICurrentUserService currentUserService,
         TimeProvider timeProvider,
-        ILogger<RefreshTokenCommandHandler> logger)
+        ILogger<RefreshTokenCommandHandler> logger,
+        IWorkingHoursAccessService workingHoursAccess)
     {
         _dbContext = dbContext;
         _jwtTokenService = jwtTokenService;
@@ -61,6 +65,7 @@ public sealed class RefreshTokenCommandHandler
         _currentUserService = currentUserService;
         _timeProvider = timeProvider;
         _logger = logger;
+        _workingHoursAccess = workingHoursAccess;
     }
 
     /// <summary>
@@ -140,6 +145,12 @@ public sealed class RefreshTokenCommandHandler
             (user.ValidTo.HasValue && user.ValidTo.Value <= utcNow))
         {
             throw new InvalidRefreshTokenException();
+        }
+
+        // Mesai dışında yetkisiz refresh kabul edilmez; yeni JWT veya cookie üretilmez.
+        if (!_workingHoursAccess.IsAllowed(user.ClockLimit))
+        {
+            throw new OutsideWorkingHoursException();
         }
 
         // Kullanıcının güncel rol ve effective permission bilgilerinin özetidir.

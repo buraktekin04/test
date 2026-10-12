@@ -8,6 +8,12 @@ namespace KLMN.Application.Common.Interfaces.Persistence;
 public interface IKLMNDbContext
 {
     DbSet<User> Users { get; }
+
+    /// <summary>
+    /// Kullanıcıya bağlı PDF meta verisi kayıtlarını sağlar.
+    /// PDF içerikleri veritabanında değil, yapılandırılmış özel dosya dizininde tutulur.
+    /// </summary>
+    DbSet<UserAgreementPdf> UserAgreementPdfs { get; }
     DbSet<Role> Roles { get; }
     DbSet<Permission> Permissions { get; }
     DbSet<UserRole> UserRoles { get; }

@@ -45,6 +45,7 @@ public sealed class GetUserByIdQueryHandler(IKLMNDbContext dbContext)
                     .ToArray(),
                 IsActive = x.IsActive,
                 IsLocked = x.IsLocked,
+                ClockLimit = x.ClockLimit,
                 CreatedDate = x.CreatedDate,
                 Version = x.Version
             })

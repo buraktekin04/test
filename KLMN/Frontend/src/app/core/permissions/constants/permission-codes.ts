@@ -11,7 +11,9 @@ export const PermissionCodes = {
     Delete: 'Users.Delete',
     Activate: 'Users.Activate',
     AssignRole: 'Users.AssignRole',
-    ManagePermissions: 'Users.ManagePermissions'
+    ManagePermissions: 'Users.ManagePermissions',
+    ViewDocuments: 'Users.ViewDocuments',
+    ManageDocuments: 'Users.ManageDocuments'
   },
   Roles: {
     View: 'Roles.View',

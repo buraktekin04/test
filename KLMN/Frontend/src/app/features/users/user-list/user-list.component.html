@@ -79,8 +79,9 @@
           <th>Organizasyon</th>
           <th>Roller</th>
           <th>Durum</th>
+          <th>Mesai Dışı</th>
           <th>Oluşturulma</th>
-          @if (canUpdate() || canDelete() || canActivate()) {
+          @if (canUpdate() || canDelete() || canActivate() || canViewDocuments()) {
             <th class="actions-column">İşlemler</th>
           }
         </tr>
@@ -131,10 +132,23 @@
               }
             </div>
           </td>
+          <td>
+            <p-tag
+              [value]="user.clockLimit ? 'İzin Yok' : 'İzinli'"
+              [severity]="user.clockLimit ? 'warn' : 'success'">
+            </p-tag>
+          </td>
           <td>{{ user.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
-          @if (canUpdate() || canDelete() || canActivate()) {
+          @if (canUpdate() || canDelete() || canActivate() || canViewDocuments()) {
             <td>
               <div class="row-actions">
+                @if (canViewDocuments()) {
+                  <p-button type="button" icon="pi pi-file-pdf"
+                            severity="secondary" [text]="true" size="small"
+                            ariaLabel="Kullanıcı PDF belgeleri"
+                            [disabled]="actionLoadingId() === user.id"
+                            (onClick)="openEditDialog(user)"></p-button>
+                }
                 @if (canUpdate()) {
                   <p-button
                     type="button"
@@ -178,7 +192,7 @@
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td [attr.colspan]="canUpdate() || canDelete() || canActivate() ? 8 : 7"
+          <td [attr.colspan]="canUpdate() || canDelete() || canActivate() || canViewDocuments() ? 9 : 8"
               class="empty-table">Kriterlere uygun kullanıcı bulunamadı.</td>
         </tr>
       </ng-template>
@@ -196,7 +210,7 @@
 
 <!-- Kullanıcı profil alanları ekleme ve düzenleme için aynı formdan yönetilir. -->
 <p-dialog
-  [header]="selectedUser() ? 'Kullanıcı Düzenle' : 'Yeni Kullanıcı'"
+  [header]="selectedUser() ? (canUpdate() ? 'Kullanıcı Düzenle' : 'Kullanıcı Belgeleri') : 'Yeni Kullanıcı'"
   [visible]="dialogVisible()"
   (visibleChange)="dialogVisible.set($event)"
   [modal]="true"
@@ -229,6 +243,22 @@
         <label for="editPhoneNumber">Telefon</label>
         <input id="editPhoneNumber" pInputText formControlName="phoneNumber" />
       </div>
+
+      <!-- ClockLimit=true kullanıcıya mesai dışında giriş ve erişim izni vermez. -->
+      <div class="form-field form-field-full">
+        <div class="agreement-checkbox">
+          <p-checkbox
+            inputId="clockLimit"
+            formControlName="clockLimit"
+            [binary]="true">
+          </p-checkbox>
+          <label for="clockLimit">Mesai dışında uygulamaya erişimi kısıtla</label>
+        </div>
+        <small>
+          İşaretliyse yalnızca tanımlanan mesai gün ve saatlerinde kullanılabilir.
+          Mesai dışı erişimi onaylanan kişiler için işareti kaldırın.
+        </small>
+      </div>
       @if (!selectedUser()) {
         <div class="form-field form-field-full">
           <label for="newUserPassword">İlk Parola *</label>
@@ -249,6 +279,55 @@
       }
     </div>
 
+    <!-- PDF içerikleri diske yüklenir; kullanıcıya bağlı metadata DB'dedir. -->
+    @if (selectedUser() && canViewDocuments()) {
+      <section class="agreement-section">
+        <div class="agreement-section-title">
+          <strong>Kullanıcı PDF Dokümanları</strong>
+          <small>PDF dosyaları özel sunucu klasöründe tutulur.</small>
+        </div>
+        @if (pdfError()) {
+          <p-message severity="error" [text]="pdfError()!"></p-message>
+        }
+
+        @if (canManageDocuments()) {
+          <div class="pdf-upload">
+            <input type="file" accept="application/pdf,.pdf"
+                   aria-label="PDF seç" (change)="onPdfSelected($event)" />
+            <p-button type="button" label="PDF Yükle" icon="pi pi-upload"
+                      [disabled]="!selectedPdf()" [loading]="pdfBusy()"
+                      (onClick)="uploadPdf()"></p-button>
+          </div>
+        }
+
+        @if (agreementPdfs().length) {
+          <div class="agreement-list">
+            @for (pdf of agreementPdfs(); track pdf.id) {
+              <div class="agreement-list-item">
+                <div>
+                  <strong>{{ pdf.fileName }}</strong>
+                  <small>{{ (pdf.sizeBytes / 1024).toFixed(1) }} KB</small>
+                </div>
+                <p-button type="button" icon="pi pi-download" [text]="true"
+                          severity="secondary" ariaLabel="PDF indir"
+                          (onClick)="downloadPdf(pdf)"></p-button>
+                @if (canManageDocuments()) {
+                  <p-button type="button" icon="pi pi-trash" [text]="true"
+                            severity="danger" ariaLabel="PDF sil"
+                            [disabled]="pdfBusy()"
+                            (onClick)="confirmDeletePdf(pdf)"></p-button>
+                }
+              </div>
+            }
+          </div>
+        } @else {
+          <small>Henüz PDF dokümanı eklenmemiş.</small>
+        }
+      </section>
+    } @else {
+      <p class="form-note">PDF eklemek için önce kullanıcıyı kaydedin, ardından Düzenle ekranını açın.</p>
+    }
+
     <div class="dialog-actions">
       <p-button
         type="button"
@@ -258,12 +337,14 @@
         [disabled]="saving()"
         (onClick)="dialogVisible.set(false)">
       </p-button>
-      <p-button
-        type="submit"
-        label="Kaydet"
-        icon="pi pi-check"
-        [loading]="saving()">
-      </p-button>
+      @if (!selectedUser() || canUpdate()) {
+        <p-button
+          type="submit"
+          label="Kaydet"
+          icon="pi pi-check"
+          [loading]="saving()">
+        </p-button>
+      }
     </div>
   </form>
 </p-dialog>

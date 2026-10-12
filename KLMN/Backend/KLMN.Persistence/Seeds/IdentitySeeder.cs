@@ -189,6 +189,7 @@ internal sealed class IdentitySeeder
                 LastName = _configuration["InitialAdmin:LastName"]?.Trim() ?? "Administrator",
                 PasswordHash = _passwordHasherService.HashPassword(password),
                 SecurityStamp = Guid.NewGuid().ToString("N"),
+                ClockLimit = _configuration.GetValue<bool>("InitialAdmin:ClockLimit"),
                 PasswordChangedDate = DateTime.UtcNow
             };
 

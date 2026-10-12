@@ -49,6 +49,7 @@ public sealed class UpdateUserCommandHandler(IKLMNDbContext dbContext)
         user.NormalizedUserName = normalizedUserName;
         user.FirstName = request.FirstName.Trim();
         user.LastName = request.LastName.Trim();
+        user.ClockLimit = request.ClockLimit;
         user.Email = email;
         user.NormalizedEmail = normalizedEmail;
         user.PhoneNumber = string.IsNullOrWhiteSpace(request.PhoneNumber)

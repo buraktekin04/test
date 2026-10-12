@@ -122,6 +122,22 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
                     Detail = exception.Message
                 },
 
+            InvalidDataException =>
+                new ProblemDetails
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Geçersiz PDF dosyası.",
+                    Detail = exception.Message
+                },
+
+            OutsideWorkingHoursException =>
+                new ProblemDetails
+                {
+                    Status = StatusCodes.Status403Forbidden,
+                    Title = "Mesai dışı erişim engellendi.",
+                    Detail = exception.Message
+                },
+
             AccountLockedException =>
                 new ProblemDetails
                 {

@@ -63,6 +63,7 @@ public sealed class CreateUserCommandHandler(
             PhoneNumber = string.IsNullOrWhiteSpace(request.PhoneNumber)
                 ? null : request.PhoneNumber.Trim(),
             PasswordHash = passwordHasherService.HashPassword(request.Password),
+            ClockLimit = request.ClockLimit,
             PasswordChangedDate = timeProvider.GetUtcNow().UtcDateTime
         };
 
