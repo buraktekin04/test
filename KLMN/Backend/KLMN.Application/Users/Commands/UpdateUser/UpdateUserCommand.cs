@@ -33,6 +33,14 @@ public sealed record UpdateUserCommand : IRequest<UserMutationResponse>
     /// <summary>true ise mesai dışı giriş engellenir, false ise mesai dışı erişime izin verilir.</summary>
     public bool ClockLimit { get; init; } = true;
 
+    /// <summary>
+    /// Yönetici tarafından uygulanan manuel kilit durumu. True kullanıcıyı
+    /// login, refresh ve aktif JWT isteklerinde erişime kapatır.
+    /// </summary>
+    // Geriye dönük uyumluluk: eski istemciler bu alanı göndermediğinde
+    // mevcut kilit durumunu istemeden sıfırlamamak için nullable bırakılır.
+    public bool? IsLocked { get; init; }
+
     /// <summary>Hesabın kullanılmaya başlanabileceği UTC anıdır (dahil, null sınırsız).</summary>
     public DateTime? ValidFrom { get; init; }
 

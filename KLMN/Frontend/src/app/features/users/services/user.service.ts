@@ -24,19 +24,61 @@ export class UserService {
   /** Development/Production ortamında seçilen doğrudan API adresidir. */
   private readonly apiBaseUrl = inject(API_BASE_URL);
 
-  /** Filtrelenmiş ve sayfalanmış kullanıcı listesini sunucudan getirir. */
-  public getUsers(query: UserQuery): Observable<PagedResult<UserListItem>> {
+  /**
+   * Hem listeleme hem Excel aktarımı için kolon filtreleri dahil
+   * sunucuya gönderilen HTTP query parametrelerini oluşturur.
+   */
+  private buildParams(query: UserQuery): HttpParams {
     let params = new HttpParams()
       .set('pageNumber', query.pageNumber)
       .set('pageSize', query.pageSize)
       .set('includeInactive', query.includeInactive);
 
-    const search = query.search?.trim();
+    const textFilters = {
+      search: query.search,
+      fullName: query.fullName,
+      userName: query.userName,
+      email: query.email,
+      organization: query.organization,
+      role: query.role,
+      validFromDate: query.validFromDate,
+      validToDate: query.validToDate,
+      createdDate: query.createdDate
+    };
 
-    if (search) params = params.set('search', search);
+    for (const [key, value] of Object.entries(textFilters)) {
+      if (value?.trim()) {
+        params = params.set(key, value.trim());
+      }
+    }
 
+    if (query.isActive !== null && query.isActive !== undefined)
+      params = params.set('isActive', query.isActive);
+
+    if (query.isLocked !== null && query.isLocked !== undefined)
+      params = params.set('isLocked', query.isLocked);
+
+    if (query.clockLimit !== null && query.clockLimit !== undefined)
+      params = params.set('clockLimit', query.clockLimit);
+
+    return params;
+  }
+
+  /** Tüm veriler içinde arama/kolon filtreleri uygulanmış sayfalı kullanıcı listesini getirir. */
+  public getUsers(query: UserQuery): Observable<PagedResult<UserListItem>> {
     return this.http.get<PagedResult<UserListItem>>(
-      `${this.apiBaseUrl}/users`, { params }
+      `${this.apiBaseUrl}/users`, { params: this.buildParams(query) }
+    );
+  }
+
+  /**
+   * Seçili kolon filtrelerine uyan tüm kullanıcıları (en fazla 5000)
+   * gerçek XLSX dosyası olarak backend'den alır; yalnızca mevcut sayfa değildir.
+   */
+  public exportUsers(query: UserQuery): Observable<Blob> {
+    return this.http.get(
+      `${this.apiBaseUrl}/users/export`,
+      { params: this.buildParams(query), responseType: 'blob' }
     );
   }
 

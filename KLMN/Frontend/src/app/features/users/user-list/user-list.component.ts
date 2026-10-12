@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -24,6 +24,7 @@ import { UserAgreementPdf } from '../models/user-agreement-pdf.model';
 import { CreateUserRequest } from '../models/create-user-request.model';
 import { UpdateUserRequest } from '../models/update-user-request.model';
 import { UserListItem } from '../models/user-list-item.model';
+import { UserQuery } from '../models/user-query.model';
 import { UserMutationResponse } from '../models/user-mutation-response.model';
 import { UserService } from '../services/user.service';
 
@@ -158,6 +159,64 @@ export class UserListComponent implements OnInit {
   });
 
   /**
+   * Kolon bazlı filtreler tabloda yalnızca görüntülenen 20 kayda değil,
+   * EF Core sorgusuyla tüm veritabanına uygulanır.
+   */
+  public readonly columnFilterForm = this.formBuilder.group({
+    fullName: this.formBuilder.nonNullable.control(''),
+    userName: this.formBuilder.nonNullable.control(''),
+    email: this.formBuilder.nonNullable.control(''),
+    organization: this.formBuilder.nonNullable.control(''),
+    role: this.formBuilder.nonNullable.control(''),
+    isActive: this.formBuilder.control<boolean | null>(null),
+    isLocked: this.formBuilder.control<boolean | null>(null),
+    clockLimit: this.formBuilder.control<boolean | null>(null),
+    validFromDate: this.formBuilder.nonNullable.control(''),
+    validToDate: this.formBuilder.nonNullable.control(''),
+    createdDate: this.formBuilder.nonNullable.control('')
+  });
+
+  /** PrimeNG Select değerlerini boolean veya null olarak koruyan filtrelerdir. */
+  public readonly activeFilterOptions = [
+    { label: 'Tümü', value: null },
+    { label: 'Aktif', value: true },
+    { label: 'Pasif', value: false }
+  ];
+
+  /** Kullanıcı kilidi kolonunun filtre seçenekleridir. */
+  public readonly lockedFilterOptions = [
+    { label: 'Tümü', value: null },
+    { label: 'Kilitli', value: true },
+    { label: 'Açık', value: false }
+  ];
+
+  /** Mesai dışı kısıt kolonu için filtre seçenekleridir. */
+  public readonly clockFilterOptions = [
+    { label: 'Tümü', value: null },
+    { label: 'İzin Yok', value: true },
+    { label: 'İzinli', value: false }
+  ];
+
+  /** XLSX üretimi devam ederken ikinci isteği önleyen göstergedir. */
+  public readonly exporting = signal(false);
+
+  /** Üst bildirimler 10 saniye sonra otomatik silinir, çarpıdan kapatılabilir. */
+  public constructor() {
+    // Her yeniden oluşan bildirim için zamanlayıcı yeniden başlar.
+    effect(onCleanup => {
+      if (!this.successMessage()) return;
+      const timer = setTimeout(() => this.successMessage.set(null), 10_000);
+      onCleanup(() => clearTimeout(timer));
+    });
+
+    effect(onCleanup => {
+      if (!this.errorMessage()) return;
+      const timer = setTimeout(() => this.errorMessage.set(null), 10_000);
+      onCleanup(() => clearTimeout(timer));
+    });
+  }
+
+  /**
    * Kullanıcı temel alanlarının formudur.
    * Rol/permission yönetimi ayrı işlemdir; edit sırasında parola değişmez.
    */
@@ -170,6 +229,7 @@ export class UserListComponent implements OnInit {
     // Mevcut tabloda organizasyon ataması boş kalabileceği için nullable'dır.
     organizationUnitId: this.formBuilder.control<string | null>(null),
     clockLimit: [true],
+    isLocked: [false],
     validFrom: [''],
     validTo: [''],
     password: ['']
@@ -222,20 +282,37 @@ export class UserListComponent implements OnInit {
       });
   }
 
+  /** Kolon filtrelerini ve üst arama alanını aynı sunucu sorgusunda birleştirir. */
+  private buildUserQuery(): UserQuery {
+    const filters = this.filterForm.getRawValue();
+    const columns = this.columnFilterForm.getRawValue();
+
+    return {
+      search: filters.search,
+      // Pasif filtresi tek başına seçildiğinde de pasif kayıtları DB sorgusuna alır.
+      includeInactive: filters.includeInactive || columns.isActive === false,
+      pageNumber: this.pageNumber(),
+      pageSize: this.pageSize(),
+      fullName: columns.fullName,
+      userName: columns.userName,
+      email: columns.email,
+      organization: columns.organization,
+      role: columns.role,
+      isActive: columns.isActive,
+      isLocked: columns.isLocked,
+      clockLimit: columns.clockLimit,
+      validFromDate: columns.validFromDate,
+      validToDate: columns.validToDate,
+      createdDate: columns.createdDate
+    };
+  }
+
   /** Güncel filtrelerle API'den sayfalanmış kullanıcı listesini yükler. */
   public loadUsers(): void {
     this.loading.set(true);
     this.errorMessage.set(null);
 
-    // Formdan okunan arama ve aktiflik filtreleridir.
-    const filters = this.filterForm.getRawValue();
-
-    this.userService.getUsers({
-      search: filters.search,
-      includeInactive: filters.includeInactive,
-      pageNumber: this.pageNumber(),
-      pageSize: this.pageSize()
-    })
+    this.userService.getUsers(this.buildUserQuery())
     .pipe(finalize(() => this.loading.set(false)))
     .subscribe({
       next: response => {
@@ -256,9 +333,20 @@ export class UserListComponent implements OnInit {
     this.loadUsers();
   }
 
-  /** Arama ve pasif kullanıcı dahil etme filtrelerini temizler. */
+  /** Kolon filtreleri değiştiğinde sunucudan ilk sayfayı yeniden sorgular. */
+  public applyColumnFilters(): void {
+    this.pageNumber.set(1);
+    this.loadUsers();
+  }
+
+  /** Üst arama ve kolon bazlı tüm filtreleri temizler. */
   public clearFilters(): void {
     this.filterForm.reset({ search: '', includeInactive: false });
+    this.columnFilterForm.reset({
+      fullName: '', userName: '', email: '', organization: '', role: '',
+      isActive: null, isLocked: null, clockLimit: null,
+      validFromDate: '', validToDate: '', createdDate: ''
+    });
     this.pageNumber.set(1);
     this.loadUsers();
   }
@@ -271,6 +359,35 @@ export class UserListComponent implements OnInit {
     this.pageSize.set(rows);
     this.pageNumber.set(Math.floor(first / rows) + 1);
     this.loadUsers();
+  }
+
+  /**
+   * Tabloda seçili filtrelerin tüm sonuçlarını Excel dosyası olarak indirir.
+   * JWT ve kullanıcı okuma yetkisi backend'de denetlenmeye devam eder.
+   */
+  public exportExcel(): void {
+    if (this.exporting()) return;
+
+    this.exporting.set(true);
+    this.userService.exportUsers(this.buildUserQuery())
+      .pipe(finalize(() => this.exporting.set(false)))
+      .subscribe({
+        next: file => {
+          // Blob URL tarayıcıya özel geçici bir indirme konumudur.
+          const url = URL.createObjectURL(file);
+          const anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.download = `Kullanici_Tanimlari_${new Date().toISOString().slice(0, 10)}.xlsx`;
+          anchor.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          this.successMessage.set('Filtrelenmiş kullanıcı listesi Excel dosyasına aktarıldı.');
+        },
+        error: () => {
+          this.errorMessage.set(
+            'Excel hazırlanamadı. 5.000 kayıt sınırını aşmamak için filtrelerinizi daraltabilir veya tekrar deneyebilirsiniz.'
+          );
+        }
+      });
   }
 
   /** Yeni kullanıcı formunu boş değerlerle açar. */
@@ -286,6 +403,7 @@ export class UserListComponent implements OnInit {
       phoneNumber: '',
       organizationUnitId: null,
       clockLimit: true,
+      isLocked: false,
       validFrom: '',
       validTo: '',
       password: ''
@@ -319,6 +437,7 @@ export class UserListComponent implements OnInit {
             phoneNumber: detail.phoneNumber ?? '',
             organizationUnitId: detail.organizationUnitId,
             clockLimit: detail.clockLimit,
+            isLocked: detail.isLocked,
             validFrom: ValidityPeriodUtils.toLocalInput(detail.validFrom),
             validTo: ValidityPeriodUtils.toLocalInput(detail.validTo),
             password: ''
@@ -390,7 +509,8 @@ export class UserListComponent implements OnInit {
       const request: UpdateUserRequest = {
         ...fields,
         id: selected.id,
-        version: selected.version
+        version: selected.version,
+        isLocked: value.isLocked
       };
       operation = this.userService.updateUser(request);
     } else {
@@ -417,6 +537,11 @@ export class UserListComponent implements OnInit {
       error: (error: HttpErrorResponse) =>
         this.formError.set(this.getErrorMessage(error))
     });
+  }
+
+  /** Formdaki geçerlilik tarihinin değerini temizler. */
+  public clearValidityDate(field: 'validFrom' | 'validTo'): void {
+    this.userForm.controls[field].setValue('');
   }
 
   /** Seçili kullanıcıya ait PDF metadata listesini sorgular. */

@@ -48,6 +48,78 @@ internal sealed class GetUsersQueryHandler(
                 x.LastName.ToUpper().Contains(normalized));
         }
 
+        // Kolon aramaları veritabanındaki tüm kayıtlar üzerinde uygulanır;
+        // yalnızca istemcinin görebildiği 20 satırı filtrelemeyiz.
+        if (!string.IsNullOrWhiteSpace(request.FullName))
+        {
+            var name = request.FullName.Trim().ToUpperInvariant();
+            query = query.Where(x =>
+                (x.FirstName + " " + x.LastName).ToUpper().Contains(name));
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.UserName))
+        {
+            var userName = request.UserName.Trim().ToUpperInvariant();
+            query = query.Where(x => x.NormalizedUserName.Contains(userName));
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Email))
+        {
+            var email = request.Email.Trim().ToUpperInvariant();
+            query = query.Where(x => x.NormalizedEmail.Contains(email));
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Organization))
+        {
+            var organization = request.Organization.Trim().ToUpperInvariant();
+            query = query.Where(x => x.OrganizationUnit != null &&
+                (x.OrganizationUnit.Name.ToUpper().Contains(organization) ||
+                 x.OrganizationUnit.Code.ToUpper().Contains(organization)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Role))
+        {
+            var role = request.Role.Trim().ToUpperInvariant();
+            query = query.Where(x => x.UserRoles.Any(ur =>
+                ur.IsActive && !ur.IsDeleted &&
+                ur.Role.IsActive && !ur.Role.IsDeleted &&
+                ur.Role.Code.ToUpper().Contains(role)));
+        }
+
+        if (request.IsActive.HasValue)
+            query = query.Where(x => x.IsActive == request.IsActive.Value);
+
+        if (request.IsLocked.HasValue)
+            query = query.Where(x => x.IsLocked == request.IsLocked.Value);
+
+        if (request.ClockLimit.HasValue)
+            query = query.Where(x => x.ClockLimit == request.ClockLimit.Value);
+
+        // PostgreSQL timestamptz değerlerinin UTC gün sınırlarına göre karşılaştırılması.
+        if (request.ValidFromDate.HasValue)
+        {
+            var first = DateTime.SpecifyKind(
+                request.ValidFromDate.Value.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+            var next = first.AddDays(1);
+            query = query.Where(x => x.ValidFrom >= first && x.ValidFrom < next);
+        }
+
+        if (request.ValidToDate.HasValue)
+        {
+            var first = DateTime.SpecifyKind(
+                request.ValidToDate.Value.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+            var next = first.AddDays(1);
+            query = query.Where(x => x.ValidTo >= first && x.ValidTo < next);
+        }
+
+        if (request.CreatedDate.HasValue)
+        {
+            var first = DateTime.SpecifyKind(
+                request.CreatedDate.Value.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+            var next = first.AddDays(1);
+            query = query.Where(x => x.CreatedDate >= first && x.CreatedDate < next);
+        }
+
         // Filtreleme sonrası eşleşen kullanıcı sayısıdır.
         var totalCount = await query.CountAsync(cancellationToken);
 

@@ -24,6 +24,8 @@ export interface UpdateUserRequest {
   organizationUnitId: string | null;
   /** true: mesai dışı erişim kısıtlıdır; false: mesai dışı izinlidir. */
   clockLimit: boolean;
+  /** Hesabın manuel olarak kilitlenip kilitlenmediği; mevcut alan güncellenir. */
+  isLocked: boolean;
 
   /** Hesap geçerlilik başlangıcı UTC ISO-8601 (dahil; null sınırsız). */
   validFrom: string | null;

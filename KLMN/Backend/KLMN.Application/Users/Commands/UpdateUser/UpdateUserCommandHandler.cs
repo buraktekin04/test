@@ -1,4 +1,6 @@
 using KLMN.Application.Common.Interfaces.Persistence;
+using KLMN.Application.Common.Interfaces.Identity;
+using KLMN.Domain.Constants;
 using KLMN.Application.Users.Exceptions;
 using KLMN.Application.Users.Responses;
 using MediatR;
@@ -10,7 +12,9 @@ namespace KLMN.Application.Users.Commands.UpdateUser;
 /// Profil değişikliklerinde kullanıcı/email benzersizliğini ve
 /// PostgreSQL xmin optimistic concurrency kontrolünü uygular.
 /// </summary>
-public sealed class UpdateUserCommandHandler(IKLMNDbContext dbContext)
+public sealed class UpdateUserCommandHandler(
+    IKLMNDbContext dbContext,
+    ICurrentUserService currentUserService)
     : IRequestHandler<UpdateUserCommand, UserMutationResponse>
 {
     /// <summary>Mevcut versiyonu doğrular; birden çok kullanıcının çakışmasını 409'a dönüştürür.</summary>
@@ -64,6 +68,33 @@ public sealed class UpdateUserCommandHandler(IKLMNDbContext dbContext)
                 throw new UserConflictException(
                     "Seçilen görev yeri bulunamadı veya aktif değil. Güncel organizasyon listesinden seçim yapınız.");
             }
+        }
+
+        // Manuel kilit durumunun yükseltilmesi halinde kendi hesabını veya
+        // ADMIN rolündeki yönetici hesaplarını kilitlemeye izin verilmez.
+        if (request.IsLocked == true && !user.IsLocked)
+        {
+            if (currentUserService.UserId == user.Id)
+                throw new UserConflictException("Kendi hesabınızı kilitleyemezsiniz.");
+
+            var isAdmin = await dbContext.UserRoles.AnyAsync(
+                x => x.UserId == user.Id && x.IsActive && !x.IsDeleted &&
+                     x.Role.Code == SystemRoles.Admin,
+                cancellationToken);
+
+            if (isAdmin)
+                throw new UserConflictException("ADMIN rolündeki kullanıcı kilitlenemez.");
+        }
+
+        if (request.IsLocked.HasValue && request.IsLocked.Value != user.IsLocked)
+        {
+            // Kilit açılırken geçici kilit ve başarısız giriş sayısı sıfırlanır.
+            // Kilit konduğunda LockoutEnd=null süresiz manuel kilit demektir.
+            user.IsLocked = request.IsLocked.Value;
+            user.LockoutEnd = null;
+            user.AccessFailedCount = 0;
+            // Eski access token artık geçerli kalmasın.
+            user.SecurityStamp = Guid.NewGuid().ToString("N");
         }
 
         user.OrganizationUnitId = request.OrganizationUnitId;

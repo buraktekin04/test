@@ -89,13 +89,32 @@
 }
 
 .table-container {
-  overflow: auto;
+  // PrimeNG paginator'un kayıt sayısı menüsü container tarafından kırpılmaz.
+  overflow: visible;
+  min-width: 0;
+}
+
+/* Yatay kaydırma yalnızca tabloya ait; sayfalama menüsü bunun DIŞINDA kalır. */
+.users-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+}
+
+.table-container p-paginator {
+  display: block;
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid #edf0f3;
 }
 
 .table-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
   padding: 1rem 1.2rem;
 
   strong {
@@ -257,5 +276,120 @@
 
   .organization-error {
     color: #b42318;
+  }
+}
+
+/* Kullanıcı ekranına özel 10 saniyelik, elle kapatılabilir bildirimler. */
+.user-notices {
+  position: fixed;
+  top: 88px;
+  right: 24px;
+  z-index: 1200;
+  width: min(440px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  pointer-events: none;
+}
+
+.user-notice {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: .7rem;
+  padding: .85rem 1rem;
+  border: 1px solid #d0d5dd;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(16, 24, 40, .14);
+  background: #fff;
+  color: #344054;
+  font-size: .88rem;
+  line-height: 1.45;
+
+  > span { flex: 1; }
+
+  > i { font-size: 1.1rem; margin-top: .1rem; }
+}
+
+.user-notice-success {
+  border-left: 4px solid #12b76a;
+  > i { color: #039855; }
+}
+
+.user-notice-error {
+  border-left: 4px solid #f04438;
+  > i { color: #d92d20; }
+}
+
+.notice-close {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #667085;
+  cursor: pointer;
+
+  &:hover { background: #f2f4f7; color: #344054; }
+}
+
+/* Her kolon kendi filtresini barındırır; Scroll viewport dışına taşılmaz. */
+.user-column-filters {
+  th {
+    vertical-align: top;
+    background: #f8fafc;
+    padding: .45rem !important;
+  }
+
+  input,
+  p-select {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    font-size: .78rem;
+  }
+
+  input { padding: .4rem .5rem; }
+  input[type="date"] { min-width: 130px; }
+
+  .column-status-filters {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+    min-width: 130px;
+  }
+
+  .filter-clear-column {
+    text-align: center;
+    vertical-align: middle;
+  }
+}
+
+.table-title-text {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+
+/* Geçerlilik tarihlerindeki küçük temizleme butonu iki input'a özel. */
+.date-input-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: .4rem;
+
+  input[type="datetime-local"] {
+    flex: 1 1 auto;
+    width: 0;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .user-notices {
+    right: 16px;
+    top: 70px;
   }
 }

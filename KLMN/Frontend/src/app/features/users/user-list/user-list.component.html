@@ -20,13 +20,29 @@
     }
   </div>
 
-  @if (successMessage()) {
-    <p-message severity="success" [text]="successMessage()!"></p-message>
-  }
-
-  @if (errorMessage()) {
-    <p-message severity="error" [text]="errorMessage()!"></p-message>
-  }
+  <!-- Ekrana özel, 10 saniye sonra kaybolan ve X butonuyla kapanan bildirimler. -->
+  <div class="user-notices" aria-live="polite">
+    @if (successMessage()) {
+      <div class="user-notice user-notice-success" role="status">
+        <i class="pi pi-check-circle" aria-hidden="true"></i>
+        <span>{{ successMessage() }}</span>
+        <button type="button" class="notice-close" aria-label="Başarı bildirimini kapat"
+                (click)="successMessage.set(null)">
+          <i class="pi pi-times" aria-hidden="true"></i>
+        </button>
+      </div>
+    }
+    @if (errorMessage()) {
+      <div class="user-notice user-notice-error" role="alert">
+        <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+        <span>{{ errorMessage() }}</span>
+        <button type="button" class="notice-close" aria-label="Hata bildirimini kapat"
+                (click)="errorMessage.set(null)">
+          <i class="pi pi-times" aria-hidden="true"></i>
+        </button>
+      </div>
+    }
+  </div>
 
   <section class="filter-panel" aria-label="Kullanıcı arama filtreleri">
     <form [formGroup]="filterForm" (ngSubmit)="search()">
@@ -63,14 +79,28 @@
 
   <section class="table-container" aria-label="Kullanıcı listesi">
     <div class="table-title">
-      <strong>Kullanıcı Listesi</strong>
-      <span>Toplam {{ totalCount() }} kayıt</span>
+      <div class="table-title-text">
+        <strong>Kullanıcı Listesi</strong>
+        <span>Toplam {{ totalCount() }} kayıt</span>
+      </div>
+      <p-button
+        type="button"
+        label="Excel'e Aktar"
+        icon="pi pi-file-excel"
+        severity="success"
+        [outlined]="true"
+        [loading]="exporting()"
+        [disabled]="loading() || totalCount() === 0"
+        (onClick)="exportExcel()">
+      </p-button>
     </div>
 
+    <!-- Yatay kaydırma tabloyla sınırlıdır; paginator açılır menüsü kırpılmaz. -->
+    <div class="users-table-scroll">
     <p-table
       [value]="users()"
       [loading]="loading()"
-      [tableStyle]="{ 'min-width': '1070px' }">
+      [tableStyle]="{ 'min-width': '1790px' }">
       <ng-template pTemplate="header">
         <tr>
           <th>Kullanıcı</th>
@@ -87,7 +117,93 @@
             <th class="actions-column">İşlemler</th>
           }
         </tr>
+        <tr class="user-column-filters">
+          <th>
+            <input pInputText type="text" placeholder="Ad Soyad"
+                   aria-label="Ad soyad filtrele"
+                   [formControl]="columnFilterForm.controls.fullName"
+                   (keydown.enter)="applyColumnFilters()" (blur)="applyColumnFilters()" />
+          </th>
+          <th>
+            <input pInputText type="text" placeholder="Kullanıcı adı"
+                   aria-label="Kullanıcı adı filtrele"
+                   [formControl]="columnFilterForm.controls.userName"
+                   (keydown.enter)="applyColumnFilters()" (blur)="applyColumnFilters()" />
+          </th>
+          <th>
+            <input pInputText type="text" placeholder="E-posta"
+                   aria-label="E-posta filtrele"
+                   [formControl]="columnFilterForm.controls.email"
+                   (keydown.enter)="applyColumnFilters()" (blur)="applyColumnFilters()" />
+          </th>
+          <th>
+            <input pInputText type="text" placeholder="Organizasyon"
+                   aria-label="Organizasyon filtrele"
+                   [formControl]="columnFilterForm.controls.organization"
+                   (keydown.enter)="applyColumnFilters()" (blur)="applyColumnFilters()" />
+          </th>
+          <th>
+            <input pInputText type="text" placeholder="Rol kodu"
+                   aria-label="Rol filtrele"
+                   [formControl]="columnFilterForm.controls.role"
+                   (keydown.enter)="applyColumnFilters()" (blur)="applyColumnFilters()" />
+          </th>
+          <th>
+            <div class="column-status-filters">
+              <p-select
+                [options]="activeFilterOptions"
+                optionLabel="label" optionValue="value"
+                [formControl]="columnFilterForm.controls.isActive"
+                placeholder="Aktiflik"
+                [appendTo]="'body'"
+                (onChange)="applyColumnFilters()">
+              </p-select>
+              <p-select
+                [options]="lockedFilterOptions"
+                optionLabel="label" optionValue="value"
+                [formControl]="columnFilterForm.controls.isLocked"
+                placeholder="Kilit"
+                [appendTo]="'body'"
+                (onChange)="applyColumnFilters()">
+              </p-select>
+            </div>
+          </th>
+          <th>
+            <p-select
+              [options]="clockFilterOptions"
+              optionLabel="label" optionValue="value"
+              [formControl]="columnFilterForm.controls.clockLimit"
+              placeholder="Mesai izni"
+              [appendTo]="'body'"
+              (onChange)="applyColumnFilters()">
+            </p-select>
+          </th>
+          <th>
+            <input type="date" pInputText aria-label="Geçerlilik başlangıcı filtrele (UTC)"
+                   [formControl]="columnFilterForm.controls.validFromDate"
+                   (change)="applyColumnFilters()" />
+          </th>
+          <th>
+            <input type="date" pInputText aria-label="Geçerlilik bitişi filtrele (UTC)"
+                   [formControl]="columnFilterForm.controls.validToDate"
+                   (change)="applyColumnFilters()" />
+          </th>
+          <th>
+            <input type="date" pInputText aria-label="Oluşturulma tarihi filtrele (UTC)"
+                   [formControl]="columnFilterForm.controls.createdDate"
+                   (change)="applyColumnFilters()" />
+          </th>
+          @if (canUpdate() || canDelete() || canActivate() || canViewDocuments()) {
+            <th class="filter-clear-column">
+              <p-button type="button" icon="pi pi-filter-slash"
+                        severity="secondary" [text]="true"
+                        ariaLabel="Tüm filtreleri temizle"
+                        (onClick)="clearFilters()"></p-button>
+            </th>
+          }
+        </tr>
       </ng-template>
+      <!-- Kolon bazlı filtreler sunucuda, sayfalama yapılmadan önce uygulanır. -->
       <ng-template pTemplate="body" let-user>
         <tr>
           <td>
@@ -201,6 +317,7 @@
         </tr>
       </ng-template>
     </p-table>
+    </div>
 
     <p-paginator
       [first]="(pageNumber() - 1) * pageSize()"
@@ -276,6 +393,25 @@
         <input id="editPhoneNumber" pInputText formControlName="phoneNumber" />
       </div>
 
+      <!-- Kullanıcının manuel kilit durumu, mevcut IsLocked alanına kaydedilir. -->
+      @if (selectedUser()) {
+        <div class="form-field form-field-full">
+          <div class="agreement-checkbox">
+            <p-checkbox
+              inputId="userIsLocked"
+              formControlName="isLocked"
+              [binary]="true"
+              [disabled]="!canUpdate()">
+            </p-checkbox>
+            <label for="userIsLocked">Kullanıcı hesabını kilitle</label>
+          </div>
+          <small>
+            İşaretliyse giriş, token yenileme ve mevcut oturumla erişim engellenir.
+            ADMIN hesabı ve kendi hesabınız kilitlenemez.
+          </small>
+        </div>
+      }
+
       <!-- ClockLimit=true kullanıcıya mesai dışında giriş ve erişim izni vermez. -->
       <div class="form-field form-field-full">
         <div class="agreement-checkbox">
@@ -294,14 +430,26 @@
       <!-- Her iki tarih isteğe bağlıdır; başlangıç dahil, bitiş hariçtir. -->
       <div class="form-field">
         <label for="userValidFrom">Geçerlilik Başlangıcı</label>
-        <input id="userValidFrom" type="datetime-local" pInputText
-               formControlName="validFrom" />
+        <div class="date-input-row">
+          <input id="userValidFrom" type="datetime-local" pInputText
+                 formControlName="validFrom" />
+          <p-button type="button" icon="pi pi-times" size="small"
+                    severity="secondary" [outlined]="true"
+                    ariaLabel="Başlangıç tarihini temizle"
+                    (onClick)="clearValidityDate('validFrom')"></p-button>
+        </div>
         <small>Boş bırakılırsa başlangıç sınırı yoktur.</small>
       </div>
       <div class="form-field">
         <label for="userValidTo">Geçerlilik Bitişi</label>
-        <input id="userValidTo" type="datetime-local" pInputText
-               formControlName="validTo" />
+        <div class="date-input-row">
+          <input id="userValidTo" type="datetime-local" pInputText
+                 formControlName="validTo" />
+          <p-button type="button" icon="pi pi-times" size="small"
+                    severity="secondary" [outlined]="true"
+                    ariaLabel="Bitiş tarihini temizle"
+                    (onClick)="clearValidityDate('validTo')"></p-button>
+        </div>
         <small>Seçilen andan itibaren erişim durdurulur.</small>
       </div>
 

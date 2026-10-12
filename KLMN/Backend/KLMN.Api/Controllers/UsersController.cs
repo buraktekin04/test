@@ -1,4 +1,5 @@
 using KLMN.Api.Authorization;
+using KLMN.Api.Exports;
 using KLMN.Application.Users.Commands.ChangeUserStatus;
 using KLMN.Application.Users.Agreements.Commands.UploadUserAgreementPdf;
 using KLMN.Application.Users.Agreements.Commands.DeleteUserAgreementPdf;
@@ -32,6 +33,57 @@ public sealed class UsersController(ISender sender) : ControllerBase
     public async Task<IActionResult> GetUsers(
         [FromQuery] GetUsersQuery query, CancellationToken cancellationToken) =>
         Ok(await sender.Send(query, cancellationToken));
+
+    /// <summary>
+    /// Kullanıcı listesinde uygulanan arama ve kolon filtreleriyle eşleşen
+    /// tüm kayıtları gerçek XLSX biçiminde dışarı aktarır.
+    /// Bellek tüketimi için bir dışa aktarma işleminde en fazla 5000 kayıt kullanılır.
+    /// </summary>
+    [HttpGet("export")]
+    [HasPermission(PermissionCodes.Users.Query)]
+    [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
+    public async Task<IActionResult> ExportUsers(
+        [FromQuery] GetUsersQuery query, CancellationToken cancellationToken)
+    {
+        const int exportPageSize = 100;
+        const int maxRows = 5000;
+
+        // Client'ın gönderdiği pageNumber/pageSize kullanılmaz; Excel
+        // geçerli filtreye uyan tüm kayıtları (limit dahilinde) içerir.
+        var first = await sender.Send(
+            query with { PageNumber = 1, PageSize = exportPageSize },
+            cancellationToken);
+
+        if (first.TotalCount > maxRows)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Excel kayıt limiti aşıldı.",
+                Detail = $"Bir Excel dosyasında en fazla {maxRows} kullanıcı olabilir. Filtreleri daraltınız."
+            });
+        }
+
+        var rows = new List<UserListItemResponse>(first.Items);
+        for (var page = 2;
+             page <= (int)Math.Ceiling(first.TotalCount / (double)exportPageSize);
+             page++)
+        {
+            var batch = await sender.Send(
+                query with { PageNumber = page, PageSize = exportPageSize },
+                cancellationToken);
+
+            rows.AddRange(batch.Items);
+        }
+
+        var content = UserExcelExporter.Create(rows);
+        var fileName = $"Kullanici_Tanimlari_{DateTime.UtcNow:yyyyMMdd_HHmm}.xlsx";
+
+        return File(
+            content,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            fileName);
+    }
 
     /// <summary>
     /// Kullanıcı ekleme/düzenleme formunun Görev Yeri seçim listesine
