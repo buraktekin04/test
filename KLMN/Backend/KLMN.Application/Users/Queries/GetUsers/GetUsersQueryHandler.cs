@@ -74,7 +74,11 @@ internal sealed class GetUsersQueryHandler(
                 OrganizationUnitName = x.OrganizationUnit != null
                     ? x.OrganizationUnit.Name
                     : null,
+                // Kayıtlar pasifler dahil sorgulandığında filtreler
+                // kapalı olabileceğinden rol ilişkilerinde aktiflik ayrıca doğrulanır.
                 Roles = x.UserRoles
+                    .Where(ur => ur.IsActive && !ur.IsDeleted
+                        && ur.Role.IsActive && !ur.Role.IsDeleted)
                     .Select(ur => ur.Role.Code)
                     .OrderBy(code => code)
                     .ToArray(),

@@ -6,7 +6,9 @@ import { PermissionCodes } from './core/permissions/constants/permission-codes';
 import { permissionGuard } from './core/permissions/guards/permission.guard';
 
 /**
- * KLMN route tanımlarıdır.
+ * Uygulamanın bütün route'larıdır. Tanımlamalar alt ekranları
+ * '/app/definitions' altında gruplandırılır; backend authorization
+ * ayrıca API endpoint seviyesinde uygulanmaya devam eder.
  */
 export const routes: Routes = [
   {
@@ -16,7 +18,6 @@ export const routes: Routes = [
       import('./features/authentication/login/login.component')
         .then(component => component.LoginComponent)
   },
-
   {
     path: 'forgot-password',
     canActivate: [guestGuard],
@@ -24,21 +25,18 @@ export const routes: Routes = [
       import('./features/authentication/forgot-password/forgot-password.component')
         .then(component => component.ForgotPasswordComponent)
   },
-
   {
     path: 'reset-password',
     loadComponent: () =>
       import('./features/authentication/reset-password/reset-password.component')
         .then(component => component.ResetPasswordComponent)
   },
-
   {
     path: 'app',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./layout/app-layout/app-layout.component')
         .then(component => component.AppLayoutComponent),
-
     children: [
       {
         path: '',
@@ -47,20 +45,22 @@ export const routes: Routes = [
           import('./features/home/home.component')
             .then(component => component.HomeComponent)
       },
-
       {
-        path: 'users',
+        path: 'definitions/users',
         canActivate: [permissionGuard],
         data: {
-          permissions: [
-            PermissionCodes.Users.Query
-          ]
+          permissions: [PermissionCodes.Users.Query]
         },
         loadComponent: () =>
           import('./features/users/user-list/user-list.component')
             .then(component => component.UserListComponent)
       },
-
+      {
+        // Eski URL ile kaydedilmiş tarayıcı favorilerini bozmuyoruz.
+        path: 'users',
+        pathMatch: 'full',
+        redirectTo: 'definitions/users'
+      },
       {
         path: 'change-password',
         loadComponent: () =>
@@ -69,13 +69,11 @@ export const routes: Routes = [
       }
     ]
   },
-
   {
     path: '',
     pathMatch: 'full',
     redirectTo: 'app'
   },
-
   {
     path: '**',
     redirectTo: 'app'

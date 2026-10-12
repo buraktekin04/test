@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using FluentValidation;
 using KLMN.Application.Common.Exceptions;
+using KLMN.Application.Users.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -102,6 +103,22 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
                 {
                     Status = StatusCodes.Status401Unauthorized,
                     Title = "Oturum geçersiz.",
+                    Detail = exception.Message
+                },
+
+            UserNotFoundException =>
+                new ProblemDetails
+                {
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Kullanıcı bulunamadı.",
+                    Detail = exception.Message
+                },
+
+            UserConflictException =>
+                new ProblemDetails
+                {
+                    Status = StatusCodes.Status409Conflict,
+                    Title = "Kullanıcı işlemi gerçekleştirilemedi.",
                     Detail = exception.Message
                 },
 

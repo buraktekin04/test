@@ -1,33 +1,31 @@
-import {
-  Component,
-  inject,
-  OnInit,
-  signal
-} from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import {
-  FormBuilder,
-  ReactiveFormsModule
-} from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { finalize } from 'rxjs';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { finalize, Observable } from 'rxjs';
 
+import { ConfirmationService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
-import {
-  PaginatorModule,
-  PaginatorState
-} from 'primeng/paginator';
+import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 
+import { PermissionCodes } from '../../../core/permissions/constants/permission-codes';
+import { PermissionService } from '../../../core/permissions/services/permission.service';
+import { CreateUserRequest } from '../models/create-user-request.model';
+import { UpdateUserRequest } from '../models/update-user-request.model';
 import { UserListItem } from '../models/user-list-item.model';
+import { UserMutationResponse } from '../models/user-mutation-response.model';
 import { UserService } from '../services/user.service';
 
 /**
- * Kullanıcı listeleme ve sorgulama ekranıdır.
+ * Tanımlamalar > Kullanıcı Tanımları ekranının listeleme, sorgulama,
+ * ekleme, düzenleme, aktifleştirme/pasifleştirme ve silme akışlarını yönetir.
  */
 @Component({
   selector: 'app-user-list',
@@ -41,109 +39,357 @@ import { UserService } from '../services/user.service';
     TagModule,
     CheckboxModule,
     PaginatorModule,
-    MessageModule
+    MessageModule,
+    DialogModule,
+    ConfirmDialogModule
   ],
+  providers: [ConfirmationService],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.scss'
 })
 export class UserListComponent implements OnInit {
-  /** Kullanıcı listeleme sorgularını yöneten REST API servisidir. */
+  /** Kullanıcı endpoint'lerini çalıştıran tip güvenli API servisidir. */
   private readonly userService = inject(UserService);
-  /** Arama ve filtreleme için reactive form alanlarını oluşturan servistir. */
+
+  /** Reactive form kontrollerini oluşturan Angular form servisidir. */
   private readonly formBuilder = inject(FormBuilder);
 
-  /** Kullanıcı listeleme ekranında gösterilecek kayıtları tutan signal'dır. */
+  /** İstemcide buton ve aksiyonları gösteren yetki servisidir. */
+  private readonly permissionService = inject(PermissionService);
+
+  /** Silme ve aktifleştirme gibi kritik işlemlerin onay penceresidir. */
+  private readonly confirmationService = inject(ConfirmationService);
+
+  /** Geçerli sayfanın kullanıcı kayıtlarıdır. */
   public readonly users = signal<UserListItem[]>([]);
-  /** Filtrelenmiş kullanıcı kayıtlarının toplam sayısını tutan signal'dır. */
+
+  /** Sunucudan dönen filtrelenmiş toplam kayıt sayısıdır. */
   public readonly totalCount = signal(0);
-  /** Bir tabanlı mevcut sayfa numarasıdır. */
+
+  /** Bir tabanlı sayfalama numarasıdır. */
   public readonly pageNumber = signal(1);
-  /** Sayfa başına alınacak kullanıcı kayıt sayısıdır. */
+
+  /** Sayfa başına kullanıcı adedidir. */
   public readonly pageSize = signal(20);
-  /** Liste veya form yüklenirken arayüzün durumunu bildiren signal'dır. */
+
+  /** Liste sorgusunun sürmekte olduğunu gösterir. */
   public readonly loading = signal(false);
-  /** API hata durumunda kullanıcıya gösterilen hata metnini tutan signal'dır. */
+
+  /** Hata mesajını API ProblemDetails sonucundan üretir. */
   public readonly errorMessage = signal<string | null>(null);
 
-  /** Kullanıcı arama metni ve pasifleri dahil etme seçimlerini tutan formdur. */
-  public readonly filterForm =
-    this.formBuilder.nonNullable.group({
-      search: [''],
-      includeInactive: [false]
-    });
+  /** Son başarılı kullanıcı işlemini özetleyen bilgi mesajıdır. */
+  public readonly successMessage = signal<string | null>(null);
 
-  /** Component ilk açıldığında gerekli kullanıcı listesini veya ekran verisini yükler. */
+  /** Ekle/düzenle penceresinin görünürlük durumudur. */
+  public readonly dialogVisible = signal(false);
+
+  /** Düzenlenmek üzere sunucudan yüklenmiş kullanıcı; null ise yeni kayıttır. */
+  public readonly selectedUser = signal<UserListItem | null>(null);
+
+  /** Kullanıcı formunun kaydedilmekte olduğunu belirtir. */
+  public readonly saving = signal(false);
+
+  /** Modal içindeki validation veya API hata mesajıdır. */
+  public readonly formError = signal<string | null>(null);
+
+  /** İşlemi devam eden kullanıcının ID'sidir; tekrar tıklamayı önler. */
+  public readonly actionLoadingId = signal<string | null>(null);
+
+  /** Yeni kullanıcı butonunu görme iznidir; gerçek kontrol API'dedir. */
+  public readonly canCreate = computed(() =>
+    this.permissionService.has(PermissionCodes.Users.Create)
+  );
+
+  /** Kullanıcı düzenleme yetkisini gösterir. */
+  public readonly canUpdate = computed(() =>
+    this.permissionService.has(PermissionCodes.Users.Update)
+  );
+
+  /** Kullanıcı silme yetkisini gösterir. */
+  public readonly canDelete = computed(() =>
+    this.permissionService.has(PermissionCodes.Users.Delete)
+  );
+
+  /** Aktifleştirme ve pasifleştirme yetkisini gösterir. */
+  public readonly canActivate = computed(() =>
+    this.permissionService.has(PermissionCodes.Users.Activate)
+  );
+
+  /** Filtreleme kriterlerinin tutulduğu tipli Reactive Form'dur. */
+  public readonly filterForm = this.formBuilder.nonNullable.group({
+    search: [''],
+    includeInactive: [false]
+  });
+
+  /**
+   * Kullanıcı temel alanlarının formudur.
+   * Rol/permission yönetimi ayrı işlemdir; edit sırasında parola değişmez.
+   */
+  public readonly userForm = this.formBuilder.nonNullable.group({
+    userName: ['', [Validators.required, Validators.maxLength(100)]],
+    firstName: ['', [Validators.required, Validators.maxLength(100)]],
+    lastName: ['', [Validators.required, Validators.maxLength(100)]],
+    email: ['', [Validators.required, Validators.email, Validators.maxLength(256)]],
+    phoneNumber: ['', [Validators.maxLength(30)]],
+    password: ['']
+  });
+
+  /** Sayfa açıldığında ilk liste sorgusunu çalıştırır. */
   public ngOnInit(): void {
     this.loadUsers();
   }
 
-  /** Seçili filtrelerle API sorgusu başlatır; sonuç veya hata signal'larını günceller. */
+  /** Güncel filtrelerle API'den sayfalanmış kullanıcı listesini yükler. */
   public loadUsers(): void {
     this.loading.set(true);
     this.errorMessage.set(null);
 
-    // Reactive formdan okunan güncel kullanıcı listeleme filtreleridir.
+    // Formdan okunan arama ve aktiflik filtreleridir.
     const filters = this.filterForm.getRawValue();
 
-    this.userService
-      .getUsers({
-        search: filters.search,
-        includeInactive: filters.includeInactive,
-        pageNumber: this.pageNumber(),
-        pageSize: this.pageSize()
-      })
-      .pipe(
-        finalize(() => this.loading.set(false))
-      )
-      .subscribe({
-        next: response => {
-          this.users.set(response.items);
-          this.totalCount.set(response.totalCount);
-        },
-
-        error: (error: HttpErrorResponse) => {
-          console.error('[KLMN USERS] User query error:', error);
-
-          this.users.set([]);
-          this.totalCount.set(0);
-
-          this.errorMessage.set(
-            error.error?.detail ??
-            'Kullanıcılar yüklenirken bir hata oluştu.'
-          );
-        }
-      });
+    this.userService.getUsers({
+      search: filters.search,
+      includeInactive: filters.includeInactive,
+      pageNumber: this.pageNumber(),
+      pageSize: this.pageSize()
+    })
+    .pipe(finalize(() => this.loading.set(false)))
+    .subscribe({
+      next: response => {
+        this.users.set(response.items);
+        this.totalCount.set(response.totalCount);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.users.set([]);
+        this.totalCount.set(0);
+        this.errorMessage.set(this.getErrorMessage(error));
+      }
+    });
   }
 
-  /** Kullanıcı listesi için uygulanacak serbest metin filtre kriteridir. */
+  /** Arama yapıldığında ilk sayfaya dönerek yeni filtreyi uygular. */
   public search(): void {
     this.pageNumber.set(1);
     this.loadUsers();
   }
 
-  /** Arama kriterlerini varsayılan duruma sıfırlar ve listeyi yeniler. */
+  /** Arama ve pasif kullanıcı dahil etme filtrelerini temizler. */
   public clearFilters(): void {
-    this.filterForm.reset({
-      search: '',
-      includeInactive: false
-    });
-
+    this.filterForm.reset({ search: '', includeInactive: false });
     this.pageNumber.set(1);
     this.loadUsers();
   }
 
-  /** Paginator değişikliğinden sayfa boyutu ve numarasını hesaplayarak sorgular. */
+  /** PrimeNG paginator olayını bir tabanlı API sayfasına dönüştürür. */
   public onPageChange(event: PaginatorState): void {
-    // Paginator olayından alınan yeni sayfa başına satır sayısıdır.
     const rows = event.rows ?? this.pageSize();
-    // Paginator olayında gösterilen ilk kaydın sıfır tabanlı indeksidir.
     const first = event.first ?? 0;
 
     this.pageSize.set(rows);
-    this.pageNumber.set(
-      Math.floor(first / rows) + 1
-    );
-
+    this.pageNumber.set(Math.floor(first / rows) + 1);
     this.loadUsers();
+  }
+
+  /** Yeni kullanıcı formunu boş değerlerle açar. */
+  public openCreateDialog(): void {
+    if (!this.canCreate()) return;
+
+    this.selectedUser.set(null);
+    this.userForm.reset({
+      userName: '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      phoneNumber: '',
+      password: ''
+    });
+    this.formError.set(null);
+    this.dialogVisible.set(true);
+  }
+
+  /** Düzenlemeden önce kaydı yeniden yükleyerek en yeni xmin değerini alır. */
+  public openEditDialog(user: UserListItem): void {
+    if (!this.canUpdate()) return;
+
+    this.actionLoadingId.set(user.id);
+    this.formError.set(null);
+
+    this.userService.getUserById(user.id)
+      .pipe(finalize(() => this.actionLoadingId.set(null)))
+      .subscribe({
+        next: detail => {
+          this.selectedUser.set(detail);
+          this.userForm.reset({
+            userName: detail.userName,
+            firstName: detail.firstName,
+            lastName: detail.lastName,
+            email: detail.email,
+            phoneNumber: detail.phoneNumber ?? '',
+            password: ''
+          });
+          this.dialogVisible.set(true);
+        },
+        error: (error: HttpErrorResponse) =>
+          this.errorMessage.set(this.getErrorMessage(error))
+      });
+  }
+
+  /**
+   * Create ve Update komutlarının ortak formunu doğrular.
+   * Yeni kayıtta parola güvenlik şartları sağlanmalıdır.
+   */
+  public saveUser(): void {
+    if (this.userForm.invalid) {
+      this.userForm.markAllAsTouched();
+      this.formError.set('Zorunlu alanları ve e-posta biçimini kontrol ediniz.');
+      return;
+    }
+
+    const value = this.userForm.getRawValue();
+    const selected = this.selectedUser();
+
+    if (!selected && !this.isValidPassword(value.password)) {
+      this.formError.set(
+        'Parola en az 8 karakter, bir büyük harf, bir küçük harf ve bir rakam içermelidir.'
+      );
+      return;
+    }
+
+    const fields = {
+      userName: value.userName.trim(),
+      firstName: value.firstName.trim(),
+      lastName: value.lastName.trim(),
+      email: value.email.trim(),
+      phoneNumber: value.phoneNumber.trim() || null
+    };
+
+    // Form aynı alanları kullanır, fakat backend'in create ve update
+    // sözleşmelerindeki parola ve concurrency özellikleri farklıdır.
+    let operation: Observable<UserMutationResponse>;
+
+    if (selected) {
+      const request: UpdateUserRequest = {
+        ...fields,
+        id: selected.id,
+        version: selected.version
+      };
+      operation = this.userService.updateUser(request);
+    } else {
+      const request: CreateUserRequest = {
+        ...fields,
+        password: value.password
+      };
+      operation = this.userService.createUser(request);
+    }
+
+    this.formError.set(null);
+    this.saving.set(true);
+
+    operation.pipe(finalize(() => this.saving.set(false))).subscribe({
+      next: () => {
+        this.dialogVisible.set(false);
+        this.selectedUser.set(null);
+        this.userForm.controls.password.setValue('');
+        this.successMessage.set(
+          selected ? 'Kullanıcı bilgileri güncellendi.' : 'Kullanıcı başarıyla oluşturuldu.'
+        );
+        this.loadUsers();
+      },
+      error: (error: HttpErrorResponse) =>
+        this.formError.set(this.getErrorMessage(error))
+    });
+  }
+
+  /** Status değişimini kullanıcının onayı alındıktan sonra gerçekleştirir. */
+  public confirmStatusChange(user: UserListItem): void {
+    if (!this.canActivate()) return;
+
+    // Pasifleştirme/aktifleştirme işlemi yanlış tıklamayla çalıştırılmaz.
+    const action = user.isActive ? 'pasifleştirmek' : 'aktifleştirmek';
+
+    this.confirmationService.confirm({
+      header: 'Kullanıcı Durumunu Değiştir',
+      message: `${user.fullName} adlı kullanıcıyı ${action} istiyor musunuz?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Evet',
+      rejectLabel: 'Vazgeç',
+      accept: () => {
+        this.runRowAction(
+          user,
+          this.userService.changeUserStatus({
+            id: user.id,
+            version: user.version,
+            isActive: !user.isActive
+          }),
+          'Kullanıcı durumu güncellendi.'
+        );
+      }
+    });
+  }
+
+  /** Kullanıcı silme işlemini soft delete öncesinde onaya sunar. */
+  public confirmDelete(user: UserListItem): void {
+    if (!this.canDelete()) return;
+
+    this.confirmationService.confirm({
+      header: 'Kullanıcıyı Sil',
+      message: `${user.fullName} adlı kullanıcı silinsin mi? Bu işlem soft delete uygulanarak yapılacaktır.`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sil',
+      rejectLabel: 'Vazgeç',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.runRowAction(
+          user,
+          this.userService.deleteUser(user.id, user.version),
+          'Kullanıcı silindi.'
+        );
+      }
+    });
+  }
+
+  /** Tablo satırında işlem sırasında tekrar tıklamayı engeller ve listeyi yeniler. */
+  private runRowAction(
+    user: UserListItem,
+    operation: Observable<unknown>,
+    message: string
+  ): void {
+    this.actionLoadingId.set(user.id);
+    this.errorMessage.set(null);
+
+    operation.pipe(finalize(() => this.actionLoadingId.set(null))).subscribe({
+      next: () => {
+        this.successMessage.set(message);
+        this.loadUsers();
+      },
+      error: (error: HttpErrorResponse) =>
+        this.errorMessage.set(this.getErrorMessage(error))
+    });
+  }
+
+  /** Yeni kullanıcı parolasının temel güvenlik koşullarını ön tarafta denetler. */
+  private isValidPassword(password: string): boolean {
+    return password.length >= 8 &&
+      password.length <= 128 &&
+      /[A-Z]/.test(password) &&
+      /[a-z]/.test(password) &&
+      /[0-9]/.test(password);
+  }
+
+  /** API'den gelen ProblemDetails açıklamasını güvenli kullanıcı mesajına çevirir. */
+  private getErrorMessage(error: HttpErrorResponse): string {
+    const detail = error.error?.detail;
+
+    if (typeof detail === 'string' && detail.trim()) return detail;
+
+    if (error.status === 409) {
+      return 'Kayıt başka bir kullanıcı tarafından değiştirilmiş olabilir. Listeyi yenileyiniz.';
+    }
+
+    if (error.status === 403) return 'Bu işlem için yetkiniz bulunmuyor.';
+    if (error.status === 404) return 'Kullanıcı bulunamadı, listeyi yenileyiniz.';
+
+    return 'İşlem sırasında hata oluştu. Lütfen tekrar deneyiniz.';
   }
 }

@@ -1,46 +1,76 @@
 import { inject, Injectable } from '@angular/core';
-import {
-  HttpClient,
-  HttpParams
-} from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { API_BASE_URL } from '../../../core/config/api.tokens';
 import { PagedResult } from '../../../core/models/paged-result.model';
+import { ChangeUserStatusRequest } from '../models/change-user-status-request.model';
+import { CreateUserRequest } from '../models/create-user-request.model';
+import { UpdateUserRequest } from '../models/update-user-request.model';
 import { UserListItem } from '../models/user-list-item.model';
+import { UserMutationResponse } from '../models/user-mutation-response.model';
 import { UserQuery } from '../models/user-query.model';
 
 /**
- * Kullanıcı yönetimi API servisidir.
+ * Kullanıcı tanımları ekranının tip güvenli HTTP servisidir.
+ * Angular CLI proxy olmadan environment'daki API_BASE_URL kullanılır.
  */
 @Injectable({ providedIn: 'root' })
 export class UserService {
-  /** Kullanıcı listeleme ve yönetim isteklerini backend'e gönderen HttpClient'tır. */
+  /** Angular HttpClient API çağrılarını JWT interceptor'ı ile gönderir. */
   private readonly http = inject(HttpClient);
-  /** Angular'ın istek göndereceği proxy kullanılmayan API temel adresidir. */
+  /** Development/Production ortamında seçilen doğrudan API adresidir. */
   private readonly apiBaseUrl = inject(API_BASE_URL);
 
-  /** Backend'den arama metni, aktiflik ve sayfa parametrelerine göre kullanıcıları getirir. */
-  public getUsers(
-    query: UserQuery
-  ): Observable<PagedResult<UserListItem>> {
-    // Arama kriterlerini HTTP query string biçimine dönüştüren HttpParams nesnesidir.
-    let params =
-      new HttpParams()
-        .set('pageNumber', query.pageNumber)
-        .set('pageSize', query.pageSize)
-        .set('includeInactive', query.includeInactive);
+  /** Filtrelenmiş ve sayfalanmış kullanıcı listesini sunucudan getirir. */
+  public getUsers(query: UserQuery): Observable<PagedResult<UserListItem>> {
+    let params = new HttpParams()
+      .set('pageNumber', query.pageNumber)
+      .set('pageSize', query.pageSize)
+      .set('includeInactive', query.includeInactive);
 
-    // Kullanıcı listesi için uygulanacak serbest metin filtre kriteridir.
     const search = query.search?.trim();
 
-    if (search) {
-      params = params.set('search', search);
-    }
+    if (search) params = params.set('search', search);
 
     return this.http.get<PagedResult<UserListItem>>(
-      `${this.apiBaseUrl}/users`,
-      { params }
+      `${this.apiBaseUrl}/users`, { params }
+    );
+  }
+
+  /** Kullanıcının son düzenlenmiş profilini ve xmin versiyonunu okur. */
+  public getUserById(id: string): Observable<UserListItem> {
+    return this.http.get<UserListItem>(`${this.apiBaseUrl}/users/${id}`);
+  }
+
+  /** Kullanıcı ekler; açık parolayı kalıcı tarayıcı depolamasına yazmaz. */
+  public createUser(request: CreateUserRequest): Observable<UserMutationResponse> {
+    return this.http.post<UserMutationResponse>(
+      `${this.apiBaseUrl}/users`, request
+    );
+  }
+
+  /** Kullanıcı temel bilgilerini optimistic concurrency kontrolüyle günceller. */
+  public updateUser(request: UpdateUserRequest): Observable<UserMutationResponse> {
+    return this.http.put<UserMutationResponse>(
+      `${this.apiBaseUrl}/users/${request.id}`, request
+    );
+  }
+
+  /** Kullanıcının aktif/pasif durumunu sunucu izin kontrolüyle değiştirir. */
+  public changeUserStatus(
+    request: ChangeUserStatusRequest
+  ): Observable<UserMutationResponse> {
+    return this.http.patch<UserMutationResponse>(
+      `${this.apiBaseUrl}/users/${request.id}/status`, request
+    );
+  }
+
+  /** Belirtilen versiyondaki kullanıcıyı soft delete yöntemiyle siler. */
+  public deleteUser(id: string, version: number): Observable<void> {
+    const params = new HttpParams().set('version', version);
+    return this.http.delete<void>(
+      `${this.apiBaseUrl}/users/${id}`, { params }
     );
   }
 }

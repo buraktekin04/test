@@ -1,37 +1,73 @@
 <aside class="sidebar">
   <div class="sidebar-brand">
-    <div class="brand-icon">M</div>
+    <div class="brand-icon">K</div>
     <div class="brand-text">
       <strong>KLMN</strong>
       <span>Yönetim Sistemi</span>
     </div>
   </div>
 
-  <nav class="sidebar-navigation">
-    @for (item of menuItems(); track item.label) {
-      @if (item.route) {
-        <a
-          class="menu-item"
-          [routerLink]="item.route"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: item.route === '/app' }"
-          (click)="onNavigationSelected()">
-
-          @if (item.icon) {
-            <i class="menu-icon" [class]="item.icon"></i>
-          }
-
-          <span>{{ item.label }}</span>
-        </a>
-      }
-      @else {
-        <div class="menu-item menu-item-disabled">
-          @if (item.icon) {
-            <i class="menu-icon" [class]="item.icon"></i>
-          }
-          <span>{{ item.label }}</span>
-        </div>
-      }
-    }
+  <!--
+    Tek bir şablon hem Tanımlamalar grubunu hem de ileride eklenecek
+    çok seviyeli alt menüleri gösterir. Yeni tanımlar için sidebar HTML
+    kopyalamak gerekmez; NavigationService'e öğe eklemek yeterlidir.
+  -->
+  <nav class="sidebar-navigation" aria-label="Ana menü">
+    <ng-container
+      *ngTemplateOutlet="menuTemplate; context: { $implicit: menuItems(), depth: 0 }">
+    </ng-container>
   </nav>
 </aside>
+
+<ng-template #menuTemplate let-items let-depth="depth">
+  @for (item of items; track item.label) {
+    @if (item.children?.length) {
+      <button
+        type="button"
+        class="menu-item menu-parent"
+        [class.menu-sub-item]="depth > 0"
+        [attr.aria-expanded]="isExpanded(item.label)"
+        (click)="toggleGroup(item.label)">
+        @if (item.icon) {
+          <i class="menu-icon" [class]="item.icon" aria-hidden="true"></i>
+        }
+        <span class="menu-label">{{ item.label }}</span>
+        <i
+          class="pi menu-chevron"
+          [class.pi-chevron-down]="isExpanded(item.label)"
+          [class.pi-chevron-right]="!isExpanded(item.label)"
+          aria-hidden="true">
+        </i>
+      </button>
+      @if (isExpanded(item.label)) {
+        <div class="menu-children">
+          <ng-container
+            *ngTemplateOutlet="menuTemplate; context: { $implicit: item.children, depth: depth + 1 }">
+          </ng-container>
+        </div>
+      }
+    } @else if (item.route) {
+      <a
+        class="menu-item"
+        [class.menu-sub-item]="depth > 0"
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: item.route === '/app' }"
+        (click)="onNavigationSelected()">
+        @if (item.icon) {
+          <i class="menu-icon" [class]="item.icon" aria-hidden="true"></i>
+        }
+        <span class="menu-label">{{ item.label }}</span>
+      </a>
+    } @else {
+      <!-- Ekranı henüz tamamlanmamış rol/organizasyon başlıkları pasiftir. -->
+      <span class="menu-item menu-item-disabled" [class.menu-sub-item]="depth > 0">
+        @if (item.icon) {
+          <i class="menu-icon" [class]="item.icon" aria-hidden="true"></i>
+        }
+        <span class="menu-label">{{ item.label }}</span>
+        <i class="pi pi-lock" aria-hidden="true"></i>
+      </span>
+    }
+  }
+</ng-template>
