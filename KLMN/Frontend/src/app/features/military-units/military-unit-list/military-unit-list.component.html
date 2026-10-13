@@ -108,6 +108,7 @@
             <th>Birlik Adı</th>
             <th>Birlik Kodu</th>
             <th>Harici Kod</th>
+            <th>Kuvvet Komutanlığı</th>
             <th>Üst Birlik</th>
             <th>Durum</th>
             <th>Kullanıcı</th>
@@ -130,6 +131,7 @@
             </td>
             <td><code class="unit-code">{{ unit.code }}</code></td>
             <td>{{ unit.externalCode || '—' }}</td>
+            <td>{{ unit.forcesCommandName || '—' }}</td>
             <td>
               @if (unit.connectedTopUnity) {
                 <span class="parent-name" [title]="unit.connectedTopUnitName || ''">
@@ -184,7 +186,7 @@
         </ng-template>
         <ng-template pTemplate="emptymessage">
           <tr>
-            <td [attr.colspan]="canUpdate() || canDelete() || canViewAudit() ? 10 : 9"
+            <td [attr.colspan]="canUpdate() || canDelete() || canViewAudit() ? 11 : 10"
                 class="empty-table">Filtreye uygun birlik bulunamadı.</td>
           </tr>
         </ng-template>
@@ -252,14 +254,19 @@
         <input id="unitExternalCode" pInputText formControlName="externalCode" maxlength="100" placeholder="Harici sistem kodu" />
       </div>
     </div>
-    <details class="reference-details">
-      <summary>Kuvvet komutanlığı referansı</summary>
-      <div class="form-field">
-        <label for="unitForcesCommand">Kuvvet Komutanlığı Kimliği</label>
-        <input id="unitForcesCommand" pInputText formControlName="forcesCommandDef" placeholder="Mevcut referans kimliği (isteğe bağlı)" />
-        <small>Kuvvet komutanlığı tanımları eklenene kadar mevcut referans kimliğiyle saklanır.</small>
-      </div>
-    </details>
+    <div class="form-field">
+      <label for="unitForcesCommand">Kuvvet Komutanlığı</label>
+      <p-select inputId="unitForcesCommand" formControlName="forcesCommandDef"
+                [options]="forceChoices()" optionLabel="label" optionValue="id"
+                [fluid]="true" [filter]="true" filterBy="label" [showClear]="true"
+                [loading]="parentLoading()" [disabled]="parentLoading() || saving()"
+                [appendTo]="'body'" scrollHeight="280px"
+                placeholder="Kuvvet komutanlığı seçiniz" filterPlaceholder="Kuvvet adı / kodu ara...">
+      </p-select>
+      @if (!parentLoading() && !parentError() && forceOptions().length === 0) {
+        <small>Seçilebilir kuvvet komutanlığı bulunamadı. Önce Kuvvet Komutanlığı Tanımları ekranından kayıt ekleyiniz.</small>
+      }
+    </div>
     <div class="form-divider"><span>Geçerlilik Dönemi</span></div>
     <div class="form-grid validity-fields">
       <div class="form-field">

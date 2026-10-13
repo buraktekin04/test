@@ -22,6 +22,10 @@ public sealed class MilitaryUnitDefConfiguration : BaseEntityConfiguration<Milit
         builder.Property(x => x.ValidFrom).HasColumnType("timestamp with time zone");
         builder.Property(x => x.ValidTo).HasColumnType("timestamp with time zone");
         builder.HasIndex(x => x.ForcesCommandDef);
+        builder.HasOne(x => x.ForceCommand)
+            .WithMany(x => x.MilitaryUnits)
+            .HasForeignKey(x => x.ForcesCommandDef)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Navigation, foreign key ve bağlı kayıt silme davranışını eşler.
         builder.HasOne(x => x.ConnectedTopUnit)

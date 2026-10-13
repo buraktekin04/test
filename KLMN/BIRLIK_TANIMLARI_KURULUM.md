@@ -7,7 +7,7 @@ Organizasyon ekranı kaldırıldı. Görev yeri artık `MilitaryUnitDef` tablosu
 - Alanlar: `Code`, `Name`, `ExternalCode`, `ForcesCommandDef`, `ConnectedTopUnity`, `ValidFrom`, `ValidTo`.
 - Kimlik, audit, aktiflik, soft-delete ve PostgreSQL xmin `Version` alanları BaseEntity'den gelir.
 - `ConnectedTopUnity` üst birliğin kimliğidir; `ConnectedTopUnit` navigation'ıdır. Kendine/alt birliğe bağlanma API'de engellenir.
-- `ForcesCommandDef` eski sistemin nullable GUID referansıdır. Depoda kuvvet komutanlığı entity'si bulunmadığından henüz FK/dropdown yoktur; formun isteğe bağlı referans alanından girilir. Bu ayrı tanım taşındığında FK ve seçim listesi eklenmelidir.
+- `ForcesCommandDef`, kuvvet komutanlığı tablosuna nullable FK olarak bağlıdır. Birlik formunda aramalı dropdown kullanılır. [Kuvvet Komutanlığı kurulum adımları](KUVVET_KOMUTANLIGI_TANIMLARI_KURULUM.md).
 - Tarihler kullanıcı ekranındaki ortak UTC dönüşümüyle çalışır. Boş uç sınırsızdır; başlangıç dahildir, bitiş hariçtir. Ters/eşit dönem reddedilir.
 - Yeni kullanıcı görev yeri atamalarında aktif, silinmemiş ve geçerli dönem içindeki birlikler seçilebilir. Mevcut atama süresi dolduğunda geçmiş bağlantı korunur.
 - Liste/CRUD/aktiflik/soft-delete, filtre, Excel, üst birlik seçimi ve ortak audit geçmişi vardır.

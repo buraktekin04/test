@@ -25,6 +25,8 @@ public interface IKLMNDbContext
     DbSet<UserPermission> UserPermissions { get; }
     DbSet<RefreshToken> RefreshTokens { get; }
     DbSet<PasswordResetToken> PasswordResetTokens { get; }
+    DbSet<ForcesCommandDef> ForcesCommandDefs { get; }
+
     DbSet<MilitaryUnitDef> MilitaryUnitDefs { get; }
 
     /// <summary>

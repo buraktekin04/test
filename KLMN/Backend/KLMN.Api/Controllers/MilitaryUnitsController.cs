@@ -1,3 +1,4 @@
+using KLMN.Application.MilitaryUnits.Queries.GetForceCommandOptions;
 using KLMN.Api.Authorization;
 using KLMN.Api.Exports;
 using KLMN.Application.MilitaryUnits.Commands.CreateMilitaryUnitDef;
@@ -57,7 +58,7 @@ public sealed class MilitaryUnitsController(ISender sender, IExcelExportService 
             new("Birim Adı", x => x.Name, Width: 38),
             new("Birim Kodu", x => x.Code, Width: 22),
             new("Harici Kod", x => x.ExternalCode, Width: 24),
-            new("Kuvvet Komutanlığı Kimliği", x => x.ForcesCommandDef, Width: 38),
+            new("Kuvvet Komutanlığı", x => x.ForcesCommandName, Width: 38),
             new("Geçerli Başlangıç", x => x.ValidFrom, NumberFormat: "dd.mm.yyyy hh:mm", Width: 22),
             new("Geçerli Bitiş", x => x.ValidTo, NumberFormat: "dd.mm.yyyy hh:mm", Width: 22),
             new("Üst Birim", x => x.ConnectedTopUnitName, Width: 38),
@@ -71,6 +72,11 @@ public sealed class MilitaryUnitsController(ISender sender, IExcelExportService 
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             $"Birlik_Tanimlari_{DateTime.UtcNow:yyyyMMdd_HHmm}.xlsx");
     }
+
+    [HttpGet("force-options")]
+    [HasPermission(PermissionCodes.MilitaryUnits.Query)]
+    public async Task<IActionResult> GetForceOptions(CancellationToken ct) =>
+        Ok(await sender.Send(new GetForceCommandOptionsQuery(), ct));
 
     /// <summary>Yeni birim oluştururken seçilebilecek aktif üst birimleri getirir.</summary>
     [HttpGet("parent-options")]

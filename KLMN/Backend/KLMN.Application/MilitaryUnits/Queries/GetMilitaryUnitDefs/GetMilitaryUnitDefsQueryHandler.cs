@@ -15,7 +15,7 @@ public sealed class GetMilitaryUnitDefsQueryHandler(IKLMNDbContext db)
     {
         var query = request.IncludeInactive || request.IsActive == false
             ? db.MilitaryUnitDefs.IgnoreQueryFilters().Where(x => !x.IsDeleted)
-            : db.MilitaryUnitDefs.AsQueryable();
+            : db.MilitaryUnitDefs.IgnoreQueryFilters().Where(x => !x.IsDeleted && x.IsActive);
 
         query = query.AsNoTracking();
         if (!string.IsNullOrWhiteSpace(request.Search))
@@ -23,6 +23,8 @@ public sealed class GetMilitaryUnitDefsQueryHandler(IKLMNDbContext db)
             var search = request.Search.Trim().ToUpperInvariant();
             query = query.Where(x => x.Code.ToUpper().Contains(search) ||
                 x.Name.ToUpper().Contains(search) ||
+                (x.ForceCommand != null && (x.ForceCommand.Name.ToUpper().Contains(search) ||
+                    x.ForceCommand.Code.ToUpper().Contains(search))) ||
                 (x.ExternalCode != null && x.ExternalCode.ToUpper().Contains(search)) ||
                 (x.ConnectedTopUnit != null &&
                     (x.ConnectedTopUnit.Name.ToUpper().Contains(search) ||

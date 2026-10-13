@@ -11,6 +11,8 @@ public sealed class MilitaryUnitDefResponse
     public string Name { get; init; } = string.Empty;
     public string? ExternalCode { get; init; }
     public Guid? ForcesCommandDef { get; init; }
+    public string? ForcesCommandName { get; init; }
+    public string? ForcesCommandCode { get; init; }
     public DateTime? ValidFrom { get; init; }
     public DateTime? ValidTo { get; init; }
     public Guid? ConnectedTopUnity { get; init; }
@@ -30,6 +32,8 @@ public sealed class MilitaryUnitDefResponse
             Code = unit.Code,
             ExternalCode = unit.ExternalCode,
             ForcesCommandDef = unit.ForcesCommandDef,
+            ForcesCommandName = unit.ForceCommand != null ? unit.ForceCommand.Name : null,
+            ForcesCommandCode = unit.ForceCommand != null ? unit.ForceCommand.Code : null,
             ValidFrom = unit.ValidFrom,
             ValidTo = unit.ValidTo,
             Name = unit.Name,

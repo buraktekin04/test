@@ -22,6 +22,7 @@ internal static class AuditReferenceDisplayResolver
             ["RoleId"] = "Role",
             ["PermissionId"] = "Permission",
             ["UserId"] = "User",
+            ["ForcesCommandDef"] = "ForcesCommandDef",
             ["MilitaryUnitDefId"] = "MilitaryUnitDef",
             ["OrganizationUnitId"] = "MilitaryUnitDef",
             ["ParentOrganizationUnitId"] = "MilitaryUnitDef",
@@ -98,6 +99,14 @@ internal static class AuditReferenceDisplayResolver
                     x => (x.FirstName + " " + x.LastName).Trim() +
                          " (" + x.UserName + ")", cancellationToken);
 
+        var forceIds = references["ForcesCommandDef"];
+        var forceLabels = forceIds.Count == 0
+            ? new Dictionary<Guid, string>()
+            : await dbContext.ForcesCommandDefs.IgnoreQueryFilters().AsNoTracking()
+                .Where(x => forceIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.Name, x.Code })
+                .ToDictionaryAsync(x => x.Id, x => x.Name + " (" + x.Code + ")", cancellationToken);
+
         var militaryUnitLabels = militaryUnitIds.Count == 0
             ? new Dictionary<Guid, string>()
             : await dbContext.MilitaryUnitDefs.IgnoreQueryFilters().AsNoTracking()
@@ -111,6 +120,7 @@ internal static class AuditReferenceDisplayResolver
             ["Role"] = roleLabels,
             ["Permission"] = permissionLabels,
             ["User"] = userLabels,
+            ["ForcesCommandDef"] = forceLabels,
             ["MilitaryUnitDef"] = militaryUnitLabels
         };
 
@@ -188,6 +198,7 @@ internal static class AuditReferenceDisplayResolver
             "Role" => "Rol kaydı bulunamadı",
             "Permission" => "Yetki kaydı bulunamadı",
             "User" => "Kullanıcı kaydı bulunamadı",
+            "ForcesCommandDef" => "Kuvvet komutanlığı kaydı bulunamadı",
             "MilitaryUnitDef" => "Birlik kaydı bulunamadı",
             _ => "İlişkili kayıt bulunamadı"
         };

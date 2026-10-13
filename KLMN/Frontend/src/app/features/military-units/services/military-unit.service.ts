@@ -5,7 +5,7 @@ import { API_BASE_URL } from '../../../core/config/api.tokens';
 import { PagedResult } from '../../../core/models/paged-result.model';
 import {
   ChangeMilitaryUnitDefStatusRequest,
-  MilitaryUnitParentOption, MilitaryUnitDefFields,
+  ForceCommandOption, MilitaryUnitParentOption, MilitaryUnitDefFields,
   MilitaryUnitDefItem, MilitaryUnitDefMutationResponse, MilitaryUnitDefQuery,
   UpdateMilitaryUnitDefRequest
 } from '../models/military-unit-def.model';
@@ -39,6 +39,10 @@ export class MilitaryUnitService {
   /** Kayıt düzenleme öncesi güncel xmin bilgisiyle detay sorgular. */
   public getById(id: string): Observable<MilitaryUnitDefItem> {
     return this.http.get<MilitaryUnitDefItem>(this.url + '/' + id);
+  }
+
+  public forceOptions(): Observable<ForceCommandOption[]> {
+    return this.http.get<ForceCommandOption[]>(this.url + '/force-options');
   }
 
   /** Yalnızca aktif üst birlik seçeneklerini döndürür. */

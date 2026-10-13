@@ -2,6 +2,8 @@
 export interface MilitaryUnitDefItem {
   externalCode: string | null;
   forcesCommandDef: string | null;
+  forcesCommandName: string | null;
+  forcesCommandCode: string | null;
   validFrom: string | null;
   validTo: string | null;
   id: string;
@@ -64,3 +66,6 @@ export interface MilitaryUnitDefMutationResponse {
   id: string;
   version: number;
 }
+
+/** Birlik seçimine sunulan aktif/geçerli kuvvet komutanlığı. */
+export interface ForceCommandOption { id: string; code: string; name: string; }

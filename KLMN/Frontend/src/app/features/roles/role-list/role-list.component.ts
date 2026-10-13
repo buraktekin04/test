@@ -163,6 +163,7 @@ export class RoleListComponent implements OnInit {
     Users: 'Kullanıcı İşlemleri',
     Roles: 'Rol Yönetimi',
     MilitaryUnits: 'Birlik',
+    ForcesCommands: 'Kuvvet Komutanlıkları',
     Reports: 'Raporlar',
     Investigations: 'İncelemeler'
   };

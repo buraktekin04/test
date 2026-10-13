@@ -26,6 +26,10 @@ export const PermissionCodes = {
   AuditLogs: {
     View: 'AuditLogs.View'
   },
+  ForcesCommands: {
+    View: 'ForcesCommands.View', Query: 'ForcesCommands.Query',
+    Create: 'ForcesCommands.Create', Update: 'ForcesCommands.Update', Delete: 'ForcesCommands.Delete'
+  },
   MilitaryUnits: {
     View: 'MilitaryUnits.View',
     Query: 'MilitaryUnits.Query',

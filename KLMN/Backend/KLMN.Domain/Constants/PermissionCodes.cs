@@ -51,6 +51,15 @@ public static class PermissionCodes
     }
 
     /// <summary>Birlik yönetimi permission kodlarını içerir.</summary>
+    public static class ForcesCommands
+    {
+        public const string View = "ForcesCommands.View";
+        public const string Query = "ForcesCommands.Query";
+        public const string Create = "ForcesCommands.Create";
+        public const string Update = "ForcesCommands.Update";
+        public const string Delete = "ForcesCommands.Delete";
+    }
+
     public static class MilitaryUnits
     {
         /// <summary>Modül kayıtlarını görüntüleyebilme yetkisinin teknik kodudur.</summary>

@@ -66,6 +66,16 @@ export const routes: Routes = [
             .then(component => component.RoleListComponent)
       },
       {
+        path: 'forces-commands',
+        canActivate: [permissionGuard],
+        data: { permissions: [PermissionCodes.ForcesCommands.Query] },
+        loadComponent: () => import('./features/forces-commands/forces-command-list/forces-command-list.component')
+          .then(component => component.ForcesCommandListComponent)
+      },
+      {
+        path: 'definitions/forces-commands', pathMatch: 'full', redirectTo: 'forces-commands'
+      },
+      {
         path: 'military-units',
         canActivate: [permissionGuard],
         data: {

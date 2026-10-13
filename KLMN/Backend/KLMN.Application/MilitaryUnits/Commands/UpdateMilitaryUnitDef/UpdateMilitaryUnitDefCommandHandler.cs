@@ -17,6 +17,10 @@ public sealed class UpdateMilitaryUnitDefCommandHandler(IKLMNDbContext db)
         if (unit.ConnectedTopUnity != request.ConnectedTopUnity)
             await MilitaryUnitDefRules.EnsureValidParentAsync(db, request.ConnectedTopUnity, unit.Id, ct);
 
+        // Süresi dolmuş/pasif mevcut bağlantı korunabilir; yeni atamalar doğrulanır.
+        if (unit.ForcesCommandDef != request.ForcesCommandDef)
+            await MilitaryUnitDefRules.EnsureValidForceAsync(db, request.ForcesCommandDef, ct);
+
         unit.ExternalCode = string.IsNullOrWhiteSpace(request.ExternalCode) ? null : request.ExternalCode.Trim();
         unit.ForcesCommandDef = request.ForcesCommandDef;
         unit.ValidFrom = request.ValidFrom;

@@ -1,0 +1,268 @@
+<div class="forces-commands-page">
+  <div class="page-header">
+    <div>
+      <h1>Kuvvet Komutanlığı Tanımları</h1>
+      <p>Birliklerin bağlı olduğu kuvvet komutanlıklarını yönetin.</p>
+    </div>
+    @if (canCreate()) {
+      <p-button type="button" label="Yeni Kuvvet Komutanlığı" icon="pi pi-plus"
+                (onClick)="openCreateDialog()"></p-button>
+    }
+  </div>
+
+  <div class="military-unit-notices" aria-live="polite">
+    @if (successMessage()) {
+      <div class="notice notice-success" role="status">
+        <i class="pi pi-check-circle" aria-hidden="true"></i>
+        <span>{{ successMessage() }}</span>
+        <button type="button" class="notice-close" aria-label="Bildirim kapat"
+                (click)="successMessage.set(null)"><i class="pi pi-times"></i></button>
+      </div>
+    }
+    @if (errorMessage()) {
+      <div class="notice notice-error" role="alert">
+        <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+        <span>{{ errorMessage() }}</span>
+        <button type="button" class="notice-close" aria-label="Hata bildirimini kapat"
+                (click)="errorMessage.set(null)"><i class="pi pi-times"></i></button>
+      </div>
+    }
+  </div>
+
+  <section class="filter-panel" aria-label="Kuvvet komutanlığı arama">
+    <form [formGroup]="filterForm" (ngSubmit)="search()">
+      <div class="search-field">
+        <i class="pi pi-search" aria-hidden="true"></i>
+        <input pInputText type="text" formControlName="search"
+               placeholder="Kuvvet adı veya kodunda ara..."
+               aria-label="Kuvvet komutanlığı ara" />
+      </div>
+      <div class="inactive-filter">
+        <p-checkbox inputId="forces-commandsIncludeInactive"
+                    formControlName="includeInactive" [binary]="true"></p-checkbox>
+        <label for="forces-commandsIncludeInactive">Pasifleri dahil et</label>
+      </div>
+      <div class="filter-actions">
+        <p-button type="submit" label="Ara" icon="pi pi-search"
+                  [loading]="loading()"></p-button>
+        <p-button type="button" label="Temizle" severity="secondary"
+                  icon="pi pi-times" [outlined]="true"
+                  (onClick)="clearFilters()"></p-button>
+      </div>
+    </form>
+  </section>
+
+  <section class="forces-commands-table-card" aria-label="Kuvvet komutanlıkları listesi">
+    <div class="table-toolbar">
+      <p-button type="button"
+                [label]="columnFiltersExpanded() ? 'Filtreleri Gizle' : 'Kolon Filtreleri'"
+                icon="pi pi-filter" severity="secondary"
+                [outlined]="!columnFiltersExpanded()"
+                (onClick)="toggleColumnFilters()"></p-button>
+      <p-button type="button" label="Excel'e Aktar" icon="pi pi-file-excel"
+                severity="success" [outlined]="true" [loading]="exporting()"
+                [disabled]="loading() || totalCount() === 0"
+                (onClick)="exportExcel()"></p-button>
+    </div>
+
+    @if (columnFiltersExpanded()) {
+      <form class="column-filter-panel" [formGroup]="columnFilterForm"
+            (ngSubmit)="applyColumnFilters()">
+        <div class="filter-panel-heading">
+          <strong>Kolon Filtreleri</strong>
+          <button type="button" class="notice-close" aria-label="Filtreleri gizle"
+                  (click)="toggleColumnFilters()"><i class="pi pi-times"></i></button>
+        </div>
+        <div class="column-filter-grid">
+          <div class="column-filter-field">
+            <label for="orgActiveFilter">Aktiflik</label>
+            <select id="orgActiveFilter" formControlName="isActive">
+              <option [ngValue]="null">Tümü</option>
+              <option [ngValue]="true">Aktif</option>
+              <option [ngValue]="false">Pasif</option>
+            </select>
+          </div>
+
+        </div>
+        <div class="column-filter-actions">
+          <p-button type="button" label="Tümünü Temizle" icon="pi pi-filter-slash"
+                    severity="secondary" [outlined]="true"
+                    (onClick)="clearFilters()"></p-button>
+          <p-button type="submit" label="Filtreleri Uygula" icon="pi pi-check"
+                    [loading]="loading()"></p-button>
+        </div>
+      </form>
+    }
+
+    <div class="table-scroll" role="region" aria-label="Kuvvet komutanlıkları tablosu" tabindex="0">
+      <p-table [value]="units()" [loading]="loading()"
+               [tableStyle]="{ 'min-width': '980px', 'width': '100%' }">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Kuvvet Komutanlığı</th>
+            <th>Kod</th>
+            <th>Durum</th>
+            <th>Bağlı Birlik</th>
+            <th>Geçerlilik</th>
+            <th>Oluşturulma</th>
+            @if (canUpdate() || canDelete() || canViewAudit()) {
+              <th>İşlemler</th>
+            }
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-unit>
+          <tr>
+            <td>
+              <div class="unit-name-cell">
+                <i class="pi pi-flag" aria-hidden="true"></i>
+                <strong [title]="unit.name">{{ unit.name }}</strong>
+              </div>
+            </td>
+            <td><code class="unit-code">{{ unit.code }}</code></td>
+            <td>
+              <p-tag [value]="unit.isActive ? 'Aktif' : 'Pasif'"
+                     [severity]="unit.isActive ? 'success' : 'secondary'"></p-tag>
+            </td>
+            <td>{{ unit.militaryUnitCount }}</td>
+            <td class="validity-cell">
+              <span>{{ unit.validFrom ? (unit.validFrom | date:'dd.MM.yyyy HH:mm') : 'Başlangıç sınırı yok' }}</span>
+              <span>{{ unit.validTo ? (unit.validTo | date:'dd.MM.yyyy HH:mm') : 'Süresiz' }}</span>
+            </td>
+            <td>{{ unit.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
+            @if (canUpdate() || canDelete() || canViewAudit()) {
+              <td>
+                <div class="row-actions">
+                  @if (canUpdate()) {
+                    <p-button type="button" icon="pi pi-pencil" [text]="true" size="small"
+                              severity="secondary" ariaLabel="Kuvvet komutanlığı düzenle"
+                              [disabled]="actionLoadingId() === unit.id"
+                              (onClick)="openEditDialog(unit)"></p-button>
+                    <p-button type="button"
+                              [icon]="unit.isActive ? 'pi pi-ban' : 'pi pi-check-circle'"
+                              [text]="true" size="small" severity="secondary"
+                              [ariaLabel]="unit.isActive ? 'Kuvvet komutanlığını pasifleştir' : 'Kuvvet komutanlığını aktifleştir'"
+                              [disabled]="actionLoadingId() === unit.id"
+                              (onClick)="confirmStatusChange(unit)"></p-button>
+                  }
+                  @if (canViewAudit()) {
+                    <p-button type="button" icon="pi pi-history" [text]="true"
+                              size="small" severity="secondary"
+                              ariaLabel="Kuvvet komutanlığı işlem geçmişi"
+                              (onClick)="openAudit(unit)"></p-button>
+                  }
+                  @if (canDelete()) {
+                    <p-button type="button" icon="pi pi-trash" [text]="true"
+                              size="small" severity="danger" ariaLabel="Kuvvet komutanlığı sil"
+                              [disabled]="actionLoadingId() === unit.id"
+                              (onClick)="confirmDelete(unit)"></p-button>
+                  }
+                </div>
+              </td>
+            }
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td [attr.colspan]="canUpdate() || canDelete() || canViewAudit() ? 7 : 6"
+                class="empty-table">Filtreye uygun kuvvet komutanlığı bulunamadı.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <div class="pagination">
+      <span>{{ rangeStart() }}–{{ rangeEnd() }} / {{ totalCount() }} kayıt</span>
+      <div class="pagination-controls">
+        <button type="button" aria-label="İlk sayfa" class="page-nav"
+                [disabled]="loading() || pageNumber() <= 1"
+                (click)="goToPage(1)"><i class="pi pi-angle-double-left"></i></button>
+        <button type="button" aria-label="Önceki sayfa" class="page-nav"
+                [disabled]="loading() || pageNumber() <= 1"
+                (click)="goToPage(pageNumber()-1)"><i class="pi pi-angle-left"></i></button>
+        <span>{{ pageNumber() }} / {{ totalPages() }}</span>
+        <button type="button" aria-label="Sonraki sayfa" class="page-nav"
+                [disabled]="loading() || pageNumber() >= totalPages()"
+                (click)="goToPage(pageNumber()+1)"><i class="pi pi-angle-right"></i></button>
+        <button type="button" aria-label="Son sayfa" class="page-nav"
+                [disabled]="loading() || pageNumber() >= totalPages()"
+                (click)="goToPage(totalPages())"><i class="pi pi-angle-double-right"></i></button>
+      </div>
+      <label class="page-size">Sayfa başına
+        <select [value]="pageSize()" [disabled]="loading()"
+                (change)="onPageSizeChange($event)" aria-label="Sayfa başına kayıt">
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </label>
+    </div>
+  </section>
+</div>
+
+<!-- Rol/Kullanıcı tanımlarındaki minimalist modal: basit bölüm ayraçları. -->
+<p-dialog [header]="editingUnit() ? 'Kuvvet Komutanlığı Düzenle' : 'Yeni Kuvvet Komutanlığı'"
+          [visible]="dialogVisible()"
+          (visibleChange)="onDialogVisibleChange($event)"
+          [modal]="true" [draggable]="false" [resizable]="false"
+          [style]="{ width: 'min(600px, 96vw)' }">
+  <form class="military-unit-form" [formGroup]="forcesCommandForm" (ngSubmit)="saveUnit()">
+    @if (formError()) {
+      <p-message severity="error" [text]="formError()!"></p-message>
+    }
+
+    <div class="form-divider"><span>Kuvvet Komutanlığı Bilgileri</span></div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="orgName">Kuvvet Komutanlığı <span class="required">*</span></label>
+        <input id="orgName" pInputText formControlName="name"
+               placeholder="Örn. Kara Kuvvetleri Komutanlığı" autocomplete="off" />
+      </div>
+      <div class="form-field">
+        <label for="orgCode">Kod <span class="required">*</span></label>
+        <input id="orgCode" pInputText formControlName="code"
+               placeholder="Örn. KKK" autocomplete="off" />
+      </div>
+    </div>
+
+    <div class="form-divider"><span>Geçerlilik Dönemi</span></div>
+    <div class="form-grid validity-fields">
+      <div class="form-field">
+        <label for="unitValidFrom">Başlangıç</label>
+        <input id="unitValidFrom" pInputText type="datetime-local" formControlName="validFrom" />
+        <small>Boş bırakılırsa başlangıç sınırı uygulanmaz.</small>
+      </div>
+      <div class="form-field">
+        <label for="unitValidTo">Bitiş</label>
+        <input id="unitValidTo" pInputText type="datetime-local" formControlName="validTo" />
+        <small>Boş bırakılırsa süresiz geçerlidir.</small>
+      </div>
+    </div>
+    @if (editingUnit(); as edited) {
+      <div class="form-info">
+        <i class="pi pi-info-circle" aria-hidden="true"></i>
+        Bu kuvvet komutanlığına {{ edited.militaryUnitCount }} birlik bağlı. Bağlı birlikler varken silinemez.
+      </div>
+    }
+
+    <div class="dialog-actions">
+      <p-button type="button" label="Vazgeç" severity="secondary" [outlined]="true"
+                [disabled]="saving()" (onClick)="onDialogVisibleChange(false)"></p-button>
+      <p-button type="submit" label="Kaydet" icon="pi pi-check"
+                [loading]="saving()"></p-button>
+    </div>
+  </form>
+</p-dialog>
+
+<p-confirmdialog></p-confirmdialog>
+
+<!-- Audit geçmişi, uygulamadaki ortak salt okunur bileşenle gösterilir. -->
+<p-dialog header="Kuvvet Komutanlığı İşlem Geçmişi"
+          [visible]="!!auditUnit()" (visibleChange)="!$event && auditUnit.set(null)"
+          [modal]="true" [draggable]="false" [resizable]="false"
+          [style]="{ width: 'min(760px, 96vw)' }">
+  @if (auditUnit(); as record) {
+    <app-audit-history entityType="ForcesCommandDef"
+                       [entityId]="record.id"></app-audit-history>
+  }
+</p-dialog>

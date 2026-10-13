@@ -8,6 +8,17 @@ namespace KLMN.Application.MilitaryUnits.Commands.Common;
 /// <summary>Birlik hiyerarşisi, benzersizlik ve concurrency ortak domain kurallarıdır.</summary>
 internal static class MilitaryUnitDefRules
 {
+    /// <summary>Yeni atamalarda kuvvetin varlığını, aktifliğini ve tarih aralığını doğrular.</summary>
+    public static async Task EnsureValidForceAsync(IKLMNDbContext db, Guid? forceId, CancellationToken ct)
+    {
+        if (!forceId.HasValue) return;
+        var now = DateTime.UtcNow;
+        if (!await db.ForcesCommandDefs.IgnoreQueryFilters().AnyAsync(x => x.Id == forceId &&
+            !x.IsDeleted && x.IsActive && (!x.ValidFrom.HasValue || x.ValidFrom <= now) &&
+            (!x.ValidTo.HasValue || now < x.ValidTo), ct))
+            throw new MilitaryUnitConflictException("Seçilen kuvvet komutanlığı bulunamadı, pasif veya geçerlilik dönemi dışında.");
+    }
+
     /// <summary>Pasifler dahil aynı teknik koda sahip, silinmemiş birim bulunmamalıdır.</summary>
     public static async Task EnsureUniqueCodeAsync(
         IKLMNDbContext db, string code, Guid? currentId, CancellationToken ct)

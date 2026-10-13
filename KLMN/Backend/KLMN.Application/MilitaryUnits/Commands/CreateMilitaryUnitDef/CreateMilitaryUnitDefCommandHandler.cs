@@ -15,6 +15,8 @@ public sealed class CreateMilitaryUnitDefCommandHandler(IKLMNDbContext db)
         await MilitaryUnitDefRules.EnsureUniqueCodeAsync(db, request.Code, null, ct);
         await MilitaryUnitDefRules.EnsureValidParentAsync(db, request.ConnectedTopUnity, null, ct);
 
+        await MilitaryUnitDefRules.EnsureValidForceAsync(db, request.ForcesCommandDef, ct);
+
         var unit = new MilitaryUnitDef
         {
             Code = request.Code.Trim().ToUpperInvariant(),

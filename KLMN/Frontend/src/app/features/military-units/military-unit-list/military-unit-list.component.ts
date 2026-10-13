@@ -20,7 +20,7 @@ import { PermissionCodes } from '../../../core/permissions/constants/permission-
 import { PermissionService } from '../../../core/permissions/services/permission.service';
 import { AuditHistoryComponent } from '../../../shared/audit-history/audit-history.component';
 import {
-  MilitaryUnitParentOption,
+  ForceCommandOption, MilitaryUnitParentOption,
   MilitaryUnitDefFields,
   MilitaryUnitDefItem,
   MilitaryUnitDefMutationResponse,
@@ -28,7 +28,7 @@ import {
 } from '../models/military-unit-def.model';
 import { MilitaryUnitService } from '../services/military-unit.service';
 
-/** Kullanıcıların görev yeri dropdown'ının veri kaynağı olan birliklerni yönetir. */
+/** Kullanıcıların görev yeri dropdown'ının veri kaynağı olan birliklerini yönetir. */
 @Component({
   selector: 'app-military-unit-list',
   standalone: true,
@@ -86,6 +86,7 @@ export class MilitaryUnitListComponent implements OnInit {
 
   public readonly dialogVisible = signal(false);
   public readonly editingUnit = signal<MilitaryUnitDefItem | null>(null);
+  public readonly forceOptions = signal<ForceCommandOption[]>([]);
   public readonly parentOptions = signal<MilitaryUnitParentOption[]>([]);
   public readonly parentLoading = signal(false);
   public readonly parentError = signal<string | null>(null);
@@ -100,10 +101,21 @@ export class MilitaryUnitListComponent implements OnInit {
       Validators.pattern(/^[A-Za-z0-9_-]+$/)
     ]),
     externalCode: this.fb.nonNullable.control('', Validators.maxLength(100)),
-    forcesCommandDef: this.fb.nonNullable.control('', Validators.pattern(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/)),
+    forcesCommandDef: this.fb.control<string | null>(null),
     validFrom: this.fb.nonNullable.control(''),
     validTo: this.fb.nonNullable.control(''),
     connectedTopUnity: this.fb.control<string | null>(null)
+  });
+
+  /** Mevcut pasif/süresi dolmuş bağlantı düzenlerken kaybolmaz. */
+  public readonly forceChoices = computed(() => {
+    const choices = this.forceOptions().map(x => ({ id: x.id, label: x.name + ' (' + x.code + ')' }));
+    const current = this.editingUnit();
+    if (current?.forcesCommandDef && !choices.some(x => x.id === current.forcesCommandDef)) {
+      choices.push({ id: current.forcesCommandDef,
+        label: (current.forcesCommandName ?? 'Mevcut kuvvet komutanlığı') + ' (mevcut atama)' });
+    }
+    return choices;
   });
 
   /** Üst birlik seçiminde kendi kaydı ve tüm alt birlikleri gösterilmez. */
@@ -250,11 +262,11 @@ export class MilitaryUnitListComponent implements OnInit {
 
   /** Yeni birlik modalinde kök birlik veya aktif üst birlik seçilebilir. */
   public openCreateDialog(): void {
-    if (!this.canCreate() || this.saving()) return;
+    if (!this.canCreate() || this.saving() || this.actionLoadingId()) return;
     ++this.dialogRequestVersion;
     this.editingUnit.set(null);
     this.militaryUnitForm.reset({
-      name: '', code: '', externalCode: '', forcesCommandDef: '', validFrom: '', validTo: '', connectedTopUnity: null
+      name: '', code: '', externalCode: '', forcesCommandDef: null, validFrom: '', validTo: '', connectedTopUnity: null
     });
     this.formError.set(null);
     this.dialogVisible.set(true);
@@ -271,21 +283,23 @@ export class MilitaryUnitListComponent implements OnInit {
 
     forkJoin({
       detail: this.service.getById(unit.id),
-      parents: this.service.parentOptions()
+      parents: this.service.parentOptions(),
+      forces: this.service.forceOptions()
     }).pipe(finalize(() => {
       if (version === this.dialogRequestVersion) {
         this.actionLoadingId.set(null);
         this.parentLoading.set(false);
       }
     })).subscribe({
-      next: ({ detail, parents }) => {
+      next: ({ detail, parents, forces }) => {
         if (version !== this.dialogRequestVersion) return;
         this.editingUnit.set(detail);
         this.parentOptions.set(parents);
+        this.forceOptions.set(forces);
         this.parentError.set(null);
         this.militaryUnitForm.reset({
           externalCode: detail.externalCode ?? '',
-          forcesCommandDef: detail.forcesCommandDef ?? '',
+          forcesCommandDef: detail.forcesCommandDef,
           validFrom: ValidityPeriodUtils.toLocalInput(detail.validFrom),
           validTo: ValidityPeriodUtils.toLocalInput(detail.validTo),
           name: detail.name,
@@ -306,13 +320,16 @@ export class MilitaryUnitListComponent implements OnInit {
     this.parentLoading.set(true);
     this.parentError.set(null);
     const version = this.dialogRequestVersion;
-    this.service.parentOptions()
+    forkJoin({ parents: this.service.parentOptions(), forces: this.service.forceOptions() })
       .pipe(finalize(() => {
         if (version === this.dialogRequestVersion) this.parentLoading.set(false);
       }))
       .subscribe({
         next: result => {
-          if (version === this.dialogRequestVersion) this.parentOptions.set(result);
+          if (version === this.dialogRequestVersion) {
+            this.parentOptions.set(result.parents);
+            this.forceOptions.set(result.forces);
+          }
         },
         error: (error: HttpErrorResponse) => {
           if (version === this.dialogRequestVersion) this.parentError.set(this.errorText(error));
@@ -345,7 +362,7 @@ export class MilitaryUnitListComponent implements OnInit {
     }
     const fields: MilitaryUnitDefFields = {
       externalCode: values.externalCode.trim() || null,
-      forcesCommandDef: values.forcesCommandDef.trim() || null,
+      forcesCommandDef: values.forcesCommandDef,
       ...ValidityPeriodUtils.fromLocalInputs(values.validFrom, values.validTo),
       name: values.name.trim(),
       code: values.code.trim().toUpperCase(),
@@ -383,7 +400,7 @@ export class MilitaryUnitListComponent implements OnInit {
     if (!this.canUpdate() || this.actionLoadingId()) return;
     this.confirmations.confirm({
       header: 'Birlik Durumu',
-      message: unit.name + ' birlikini ' +
+      message: unit.name + ' birliğini ' +
         (unit.isActive ? 'pasifleştirmek' : 'aktifleştirmek') + ' istiyor musunuz?',
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Evet',

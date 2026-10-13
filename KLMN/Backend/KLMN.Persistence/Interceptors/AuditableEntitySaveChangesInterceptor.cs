@@ -27,6 +27,7 @@ public sealed class AuditableEntitySaveChangesInterceptor(
                 "PhoneNumber", "MilitaryUnitDefId", "ClockLimit", "IsLocked",
                 "IsActive", "ValidFrom", "ValidTo"),
             ["Role"] = Fields("Name", "Code", "Description", "IsActive"),
+            ["ForcesCommandDef"] = Fields("Name", "Code", "IsActive", "ValidFrom", "ValidTo"),
             ["MilitaryUnitDef"] = Fields("Name", "Code", "ExternalCode", "ForcesCommandDef",
                 "ConnectedTopUnity", "IsActive", "ValidFrom", "ValidTo"),
             ["Permission"] = Fields("Name", "Code", "Module",

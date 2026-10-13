@@ -35,7 +35,7 @@ Check(!db.Model.GetEntityTypes().Any(x => x.ClrType.Name == "OrganizationUnit"),
 Check(unit.FindProperty("Version")!.IsConcurrencyToken && unit.FindProperty("Version")!.GetColumnName() == "xmin", "PostgreSQL xmin concurrency preserved");
 var userFk = db.Model.FindEntityType(typeof(User))!.GetForeignKeys().Single(x => x.PrincipalEntityType == unit);
 Check(userFk.Properties.Single().Name == "MilitaryUnitDefId" && userFk.DeleteBehavior == DeleteBehavior.Restrict, "User duty station FK is restrictive");
-Check(unit.GetForeignKeys().Single().Properties.Single().Name == "ConnectedTopUnity", "Parent hierarchy mapped explicitly");
+Check(unit.GetForeignKeys().Single(x => x.PrincipalEntityType == unit).Properties.Single().Name == "ConnectedTopUnity", "Parent hierarchy mapped explicitly");
 
 foreach (var schema in new string?[] { null, "mskbs" })
 {
@@ -49,4 +49,28 @@ foreach (var schema in new string?[] { null, "mskbs" })
     var rollback = string.Join("\n", db.GetService<IMigrationsSqlGenerator>().Generate(down.Operations).Select(x => x.CommandText));
     Check(rollback.Contains("RENAME TO \"OrganizationUnits\""), "Rollback SQL generated");
 }
+var forceCreate = new KLMN.Application.ForcesCommands.Commands.CreateForcesCommandDef.CreateForcesCommandDefCommand("Kara Kuvvetleri", "KKK", start, start.AddDays(1));
+var forceValidator = new KLMN.Application.ForcesCommands.Commands.CreateForcesCommandDef.CreateForcesCommandDefCommandValidator();
+Check(forceValidator.Validate(forceCreate).IsValid, "Force definition accepts valid UTC interval");
+Check(forceValidator.Validate(forceCreate with { ValidFrom = null, ValidTo = null }).IsValid, "Force definition accepts open bounds");
+Check(!forceValidator.Validate(forceCreate with { ValidTo = start }).IsValid, "Force definition rejects equal date bounds");
+Check(!forceValidator.Validate(forceCreate with { Name = " " }).IsValid, "Force definition requires a name");
+Check(!forceValidator.Validate(forceCreate with { Code = "bad code" }).IsValid, "Force definition rejects malformed codes");
+Check(!forceValidator.Validate(forceCreate with { ValidFrom = DateTime.SpecifyKind(start, DateTimeKind.Unspecified) }).IsValid, "Force definition rejects non-UTC dates");
+var forceType = db.Model.FindEntityType(typeof(ForcesCommandDef))!;
+Check(forceType.GetTableName() == "ForcesCommandDefs", "Force definition table mapped");
+Check(forceType.FindProperty("Version")!.IsConcurrencyToken && forceType.FindProperty("Version")!.GetColumnName() == "xmin", "Force definition uses xmin concurrency");
+var forceFk = unit.GetForeignKeys().Single(x => x.PrincipalEntityType == forceType);
+Check(forceFk.Properties.Single().Name == "ForcesCommandDef" && forceFk.DeleteBehavior == DeleteBehavior.Restrict && !forceFk.IsRequired, "Existing nullable force GUID is the restrictive FK without a shadow column");
+Check(!unit.GetProperties().Any(x => x.IsShadowProperty() && x.ClrType == typeof(Guid?)), "Force relationship introduces no shadow GUID");
+foreach (var schema in new string?[] { null, "mskbs" })
+{
+    var forceMigration = new MigrationBuilder("Npgsql.EntityFrameworkCore.PostgreSQL");
+    ForcesCommandDefMigrationOperations.Up(forceMigration, schema);
+    Check(!forceMigration.Operations.Any(x => x is DropTableOperation or DropColumnOperation or RenameColumnOperation), "Force migration preserves existing military columns");
+    var forceSql = string.Join("\n", db.GetService<IMigrationsSqlGenerator>().Generate(forceMigration.Operations).Select(x => x.CommandText));
+    Check(forceSql.Contains("FOREIGN KEY (\"ForcesCommandDef\")") && forceSql.Contains("ON DELETE RESTRICT"), "Force migration emits restrictive FK");
+}
+var projectedSql = db.MilitaryUnitDefs.IgnoreQueryFilters().Select(KLMN.Application.MilitaryUnits.Responses.MilitaryUnitDefResponse.Projection).ToQueryString();
+Check(projectedSql.Contains("ForcesCommandDefs"), "Military list projects force labels in SQL");
 Console.WriteLine("All regression checks passed. No database connection was opened.");

@@ -36,6 +36,12 @@ export class NavigationService {
           requiredPermissions: [PermissionCodes.Roles.Query]
         },
         {
+          label: 'Kuvvet Komutanlığı Tanımları',
+          icon: 'pi pi-flag',
+          route: '/app/forces-commands',
+          requiredPermissions: [PermissionCodes.ForcesCommands.Query]
+        },
+        {
           label: 'Birlik Tanımları',
           icon: 'pi pi-sitemap',
           route: '/app/military-units',

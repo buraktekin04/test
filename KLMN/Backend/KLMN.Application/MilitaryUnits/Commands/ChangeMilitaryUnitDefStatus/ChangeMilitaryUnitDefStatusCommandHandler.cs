@@ -29,6 +29,9 @@ public sealed class ChangeMilitaryUnitDefStatusCommandHandler(IKLMNDbContext db)
             await MilitaryUnitDefRules.EnsureValidParentAsync(db, unit.ConnectedTopUnity, unit.Id, ct);
         }
 
+        if (request.IsActive)
+            await MilitaryUnitDefRules.EnsureValidForceAsync(db, unit.ForcesCommandDef, ct);
+
         unit.IsActive = request.IsActive;
         await db.SaveChangesAsync(ct);
         return new MilitaryUnitDefMutationResponse(unit.Id, unit.Version);

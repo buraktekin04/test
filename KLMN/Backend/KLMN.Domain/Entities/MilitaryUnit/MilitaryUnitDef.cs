@@ -12,8 +12,10 @@ public sealed class MilitaryUnitDef : BaseEntity
     public string Name { get; set; } = string.Empty;
     /// <summary>Harici sistemlerde kullanılan birlik kodudur.</summary>
     public string? ExternalCode { get; set; }
-    /// <summary>Eski sistemdeki kuvvet komutanlığı referansıdır. Ayrı tanım henüz taşınmadığından nullable kimlik olarak saklanır.</summary>
+    /// <summary>Bağlı kuvvet komutanlığının nullable yabancı anahtarıdır.</summary>
     public Guid? ForcesCommandDef { get; set; }
+    /// <summary>Kuvvet komutanlığı navigation özelliğidir.</summary>
+    public ForcesCommandDef? ForceCommand { get; set; }
     /// <summary>Görev yeri olarak seçilebileceği UTC başlangıç; null ise alt sınır yoktur.</summary>
     public DateTime? ValidFrom { get; set; }
     /// <summary>Görev yeri olarak seçilebileceği UTC bitiş (hariç); null ise üst sınır yoktur.</summary>

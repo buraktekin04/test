@@ -59,6 +59,8 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     /// <summary>
     /// Hiyerarşik birlik birimlerine ait DbSet koleksiyonudur.
     /// </summary>
+    public DbSet<ForcesCommandDef> ForcesCommandDefs => Set<ForcesCommandDef>();
+
     public DbSet<MilitaryUnitDef> MilitaryUnitDefs => Set<MilitaryUnitDef>();
 
     /// <summary>
