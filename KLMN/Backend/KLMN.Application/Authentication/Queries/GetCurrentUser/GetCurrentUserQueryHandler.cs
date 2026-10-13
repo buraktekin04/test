@@ -61,9 +61,9 @@ public sealed class GetCurrentUserQueryHandler
                 x.FirstName,
                 x.LastName,
                 x.PhoneNumber,
-                x.OrganizationUnitId,
-                OrganizationUnitName = x.OrganizationUnit != null
-                    ? x.OrganizationUnit.Name
+                x.MilitaryUnitDefId,
+                MilitaryUnitDefName = x.MilitaryUnitDef != null
+                    ? x.MilitaryUnitDef.Name
                     : null,
                 x.LastLoginDate,
                 x.PasswordChangedDate
@@ -85,8 +85,8 @@ public sealed class GetCurrentUserQueryHandler
             LastName = user.LastName,
             FullName = $"{user.FirstName} {user.LastName}".Trim(),
             PhoneNumber = user.PhoneNumber,
-            OrganizationUnitId = user.OrganizationUnitId,
-            OrganizationUnitName = user.OrganizationUnitName,
+            MilitaryUnitDefId = user.MilitaryUnitDefId,
+            MilitaryUnitDefName = user.MilitaryUnitDefName,
             LastLoginDate = user.LastLoginDate,
             PasswordChangedDate = user.PasswordChangedDate,
             Roles = authorization.Roles,

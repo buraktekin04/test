@@ -67,12 +67,12 @@ public sealed class CurrentUserService : ICurrentUserService
         }
     }
 
-    public Guid? OrganizationUnitId
+    public Guid? MilitaryUnitDefId
     {
         get
         {
             // value bilgisini sonraki işlem adımları için hesaplar.
-            var value = GetClaimValue(CustomClaimTypes.OrganizationUnitId);
+            var value = GetClaimValue(CustomClaimTypes.MilitaryUnitDefId) ?? GetClaimValue("organization_unit_id");
             return Guid.TryParse(value, out var id) ? id : null;
         }
     }

@@ -41,18 +41,21 @@ public sealed class CreateUserCommandHandler(
         }
 
         // Yeni kullanıcıya görev yeri seçildiyse, pasif veya silinmiş
-        // organizasyon ataması API üzerinden de engellenir.
-        if (request.OrganizationUnitId.HasValue)
+        // birlik ataması API üzerinden de engellenir.
+        if (request.MilitaryUnitDefId.HasValue)
         {
-            var organizationAvailable = await dbContext.OrganizationUnits
+            var now = DateTime.UtcNow;
+            var militaryUnitAvailable = await dbContext.MilitaryUnitDefs
                 .IgnoreQueryFilters()
-                .AnyAsync(x => x.Id == request.OrganizationUnitId.Value &&
-                               x.IsActive && !x.IsDeleted, cancellationToken);
+                .AnyAsync(x => x.Id == request.MilitaryUnitDefId.Value &&
+                               x.IsActive && !x.IsDeleted &&
+                    (!x.ValidFrom.HasValue || x.ValidFrom <= now) &&
+                    (!x.ValidTo.HasValue || now < x.ValidTo), cancellationToken);
 
-            if (!organizationAvailable)
+            if (!militaryUnitAvailable)
             {
                 throw new UserConflictException(
-                    "Seçilen görev yeri bulunamadı veya aktif değil. Güncel organizasyon listesinden seçim yapınız.");
+                    "Seçilen görev yeri bulunamadı, aktif değil veya geçerlilik dönemi dışında. Güncel birlik listesinden seçim yapınız.");
             }
         }
 
@@ -80,7 +83,7 @@ public sealed class CreateUserCommandHandler(
                 ? null : request.PhoneNumber.Trim(),
             PasswordHash = passwordHasherService.HashPassword(request.Password),
             ClockLimit = request.ClockLimit,
-            OrganizationUnitId = request.OrganizationUnitId,
+            MilitaryUnitDefId = request.MilitaryUnitDefId,
             ValidFrom = request.ValidFrom,
             ValidTo = request.ValidTo,
             PasswordChangedDate = timeProvider.GetUtcNow().UtcDateTime

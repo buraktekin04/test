@@ -7,7 +7,7 @@
 
 `Tanımlamalar > Kullanıcı Tanımları` adresi: `/app/definitions/users`.
 Eski `/app/users` adresi yenisine yönlendirilir.
-Rol ve Organizasyon Tanımları menüleri şimdilik pasiftir; ekranları ilerleyen adımlarda yapılacaktır.
+Rol ve Birlik Tanımları menüleri şimdilik pasiftir; ekranları ilerleyen adımlarda yapılacaktır.
 
 ## Backend klasörleri
 

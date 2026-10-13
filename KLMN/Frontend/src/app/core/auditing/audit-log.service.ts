@@ -26,10 +26,9 @@ export class AuditLogService {
   /** Yalnızca sunucunun izinli değişiklik JSON'unu okunabilir alan satırlarına dönüştürür. */
   public changes(item: AuditLogItem): AuditDisplayChange[] {
     try {
-      // Eşleşen rol/yetki/organizasyon adları varsa onları kullan.
+      // Eşleşen rol/yetki/birlik adları varsa onları kullan.
       // Eski API yanıtlarında geriye dönük uyumluluk için ham kayıt okunabilir.
-      const data = JSON.parse(item.displayChangesJson ?? item.changesJson)
-        as Record<string, AuditFieldChange>;
+      const data = JSON.parse(item.displayChangesJson ?? item.changesJson) as Record<string, AuditFieldChange>;
       if (!data || typeof data !== 'object' || Array.isArray(data)) return [];
       const isRelation = ['RolePermission', 'UserRole', 'UserPermission']
         .includes(item.entityType);
@@ -85,7 +84,9 @@ export class AuditLogService {
     const labels: Record<string, string> = {
       UserName: 'Kullanıcı Adı', FirstName: 'Ad', LastName: 'Soyad',
       Email: 'E-posta', PhoneNumber: 'Telefon',
-      OrganizationUnitId: 'Görev Yeri', RoleId: 'Rol',
+      MilitaryUnitDefId: 'Görev Yeri', OrganizationUnitId: 'Görev Yeri',
+      ParentOrganizationUnitId: 'Üst Birlik', ConnectedTopUnity: 'Üst Birlik',
+      ExternalCode: 'Harici Kod', ForcesCommandDef: 'Kuvvet Komutanlığı', RoleId: 'Rol',
       UserId: 'Kullanıcı', PermissionId: 'Yetki',
       IsGranted: 'Yetki Verildi', Name: 'Ad', Code: 'Kod',
       Description: 'Açıklama', Module: 'Modül',

@@ -145,12 +145,12 @@ public sealed class JwtTokenService : IJwtTokenService
             new(CustomClaimTypes.SecurityStamp, user.SecurityStamp)
         };
 
-        if (user.OrganizationUnitId.HasValue)
+        if (user.MilitaryUnitDefId.HasValue)
         {
             claims.Add(
                 new Claim(
-                    CustomClaimTypes.OrganizationUnitId,
-                    user.OrganizationUnitId.Value.ToString()));
+                    CustomClaimTypes.MilitaryUnitDefId,
+                    user.MilitaryUnitDefId.Value.ToString()));
         }
 
         foreach (var role in roles

@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using KLMN.Domain.Entities.Identity;
 using KLMN.Persistence.Configurations.Common;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

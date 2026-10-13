@@ -16,12 +16,12 @@ export interface UserListItem {
   email: string;
   /** Kullanıcının isteğe bağlı telefon numarasıdır. */
   phoneNumber: string | null;
-  /** Kullanıcının bağlı olduğu organizasyon biriminin GUID kimliğidir. */
-  organizationUnitId: string | null;
-  /** Organizasyon biriminin uygulama içinde kullanılan teknik kodudur. */
-  organizationUnitCode: string | null;
+  /** Kullanıcının bağlı olduğu birliğin GUID kimliğidir. */
+  militaryUnitDefId: string | null;
+  /** Birliğin uygulama içinde kullanılan teknik kodudur. */
+  militaryUnitDefCode: string | null;
   /** Bağlı olduğu kurumsal birimin kullanıcıya gösterilen adıdır. */
-  organizationUnitName: string | null;
+  militaryUnitDefName: string | null;
   /** Kullanıcının aktif rol kodlarını içerir. */
   roles: string[];
   /** Kaydın iş süreçlerinde aktif olup olmadığını gösterir. */

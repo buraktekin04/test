@@ -44,20 +44,20 @@ public sealed class UserListItemResponse
     public string? PhoneNumber { get; init; }
 
     /// <summary>
-    /// Kullanıcının bağlı olduğu organizasyon biriminin kimliğidir.
+    /// Kullanıcının bağlı olduğu birliğin kimliğidir.
     /// Birime bağlı olmayan teknik kullanıcılar için boş olabilir.
     /// </summary>
-    public Guid? OrganizationUnitId { get; init; }
+    public Guid? MilitaryUnitDefId { get; init; }
 
     /// <summary>
-    /// Bağlı olunan organizasyon biriminin teknik kodudur.
+    /// Bağlı olunan birliğin teknik kodudur.
     /// </summary>
-    public string? OrganizationUnitCode { get; init; }
+    public string? MilitaryUnitDefCode { get; init; }
 
     /// <summary>
-    /// Bağlı olunan organizasyon biriminin ekranda gösterilen adıdır.
+    /// Bağlı olunan birliğin ekranda gösterilen adıdır.
     /// </summary>
-    public string? OrganizationUnitName { get; init; }
+    public string? MilitaryUnitDefName { get; init; }
 
     /// <summary>
     /// Kullanıcının aktif rol ilişkilerinden elde edilen rol kodlarını içerir.

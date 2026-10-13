@@ -3,7 +3,7 @@ using FluentValidation;
 using KLMN.Application.Common.Exceptions;
 using KLMN.Application.Users.Exceptions;
 using KLMN.Application.Roles.Exceptions;
-using KLMN.Application.Organizations.Exceptions;
+using KLMN.Application.MilitaryUnits.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -140,19 +140,19 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
                     Detail = exception.Message
                 },
 
-            OrganizationNotFoundException =>
+            MilitaryUnitNotFoundException =>
                 new ProblemDetails
                 {
                     Status = StatusCodes.Status404NotFound,
-                    Title = "Organizasyon birimi bulunamadı.",
+                    Title = "Birlik bulunamadı.",
                     Detail = exception.Message
                 },
 
-            OrganizationConflictException =>
+            MilitaryUnitConflictException =>
                 new ProblemDetails
                 {
                     Status = StatusCodes.Status409Conflict,
-                    Title = "Organizasyon işlemi gerçekleştirilemedi.",
+                    Title = "Birlik işlemi gerçekleştirilemedi.",
                     Detail = exception.Message
                 },
 

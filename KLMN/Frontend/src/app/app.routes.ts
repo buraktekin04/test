@@ -66,19 +66,19 @@ export const routes: Routes = [
             .then(component => component.RoleListComponent)
       },
       {
-        path: 'organizations',
+        path: 'military-units',
         canActivate: [permissionGuard],
         data: {
-          permissions: [PermissionCodes.Organizations.Query]
+          permissions: [PermissionCodes.MilitaryUnits.Query]
         },
         loadComponent: () =>
-          import('./features/organizations/organization-list/organization-list.component')
-            .then(component => component.OrganizationListComponent)
+          import('./features/military-units/military-unit-list/military-unit-list.component')
+            .then(component => component.MilitaryUnitListComponent)
       },
       {
-        path: 'definitions/organizations',
+        path: 'definitions/military-units',
         pathMatch: 'full',
-        redirectTo: 'organizations'
+        redirectTo: 'military-units'
       },
       {
         path: 'definitions/roles',

@@ -22,9 +22,11 @@ internal static class AuditReferenceDisplayResolver
             ["RoleId"] = "Role",
             ["PermissionId"] = "Permission",
             ["UserId"] = "User",
-            ["OrganizationUnitId"] = "OrganizationUnit",
-            ["ParentId"] = "OrganizationUnit",
-            ["ParentOrganizationUnitId"] = "OrganizationUnit"
+            ["MilitaryUnitDefId"] = "MilitaryUnitDef",
+            ["OrganizationUnitId"] = "MilitaryUnitDef",
+            ["ParentOrganizationUnitId"] = "MilitaryUnitDef",
+            ["ParentId"] = "MilitaryUnitDef",
+            ["ConnectedTopUnity"] = "MilitaryUnitDef"
         };
 
     /// <summary>
@@ -69,7 +71,7 @@ internal static class AuditReferenceDisplayResolver
         var roleIds = references["Role"];
         var permissionIds = references["Permission"];
         var userIds = references["User"];
-        var organizationIds = references["OrganizationUnit"];
+        var militaryUnitIds = references["MilitaryUnitDef"];
 
         var roleLabels = roleIds.Count == 0
             ? new Dictionary<Guid, string>()
@@ -96,10 +98,10 @@ internal static class AuditReferenceDisplayResolver
                     x => (x.FirstName + " " + x.LastName).Trim() +
                          " (" + x.UserName + ")", cancellationToken);
 
-        var organizationLabels = organizationIds.Count == 0
+        var militaryUnitLabels = militaryUnitIds.Count == 0
             ? new Dictionary<Guid, string>()
-            : await dbContext.OrganizationUnits.IgnoreQueryFilters().AsNoTracking()
-                .Where(x => organizationIds.Contains(x.Id))
+            : await dbContext.MilitaryUnitDefs.IgnoreQueryFilters().AsNoTracking()
+                .Where(x => militaryUnitIds.Contains(x.Id))
                 .Select(x => new { x.Id, x.Name, x.Code })
                 .ToDictionaryAsync(x => x.Id,
                     x => x.Name + " (" + x.Code + ")", cancellationToken);
@@ -109,7 +111,7 @@ internal static class AuditReferenceDisplayResolver
             ["Role"] = roleLabels,
             ["Permission"] = permissionLabels,
             ["User"] = userLabels,
-            ["OrganizationUnit"] = organizationLabels
+            ["MilitaryUnitDef"] = militaryUnitLabels
         };
 
         var results = new List<AuditLogResponse>(entries.Count);
@@ -186,7 +188,7 @@ internal static class AuditReferenceDisplayResolver
             "Role" => "Rol kaydı bulunamadı",
             "Permission" => "Yetki kaydı bulunamadı",
             "User" => "Kullanıcı kaydı bulunamadı",
-            "OrganizationUnit" => "Organizasyon kaydı bulunamadı",
+            "MilitaryUnitDef" => "Birlik kaydı bulunamadı",
             _ => "İlişkili kayıt bulunamadı"
         };
     }

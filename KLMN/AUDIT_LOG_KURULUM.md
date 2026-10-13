@@ -3,7 +3,7 @@
 ## Kapsam
 
 - EF Core `SaveChanges` interceptor değişiklikleri ana kayıtla **aynı transaction içinde** yazdırır.
-- Kullanıcı, rol, organizasyon, permission ve UserRole / RolePermission /
+- Kullanıcı, rol, birlik, permission ve UserRole / RolePermission /
   UserPermission / UserAgreementPdf ilişkileri desteklenir.
 - Oluşturma, değiştirme, pasifleştirme, aktifleştirme ve soft-delete kaydedilir.
 - Kayıt kimliği, işlem zamanı (UTC), işlemi yapan kullanıcı ve güvenli alanların
@@ -82,7 +82,7 @@ veritabanı yöneticisine karşı kriptografik değiştirilemezlik sağlamaz.
 ## Rol/Yetki GUID alanlarının okunabilir gösterimi
 
 Audit ekranlarında RolePermission/UserRole/UserPermission ilişkilerinin
-`RoleId`, `PermissionId`, `UserId` ve organizasyon kimlikleri artık
+`RoleId`, `PermissionId`, `UserId` ve birlik kimlikleri artık
 **ad (kod)** biçiminde gösterilir. Bu dönüşüm sunucu tarafında, tek sayfadaki
 kimliklerin toplu sorgulanmasıyla yapılır ve hem genel İşlem Geçmişi'nde
 hem de kayıt bazlı geçmiş pencerelerinde kullanılır.

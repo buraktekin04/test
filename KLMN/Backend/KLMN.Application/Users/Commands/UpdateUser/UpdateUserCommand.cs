@@ -25,10 +25,10 @@ public sealed record UpdateUserCommand : IRequest<UserMutationResponse>
     public string? PhoneNumber { get; init; }
 
     /// <summary>
-    /// Kullanıcının görev yeri olarak seçilen organizasyon biriminin GUID'idir.
+    /// Kullanıcının görev yeri olarak seçilen birliğin GUID'idir.
     /// Mevcut şemayla uyumluluk için boş olabilir; rol ve yetki ataması değildir.
     /// </summary>
-    public Guid? OrganizationUnitId { get; init; }
+    public Guid? MilitaryUnitDefId { get; init; }
 
     /// <summary>true ise mesai dışı giriş engellenir, false ise mesai dışı erişime izin verilir.</summary>
     public bool ClockLimit { get; init; } = true;

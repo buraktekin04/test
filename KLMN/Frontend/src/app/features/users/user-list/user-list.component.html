@@ -128,8 +128,8 @@
             <input pInputText type="text" formControlName="email" placeholder="E-posta" />
           </label>
           <label class="column-filter-field">
-            <span>Organizasyon</span>
-            <input pInputText type="text" formControlName="organization" placeholder="Birim adı / kodu" />
+            <span>Görev Yeri</span>
+            <input pInputText type="text" formControlName="militaryUnit" placeholder="Birim adı / kodu" />
           </label>
           <label class="column-filter-field">
             <span>Rol</span>
@@ -196,7 +196,7 @@
           <th>Kullanıcı</th>
           <th>Kullanıcı Adı</th>
           <th>E-posta</th>
-          <th>Organizasyon</th>
+          <th>Görev Yeri</th>
           <th>Roller</th>
           <th>Durum</th>
           <th>Mesai Dışı</th>
@@ -222,11 +222,11 @@
           <td>{{ user.userName }}</td>
           <td>{{ user.email }}</td>
           <td>
-            @if (user.organizationUnitName) {
-              <div class="organization-cell">
-                <strong>{{ user.organizationUnitName }}</strong>
-                @if (user.organizationUnitCode) {
-                  <span>{{ user.organizationUnitCode }}</span>
+            @if (user.militaryUnitDefName) {
+              <div class="military-unit-cell">
+                <strong>{{ user.militaryUnitDefName }}</strong>
+                @if (user.militaryUnitDefCode) {
+                  <span>{{ user.militaryUnitDefCode }}</span>
                 }
               </div>
             } @else {
@@ -521,13 +521,13 @@
           <input id="editPhoneNumber" pInputText formControlName="phoneNumber"
                  autocomplete="tel" />
         </div>
-        <div class="form-field form-field-full organization-field">
-          <label for="userOrganizationUnitId">Görev Yeri / Organizasyon</label>
+        <div class="form-field form-field-full military-unit-field">
+          <label for="userMilitaryUnitDefId">Görev Yeri</label>
           <!-- PrimeNG Select'in kendi ikon ve dropdown düzeni korunur. -->
           <p-select
-            inputId="userOrganizationUnitId"
-            formControlName="organizationUnitId"
-            [options]="organizationOptions()"
+            inputId="userMilitaryUnitDefId"
+            formControlName="militaryUnitDefId"
+            [options]="militaryUnitOptions()"
             optionLabel="label"
             optionValue="id"
             [fluid]="true"
@@ -537,18 +537,18 @@
             [showClear]="true"
             dropdownIcon="pi pi-chevron-down"
             scrollHeight="260px"
-            [loading]="organizationLoading()"
-            [disabled]="organizationLoading() || (!!selectedUser() && !canUpdate())"
+            [loading]="militaryUnitLoading()"
+            [disabled]="militaryUnitLoading() || (!!selectedUser() && !canUpdate())"
             [appendTo]="'body'"
             placeholder="Görev yeri seçiniz">
           </p-select>
-          @if (organizationLoadError()) {
-            <small class="organization-error">{{ organizationLoadError() }}</small>
+          @if (militaryUnitLoadError()) {
+            <small class="military-unit-error">{{ militaryUnitLoadError() }}</small>
             <p-button type="button" size="small" label="Tekrar Dene"
                       icon="pi pi-refresh" severity="secondary" [outlined]="true"
-                      (onClick)="loadOrganizationOptions(selectedUser() ?? undefined)"></p-button>
-          } @else if (!organizationLoading() && organizationOptions().length === 0) {
-            <small>Aktif organizasyon kaydı bulunamadı.</small>
+                      (onClick)="loadMilitaryUnitOptions(selectedUser() ?? undefined)"></p-button>
+          } @else if (!militaryUnitLoading() && militaryUnitOptions().length === 0) {
+            <small>Aktif birlik kaydı bulunamadı.</small>
           }
         </div>
         @if (!selectedUser()) {

@@ -162,7 +162,7 @@ export class RoleListComponent implements OnInit {
   private readonly moduleLabels: Record<string, string> = {
     Users: 'Kullanıcı İşlemleri',
     Roles: 'Rol Yönetimi',
-    Organizations: 'Organizasyon',
+    MilitaryUnits: 'Birlik',
     Reports: 'Raporlar',
     Investigations: 'İncelemeler'
   };

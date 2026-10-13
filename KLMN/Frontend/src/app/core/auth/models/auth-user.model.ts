@@ -17,9 +17,9 @@ export interface AuthUser {
   /** Kullanıcının isteğe bağlı telefon numarasıdır. */
   phoneNumber?: string | null;
   /** Kullanıcının bağlı olduğu birimin benzersiz GUID değeridir. */
-  organizationUnitId: string | null;
+  militaryUnitDefId: string | null;
   /** Kullanıcının bağlı olduğu birimin görüntülenebilir adıdır. */
-  organizationUnitName?: string | null;
+  militaryUnitDefName?: string | null;
   /** Kullanıcının son başarılı oturum açma UTC zamanıdır. */
   lastLoginDate?: string | null;
   /** Parolanın en son değiştirildiği UTC zamandır. */

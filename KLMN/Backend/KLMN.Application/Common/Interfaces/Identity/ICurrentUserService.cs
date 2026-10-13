@@ -12,7 +12,7 @@ public interface ICurrentUserService
     string? FirstName { get; }
     string? LastName { get; }
     string? FullName { get; }
-    Guid? OrganizationUnitId { get; }
+    Guid? MilitaryUnitDefId { get; }
     IReadOnlyCollection<string> Roles { get; }
     IReadOnlyCollection<string> Permissions { get; }
     bool IsAuthenticated { get; }

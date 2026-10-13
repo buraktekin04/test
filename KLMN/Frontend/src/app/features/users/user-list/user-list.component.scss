@@ -121,7 +121,7 @@
 }
 
 .user-cell,
-.organization-cell {
+.military-unit-cell {
   display: flex;
   flex-direction: column;
   gap: .2rem;
@@ -221,10 +221,10 @@
   }
 }
 /* Görev yeri alanında PrimeNG Select'in kendi display/flex/ikon stilleri korunur. */
-.organization-field {
+.military-unit-field {
   min-width: 0;
 
-  .organization-error {
+  .military-unit-error {
     color: #b42318;
   }
 }

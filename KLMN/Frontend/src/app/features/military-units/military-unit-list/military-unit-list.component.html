@@ -1,0 +1,327 @@
+<div class="military-units-page">
+  <div class="page-header">
+    <div>
+      <h1>Birlik Tanımları</h1>
+      <p>Görev yeri olarak kullanılan kurum birliklerini ve üst–alt birlik ilişkilerini yönetin.</p>
+    </div>
+    @if (canCreate()) {
+      <p-button type="button" label="Yeni Birlik" icon="pi pi-plus"
+                (onClick)="openCreateDialog()"></p-button>
+    }
+  </div>
+
+  <div class="military-unit-notices" aria-live="polite">
+    @if (successMessage()) {
+      <div class="notice notice-success" role="status">
+        <i class="pi pi-check-circle" aria-hidden="true"></i>
+        <span>{{ successMessage() }}</span>
+        <button type="button" class="notice-close" aria-label="Bildirim kapat"
+                (click)="successMessage.set(null)"><i class="pi pi-times"></i></button>
+      </div>
+    }
+    @if (errorMessage()) {
+      <div class="notice notice-error" role="alert">
+        <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+        <span>{{ errorMessage() }}</span>
+        <button type="button" class="notice-close" aria-label="Hata bildirimini kapat"
+                (click)="errorMessage.set(null)"><i class="pi pi-times"></i></button>
+      </div>
+    }
+  </div>
+
+  <section class="filter-panel" aria-label="Birlik arama">
+    <form [formGroup]="filterForm" (ngSubmit)="search()">
+      <div class="search-field">
+        <i class="pi pi-search" aria-hidden="true"></i>
+        <input pInputText type="text" formControlName="search"
+               placeholder="Birlik adı, kodu veya üst birlikde ara..."
+               aria-label="Birlik ara" />
+      </div>
+      <div class="inactive-filter">
+        <p-checkbox inputId="military-unitsIncludeInactive"
+                    formControlName="includeInactive" [binary]="true"></p-checkbox>
+        <label for="military-unitsIncludeInactive">Pasifleri dahil et</label>
+      </div>
+      <div class="filter-actions">
+        <p-button type="submit" label="Ara" icon="pi pi-search"
+                  [loading]="loading()"></p-button>
+        <p-button type="button" label="Temizle" severity="secondary"
+                  icon="pi pi-times" [outlined]="true"
+                  (onClick)="clearFilters()"></p-button>
+      </div>
+    </form>
+  </section>
+
+  <section class="military-units-table-card" aria-label="Birlikler listesi">
+    <div class="table-toolbar">
+      <p-button type="button"
+                [label]="columnFiltersExpanded() ? 'Filtreleri Gizle' : 'Kolon Filtreleri'"
+                icon="pi pi-filter" severity="secondary"
+                [outlined]="!columnFiltersExpanded()"
+                (onClick)="toggleColumnFilters()"></p-button>
+      <p-button type="button" label="Excel'e Aktar" icon="pi pi-file-excel"
+                severity="success" [outlined]="true" [loading]="exporting()"
+                [disabled]="loading() || totalCount() === 0"
+                (onClick)="exportExcel()"></p-button>
+    </div>
+
+    @if (columnFiltersExpanded()) {
+      <form class="column-filter-panel" [formGroup]="columnFilterForm"
+            (ngSubmit)="applyColumnFilters()">
+        <div class="filter-panel-heading">
+          <strong>Kolon Filtreleri</strong>
+          <button type="button" class="notice-close" aria-label="Filtreleri gizle"
+                  (click)="toggleColumnFilters()"><i class="pi pi-times"></i></button>
+        </div>
+        <div class="column-filter-grid">
+          <div class="column-filter-field">
+            <label for="orgActiveFilter">Aktiflik</label>
+            <select id="orgActiveFilter" formControlName="isActive">
+              <option [ngValue]="null">Tümü</option>
+              <option [ngValue]="true">Aktif</option>
+              <option [ngValue]="false">Pasif</option>
+            </select>
+          </div>
+          <div class="column-filter-field">
+            <label for="orgRootFilter">Birlik Seviyesi</label>
+            <select id="orgRootFilter" formControlName="rootOnly">
+              <option [ngValue]="null">Tüm Birlikler</option>
+              <option [ngValue]="true">Yalnızca Kök Birlikler</option>
+            </select>
+          </div>
+        </div>
+        <div class="column-filter-actions">
+          <p-button type="button" label="Tümünü Temizle" icon="pi pi-filter-slash"
+                    severity="secondary" [outlined]="true"
+                    (onClick)="clearFilters()"></p-button>
+          <p-button type="submit" label="Filtreleri Uygula" icon="pi pi-check"
+                    [loading]="loading()"></p-button>
+        </div>
+      </form>
+    }
+
+    <div class="table-scroll" role="region" aria-label="Birlik tablosu" tabindex="0">
+      <p-table [value]="units()" [loading]="loading()"
+               [tableStyle]="{ 'min-width': '980px', 'width': '100%' }">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Birlik Adı</th>
+            <th>Birlik Kodu</th>
+            <th>Harici Kod</th>
+            <th>Üst Birlik</th>
+            <th>Durum</th>
+            <th>Kullanıcı</th>
+            <th>Alt Birlik</th>
+            <th>Geçerlilik</th>
+            <th>Oluşturulma</th>
+            @if (canUpdate() || canDelete() || canViewAudit()) {
+              <th>İşlemler</th>
+            }
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-unit>
+          <tr>
+            <td>
+              <div class="unit-name-cell">
+                <i class="pi" [class.pi-sitemap]="!unit.connectedTopUnity"
+                   [class.pi-building]="!!unit.connectedTopUnity" aria-hidden="true"></i>
+                <strong [title]="unit.name">{{ unit.name }}</strong>
+              </div>
+            </td>
+            <td><code class="unit-code">{{ unit.code }}</code></td>
+            <td>{{ unit.externalCode || '—' }}</td>
+            <td>
+              @if (unit.connectedTopUnity) {
+                <span class="parent-name" [title]="unit.connectedTopUnitName || ''">
+                  {{ unit.connectedTopUnitName || '—' }}
+                </span>
+              } @else {
+                <span class="root-unit">Kök Birlik</span>
+              }
+            </td>
+            <td>
+              <p-tag [value]="unit.isActive ? 'Aktif' : 'Pasif'"
+                     [severity]="unit.isActive ? 'success' : 'secondary'"></p-tag>
+            </td>
+            <td>{{ unit.userCount }}</td>
+            <td>{{ unit.childCount }}</td>
+            <td class="validity-cell">
+              <span>{{ unit.validFrom ? (unit.validFrom | date:'dd.MM.yyyy HH:mm') : 'Başlangıç sınırı yok' }}</span>
+              <span>{{ unit.validTo ? (unit.validTo | date:'dd.MM.yyyy HH:mm') : 'Süresiz' }}</span>
+            </td>
+            <td>{{ unit.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
+            @if (canUpdate() || canDelete() || canViewAudit()) {
+              <td>
+                <div class="row-actions">
+                  @if (canUpdate()) {
+                    <p-button type="button" icon="pi pi-pencil" [text]="true" size="small"
+                              severity="secondary" ariaLabel="Birlik düzenle"
+                              [disabled]="actionLoadingId() === unit.id"
+                              (onClick)="openEditDialog(unit)"></p-button>
+                    <p-button type="button"
+                              [icon]="unit.isActive ? 'pi pi-ban' : 'pi pi-check-circle'"
+                              [text]="true" size="small" severity="secondary"
+                              [ariaLabel]="unit.isActive ? 'Birliki pasifleştir' : 'Birliki aktifleştir'"
+                              [disabled]="actionLoadingId() === unit.id"
+                              (onClick)="confirmStatusChange(unit)"></p-button>
+                  }
+                  @if (canViewAudit()) {
+                    <p-button type="button" icon="pi pi-history" [text]="true"
+                              size="small" severity="secondary"
+                              ariaLabel="Birlik işlem geçmişi"
+                              (onClick)="openAudit(unit)"></p-button>
+                  }
+                  @if (canDelete()) {
+                    <p-button type="button" icon="pi pi-trash" [text]="true"
+                              size="small" severity="danger" ariaLabel="Birlik sil"
+                              [disabled]="actionLoadingId() === unit.id"
+                              (onClick)="confirmDelete(unit)"></p-button>
+                  }
+                </div>
+              </td>
+            }
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td [attr.colspan]="canUpdate() || canDelete() || canViewAudit() ? 10 : 9"
+                class="empty-table">Filtreye uygun birlik bulunamadı.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <div class="pagination">
+      <span>{{ rangeStart() }}–{{ rangeEnd() }} / {{ totalCount() }} kayıt</span>
+      <div class="pagination-controls">
+        <button type="button" aria-label="İlk sayfa" class="page-nav"
+                [disabled]="loading() || pageNumber() <= 1"
+                (click)="goToPage(1)"><i class="pi pi-angle-double-left"></i></button>
+        <button type="button" aria-label="Önceki sayfa" class="page-nav"
+                [disabled]="loading() || pageNumber() <= 1"
+                (click)="goToPage(pageNumber()-1)"><i class="pi pi-angle-left"></i></button>
+        <span>{{ pageNumber() }} / {{ totalPages() }}</span>
+        <button type="button" aria-label="Sonraki sayfa" class="page-nav"
+                [disabled]="loading() || pageNumber() >= totalPages()"
+                (click)="goToPage(pageNumber()+1)"><i class="pi pi-angle-right"></i></button>
+        <button type="button" aria-label="Son sayfa" class="page-nav"
+                [disabled]="loading() || pageNumber() >= totalPages()"
+                (click)="goToPage(totalPages())"><i class="pi pi-angle-double-right"></i></button>
+      </div>
+      <label class="page-size">Sayfa başına
+        <select [value]="pageSize()" [disabled]="loading()"
+                (change)="onPageSizeChange($event)" aria-label="Sayfa başına kayıt">
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </label>
+    </div>
+  </section>
+</div>
+
+<!-- Rol/Kullanıcı tanımlarındaki minimalist modal: basit bölüm ayraçları. -->
+<p-dialog [header]="editingUnit() ? 'Birlik Düzenle' : 'Yeni Birlik'"
+          [visible]="dialogVisible()"
+          (visibleChange)="onDialogVisibleChange($event)"
+          [modal]="true" [draggable]="false" [resizable]="false"
+          [style]="{ width: 'min(600px, 96vw)' }">
+  <form class="military-unit-form" [formGroup]="militaryUnitForm" (ngSubmit)="saveUnit()">
+    @if (formError()) {
+      <p-message severity="error" [text]="formError()!"></p-message>
+    }
+
+    <div class="form-divider"><span>Birlik Bilgileri</span></div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="orgName">Birlik Adı <span class="required">*</span></label>
+        <input id="orgName" pInputText formControlName="name"
+               placeholder="Örn. Muhabere ve Bilgi Sistem Dairesi" autocomplete="off" />
+      </div>
+      <div class="form-field">
+        <label for="orgCode">Birlik Kodu <span class="required">*</span></label>
+        <input id="orgCode" pInputText formControlName="code"
+               placeholder="Örn. MBS_DAIRE" autocomplete="off" />
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="unitExternalCode">Harici Kod</label>
+        <input id="unitExternalCode" pInputText formControlName="externalCode" maxlength="100" placeholder="Harici sistem kodu" />
+      </div>
+    </div>
+    <details class="reference-details">
+      <summary>Kuvvet komutanlığı referansı</summary>
+      <div class="form-field">
+        <label for="unitForcesCommand">Kuvvet Komutanlığı Kimliği</label>
+        <input id="unitForcesCommand" pInputText formControlName="forcesCommandDef" placeholder="Mevcut referans kimliği (isteğe bağlı)" />
+        <small>Kuvvet komutanlığı tanımları eklenene kadar mevcut referans kimliğiyle saklanır.</small>
+      </div>
+    </details>
+    <div class="form-divider"><span>Geçerlilik Dönemi</span></div>
+    <div class="form-grid validity-fields">
+      <div class="form-field">
+        <label for="unitValidFrom">Başlangıç</label>
+        <input id="unitValidFrom" pInputText type="datetime-local" formControlName="validFrom" />
+        <small>Boş bırakılırsa başlangıç sınırı uygulanmaz.</small>
+      </div>
+      <div class="form-field">
+        <label for="unitValidTo">Bitiş</label>
+        <input id="unitValidTo" pInputText type="datetime-local" formControlName="validTo" />
+        <small>Boş bırakılırsa süresiz geçerlidir.</small>
+      </div>
+    </div>
+    <div class="form-divider"><span>Birlik Hiyerarşisi</span></div>
+    <div class="form-field">
+      <label for="orgParentUnit">Üst Birlik</label>
+      <!-- PrimeNG'nin kendi fluid düzenini kullanır; iç ok/label CSS override yoktur. -->
+      <p-select inputId="orgParentUnit"
+                formControlName="connectedTopUnity"
+                [options]="parentChoices()" optionLabel="label" optionValue="id"
+                [fluid]="true" [filter]="true" filterBy="label"
+                filterPlaceholder="Üst birlik ara..." [showClear]="true"
+                [loading]="parentLoading()"
+                [disabled]="parentLoading() || saving()"
+                [appendTo]="'body'" scrollHeight="280px"
+                placeholder="Üst birlik yok (kök birlik)">
+      </p-select>
+      <small>Üst birlik seçmezseniz kayıt kök birlik olarak oluşturulur.</small>
+      @if (parentError()) {
+        <p-message severity="error" [text]="parentError()!"></p-message>
+        <p-button type="button" label="Tekrar Dene" icon="pi pi-refresh"
+                  severity="secondary" [outlined]="true" size="small"
+                  (onClick)="loadParentOptions()"></p-button>
+      }
+    </div>
+
+    @if (editingUnit(); as edited) {
+      <div class="form-info">
+        <i class="pi pi-info-circle" aria-hidden="true"></i>
+        Bu birliğe {{ edited.userCount }} kullanıcı ve {{ edited.childCount }} alt birlik bağlı.
+        Bağlı kayıtlar varken birlik silinemez.
+      </div>
+    }
+
+    <div class="dialog-actions">
+      <p-button type="button" label="Vazgeç" severity="secondary" [outlined]="true"
+                [disabled]="saving()" (onClick)="onDialogVisibleChange(false)"></p-button>
+      <p-button type="submit" label="Kaydet" icon="pi pi-check"
+                [loading]="saving()" [disabled]="parentLoading() || !!parentError()"></p-button>
+    </div>
+  </form>
+</p-dialog>
+
+<p-confirmdialog></p-confirmdialog>
+
+<!-- Audit geçmişi, uygulamadaki ortak salt okunur bileşenle gösterilir. -->
+<p-dialog header="Birlik İşlem Geçmişi"
+          [visible]="!!auditUnit()" (visibleChange)="!$event && auditUnit.set(null)"
+          [modal]="true" [draggable]="false" [resizable]="false"
+          [style]="{ width: 'min(760px, 96vw)' }">
+  @if (auditUnit(); as record) {
+    <app-audit-history entityType="MilitaryUnitDef"
+                       [entityId]="record.id"></app-audit-history>
+  }
+</p-dialog>

@@ -18,7 +18,7 @@ import { SelectModule } from 'primeng/select';
 import { ValidityPeriodUtils } from '../../../core/utils/validity-period.utils';
 import { PermissionCodes } from '../../../core/permissions/constants/permission-codes';
 import { PermissionService } from '../../../core/permissions/services/permission.service';
-import { OrganizationUnitOption } from '../models/organization-unit-option.model';
+import { MilitaryUnitDefOption } from '../models/military-unit-def-option.model';
 import { UserAgreementPdf } from '../models/user-agreement-pdf.model';
 import { CreateUserRequest } from '../models/create-user-request.model';
 import { UpdateUserRequest } from '../models/update-user-request.model';
@@ -29,7 +29,7 @@ import { UserService } from '../services/user.service';
 import { AuditHistoryComponent } from '../../../shared/audit-history/audit-history.component';
 
 /** Dropdown'un kullanıcıya gösterdiği kod + ad etiketli birim seçeneğidir. */
-type OrganizationSelectOption = OrganizationUnitOption & { label: string };
+type MilitaryUnitSelectOption = MilitaryUnitDefOption & { label: string };
 
 /**
  * Tanımlamalar > Kullanıcı Tanımları ekranının listeleme, sorgulama,
@@ -80,14 +80,14 @@ export class UserListComponent implements OnInit {
   /** Silme ve aktifleştirme gibi kritik işlemlerin onay penceresidir. */
   private readonly confirmationService = inject(ConfirmationService);
 
-  /** Formda seçilebilen aktif organizasyon birimleri ve mevcut pasif atamadır. */
-  public readonly organizationOptions = signal<OrganizationSelectOption[]>([]);
+  /** Formda seçilebilen aktif birlik birimleri ve mevcut pasif atamadır. */
+  public readonly militaryUnitOptions = signal<MilitaryUnitSelectOption[]>([]);
 
-  /** Organizasyon seçenekleri yüklenirken true olan UI göstergesidir. */
-  public readonly organizationLoading = signal(false);
+  /** Birlik seçenekleri yüklenirken true olan UI göstergesidir. */
+  public readonly militaryUnitLoading = signal(false);
 
   /** Görev yeri kataloğu yüklenemezse form kaydını engelleyen uyarıdır. */
-  public readonly organizationLoadError = signal<string | null>(null);
+  public readonly militaryUnitLoadError = signal<string | null>(null);
 
   /** Geçerli sayfanın kullanıcı kayıtlarıdır. */
   public readonly users = signal<UserListItem[]>([]);
@@ -189,7 +189,7 @@ export class UserListComponent implements OnInit {
     fullName: this.formBuilder.nonNullable.control(''),
     userName: this.formBuilder.nonNullable.control(''),
     email: this.formBuilder.nonNullable.control(''),
-    organization: this.formBuilder.nonNullable.control(''),
+    militaryUnit: this.formBuilder.nonNullable.control(''),
     role: this.formBuilder.nonNullable.control(''),
     isActive: this.formBuilder.control<boolean | null>(null),
     isLocked: this.formBuilder.control<boolean | null>(null),
@@ -249,8 +249,8 @@ export class UserListComponent implements OnInit {
     lastName: ['', [Validators.required, Validators.maxLength(100)]],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(256)]],
     phoneNumber: ['', [Validators.maxLength(30)]],
-    // Mevcut tabloda organizasyon ataması boş kalabileceği için nullable'dır.
-    organizationUnitId: this.formBuilder.control<string | null>(null),
+    // Mevcut tabloda birlik ataması boş kalabileceği için nullable'dır.
+    militaryUnitDefId: this.formBuilder.control<string | null>(null),
     clockLimit: [true],
     isLocked: [false],
     validFrom: [''],
@@ -264,40 +264,40 @@ export class UserListComponent implements OnInit {
   }
 
   /**
-   * Açılan formun organizasyon kataloğunu güncel API verisinden doldurur.
+   * Açılan formun birlik kataloğunu güncel API verisinden doldurur.
    * Önceden atanmış ama pasif hale gelmiş birimi seçili göstermeye devam eder;
-   * yeni bir pasif organizasyon atamasına API izin vermez.
+   * yeni bir pasif birlik atamasına API izin vermez.
    */
-  public loadOrganizationOptions(selectedUser?: UserListItem): void {
-    this.organizationLoading.set(true);
-    this.organizationLoadError.set(null);
-    this.organizationOptions.set([]);
+  public loadMilitaryUnitOptions(selectedUser?: UserListItem): void {
+    this.militaryUnitLoading.set(true);
+    this.militaryUnitLoadError.set(null);
+    this.militaryUnitOptions.set([]);
 
-    this.userService.getOrganizationUnitOptions()
-      .pipe(finalize(() => this.organizationLoading.set(false)))
+    this.userService.getMilitaryUnitDefOptions()
+      .pipe(finalize(() => this.militaryUnitLoading.set(false)))
       .subscribe({
-        next: organizations => {
-          const options: OrganizationSelectOption[] = organizations.map(item => ({
+        next: militaryUnits => {
+          const options: MilitaryUnitSelectOption[] = militaryUnits.map(item => ({
             ...item,
             label: `${item.code} — ${item.name}`
           }));
 
           // Kullanıcının önceki ataması sonradan pasifleşmiş olabilir.
-          if (selectedUser?.organizationUnitId &&
-              !options.some(item => item.id === selectedUser.organizationUnitId)) {
+          if (selectedUser?.militaryUnitDefId &&
+              !options.some(item => item.id === selectedUser.militaryUnitDefId)) {
             options.unshift({
-              id: selectedUser.organizationUnitId,
-              code: selectedUser.organizationUnitCode ?? 'PASIF',
-              name: selectedUser.organizationUnitName ?? 'Önceden atanmış görev yeri',
-              parentOrganizationUnitId: null,
-              label: `${selectedUser.organizationUnitCode ?? 'Eski'} — ${selectedUser.organizationUnitName ?? 'Görev Yeri'} (Pasif/Arşiv)`
+              id: selectedUser.militaryUnitDefId,
+              code: selectedUser.militaryUnitDefCode ?? 'PASIF',
+              name: selectedUser.militaryUnitDefName ?? 'Önceden atanmış görev yeri',
+              connectedTopUnity: null,
+              label: `${selectedUser.militaryUnitDefCode ?? 'Eski'} — ${selectedUser.militaryUnitDefName ?? 'Görev Yeri'} (Mevcut atama)`
             });
           }
 
-          this.organizationOptions.set(options);
+          this.militaryUnitOptions.set(options);
         },
         error: (error: HttpErrorResponse) => {
-          this.organizationLoadError.set(
+          this.militaryUnitLoadError.set(
             'Görev yeri listesi yüklenemedi. Lütfen yeniden deneyin. ' +
             this.getErrorMessage(error)
           );
@@ -319,7 +319,7 @@ export class UserListComponent implements OnInit {
       fullName: columns.fullName,
       userName: columns.userName,
       email: columns.email,
-      organization: columns.organization,
+      militaryUnit: columns.militaryUnit,
       role: columns.role,
       isActive: columns.isActive,
       isLocked: columns.isLocked,
@@ -371,7 +371,7 @@ export class UserListComponent implements OnInit {
   public clearFilters(): void {
     this.filterForm.reset({ search: '', includeInactive: false });
     this.columnFilterForm.reset({
-      fullName: '', userName: '', email: '', organization: '', role: '',
+      fullName: '', userName: '', email: '', militaryUnit: '', role: '',
       isActive: null, isLocked: null, clockLimit: null,
       validFromDate: '', validToDate: '', createdDate: ''
     });
@@ -444,7 +444,7 @@ export class UserListComponent implements OnInit {
       lastName: '',
       email: '',
       phoneNumber: '',
-      organizationUnitId: null,
+      militaryUnitDefId: null,
       clockLimit: true,
       isLocked: false,
       validFrom: '',
@@ -453,7 +453,7 @@ export class UserListComponent implements OnInit {
     });
     this.formError.set(null);
     this.dialogVisible.set(true);
-    this.loadOrganizationOptions();
+    this.loadMilitaryUnitOptions();
   }
 
   /** Düzenlemeden önce kaydı yeniden yükleyerek en yeni xmin değerini alır. */
@@ -475,7 +475,7 @@ export class UserListComponent implements OnInit {
             lastName: detail.lastName,
             email: detail.email,
             phoneNumber: detail.phoneNumber ?? '',
-            organizationUnitId: detail.organizationUnitId,
+            militaryUnitDefId: detail.militaryUnitDefId,
             clockLimit: detail.clockLimit,
             isLocked: detail.isLocked,
             validFrom: ValidityPeriodUtils.toLocalInput(detail.validFrom),
@@ -483,7 +483,7 @@ export class UserListComponent implements OnInit {
             password: ''
           });
           this.dialogVisible.set(true);
-          this.loadOrganizationOptions(detail);
+          this.loadMilitaryUnitOptions(detail);
         },
         error: (error: HttpErrorResponse) =>
           this.errorMessage.set(this.getErrorMessage(error))
@@ -500,7 +500,7 @@ export class UserListComponent implements OnInit {
 
     // Görev yeri kataloğu yoksa/kritik hata aldıysa atanmış birim
     // yanlışlıkla null olarak kaydedilmesin veya geçersiz seçim yapılmasın.
-    if (this.organizationLoading() || this.organizationLoadError()) {
+    if (this.militaryUnitLoading() || this.militaryUnitLoadError()) {
       this.formError.set('Görev yeri listesi henüz hazır değil. Lütfen yeniden deneyin.');
       return;
     }
@@ -533,7 +533,7 @@ export class UserListComponent implements OnInit {
       lastName: value.lastName.trim(),
       email: value.email.trim(),
       phoneNumber: value.phoneNumber.trim() || null,
-      organizationUnitId: value.organizationUnitId,
+      militaryUnitDefId: value.militaryUnitDefId,
       clockLimit: value.clockLimit,
       ...ValidityPeriodUtils.fromLocalInputs(value.validFrom, value.validTo)
     };
@@ -583,7 +583,7 @@ export class UserListComponent implements OnInit {
 
   /**
    * Satırdaki PDF butonuyla kullanıcı listesinin yanındaki belge panelini açar.
-   * Düzenleme formunu ve organization endpoint'ini çalıştırmaz.
+   * Düzenleme formunu ve militaryUnit endpoint'ini çalıştırmaz.
    */
   public openDocumentsPanel(user: UserListItem): void {
     if (!this.canViewDocuments()) return;

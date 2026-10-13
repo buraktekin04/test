@@ -2,7 +2,7 @@
 
 ## Hedef
 
-Kullanıcı, Rol, Organizasyon ve gelecekteki diğer Tanımlamalar/Raporlar
+Kullanıcı, Rol, Birlik ve gelecekteki diğer Tanımlamalar/Raporlar
 ekranlarında ayrı ayrı Excel dosyası üreten kod yazılmaz.
 Sadece o ekranın **DTO kolonları** ve **filtreli verileri** belirlenir.
 Ortak servis Excel dosyasını oluşturur.
@@ -56,10 +56,10 @@ public sealed class ExampleController(
             new("Personel Sayısı", x => x.Count, NumberFormat: "#,##0", Width: 20)
         };
 
-        var bytes = excelExportService.Export(data, columns, "Organizasyonlar");
+        var bytes = excelExportService.Export(data, columns, "Birlikler");
         return File(bytes,
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            "Organizasyonlar.xlsx");
+            "Birlikler.xlsx");
     }
 }
 ```

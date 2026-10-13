@@ -50,19 +50,19 @@ public static class PermissionCodes
         public const string ManagePermissions = "Roles.ManagePermissions";
     }
 
-    /// <summary>Organizasyon yönetimi permission kodlarını içerir.</summary>
-    public static class Organizations
+    /// <summary>Birlik yönetimi permission kodlarını içerir.</summary>
+    public static class MilitaryUnits
     {
         /// <summary>Modül kayıtlarını görüntüleyebilme yetkisinin teknik kodudur.</summary>
-        public const string View = "Organizations.View";
+        public const string View = "MilitaryUnits.View";
         /// <summary>Modül kayıtlarında sorgu ve arama yapabilme yetkisinin teknik kodudur.</summary>
-        public const string Query = "Organizations.Query";
+        public const string Query = "MilitaryUnits.Query";
         /// <summary>Yeni kayıt oluşturabilme yetkisinin teknik kodudur.</summary>
-        public const string Create = "Organizations.Create";
+        public const string Create = "MilitaryUnits.Create";
         /// <summary>Mevcut kaydı düzenleyebilme yetkisinin teknik kodudur.</summary>
-        public const string Update = "Organizations.Update";
+        public const string Update = "MilitaryUnits.Update";
         /// <summary>Kaydı silme yetkisinin teknik kodudur.</summary>
-        public const string Delete = "Organizations.Delete";
+        public const string Delete = "MilitaryUnits.Delete";
     }
 
     /// <summary>Raporlama permission kodlarını içerir.</summary>

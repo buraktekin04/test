@@ -23,7 +23,7 @@ public sealed class GetUsersQueryValidator
         RuleFor(x => x.FullName).MaximumLength(100);
         RuleFor(x => x.UserName).MaximumLength(100);
         RuleFor(x => x.Email).MaximumLength(256);
-        RuleFor(x => x.Organization).MaximumLength(150);
+        RuleFor(x => x.MilitaryUnit).MaximumLength(150);
         RuleFor(x => x.Role).MaximumLength(100);
     }
 }

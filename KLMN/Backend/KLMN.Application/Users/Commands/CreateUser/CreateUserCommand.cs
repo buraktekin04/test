@@ -18,10 +18,10 @@ public sealed record CreateUserCommand : IRequest<UserMutationResponse>
     public string? PhoneNumber { get; init; }
 
     /// <summary>
-    /// Kullanıcının görev yeri olarak seçilen organizasyon biriminin GUID'idir.
+    /// Kullanıcının görev yeri olarak seçilen birliğin GUID'idir.
     /// Mevcut şemayla uyumluluk için boş olabilir; rol ve yetki ataması değildir.
     /// </summary>
-    public Guid? OrganizationUnitId { get; init; }
+    public Guid? MilitaryUnitDefId { get; init; }
     /// <summary>Yalnızca bu istekte alınan, veritabanına açık yazılmayan ilk paroladır.</summary>
     public required string Password { get; init; }
 

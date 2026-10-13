@@ -32,11 +32,11 @@ public sealed class GetUserByIdQueryHandler(IKLMNDbContext dbContext)
                 FullName = (x.FirstName + " " + x.LastName).Trim(),
                 Email = x.Email,
                 PhoneNumber = x.PhoneNumber,
-                OrganizationUnitId = x.OrganizationUnitId,
-                OrganizationUnitCode = x.OrganizationUnit != null
-                    ? x.OrganizationUnit.Code : null,
-                OrganizationUnitName = x.OrganizationUnit != null
-                    ? x.OrganizationUnit.Name : null,
+                MilitaryUnitDefId = x.MilitaryUnitDefId,
+                MilitaryUnitDefCode = x.MilitaryUnitDef != null
+                    ? x.MilitaryUnitDef.Code : null,
+                MilitaryUnitDefName = x.MilitaryUnitDef != null
+                    ? x.MilitaryUnitDef.Name : null,
                 Roles = x.UserRoles
                     .Where(ur => ur.IsActive && !ur.IsDeleted
                         && ur.Role.IsActive && !ur.Role.IsDeleted)

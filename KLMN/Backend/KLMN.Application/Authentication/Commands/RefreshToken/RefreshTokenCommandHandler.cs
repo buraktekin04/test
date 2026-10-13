@@ -205,7 +205,7 @@ public sealed class RefreshTokenCommandHandler
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     FullName = $"{user.FirstName} {user.LastName}".Trim(),
-                    OrganizationUnitId = user.OrganizationUnitId,
+                    MilitaryUnitDefId = user.MilitaryUnitDefId,
                     Roles = authorization.Roles,
                     Permissions = authorization.Permissions
                 }

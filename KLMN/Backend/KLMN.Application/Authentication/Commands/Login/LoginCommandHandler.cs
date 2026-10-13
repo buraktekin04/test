@@ -151,7 +151,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
         var refreshToken = _jwtTokenService.GenerateRefreshToken();
 
         await _dbContext.RefreshTokens.AddAsync(
-            new RefreshToken
+            new KLMN.Domain.Entities.Identity.RefreshToken
             {
                 UserId = user.Id,
                 TokenHash = refreshToken.TokenHash,
@@ -182,7 +182,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     FullName = $"{user.FirstName} {user.LastName}".Trim(),
-                    OrganizationUnitId = user.OrganizationUnitId,
+                    MilitaryUnitDefId = user.MilitaryUnitDefId,
                     Roles = authorization.Roles,
                     Permissions = authorization.Permissions
                 }

@@ -5,7 +5,7 @@ namespace KLMN.Domain.Entities.Identity;
 /// <summary>Kullanıcılara atanabilen dinamik yetkilendirme rolünü temsil eder.</summary>
 public sealed class Role : BaseEntity
 {
-    /// <summary>Rolün, iznin veya organizasyon biriminin kullanıcıya gösterilen adıdır.</summary>
+    /// <summary>Rolün, iznin veya birliğin kullanıcıya gösterilen adıdır.</summary>
     public string Name { get; set; } = string.Empty;
     /// <summary>Uygulama içinde benzersiz tanımlama ve referans için kullanılan teknik koddur.</summary>
     public string Code { get; set; } = string.Empty;

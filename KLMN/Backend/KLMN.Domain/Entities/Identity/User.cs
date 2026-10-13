@@ -1,5 +1,5 @@
 using KLMN.Domain.Common;
-using KLMN.Domain.Entities.Organization;
+using KLMN.Domain.Entities.MilitaryUnit;
 
 namespace KLMN.Domain.Entities.Identity;
 
@@ -35,10 +35,10 @@ public sealed class User : EffectiveDatedEntity
 
     /// <summary>Kullanıcının isteğe bağlı iletişim numarasıdır.</summary>
     public string? PhoneNumber { get; set; }
-    /// <summary>Kullanıcının bağlı olduğu organizasyon biriminin yabancı anahtar değeridir.</summary>
-    public Guid? OrganizationUnitId { get; set; }
-    /// <summary>Kullanıcının bağlı bulunduğu organizasyon birimine ilişkin navigation alanıdır.</summary>
-    public OrganizationUnit? OrganizationUnit { get; set; }
+    /// <summary>Kullanıcının bağlı olduğu birliğin yabancı anahtar değeridir.</summary>
+    public Guid? MilitaryUnitDefId { get; set; }
+    /// <summary>Kullanıcının bağlı bulunduğu birliğe ilişkin navigation alanıdır.</summary>
+    public MilitaryUnitDef? MilitaryUnitDef { get; set; }
     /// <summary>Ardışık başarısız giriş denemelerinin sayısıdır; kilitleme eşiğinde kullanılır.</summary>
     public int AccessFailedCount { get; set; }
     /// <summary>Kullanıcı hesabının erişime kapatılıp kapatılmadığını belirtir.</summary>

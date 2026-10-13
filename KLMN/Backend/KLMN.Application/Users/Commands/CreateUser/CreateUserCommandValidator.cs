@@ -16,9 +16,9 @@ public sealed class CreateUserCommandValidator : AbstractValidator<CreateUserCom
         RuleFor(x => x.PhoneNumber).MaximumLength(30);
 
         // İsteğe bağlı görev yeri GUID'i verilirse boş/varsayılan GUID kabul edilmez.
-        RuleFor(x => x.OrganizationUnitId)
+        RuleFor(x => x.MilitaryUnitDefId)
             .Must(id => !id.HasValue || id.Value != Guid.Empty)
-            .WithMessage("Geçerli bir görev yeri (organizasyon birimi) seçiniz.");
+            .WithMessage("Geçerli bir görev yeri (birlik) seçiniz.");
 
         // Tarih aralığı açık uçlu olabilir ancak ters/eşit aralığa izin verilmez.
         RuleFor(x => x)

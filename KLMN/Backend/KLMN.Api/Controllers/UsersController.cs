@@ -9,7 +9,7 @@ using KLMN.Application.Users.Agreements.Responses;
 using KLMN.Application.Users.Commands.CreateUser;
 using KLMN.Application.Users.Commands.DeleteUser;
 using KLMN.Application.Users.Commands.UpdateUser;
-using KLMN.Application.Users.Queries.GetOrganizationUnitOptions;
+using KLMN.Application.Users.Queries.GetMilitaryUnitDefOptions;
 using KLMN.Application.Users.Queries.GetUserById;
 using KLMN.Application.Users.Queries.GetUsers;
 using KLMN.Application.Users.Responses;
@@ -87,7 +87,7 @@ public sealed class UsersController(ISender sender, IExcelExportService excelExp
             new("Kullanıcı Adı", user => user.UserName, Width: 23),
             new("E-posta", user => user.Email, Width: 34),
             new("Telefon", user => user.PhoneNumber, Width: 21),
-            new("Görev Yeri", user => user.OrganizationUnitName, Width: 32),
+            new("Görev Yeri", user => user.MilitaryUnitDefName, Width: 32),
             new("Roller", user => string.Join(", ", user.Roles), Width: 27),
             new("Durum", user => user.IsActive ? "Aktif" : "Pasif", Width: 16),
             new("Kilit Durumu", user => user.IsLocked ? "Kilitli" : "Açık", Width: 18),
@@ -108,17 +108,17 @@ public sealed class UsersController(ISender sender, IExcelExportService excelExp
 
     /// <summary>
     /// Kullanıcı ekleme/düzenleme formunun Görev Yeri seçim listesine
-    /// aktif ve silinmemiş organizasyon birimlerini getirir.
+    /// aktif ve silinmemiş birlik birimlerini getirir.
     /// Kullanıcı listesi iznine sahip olmak yeterlidir; rol atama izni verilmez.
     /// </summary>
-    [HttpGet("organization-options")]
+    [HttpGet("military-unit-options")]
     [HasPermission(PermissionCodes.Users.Query)]
-    [ProducesResponseType(typeof(IReadOnlyList<OrganizationUnitOptionResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<OrganizationUnitOptionResponse>>> GetOrganizationOptions(
+    [ProducesResponseType(typeof(IReadOnlyList<MilitaryUnitDefOptionResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<MilitaryUnitDefOptionResponse>>> GetMilitaryUnitOptions(
         CancellationToken cancellationToken)
     {
         var result = await sender.Send(
-            new GetOrganizationUnitOptionsQuery(), cancellationToken);
+            new GetMilitaryUnitDefOptionsQuery(), cancellationToken);
 
         return Ok(result);
     }

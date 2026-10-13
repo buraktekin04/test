@@ -50,23 +50,26 @@ public sealed class UpdateUserCommandHandler(
         }
 
         /*
-         * Birim değiştiriliyorsa hedef organizasyon aktif ve silinmemiş olmalı.
+         * Birim değiştiriliyorsa hedef birlik aktif ve silinmemiş olmalı.
          * Daha önceden atanan birim sonradan pasifleştirildiyse, başka profil
          * alanlarının değiştirilmesine izin verilir; eski FK korunabilir.
          * Yeni atamalar için pasif birim kabul edilmez.
          */
-        if (request.OrganizationUnitId.HasValue &&
-            request.OrganizationUnitId != user.OrganizationUnitId)
+        if (request.MilitaryUnitDefId.HasValue &&
+            request.MilitaryUnitDefId != user.MilitaryUnitDefId)
         {
-            var organizationAvailable = await dbContext.OrganizationUnits
+            var now = DateTime.UtcNow;
+            var militaryUnitAvailable = await dbContext.MilitaryUnitDefs
                 .IgnoreQueryFilters()
-                .AnyAsync(x => x.Id == request.OrganizationUnitId.Value &&
-                               x.IsActive && !x.IsDeleted, cancellationToken);
+                .AnyAsync(x => x.Id == request.MilitaryUnitDefId.Value &&
+                               x.IsActive && !x.IsDeleted &&
+                    (!x.ValidFrom.HasValue || x.ValidFrom <= now) &&
+                    (!x.ValidTo.HasValue || now < x.ValidTo), cancellationToken);
 
-            if (!organizationAvailable)
+            if (!militaryUnitAvailable)
             {
                 throw new UserConflictException(
-                    "Seçilen görev yeri bulunamadı veya aktif değil. Güncel organizasyon listesinden seçim yapınız.");
+                    "Seçilen görev yeri bulunamadı, aktif değil veya geçerlilik dönemi dışında. Güncel birlik listesinden seçim yapınız.");
             }
         }
 
@@ -97,7 +100,7 @@ public sealed class UpdateUserCommandHandler(
             user.SecurityStamp = Guid.NewGuid().ToString("N");
         }
 
-        user.OrganizationUnitId = request.OrganizationUnitId;
+        user.MilitaryUnitDefId = request.MilitaryUnitDefId;
         user.UserName = userName;
         user.NormalizedUserName = normalizedUserName;
         user.FirstName = request.FirstName.Trim();

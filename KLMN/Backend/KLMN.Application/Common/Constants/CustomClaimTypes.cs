@@ -4,9 +4,9 @@ namespace KLMN.Application.Common.Constants;
 public static class CustomClaimTypes
 {
     /// <summary>
-    /// Kullanıcının bağlı olduğu organizasyon biriminin kimliğidir.
+    /// Kullanıcının bağlı olduğu birliğin kimliğidir.
     /// </summary>
-    public const string OrganizationUnitId = "organization_unit_id";
+    public const string MilitaryUnitDefId = "military_unit_def_id";
     /// <summary>
     /// JWT'ye yazılan etkin iznin claim türü veya permission kodudur.
     /// </summary>

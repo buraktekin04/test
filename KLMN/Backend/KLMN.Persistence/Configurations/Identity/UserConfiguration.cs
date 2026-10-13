@@ -36,9 +36,9 @@ public sealed class UserConfiguration : EffectiveDatedEntityConfiguration<User>
         builder.Property(x => x.SecurityStamp).IsRequired().HasMaxLength(128);
 
         // Navigation, foreign key ve bağlı kayıt silme davranışını eşler.
-        builder.HasOne(x => x.OrganizationUnit)
+        builder.HasOne(x => x.MilitaryUnitDef)
             .WithMany(x => x.Users)
-            .HasForeignKey(x => x.OrganizationUnitId)
+            .HasForeignKey(x => x.MilitaryUnitDefId)
             .OnDelete(DeleteBehavior.Restrict);
 
         // Silinmemiş kullanıcılar arasında NormalizedUserName değerinin benzersiz olmasını sağlar.
@@ -51,8 +51,8 @@ public sealed class UserConfiguration : EffectiveDatedEntityConfiguration<User>
             .IsUnique()
             .HasFilter(PostgreSqlIndexFilters.NotDeleted);
 
-        // Kullanıcıları organizasyon birimine göre sorgularken kullanılan foreign-key indeksidir.
-        builder.HasIndex(x => x.OrganizationUnitId);
+        // Kullanıcıları birliğe göre sorgularken kullanılan foreign-key indeksidir.
+        builder.HasIndex(x => x.MilitaryUnitDefId);
         // Hesap geçerlilik süresiyle filtrelenen sorguların performansını destekler.
         builder.HasIndex(x => x.ValidTo);
     }

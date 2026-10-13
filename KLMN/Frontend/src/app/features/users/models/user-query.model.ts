@@ -17,8 +17,8 @@ export interface UserQuery {
   userName?: string;
   /** E-posta filtresidir. */
   email?: string;
-  /** Organizasyon kodu veya adı filtresidir. */
-  organization?: string;
+  /** Birlik kodu veya adı filtresidir. */
+  militaryUnit?: string;
   /** Aktif rol kodu filtresidir. */
   role?: string;
   /** Aktiflik (null=tümü) filtresidir. */

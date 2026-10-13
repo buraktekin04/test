@@ -34,13 +34,13 @@ public sealed record CurrentUserResponse
     /// </summary>
     public string? PhoneNumber { get; init; }
     /// <summary>
-    /// Kullanıcının bağlı olduğu organizasyon biriminin kimliğidir.
+    /// Kullanıcının bağlı olduğu birliğin kimliğidir.
     /// </summary>
-    public Guid? OrganizationUnitId { get; init; }
+    public Guid? MilitaryUnitDefId { get; init; }
     /// <summary>
-    /// Kullanıcının bağlı olduğu organizasyon biriminin adıdır.
+    /// Kullanıcının bağlı olduğu birliğin adıdır.
     /// </summary>
-    public string? OrganizationUnitName { get; init; }
+    public string? MilitaryUnitDefName { get; init; }
     /// <summary>
     /// last login date bilgisini ilgili veri sözleşmesinde taşır.
     /// </summary>

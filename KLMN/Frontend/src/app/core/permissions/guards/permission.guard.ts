@@ -18,8 +18,7 @@ export const permissionGuard: CanActivateFn =
 
     // Çoklu permission kontrolünün any veya all şeklinde yapılacağını belirler.
     const mode =
-      route.data['permissionMode']
-        as 'all' | 'any' | undefined;
+      route.data['permissionMode'] as 'all' | 'any' | undefined;
 
     if (!permissions || permissions.length === 0) {
       return true;

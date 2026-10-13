@@ -50,9 +50,9 @@ public sealed record LoginUserResponse
     public required string FullName { get; init; }
 
     /// <summary>
-    /// Kullanıcının bağlı olduğu organizasyon biriminin kimliğidir.
+    /// Kullanıcının bağlı olduğu birliğin kimliğidir.
     /// </summary>
-    public Guid? OrganizationUnitId { get; init; }
+    public Guid? MilitaryUnitDefId { get; init; }
     /// <summary>
     /// Kullanıcının etkin rol kodlarını içerir.
     /// </summary>

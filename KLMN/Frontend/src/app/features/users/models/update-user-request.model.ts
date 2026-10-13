@@ -18,10 +18,10 @@ export interface UpdateUserRequest {
   /** Telefon. */
   phoneNumber: string | null;
   /**
-   * Kullanıcının görev yeri olarak atanan organizasyon biriminin GUID'idir.
+   * Kullanıcının görev yeri olarak atanan birliğin GUID'idir.
    * İsteğe bağlıdır ve herhangi bir rol/permission ataması yapmaz.
    */
-  organizationUnitId: string | null;
+  militaryUnitDefId: string | null;
   /** true: mesai dışı erişim kısıtlıdır; false: mesai dışı izinlidir. */
   clockLimit: boolean;
   /** Hesabın manuel olarak kilitlenip kilitlenmediği; mevcut alan güncellenir. */

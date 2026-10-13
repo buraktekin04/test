@@ -24,11 +24,11 @@ public sealed class AuditableEntitySaveChangesInterceptor(
         new Dictionary<string, HashSet<string>>(StringComparer.Ordinal)
         {
             ["User"] = Fields("UserName", "FirstName", "LastName", "Email",
-                "PhoneNumber", "OrganizationUnitId", "ClockLimit", "IsLocked",
+                "PhoneNumber", "MilitaryUnitDefId", "ClockLimit", "IsLocked",
                 "IsActive", "ValidFrom", "ValidTo"),
             ["Role"] = Fields("Name", "Code", "Description", "IsActive"),
-            ["OrganizationUnit"] = Fields("Name", "Code", "Description",
-                "ParentId", "ParentOrganizationUnitId", "IsActive"),
+            ["MilitaryUnitDef"] = Fields("Name", "Code", "ExternalCode", "ForcesCommandDef",
+                "ConnectedTopUnity", "IsActive", "ValidFrom", "ValidTo"),
             ["Permission"] = Fields("Name", "Code", "Module",
                 "Description", "SortOrder", "IsActive"),
             ["UserRole"] = Fields("UserId", "RoleId", "IsActive"),

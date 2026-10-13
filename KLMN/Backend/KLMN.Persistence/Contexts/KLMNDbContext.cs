@@ -1,7 +1,7 @@
 using KLMN.Application.Common.Interfaces.Persistence;
 using KLMN.Domain.Entities.Identity;
 using KLMN.Domain.Entities.Auditing;
-using KLMN.Domain.Entities.Organization;
+using KLMN.Domain.Entities.MilitaryUnit;
 using KLMN.Persistence.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -57,9 +57,9 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     /// </summary>
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     /// <summary>
-    /// Hiyerarşik organizasyon birimlerine ait DbSet koleksiyonudur.
+    /// Hiyerarşik birlik birimlerine ait DbSet koleksiyonudur.
     /// </summary>
-    public DbSet<OrganizationUnit> OrganizationUnits => Set<OrganizationUnit>();
+    public DbSet<MilitaryUnitDef> MilitaryUnitDefs => Set<MilitaryUnitDef>();
 
     /// <summary>
     /// Entity konfigürasyonlarını assembly'den yükleyip global sorgu filtrelerini uygular.

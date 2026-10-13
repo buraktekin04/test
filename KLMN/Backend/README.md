@@ -65,7 +65,7 @@ Publish edilen uygulamanın çalışma ortamı **Production** seçili olmalıdı
 
 ## Proje katmanları
 
-- **KLMN.Domain:** Ortak entity, kullanıcı, rol, permission, organizasyon ve token modelleri.
+- **KLMN.Domain:** Ortak entity, kullanıcı, rol, permission, birlik ve token modelleri.
 - **KLMN.Application:** MediatR/CQRS, FluentValidation, auth ve authorization işlemleri.
 - **KLMN.Persistence:** PostgreSQL EF Core, `xmin`, named query filter, soft delete ve seeding.
 - **KLMN.Infrastructure:** JWT, MailKit SMTP, current user ve hashleme servisleri.

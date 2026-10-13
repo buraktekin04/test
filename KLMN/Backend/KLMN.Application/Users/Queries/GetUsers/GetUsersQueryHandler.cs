@@ -69,12 +69,12 @@ internal sealed class GetUsersQueryHandler(
             query = query.Where(x => x.NormalizedEmail.Contains(email));
         }
 
-        if (!string.IsNullOrWhiteSpace(request.Organization))
+        if (!string.IsNullOrWhiteSpace(request.MilitaryUnit))
         {
-            var organization = request.Organization.Trim().ToUpperInvariant();
-            query = query.Where(x => x.OrganizationUnit != null &&
-                (x.OrganizationUnit.Name.ToUpper().Contains(organization) ||
-                 x.OrganizationUnit.Code.ToUpper().Contains(organization)));
+            var militaryUnit = request.MilitaryUnit.Trim().ToUpperInvariant();
+            query = query.Where(x => x.MilitaryUnitDef != null &&
+                (x.MilitaryUnitDef.Name.ToUpper().Contains(militaryUnit) ||
+                 x.MilitaryUnitDef.Code.ToUpper().Contains(militaryUnit)));
         }
 
         if (!string.IsNullOrWhiteSpace(request.Role))
@@ -139,12 +139,12 @@ internal sealed class GetUsersQueryHandler(
                 FullName = (x.FirstName + " " + x.LastName).Trim(),
                 Email = x.Email,
                 PhoneNumber = x.PhoneNumber,
-                OrganizationUnitId = x.OrganizationUnitId,
-                OrganizationUnitCode = x.OrganizationUnit != null
-                    ? x.OrganizationUnit.Code
+                MilitaryUnitDefId = x.MilitaryUnitDefId,
+                MilitaryUnitDefCode = x.MilitaryUnitDef != null
+                    ? x.MilitaryUnitDef.Code
                     : null,
-                OrganizationUnitName = x.OrganizationUnit != null
-                    ? x.OrganizationUnit.Name
+                MilitaryUnitDefName = x.MilitaryUnitDef != null
+                    ? x.MilitaryUnitDef.Name
                     : null,
                 // Kayıtlar pasifler dahil sorgulandığında filtreler
                 // kapalı olabileceğinden rol ilişkilerinde aktiflik ayrıca doğrulanır.

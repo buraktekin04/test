@@ -36,10 +36,10 @@ export class NavigationService {
           requiredPermissions: [PermissionCodes.Roles.Query]
         },
         {
-          label: 'Organizasyon Tanımları',
+          label: 'Birlik Tanımları',
           icon: 'pi pi-sitemap',
-          route: '/app/organizations',
-          requiredPermissions: [PermissionCodes.Organizations.Query]
+          route: '/app/military-units',
+          requiredPermissions: [PermissionCodes.MilitaryUnits.Query]
         }
       ]
     },

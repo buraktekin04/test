@@ -16,7 +16,7 @@ public sealed record GetUsersQuery(
     string? FullName = null,
     string? UserName = null,
     string? Email = null,
-    string? Organization = null,
+    string? MilitaryUnit = null,
     string? Role = null,
     bool? IsActive = null,
     bool? IsLocked = null,

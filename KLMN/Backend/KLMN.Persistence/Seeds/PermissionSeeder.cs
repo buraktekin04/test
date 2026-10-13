@@ -33,6 +33,19 @@ internal sealed class PermissionSeeder
                 StringComparer.OrdinalIgnoreCase,
                 cancellationToken);
 
+        // Eski organizasyon izinlerinin kimliğini koru: rol/kullanıcı atamaları kaybolmaz.
+        foreach (var permission in existingPermissions.Values.ToList())
+        {
+            if (!permission.Code.StartsWith("Organizations.", StringComparison.Ordinal)) continue;
+            var newCode = "MilitaryUnits." + permission.Code["Organizations.".Length..];
+            if (existingPermissions.ContainsKey(newCode))
+                throw new InvalidOperationException("Eski ve yeni birlik izinleri birlikte mevcut; izin atamaları birleştirilmeden devam edilemez.");
+            existingPermissions.Remove(permission.Code);
+            permission.Code = newCode;
+            permission.Module = "MilitaryUnits";
+            existingPermissions.Add(newCode, permission);
+        }
+
         foreach (var seedItem in IdentitySeedData.Permissions)
         {
             if (existingPermissions.TryGetValue(seedItem.Code, out var permission))

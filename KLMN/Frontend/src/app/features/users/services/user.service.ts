@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 import { API_BASE_URL } from '../../../core/config/api.tokens';
 import { PagedResult } from '../../../core/models/paged-result.model';
-import { OrganizationUnitOption } from '../models/organization-unit-option.model';
+import { MilitaryUnitDefOption } from '../models/military-unit-def-option.model';
 import { UserAgreementPdf } from '../models/user-agreement-pdf.model';
 import { ChangeUserStatusRequest } from '../models/change-user-status-request.model';
 import { CreateUserRequest } from '../models/create-user-request.model';
@@ -39,7 +39,7 @@ export class UserService {
       fullName: query.fullName,
       userName: query.userName,
       email: query.email,
-      organization: query.organization,
+      militaryUnit: query.militaryUnit,
       role: query.role,
       validFromDate: query.validFromDate,
       validToDate: query.validToDate,
@@ -83,9 +83,9 @@ export class UserService {
   }
 
   /** Kullanıcı formu için aktif ve silinmemiş görev yeri seçeneklerini getirir. */
-  public getOrganizationUnitOptions(): Observable<OrganizationUnitOption[]> {
-    return this.http.get<OrganizationUnitOption[]>(
-      `${this.apiBaseUrl}/users/organization-options`
+  public getMilitaryUnitDefOptions(): Observable<MilitaryUnitDefOption[]> {
+    return this.http.get<MilitaryUnitDefOption[]>(
+      `${this.apiBaseUrl}/users/military-unit-options`
     );
   }
 

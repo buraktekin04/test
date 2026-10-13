@@ -14,10 +14,10 @@ export interface CreateUserRequest {
   /** Boş olabilen telefon numarası. */
   phoneNumber: string | null;
   /**
-   * Kullanıcının görev yeri olarak atanan organizasyon biriminin GUID'idir.
+   * Kullanıcının görev yeri olarak atanan birliğin GUID'idir.
    * İsteğe bağlıdır ve herhangi bir rol/permission ataması yapmaz.
    */
-  organizationUnitId: string | null;
+  militaryUnitDefId: string | null;
   /** En az sekiz karakter ve büyük/küçük harf ile rakam içeren parola. */
   password: string;
   /** true: mesai dışı erişim kısıtlıdır; false: mesai dışı izinlidir. */

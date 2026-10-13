@@ -11,7 +11,7 @@ Mevcut `/app/users` route'u ve Tanımlamalar menüsü aynen korunur.
    10 saniye sonra otomatik kapanır ve sağındaki X ile kapatılabilir.
    `user-list.component.ts` içinde Angular `effect` zamanlayıcıları kullanıldı;
    herhangi bir global servis yazılmadı.
-2. **Kolon filtreleri:** Ad Soyad, Kullanıcı Adı, E-posta, Organizasyon, Roller,
+2. **Kolon filtreleri:** Ad Soyad, Kullanıcı Adı, E-posta, Birlik, Roller,
    Aktif/Pasif, Kilitli/Açık, Mesai Dışı erişim, Başlangıç, Bitiş ve Oluşturulma.
    Sorgular **sunucu tarafında** yapılır; yalnızca mevcut 20 satır filtrelenmez.
    Genel arama/pasifleri dahil et filtreleriyle birlikte kullanılabilir.

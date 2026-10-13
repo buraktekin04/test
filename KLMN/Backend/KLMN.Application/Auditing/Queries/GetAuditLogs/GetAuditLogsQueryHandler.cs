@@ -21,12 +21,15 @@ public sealed class GetAuditLogsQueryHandler(IKLMNDbContext dbContext)
             // İlişkisel izin/rol/PDF değişiklikleri de ana kullanıcı veya rol
             // satırının geçmişinde görünür; genel tabloda gerçek tür saklanır.
             query = query.Where(x =>
-                (x.EntityType == request.EntityType && x.EntityId == request.EntityId.Value) ||
+                ((x.EntityType == request.EntityType ||
+                  (request.EntityType == "MilitaryUnitDef" && x.EntityType == "OrganizationUnit")) &&
+                 x.EntityId == request.EntityId.Value) ||
                 (x.RelatedEntityType == request.EntityType && x.RelatedEntityId == request.EntityId.Value));
         }
         else if (!string.IsNullOrWhiteSpace(request.EntityType))
         {
-            query = query.Where(x => x.EntityType == request.EntityType);
+            query = query.Where(x => x.EntityType == request.EntityType ||
+                (request.EntityType == "MilitaryUnitDef" && x.EntityType == "OrganizationUnit"));
         }
 
         if (!string.IsNullOrWhiteSpace(request.Action))

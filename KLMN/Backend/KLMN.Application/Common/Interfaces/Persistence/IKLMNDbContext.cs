@@ -1,6 +1,6 @@
 using KLMN.Domain.Entities.Identity;
 using KLMN.Domain.Entities.Auditing;
-using KLMN.Domain.Entities.Organization;
+using KLMN.Domain.Entities.MilitaryUnit;
 using Microsoft.EntityFrameworkCore;
 
 namespace KLMN.Application.Common.Interfaces.Persistence;
@@ -25,7 +25,7 @@ public interface IKLMNDbContext
     DbSet<UserPermission> UserPermissions { get; }
     DbSet<RefreshToken> RefreshTokens { get; }
     DbSet<PasswordResetToken> PasswordResetTokens { get; }
-    DbSet<OrganizationUnit> OrganizationUnits { get; }
+    DbSet<MilitaryUnitDef> MilitaryUnitDefs { get; }
 
     /// <summary>
     /// save changes async işlemini çağıran katmana belirtilen sözleşmeyle sunar.
