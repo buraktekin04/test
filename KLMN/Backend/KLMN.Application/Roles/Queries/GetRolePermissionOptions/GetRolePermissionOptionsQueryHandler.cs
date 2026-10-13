@@ -3,11 +3,7 @@ using KLMN.Application.Roles.Responses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace KLMN.Application.Roles.Queries;
-
-/// <summary>Yetki seçiciye aktif permission kataloğunu getirir.</summary>
-public sealed record GetRolePermissionOptionsQuery()
-    : IRequest<IReadOnlyList<RolePermissionOptionResponse>>;
+namespace KLMN.Application.Roles.Queries.GetRolePermissionOptions;
 
 /// <summary>Modül ve sıra numarasına göre permission seçeneklerini döndürür.</summary>
 public sealed class GetRolePermissionOptionsQueryHandler(IKLMNDbContext dbContext)

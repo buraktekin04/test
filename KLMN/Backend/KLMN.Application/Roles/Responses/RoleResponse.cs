@@ -49,15 +49,3 @@ public sealed class RoleResponse
                 .ToArray()
         };
 }
-
-/// <summary>Rol oluşturma/düzenleme/aktiflik/yetki işlemlerinin güncel versiyon cevabıdır.</summary>
-public sealed record RoleMutationResponse(Guid Id, uint Version);
-
-/// <summary>Rolün izin panelindeki modül bazlı gösterim seçeneğidir.</summary>
-public sealed record RolePermissionOptionResponse(
-    Guid Id,
-    string Code,
-    string Name,
-    string Module,
-    string? Description,
-    int SortOrder);

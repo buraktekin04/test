@@ -4,10 +4,7 @@ using KLMN.Application.Roles.Responses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace KLMN.Application.Roles.Queries;
-
-/// <summary>Düzenleme/yetkilendirme öncesi güncel rol verisini ve xmin bilgisini getirir.</summary>
-public sealed record GetRoleByIdQuery(Guid Id) : IRequest<RoleResponse>;
+namespace KLMN.Application.Roles.Queries.GetRoleById;
 
 /// <summary>Pasif roller dahil, soft-delete edilmemiş rol detayını döndürür.</summary>
 public sealed class GetRoleByIdQueryHandler(IKLMNDbContext dbContext)

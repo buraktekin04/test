@@ -14,6 +14,63 @@ Kullanıcı Tanımları ekranındaki minimalist tasarım yaklaşımı örnek al�
 
 Angular yetki kontrolü görünürlük içindir; API endpoint'leri aynı yetki kodlarıyla korunur.
 
+
+## CQRS dizin yapısı
+
+Her işlem kendi klasöründe `Command / CommandHandler / CommandValidator`
+veya `Query / QueryHandler / QueryValidator` dosyaları ile tutulur.
+Bu düzen, `Application/Users` modülündeki yapıyla aynıdır.
+
+```text
+KLMN.Application/Roles/
+├── Commands/
+│   ├── Common/
+│   │   └── RoleRules.cs
+│   ├── CreateRole/
+│   │   ├── CreateRoleCommand.cs
+│   │   ├── CreateRoleCommandHandler.cs
+│   │   └── CreateRoleCommandValidator.cs
+│   ├── UpdateRole/
+│   │   ├── UpdateRoleCommand.cs
+│   │   ├── UpdateRoleCommandHandler.cs
+│   │   └── UpdateRoleCommandValidator.cs
+│   ├── ChangeRoleStatus/
+│   │   ├── ChangeRoleStatusCommand.cs
+│   │   ├── ChangeRoleStatusCommandHandler.cs
+│   │   └── ChangeRoleStatusCommandValidator.cs
+│   ├── DeleteRole/
+│   │   ├── DeleteRoleCommand.cs
+│   │   ├── DeleteRoleCommandHandler.cs
+│   │   └── DeleteRoleCommandValidator.cs
+│   └── UpdateRolePermissions/
+│       ├── UpdateRolePermissionsCommand.cs
+│       ├── UpdateRolePermissionsCommandHandler.cs
+│       └── UpdateRolePermissionsCommandValidator.cs
+├── Queries/
+│   ├── GetRoles/
+│   │   ├── GetRolesQuery.cs
+│   │   ├── GetRolesQueryHandler.cs
+│   │   └── GetRolesQueryValidator.cs
+│   ├── GetRoleById/
+│   │   ├── GetRoleByIdQuery.cs
+│   │   └── GetRoleByIdQueryHandler.cs
+│   └── GetRolePermissionOptions/
+│       ├── GetRolePermissionOptionsQuery.cs
+│       └── GetRolePermissionOptionsQueryHandler.cs
+├── Responses/
+│   ├── RoleResponse.cs
+│   ├── RoleMutationResponse.cs
+│   └── RolePermissionOptionResponse.cs
+└── Exceptions/
+    ├── RoleNotFoundException.cs
+    └── RoleConflictException.cs
+```
+
+Eski toplu `RoleCommands.cs`, `RoleCommandHandlers.cs` ve
+`RoleValidators.cs` dosyaları silinmiştir. Bu dosyaları yerel projeden de
+kaldırmak gerekir; aksi takdirde aynı sınıfların iki kez derlenmesi hatası alınır.
+API route, DTO ve kayıt iş kuralları değişmemiştir.
+
 ## API sözleşmesi
 
 | İşlem | HTTP | Endpoint |
