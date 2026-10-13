@@ -1,7 +1,7 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize, forkJoin, Observable } from 'rxjs';
 
 import { ConfirmationService } from 'primeng/api';
@@ -27,7 +27,7 @@ import { RoleService } from '../services/role.service';
   selector: 'app-role-list',
   standalone: true,
   imports: [
-    DatePipe, ReactiveFormsModule, ButtonModule, CheckboxModule,
+    DatePipe, FormsModule, ReactiveFormsModule, ButtonModule, CheckboxModule,
     ConfirmDialogModule, DialogModule, InputTextModule,
     MessageModule, TableModule, TagModule
   ],
@@ -124,6 +124,19 @@ export class RoleListComponent implements OnInit {
   public readonly selectedPermissionIds = signal<Set<string>>(new Set<string>());
   /** Modül listesindeki arama metnidir. */
   public readonly permissionSearch = signal('');
+  /** Yalnızca atanmış izinlerin gösterilmesini sağlayan görünüm filtresidir. */
+  public readonly onlySelectedPermissions = signal(false);
+  /** Yetki modüllerinin açılıp kapanmasını yöneten reaktif kümedir. */
+  public readonly expandedPermissionModules = signal<Set<string>>(new Set<string>());
+  /** İzin paneli ilk açıldığında veya başarılı kayıtta saklanan baz kümedir. */
+  private readonly originalPermissionIds = signal<Set<string>>(new Set<string>());
+  /** Değişiklik yapıldıysa kaydetme alanında belirtilir. */
+  public readonly permissionsDirty = computed(() => {
+    const current = this.selectedPermissionIds();
+    const initial = this.originalPermissionIds();
+    return current.size !== initial.size ||
+      [...current].some(id => !initial.has(id));
+  });
   /** Panel açılırken rol ve yetki listesinin yükleme durumudur. */
   public readonly permissionsLoading = signal(false);
   /** Permission kayıt isteği durumu. */
@@ -142,28 +155,75 @@ export class RoleListComponent implements OnInit {
     Investigations: 'İncelemeler'
   };
 
-  /** Gruplu ve filtrelenmiş permission katalog görünümüdür. */
+  /**
+   * Yetkileri modüllere ayırır. Arama ve yalnızca seçili görünümü
+   * listeyi filtreler; modül sayacı her zaman gerçek toplamı gösterir.
+   */
   public readonly permissionGroups = computed(() => {
     const search = this.permissionSearch().trim().toLocaleLowerCase('tr-TR');
+    const selectedOnly = this.onlySelectedPermissions();
     const checked = this.selectedPermissionIds();
     const modules = new Map<string, RolePermissionOption[]>();
 
     for (const option of this.permissionOptions()) {
-      const searchable = (option.name + ' ' + option.code + ' ' + option.module)
-        .toLocaleLowerCase('tr-TR');
+      const moduleLabel = this.moduleLabels[option.module] ?? option.module;
+      const searchable = (option.name + ' ' + option.code + ' ' +
+        option.module + ' ' + moduleLabel).toLocaleLowerCase('tr-TR');
+
       if (search && !searchable.includes(search)) continue;
-      const existing = modules.get(option.module) ?? [];
-      existing.push(option);
-      modules.set(option.module, existing);
+      if (selectedOnly && !checked.has(option.id)) continue;
+
+      const options = modules.get(option.module) ?? [];
+      options.push(option);
+      modules.set(option.module, options);
     }
 
-    return [...modules.entries()].map(([module, options]) => ({
-      module,
-      label: this.moduleLabels[module] ?? module,
-      options,
-      selectedCount: options.filter(option => checked.has(option.id)).length
-    }));
+    return [...modules.entries()].map(([module, options]) => {
+      const allModuleOptions = this.permissionOptions()
+        .filter(option => option.module === module);
+
+      return {
+        module,
+        label: this.moduleLabels[module] ?? module,
+        options,
+        selectedCount: allModuleOptions.filter(option => checked.has(option.id)).length,
+        totalCount: allModuleOptions.length
+      };
+    });
   });
+
+  /** Filtreleme açıkken eşleşen modüller her zaman genişletilmiş görünür. */
+  public isPermissionGroupExpanded(module: string): boolean {
+    return !!this.permissionSearch().trim() || this.onlySelectedPermissions() ||
+      this.expandedPermissionModules().has(module);
+  }
+
+  /** Bir modülün açılıp kapanmasını aynı anda diğerlerinden bağımsız yönetir. */
+  public togglePermissionGroup(module: string): void {
+    const next = new Set(this.expandedPermissionModules());
+    if (next.has(module)) next.delete(module);
+    else next.add(module);
+    this.expandedPermissionModules.set(next);
+  }
+
+  /** Tüm yetki modüllerini birden açar veya kapatır. */
+  public toggleAllPermissionGroups(): void {
+    const modules = [...new Set(this.permissionOptions().map(x => x.module))];
+    const allExpanded = modules.every(module => this.expandedPermissionModules().has(module));
+    this.expandedPermissionModules.set(new Set(allExpanded ? [] : modules));
+  }
+
+  /** Modül gruplarının tamamının açık olup olmadığını hesaplar. */
+  public readonly allPermissionGroupsExpanded = computed(() => {
+    const modules = [...new Set(this.permissionOptions().map(x => x.module))];
+    return modules.length > 0 &&
+      modules.every(module => this.expandedPermissionModules().has(module));
+  });
+
+  /** Yalnızca seçilmiş yetkilerin gösterilmesini açar veya kapatır. */
+  public setOnlySelectedPermissions(checked: boolean): void {
+    this.onlySelectedPermissions.set(checked);
+  }
 
   /** Kısa süreli ve manuel kapatılabilir ekran bildirimlerini yönetir. */
   public constructor() {
@@ -382,20 +442,39 @@ export class RoleListComponent implements OnInit {
     });
   }
 
-  /** Seçilen role ait izinleri listeyle bütünleşik sağ panelde gösterir. */
+  /** Role ait izin panelini açar; kaydedilmemiş değişiklikler varsa onay ister. */
   public openPermissions(role: RoleItem): void {
     if (!this.canManagePermissions() || this.permissionsSaving()) return;
 
+    if (this.permissionsVisible() && this.permissionsDirty()) {
+      this.confirmation.confirm({
+        header: 'Kaydedilmemiş Yetkiler',
+        message: 'Değişiklikler kaydedilmedi. Başka rolü açmak istiyor musunuz?',
+        icon: 'pi pi-exclamation-triangle',
+        acceptLabel: 'Kaydetmeden Devam Et',
+        rejectLabel: 'Düzenlemeye Dön',
+        accept: () => this.loadPermissionPanel(role)
+      });
+      return;
+    }
+
+    this.loadPermissionPanel(role);
+  }
+
+  /** Seçilen rolün güncel yetki kataloğunu eşzamanlı okur. */
+  private loadPermissionPanel(role: RoleItem): void {
     const requestVersion = ++this.permissionRequestVersion;
     this.permissionsRole.set(role);
     this.permissionsVisible.set(true);
     this.permissionsLoading.set(true);
     this.permissionsError.set(null);
     this.permissionSearch.set('');
+    this.onlySelectedPermissions.set(false);
     this.permissionOptions.set([]);
     this.selectedPermissionIds.set(new Set<string>());
+    this.originalPermissionIds.set(new Set<string>());
+    this.expandedPermissionModules.set(new Set<string>());
 
-    // Güncel rol versiyonu ile aktif permission kataloğu eş zamanlı yüklenir.
     forkJoin({
       role: this.roleService.getById(role.id),
       options: this.roleService.permissionOptions()
@@ -407,10 +486,18 @@ export class RoleListComponent implements OnInit {
         if (requestVersion !== this.permissionRequestVersion) return;
         this.permissionsRole.set(latest);
         this.permissionOptions.set(options);
+
         const activeCodes = new Set(latest.permissionCodes);
-        this.selectedPermissionIds.set(
-          new Set(options.filter(x => activeCodes.has(x.code)).map(x => x.id))
-        );
+        const ids = new Set(options.filter(x => activeCodes.has(x.code)).map(x => x.id));
+        this.selectedPermissionIds.set(new Set(ids));
+        this.originalPermissionIds.set(new Set(ids));
+
+        // Atanmış izinleri olan modüller öncelikle açık gösterilir.
+        const selectedModules = options.filter(x => ids.has(x.id)).map(x => x.module);
+        const initialModules = selectedModules.length
+          ? selectedModules
+          : options.length ? [options[0].module] : [];
+        this.expandedPermissionModules.set(new Set(initialModules));
       },
       error: (error: HttpErrorResponse) => {
         if (requestVersion === this.permissionRequestVersion)
@@ -419,9 +506,27 @@ export class RoleListComponent implements OnInit {
     });
   }
 
-  /** Permission panelini kapatır; eski HTTP yanıtlarını artık kabul etmez. */
+  /** Paneli kapatmadan önce kaydedilmemiş izinlerin kaybolmasını engeller. */
   public closePermissions(): void {
     if (this.permissionsSaving()) return;
+
+    if (this.permissionsDirty()) {
+      this.confirmation.confirm({
+        header: 'Kaydedilmemiş Yetkiler',
+        message: 'Kaydedilmemiş yetki değişiklikleri silinsin mi?',
+        icon: 'pi pi-exclamation-triangle',
+        acceptLabel: 'Değişiklikleri Sil',
+        rejectLabel: 'Düzenlemeye Dön',
+        accept: () => this.closePermissionPanelNow()
+      });
+      return;
+    }
+
+    this.closePermissionPanelNow();
+  }
+
+  /** Eski HTTP isteklerini geçersiz kılar ve panel durumunu temizler. */
+  private closePermissionPanelNow(): void {
     ++this.permissionRequestVersion;
     this.permissionsVisible.set(false);
     this.permissionsRole.set(null);
@@ -429,6 +534,10 @@ export class RoleListComponent implements OnInit {
     this.permissionsError.set(null);
     this.permissionOptions.set([]);
     this.selectedPermissionIds.set(new Set<string>());
+    this.originalPermissionIds.set(new Set<string>());
+    this.permissionSearch.set('');
+    this.onlySelectedPermissions.set(false);
+    this.expandedPermissionModules.set(new Set<string>());
   }
 
   /** Permission arama kutusunu günceller. */
@@ -437,9 +546,9 @@ export class RoleListComponent implements OnInit {
   }
 
   /** Her permission satırındaki seçimi yeni Set oluşturarak günceller. */
-  public onPermissionToggle(id: string, event: Event): void {
-    if (!this.canManagePermissions() || this.permissionsRole()?.isSystemRole) return;
-    const checked = (event.target as HTMLInputElement).checked;
+  public onPermissionToggle(id: string, checked: boolean): void {
+    if (!this.canManagePermissions() || this.permissionsRole()?.isSystemRole ||
+        this.permissionsSaving() || this.permissionsLoading()) return;
     const next = new Set(this.selectedPermissionIds());
     if (checked) next.add(id);
     else next.delete(id);
@@ -453,7 +562,8 @@ export class RoleListComponent implements OnInit {
 
   /** Modüldeki tüm permission'ları seçer veya kaldırır. */
   public toggleModule(module: string, select: boolean): void {
-    if (!this.canManagePermissions() || this.permissionsRole()?.isSystemRole) return;
+    if (!this.canManagePermissions() || this.permissionsRole()?.isSystemRole ||
+        this.permissionsSaving() || this.permissionsLoading()) return;
     const next = new Set(this.selectedPermissionIds());
     for (const option of this.permissionOptions()) {
       if (option.module !== module) continue;
@@ -467,7 +577,8 @@ export class RoleListComponent implements OnInit {
   public savePermissions(): void {
     const role = this.permissionsRole();
     if (!role || !this.canManagePermissions() || role.isSystemRole ||
-        this.permissionsLoading() || this.permissionsSaving() || this.permissionsError()) return;
+        this.permissionsLoading() || this.permissionsSaving() ||
+        this.permissionsError() || !this.permissionsDirty()) return;
 
     const selected = [...this.selectedPermissionIds()];
     this.permissionsSaving.set(true);
@@ -483,6 +594,7 @@ export class RoleListComponent implements OnInit {
         this.permissionsRole.set({
           ...role, version: result.version, permissionCodes: activeCodes
         });
+        this.originalPermissionIds.set(new Set(this.selectedPermissionIds()));
         this.successMessage.set('Rol yetkileri güncellendi.');
         this.loadRoles();
       },

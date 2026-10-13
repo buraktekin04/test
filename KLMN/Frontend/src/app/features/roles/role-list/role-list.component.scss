@@ -96,8 +96,9 @@
   overflow: hidden;
 }
 
+/* Rol yetkileri, kısa liste değil gerçek bir yönetim paneli: en az 420px. */
 .roles-workspace.permissions-open {
-  grid-template-columns: minmax(0, 1fr) minmax(330px, 380px);
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 44%);
 }
 
 .table-container {
@@ -395,76 +396,132 @@
   border-top: 1px solid #edf0f3;
 }
 
-/* Rol yetkileri tablonun yanındaki aynı kart üzerinde yönetilir. */
+/*
+ * Rol permission paneli: listenin sağında gerçek bir çalışma alanı.
+ * Uzun isimler wrap edilir, yalnızca modül listesi scroll olur.
+ * Kaydetme satırı her zaman panelin altında görünür.
+ */
 .role-permissions-panel {
   display: flex;
   flex-direction: column;
+  align-self: start;
+  width: 100%;
   min-width: 0;
+  max-width: 100%;
+  height: min(750px, calc(100dvh - 140px));
+  min-height: min(440px, calc(100dvh - 140px));
+  overflow: hidden;
   border-left: 1px solid #e5e7eb;
   background: #fff;
 }
 
 .permissions-header {
   display: flex;
+  flex: 0 0 auto;
   justify-content: space-between;
   align-items: center;
-  gap: .6rem;
-  padding: .85rem 1rem;
+  gap: .75rem;
+  min-width: 0;
+  min-height: 62px;
+  box-sizing: border-box;
+  padding: .75rem 1rem;
   border-bottom: 1px solid #e8edf3;
-  min-height: 66px;
+}
 
-  > div:first-child {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    gap: .2rem;
+.permissions-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: .22rem;
+  min-width: 0;
+  flex: 1 1 auto;
+
+  strong {
+    color: #1d2939;
+    font-size: .9rem;
+    line-height: 1.3;
   }
 
-  strong { color: #1d2939; font-size: .91rem; }
-  span { color: #667085; font-size: .77rem; overflow-wrap: anywhere; }
+  span {
+    color: #667085;
+    font-size: .78rem;
+    overflow-wrap: anywhere;
+    line-height: 1.35;
+  }
 }
 
 .permissions-content {
   display: flex;
   flex-direction: column;
-  gap: .95rem;
+  flex: 1 1 auto;
   min-width: 0;
-  padding: 1rem;
+  min-height: 0;
+  overflow: hidden;
+  gap: .85rem;
+  padding: .9rem;
+  box-sizing: border-box;
 }
 
 .permission-owner {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   gap: .65rem;
-  padding: .75rem;
+  min-width: 0;
+  padding: .7rem .75rem;
   border: 1px solid #edf0f3;
   border-radius: 9px;
   background: #f8fafc;
-
-  > div:last-child {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    gap: .15rem;
-  }
-
-  strong { font-size: .8rem; color: #344054; overflow-wrap: anywhere; }
-  small { color: #667085; font-size: .72rem; }
 }
 
 .permission-owner-icon {
   width: 34px;
   height: 34px;
+  flex-shrink: 0;
   border-radius: 8px;
   background: #eff6ff;
   color: #2563eb;
   display: grid;
   place-items: center;
-  flex-shrink: 0;
+}
+
+.permission-owner-details {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  gap: .14rem;
+  min-width: 0;
+
+  strong {
+    color: #344054;
+    font-size: .78rem;
+    overflow-wrap: anywhere;
+  }
+
+  small { color: #667085; font-size: .72rem; }
+}
+
+.permissions-dirty-badge {
+  flex: 0 0 auto;
+  border-radius: 6px;
+  padding: .3rem .45rem;
+  background: #fffaeb;
+  color: #b54708;
+  font-size: .69rem;
+  font-weight: 650;
+}
+
+.permissions-error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .5rem;
+  min-width: 0;
 }
 
 .permissions-search {
   position: relative;
+  flex: 0 0 auto;
+  min-width: 0;
 
   i {
     position: absolute;
@@ -476,6 +533,8 @@
   }
 
   input {
+    display: block;
+    min-width: 0;
     width: 100%;
     box-sizing: border-box;
     padding-left: 2.2rem;
@@ -483,104 +542,238 @@
   }
 }
 
+.permissions-tools {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .5rem;
+  min-width: 0;
+}
+
+.permission-filter-button,
+.permission-expand-button {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  min-height: 32px;
+  padding: .35rem .55rem;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  font: inherit;
+  font-size: .76rem;
+  color: #475467;
+  cursor: pointer;
+
+  &:hover { background: #f2f4f7; }
+  &:focus-visible { outline: 2px solid #3b82f6; outline-offset: 1px; }
+}
+
+.permission-filter-button.active {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+/* Kayan tek yer burasıdır: başlık, arama ve kaydet butonu sabit kalır. */
 .permission-module-list {
   display: flex;
   flex-direction: column;
-  gap: .85rem;
-  max-height: min(540px, 65vh);
+  flex: 1 1 auto;
+  gap: .65rem;
+  min-height: 0;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
   scrollbar-width: thin;
+  padding: 1px .25rem 1px 0;
+
+  &:focus-visible { outline: 2px solid #3b82f6; outline-offset: -2px; }
 }
 
 .permission-module {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 100%;
   border: 1px solid #e7ebf0;
   border-radius: 9px;
+  background: #fff;
   overflow: hidden;
 }
 
 .permission-module-heading {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: .65rem .75rem;
-  border-bottom: 1px solid #eef2f6;
+  gap: .35rem;
+  min-width: 0;
+  padding: .4rem .6rem;
   background: #f8fafc;
-  gap: .45rem;
+}
 
-  > div {
-    display: flex;
-    flex-direction: column;
-    gap: .15rem;
-    min-width: 0;
+.module-collapse {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: .55rem;
+  min-width: 0;
+  min-height: 38px;
+  padding: .15rem .1rem;
+  border: 0;
+  background: transparent;
+  color: #344054;
+  text-align: left;
+  cursor: pointer;
+
+  > i {
+    color: #667085;
+    font-size: .8rem;
+    flex-shrink: 0;
   }
 
-  strong { font-size: .79rem; color: #344054; }
+  &:disabled { cursor: default; }
+  &:focus-visible { outline: 2px solid #3b82f6; outline-offset: 1px; }
+}
+
+.module-heading-copy {
+  display: flex;
+  flex-direction: column;
+  gap: .12rem;
+  min-width: 0;
+
+  strong {
+    font-size: .8rem;
+    font-weight: 650;
+    color: #344054;
+    overflow-wrap: anywhere;
+  }
+
   small { font-size: .7rem; color: #667085; }
 }
 
 .module-toggle {
-  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-height: 31px;
+  padding: .25rem .35rem;
   border: 0;
+  border-radius: 6px;
   background: transparent;
+  white-space: nowrap;
+  font: inherit;
+  font-size: .73rem;
+  font-weight: 600;
   color: #2563eb;
-  font-size: .74rem;
   cursor: pointer;
 
-  &:hover:not(:disabled) { text-decoration: underline; }
-  &:disabled { opacity: .5; cursor: default; }
+  &:hover:not(:disabled) { background: #eff6ff; }
+  &:disabled { opacity: .45; cursor: default; }
+  &:focus-visible { outline: 2px solid #3b82f6; }
 }
 
-.permission-item {
-  display: flex;
-  align-items: flex-start;
-  gap: .65rem;
-  padding: .65rem .75rem;
-  cursor: pointer;
-  border-bottom: 1px solid #f2f4f7;
+.permission-items { display: flex; flex-direction: column; min-width: 0; }
 
-  &:last-child { border-bottom: 0; }
+.permission-item {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+  gap: .75rem;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: .7rem .8rem;
+  border-top: 1px solid #f2f4f7;
+
   &:hover { background: #fafbfc; }
 
-  input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    accent-color: #2563eb;
-    margin: .1rem 0 0;
-    flex-shrink: 0;
-    cursor: pointer;
+  p-checkbox {
+    display: block;
+    width: 20px;
+    min-width: 20px;
+    margin-top: .1rem;
+  }
+}
+
+.permission-item-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+  gap: .18rem;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+
+  strong {
+    color: #344054;
+    font-size: .8rem;
+    font-weight: 600;
+    line-height: 1.35;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
-  > span {
-    display: flex;
-    flex-direction: column;
-    gap: .2rem;
-    min-width: 0;
+  small {
+    color: #98a2b3;
+    font-size: .7rem;
+    line-height: 1.35;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
-
-  strong { color: #344054; font-size: .77rem; font-weight: 600; }
-  small { color: #98a2b3; font-size: .68rem; overflow-wrap: anywhere; }
 }
 
 .permissions-empty {
   display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
+  gap: .55rem;
   min-height: 110px;
-  gap: .6rem;
+  min-width: 0;
+  padding: 1.2rem .8rem;
   background: #f8fafc;
   border-radius: 9px;
   color: #667085;
   font-size: .8rem;
+  text-align: center;
 
-  i { color: #98a2b3; font-size: 1.3rem; }
+  i { font-size: 1.35rem; color: #98a2b3; }
+  strong { font-size: .82rem; color: #344054; }
+  span { overflow-wrap: anywhere; }
 }
 
 .permissions-actions {
   display: flex;
-  justify-content: flex-end;
-  padding-top: .8rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .65rem;
+  min-width: 0;
+  padding: .85rem .95rem;
   border-top: 1px solid #edf0f3;
+  background: #fff;
+}
+
+.permissions-save-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  min-width: 0;
+  color: #667085;
+  font-size: .74rem;
+  overflow-wrap: anywhere;
+
+  &.is-dirty { color: #b54708; }
+  i { font-size: .4rem; flex-shrink: 0; }
 }
 
 /* Ekrana özel anlık bilgi mesajları. */
@@ -624,9 +817,14 @@
 }
 
 /* Küçük ekranlarda rol listesi ve izin paneli kartın içinde alt alta açılır. */
-@media (max-width: 1100px) {
+@media (max-width: 1240px) {
   .roles-workspace.permissions-open { grid-template-columns: minmax(0, 1fr); }
-  .role-permissions-panel { border-left: 0; border-top: 1px solid #e5e7eb; }
+
+  .role-permissions-panel {
+    height: min(680px, calc(100dvh - 120px));
+    border-left: 0;
+    border-top: 1px solid #e5e7eb;
+  }
 }
 
 @media (max-width: 720px) {

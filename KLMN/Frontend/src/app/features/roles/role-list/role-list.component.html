@@ -235,9 +235,9 @@
       @if (permissionsRole(); as role) {
         <aside class="role-permissions-panel" aria-label="Seçili rol yetkileri">
           <div class="permissions-header">
-            <div>
+            <div class="permissions-header-text">
               <strong>Rol Yetkileri</strong>
-              <span>{{ role.name }}</span>
+              <span [title]="role.name">{{ role.name }}</span>
             </div>
             <button type="button" class="panel-close" aria-label="Yetki panelini kapat"
                     [disabled]="permissionsSaving()" (click)="closePermissions()">
@@ -247,85 +247,136 @@
 
           <div class="permissions-content">
             <div class="permission-owner">
-              <div class="permission-owner-icon">
-                <i class="pi pi-shield" aria-hidden="true"></i>
+              <div class="permission-owner-icon"><i class="pi pi-shield" aria-hidden="true"></i></div>
+              <div class="permission-owner-details">
+                <strong [title]="role.code">{{ role.code }}</strong>
+                <small>{{ selectedPermissionIds().size }} / {{ permissionOptions().length }} yetki seçili</small>
               </div>
-              <div>
-                <strong>{{ role.code }}</strong>
-                <small>{{ selectedPermissionIds().size }} yetki seçili</small>
-              </div>
+              @if (permissionsDirty()) {
+                <span class="permissions-dirty-badge">Değiştirildi</span>
+              }
             </div>
 
             @if (role.isSystemRole) {
               <p-message severity="info"
-                         text="Sistem rolünün yetkileri bu ekrandan değiştirilemez.">
-              </p-message>
+                         text="Sistem rolünün yetkileri görüntülenebilir ancak değiştirilemez."></p-message>
             }
             @if (permissionsError()) {
-              <p-message severity="error" [text]="permissionsError()!"></p-message>
+              <div class="permissions-error">
+                <p-message severity="error" [text]="permissionsError()!"></p-message>
+                <p-button type="button" label="Tekrar Dene" icon="pi pi-refresh"
+                          severity="secondary" size="small" [outlined]="true"
+                          [disabled]="permissionsLoading()"
+                          (onClick)="openPermissions(role)"></p-button>
+              </div>
             }
 
             @if (permissionsLoading()) {
-              <div class="permissions-empty">
+              <div class="permissions-empty" role="status">
                 <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
                 <span>Yetkiler yükleniyor...</span>
               </div>
-            } @else {
+            } @else if (!permissionsError()) {
               <div class="permissions-search">
                 <i class="pi pi-search" aria-hidden="true"></i>
                 <input pInputText type="text" aria-label="Yetkilerde ara"
-                       placeholder="Yetki adı veya kodu ara"
+                       placeholder="Yetki adı, kodu veya modülü ara"
                        [value]="permissionSearch()"
                        (input)="setPermissionSearch($event)" />
               </div>
 
-              <div class="permission-module-list">
+              <div class="permissions-tools">
+                <button type="button" class="permission-filter-button"
+                        [class.active]="onlySelectedPermissions()"
+                        [attr.aria-pressed]="onlySelectedPermissions()"
+                        (click)="setOnlySelectedPermissions(!onlySelectedPermissions())">
+                  <i class="pi pi-check-square" aria-hidden="true"></i>
+                  Yalnızca Seçililer
+                </button>
+                @if (!permissionSearch().trim() && !onlySelectedPermissions()) {
+                  <button type="button" class="permission-expand-button"
+                          (click)="toggleAllPermissionGroups()">
+                    {{ allPermissionGroupsExpanded() ? 'Tümünü Kapat' : 'Tümünü Aç' }}
+                  </button>
+                }
+              </div>
+
+              <div class="permission-module-list" role="region"
+                   aria-label="Modüllere göre rol yetkileri" tabindex="0">
                 @for (group of permissionGroups(); track group.module) {
                   <section class="permission-module">
                     <div class="permission-module-heading">
-                      <div>
-                        <strong>{{ group.label }}</strong>
-                        <small>{{ group.selectedCount }}/{{ group.options.length }} seçili</small>
-                      </div>
+                      <button type="button" class="module-collapse"
+                              [attr.aria-expanded]="isPermissionGroupExpanded(group.module)"
+                              [disabled]="!!permissionSearch().trim() || onlySelectedPermissions()"
+                              (click)="togglePermissionGroup(group.module)">
+                        <i class="pi"
+                           [class.pi-chevron-down]="isPermissionGroupExpanded(group.module)"
+                           [class.pi-chevron-right]="!isPermissionGroupExpanded(group.module)"
+                           aria-hidden="true"></i>
+                        <span class="module-heading-copy">
+                          <strong>{{ group.label }}</strong>
+                          <small>{{ group.selectedCount }}/{{ group.totalCount }} yetki</small>
+                        </span>
+                      </button>
                       @if (!role.isSystemRole) {
                         <button type="button" class="module-toggle"
                                 [disabled]="permissionsSaving()"
-                                (click)="toggleModule(group.module, group.selectedCount !== group.options.length)">
-                          {{ group.selectedCount === group.options.length ? 'Kaldır' : 'Tümünü Seç' }}
+                                [attr.aria-label]="group.label + ' modülündeki tüm yetkileri seç veya kaldır'"
+                                (click)="toggleModule(group.module, group.selectedCount !== group.totalCount)">
+                          {{ group.selectedCount === group.totalCount ? 'Kaldır' : 'Tümünü Seç' }}
                         </button>
                       }
                     </div>
-                    @for (permission of group.options; track permission.id) {
-                      <label class="permission-item">
-                        <input type="checkbox"
-                               [checked]="isPermissionSelected(permission.id)"
-                               [disabled]="role.isSystemRole || permissionsSaving()"
-                               (change)="onPermissionToggle(permission.id, $event)" />
-                        <span>
-                          <strong>{{ permission.name }}</strong>
-                          <small>{{ permission.code }}</small>
-                        </span>
-                      </label>
+
+                    @if (isPermissionGroupExpanded(group.module)) {
+                      <div class="permission-items">
+                        @for (permission of group.options; track permission.id) {
+                          <div class="permission-item">
+                            <p-checkbox [inputId]="'rolePermission-' + permission.id"
+                                        [binary]="true"
+                                        [ngModel]="isPermissionSelected(permission.id)"
+                                        [ngModelOptions]="{ standalone: true }"
+                                        [disabled]="role.isSystemRole || permissionsSaving()"
+                                        (onChange)="onPermissionToggle(permission.id, $event.checked)">
+                            </p-checkbox>
+                            <label class="permission-item-copy"
+                                   [for]="'rolePermission-' + permission.id">
+                              <strong>{{ permission.name }}</strong>
+                              <small>{{ permission.code }}</small>
+                            </label>
+                          </div>
+                        }
+                      </div>
                     }
                   </section>
                 } @empty {
                   <div class="permissions-empty">
                     <i class="pi pi-search" aria-hidden="true"></i>
-                    <span>Aramanıza uygun yetki bulunamadı.</span>
+                    <strong>Gösterilecek yetki bulunamadı</strong>
+                    <span>Aramayı veya görünüm filtresini değiştirebilirsiniz.</span>
                   </div>
                 }
               </div>
             }
-
-            @if (!role.isSystemRole) {
-              <div class="permissions-actions">
-                <p-button type="button" label="Yetkileri Kaydet" icon="pi pi-check"
-                          [loading]="permissionsSaving()"
-                          [disabled]="permissionsLoading() || !!permissionsError()"
-                          (onClick)="savePermissions()"></p-button>
-              </div>
-            }
           </div>
+
+          @if (!role.isSystemRole) {
+            <div class="permissions-actions">
+              <span class="permissions-save-summary" [class.is-dirty]="permissionsDirty()">
+                @if (permissionsDirty()) {
+                  <i class="pi pi-circle-fill" aria-hidden="true"></i>
+                  Kaydedilmemiş değişiklik var
+                } @else {
+                  {{ selectedPermissionIds().size }} yetki seçili
+                }
+              </span>
+              <p-button type="button" label="Kaydet" icon="pi pi-check"
+                        [loading]="permissionsSaving()"
+                        [disabled]="permissionsLoading() || !!permissionsError() || !permissionsDirty()"
+                        (onClick)="savePermissions()"></p-button>
+            </div>
+          }
         </aside>
       }
     }
