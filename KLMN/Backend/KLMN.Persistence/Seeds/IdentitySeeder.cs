@@ -57,7 +57,7 @@ internal sealed class IdentitySeeder
     }
 
     /// <summary>
-    /// Var olan rol kodlarını koruyarak başlangıç rollerini ekler veya yeniden etkinleştirir.
+    /// Sistem rollerini idempotent tutar; örnek özel rolleri yalnızca ilk kurulumda oluşturur.
     /// </summary>
     private async Task SeedRolesAsync(CancellationToken cancellationToken)
     {
@@ -66,13 +66,21 @@ internal sealed class IdentitySeeder
             .IgnoreQueryFilters()
             .ToDictionaryAsync(x => x.Code, StringComparer.OrdinalIgnoreCase, cancellationToken);
 
+        // Sıfırdan kurulan veritabanında örnek özel rolleri de bir kez oluştururuz.
+        // Sonraki başlangıçlarda bunlar kullanıcı yönetimindedir: silinenler
+        // diriltilmez, adları veya kodları yeniden seed edilmez.
+        var firstInstallation = existingRoles.Count == 0;
+
         foreach (var seedItem in IdentitySeedData.Roles)
         {
+            if (!seedItem.IsSystemRole && !firstInstallation)
+                continue;
+
             if (existingRoles.TryGetValue(seedItem.Code, out var role))
             {
                 role.Name = seedItem.Name;
                 role.Description = seedItem.Description;
-                role.IsSystemRole = seedItem.IsSystemRole;
+                role.IsSystemRole = true;
                 role.IsActive = true;
                 role.IsDeleted = false;
                 role.DeletedDate = null;

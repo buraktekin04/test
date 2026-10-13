@@ -7,8 +7,8 @@ import { permissionGuard } from './core/permissions/guards/permission.guard';
 
 /**
  * Uygulamanın bütün route'larıdır. Tanımlamalar menüsündeki kullanıcı
- * ekranı fiziksel dosya yolundan bağımsız olarak '/app/users' URL'sinde
- * açılır; backend authorization API seviyesinde ayrıca uygulanır.
+ * ekranları '/app/users' ve '/app/roles' adreslerinde açılır;
+ * backend authorization API seviyesinde ayrıca uygulanır.
  */
 export const routes: Routes = [
   {
@@ -54,6 +54,21 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/users/user-list/user-list.component')
             .then(component => component.UserListComponent)
+      },
+      {
+        path: 'roles',
+        canActivate: [permissionGuard],
+        data: {
+          permissions: [PermissionCodes.Roles.Query]
+        },
+        loadComponent: () =>
+          import('./features/roles/role-list/role-list.component')
+            .then(component => component.RoleListComponent)
+      },
+      {
+        path: 'definitions/roles',
+        pathMatch: 'full',
+        redirectTo: 'roles'
       },
       {
         // Önceki /app/definitions/users favorilerini yeni adrese yönlendirir.

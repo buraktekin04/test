@@ -32,7 +32,8 @@ export class NavigationService {
         {
           label: 'Rol Tanımları',
           icon: 'pi pi-shield',
-          requiredPermissions: [PermissionCodes.Roles.View]
+          route: '/app/roles',
+          requiredPermissions: [PermissionCodes.Roles.Query]
         },
         {
           label: 'Organizasyon Tanımları',

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using FluentValidation;
 using KLMN.Application.Common.Exceptions;
 using KLMN.Application.Users.Exceptions;
+using KLMN.Application.Roles.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -119,6 +120,22 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
                 {
                     Status = StatusCodes.Status409Conflict,
                     Title = "Kullanıcı işlemi gerçekleştirilemedi.",
+                    Detail = exception.Message
+                },
+
+            RoleNotFoundException =>
+                new ProblemDetails
+                {
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Rol bulunamadı.",
+                    Detail = exception.Message
+                },
+
+            RoleConflictException =>
+                new ProblemDetails
+                {
+                    Status = StatusCodes.Status409Conflict,
+                    Title = "Rol işlemi gerçekleştirilemedi.",
                     Detail = exception.Message
                 },
 

@@ -1,0 +1,377 @@
+<div class="roles-page">
+  <div class="page-header">
+    <div>
+      <h1>Rol Tanımları</h1>
+      <p>Rolleri ve rol bazlı erişim izinlerini yönetin.</p>
+    </div>
+    @if (canCreate()) {
+      <p-button type="button" label="Yeni Rol" icon="pi pi-plus"
+                (onClick)="openCreateDialog()"></p-button>
+    }
+  </div>
+
+  <!-- Bildirimler listeden bağımsız görünür ve 10 saniye sonra kaybolur. -->
+  <div class="role-notices" aria-live="polite">
+    @if (successMessage()) {
+      <div class="role-notice role-notice-success" role="status">
+        <i class="pi pi-check-circle" aria-hidden="true"></i>
+        <span>{{ successMessage() }}</span>
+        <button type="button" class="notice-close" aria-label="Başarı bildirimini kapat"
+                (click)="successMessage.set(null)">
+          <i class="pi pi-times" aria-hidden="true"></i>
+        </button>
+      </div>
+    }
+    @if (errorMessage()) {
+      <div class="role-notice role-notice-error" role="alert">
+        <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+        <span>{{ errorMessage() }}</span>
+        <button type="button" class="notice-close" aria-label="Hata bildirimini kapat"
+                (click)="errorMessage.set(null)">
+          <i class="pi pi-times" aria-hidden="true"></i>
+        </button>
+      </div>
+    }
+  </div>
+
+  <section class="filter-panel" aria-label="Rol arama">
+    <form [formGroup]="filterForm" (ngSubmit)="search()">
+      <div class="search-field">
+        <i class="pi pi-search" aria-hidden="true"></i>
+        <input pInputText type="text" formControlName="search"
+               placeholder="Rol adı, kodu veya açıklamada ara..."
+               aria-label="Rol ara" />
+      </div>
+      <div class="inactive-filter">
+        <p-checkbox inputId="rolesIncludeInactive"
+                    formControlName="includeInactive" [binary]="true"></p-checkbox>
+        <label for="rolesIncludeInactive">Pasifleri dahil et</label>
+      </div>
+      <div class="filter-actions">
+        <p-button type="submit" label="Ara" icon="pi pi-search"
+                  [loading]="loading()"></p-button>
+        <p-button type="button" label="Temizle" icon="pi pi-times"
+                  severity="secondary" [outlined]="true"
+                  (onClick)="clearFilters()"></p-button>
+      </div>
+    </form>
+  </section>
+
+  <section class="roles-workspace" [class.permissions-open]="permissionsVisible()"
+           aria-label="Rol listesi ve rol yetkileri">
+    <div class="table-container">
+      <div class="table-toolbar">
+        <p-button type="button"
+                  [label]="columnFiltersExpanded() ? 'Filtreleri Gizle' : 'Kolon Filtreleri'"
+                  icon="pi pi-filter" severity="secondary"
+                  [outlined]="!columnFiltersExpanded()"
+                  (onClick)="toggleColumnFilters()"></p-button>
+        <p-button type="button" label="Excel'e Aktar" icon="pi pi-file-excel"
+                  severity="success" [outlined]="true"
+                  [loading]="exporting()"
+                  [disabled]="loading() || totalCount() === 0"
+                  (onClick)="exportExcel()"></p-button>
+      </div>
+
+      @if (columnFiltersExpanded()) {
+        <form class="column-filter-panel" [formGroup]="columnFilterForm"
+              (ngSubmit)="applyColumnFilters()">
+          <div class="column-filter-heading">
+            <strong>Kolon Filtreleri</strong>
+            <button type="button" class="filter-collapse"
+                    aria-label="Filtreleri kapat" (click)="toggleColumnFilters()">
+              <i class="pi pi-times" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="column-filter-grid">
+            <div class="column-filter-field">
+              <label for="rolesActiveFilter">Aktiflik</label>
+              <select id="rolesActiveFilter" formControlName="isActive">
+                <option [ngValue]="null">Tümü</option>
+                <option [ngValue]="true">Aktif</option>
+                <option [ngValue]="false">Pasif</option>
+              </select>
+            </div>
+            <div class="column-filter-field">
+              <label for="rolesSystemFilter">Rol Tipi</label>
+              <select id="rolesSystemFilter" formControlName="isSystemRole">
+                <option [ngValue]="null">Tümü</option>
+                <option [ngValue]="true">Sistem</option>
+                <option [ngValue]="false">Özel</option>
+              </select>
+            </div>
+          </div>
+          <div class="column-filter-actions">
+            <p-button type="button" label="Tümünü Temizle"
+                      icon="pi pi-filter-slash" severity="secondary" [outlined]="true"
+                      (onClick)="clearFilters()"></p-button>
+            <p-button type="submit" label="Filtreleri Uygula"
+                      icon="pi pi-check" [loading]="loading()"></p-button>
+          </div>
+        </form>
+      }
+
+      <div class="roles-table-scroll" tabindex="0" role="region"
+           aria-label="Rol tablosu, yatay kaydırılabilir">
+        <p-table [value]="roles()" [loading]="loading()"
+                 [tableStyle]="{ 'min-width': '1000px', 'width': '100%' }">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Rol Adı</th>
+              <th>Rol Kodu</th>
+              <th>Açıklama</th>
+              <th>Tip</th>
+              <th>Durum</th>
+              <th>Kullanıcı</th>
+              <th>Yetki</th>
+              <th>Oluşturulma</th>
+              @if (canUpdate() || canDelete() || canManagePermissions()) {
+                <th>İşlemler</th>
+              }
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-role>
+            <tr [class.selected-role-row]="permissionsVisible() && permissionsRole()?.id === role.id">
+              <td><strong class="role-name">{{ role.name }}</strong></td>
+              <td><code class="role-code">{{ role.code }}</code></td>
+              <td class="role-description" [title]="role.description ?? ''">
+                {{ role.description || '—' }}
+              </td>
+              <td>
+                <p-tag [value]="role.isSystemRole ? 'Sistem' : 'Özel'"
+                       [severity]="role.isSystemRole ? 'info' : 'secondary'"></p-tag>
+              </td>
+              <td>
+                <p-tag [value]="role.isActive ? 'Aktif' : 'Pasif'"
+                       [severity]="role.isActive ? 'success' : 'secondary'"></p-tag>
+              </td>
+              <td>{{ role.userCount }}</td>
+              <td>{{ role.permissionCodes.length }}</td>
+              <td>{{ role.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
+              @if (canUpdate() || canDelete() || canManagePermissions()) {
+                <td>
+                  <div class="row-actions">
+                    @if (canManagePermissions()) {
+                      <p-button type="button" icon="pi pi-key"
+                                severity="secondary" [text]="true" size="small"
+                                ariaLabel="Rol yetkilerini görüntüle"
+                                [disabled]="actionLoadingId() === role.id"
+                                (onClick)="openPermissions(role)"></p-button>
+                    }
+                    @if (canUpdate() && !role.isSystemRole) {
+                      <p-button type="button" icon="pi pi-pencil" severity="secondary"
+                                [text]="true" size="small" ariaLabel="Rolü düzenle"
+                                [disabled]="actionLoadingId() === role.id"
+                                (onClick)="openEditDialog(role)"></p-button>
+                      <p-button type="button"
+                                [icon]="role.isActive ? 'pi pi-ban' : 'pi pi-check-circle'"
+                                severity="secondary" [text]="true" size="small"
+                                [ariaLabel]="role.isActive ? 'Rolü pasifleştir' : 'Rolü aktifleştir'"
+                                [disabled]="actionLoadingId() === role.id"
+                                (onClick)="confirmStatusChange(role)"></p-button>
+                    }
+                    @if (canDelete() && !role.isSystemRole) {
+                      <p-button type="button" icon="pi pi-trash" severity="danger"
+                                [text]="true" size="small" ariaLabel="Rolü sil"
+                                [disabled]="actionLoadingId() === role.id"
+                                (onClick)="confirmDelete(role)"></p-button>
+                    }
+                  </div>
+                </td>
+              }
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td [attr.colspan]="canUpdate() || canDelete() || canManagePermissions() ? 9 : 8"
+                  class="empty-table">Filtrelere uygun rol bulunamadı.</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+
+      <div class="roles-pagination">
+        <span class="pagination-summary">
+          {{ rangeStart() }}–{{ rangeEnd() }} / {{ totalCount() }} kayıt
+        </span>
+        <div class="pagination-controls">
+          <button type="button" class="pagination-nav" aria-label="İlk sayfa"
+                  [disabled]="loading() || pageNumber() <= 1"
+                  (click)="goToPage(1)">
+            <i class="pi pi-angle-double-left" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="pagination-nav" aria-label="Önceki sayfa"
+                  [disabled]="loading() || pageNumber() <= 1"
+                  (click)="goToPage(pageNumber() - 1)">
+            <i class="pi pi-angle-left" aria-hidden="true"></i>
+          </button>
+          <span class="pagination-counter">{{ pageNumber() }} / {{ totalPages() }}</span>
+          <button type="button" class="pagination-nav" aria-label="Sonraki sayfa"
+                  [disabled]="loading() || pageNumber() >= totalPages()"
+                  (click)="goToPage(pageNumber() + 1)">
+            <i class="pi pi-angle-right" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="pagination-nav" aria-label="Son sayfa"
+                  [disabled]="loading() || pageNumber() >= totalPages()"
+                  (click)="goToPage(totalPages())">
+            <i class="pi pi-angle-double-right" aria-hidden="true"></i>
+          </button>
+        </div>
+        <label class="pagination-size">
+          <span>Sayfa başına</span>
+          <select [value]="pageSize()" [disabled]="loading()"
+                  (change)="onPageSizeChange($event)"
+                  aria-label="Rol sayfa boyutu">
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+            <option [value]="50">50</option>
+            <option [value]="100">100</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    @if (permissionsVisible()) {
+      @if (permissionsRole(); as role) {
+        <aside class="role-permissions-panel" aria-label="Seçili rol yetkileri">
+          <div class="permissions-header">
+            <div>
+              <strong>Rol Yetkileri</strong>
+              <span>{{ role.name }}</span>
+            </div>
+            <button type="button" class="panel-close" aria-label="Yetki panelini kapat"
+                    [disabled]="permissionsSaving()" (click)="closePermissions()">
+              <i class="pi pi-times" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <div class="permissions-content">
+            <div class="permission-owner">
+              <div class="permission-owner-icon">
+                <i class="pi pi-shield" aria-hidden="true"></i>
+              </div>
+              <div>
+                <strong>{{ role.code }}</strong>
+                <small>{{ selectedPermissionIds().size }} yetki seçili</small>
+              </div>
+            </div>
+
+            @if (role.isSystemRole) {
+              <p-message severity="info"
+                         text="Sistem rolünün yetkileri bu ekrandan değiştirilemez.">
+              </p-message>
+            }
+            @if (permissionsError()) {
+              <p-message severity="error" [text]="permissionsError()!"></p-message>
+            }
+
+            @if (permissionsLoading()) {
+              <div class="permissions-empty">
+                <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+                <span>Yetkiler yükleniyor...</span>
+              </div>
+            } @else {
+              <div class="permissions-search">
+                <i class="pi pi-search" aria-hidden="true"></i>
+                <input pInputText type="text" aria-label="Yetkilerde ara"
+                       placeholder="Yetki adı veya kodu ara"
+                       [value]="permissionSearch()"
+                       (input)="setPermissionSearch($event)" />
+              </div>
+
+              <div class="permission-module-list">
+                @for (group of permissionGroups(); track group.module) {
+                  <section class="permission-module">
+                    <div class="permission-module-heading">
+                      <div>
+                        <strong>{{ group.label }}</strong>
+                        <small>{{ group.selectedCount }}/{{ group.options.length }} seçili</small>
+                      </div>
+                      @if (!role.isSystemRole) {
+                        <button type="button" class="module-toggle"
+                                [disabled]="permissionsSaving()"
+                                (click)="toggleModule(group.module, group.selectedCount !== group.options.length)">
+                          {{ group.selectedCount === group.options.length ? 'Kaldır' : 'Tümünü Seç' }}
+                        </button>
+                      }
+                    </div>
+                    @for (permission of group.options; track permission.id) {
+                      <label class="permission-item">
+                        <input type="checkbox"
+                               [checked]="isPermissionSelected(permission.id)"
+                               [disabled]="role.isSystemRole || permissionsSaving()"
+                               (change)="onPermissionToggle(permission.id, $event)" />
+                        <span>
+                          <strong>{{ permission.name }}</strong>
+                          <small>{{ permission.code }}</small>
+                        </span>
+                      </label>
+                    }
+                  </section>
+                } @empty {
+                  <div class="permissions-empty">
+                    <i class="pi pi-search" aria-hidden="true"></i>
+                    <span>Aramanıza uygun yetki bulunamadı.</span>
+                  </div>
+                }
+              </div>
+            }
+
+            @if (!role.isSystemRole) {
+              <div class="permissions-actions">
+                <p-button type="button" label="Yetkileri Kaydet" icon="pi pi-check"
+                          [loading]="permissionsSaving()"
+                          [disabled]="permissionsLoading() || !!permissionsError()"
+                          (onClick)="savePermissions()"></p-button>
+              </div>
+            }
+          </div>
+        </aside>
+      }
+    }
+  </section>
+</div>
+
+<!-- Kullanıcı Tanımları ile aynı minimalist rol formu. -->
+<p-dialog
+  [header]="editingRole() ? 'Rol Düzenle' : 'Yeni Rol'"
+  [visible]="dialogVisible()"
+  (visibleChange)="dialogVisible.set($event)"
+  [modal]="true" [draggable]="false" [resizable]="false"
+  [style]="{ width: 'min(560px, 96vw)' }">
+  <form class="role-form" [formGroup]="roleForm" (ngSubmit)="saveRole()">
+    @if (formError()) {
+      <p-message severity="error" [text]="formError()!"></p-message>
+    }
+    <div class="form-divider"><span>Rol Bilgileri</span></div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="roleName">Rol Adı <span class="required">*</span></label>
+        <input id="roleName" pInputText formControlName="name"
+               placeholder="Örn. Birim Sorumlusu" autocomplete="off" />
+      </div>
+      <div class="form-field">
+        <label for="roleCode">Rol Kodu <span class="required">*</span></label>
+        <input id="roleCode" pInputText formControlName="code"
+               placeholder="Örn. BIRIM_SORUMLUSU" autocomplete="off" />
+      </div>
+      <div class="form-field full">
+        <label for="roleDescription">Açıklama</label>
+        <textarea id="roleDescription" formControlName="description"
+                  rows="3" maxlength="500"
+                  placeholder="Rolün kullanım amacını kısaca yazın"></textarea>
+      </div>
+    </div>
+    <p class="form-note">
+      Rolün yetkilerini kaydettikten sonra, listedeki anahtar simgesinden yönetebilirsiniz.
+    </p>
+    <div class="dialog-actions">
+      <p-button type="button" label="Vazgeç" severity="secondary" [outlined]="true"
+                [disabled]="saving()" (onClick)="dialogVisible.set(false)"></p-button>
+      <p-button type="submit" label="Kaydet" icon="pi pi-check"
+                [loading]="saving()"></p-button>
+    </div>
+  </form>
+</p-dialog>
+
+<p-confirmdialog></p-confirmdialog>
