@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../config/api.tokens';
 import { PagedResult } from '../models/paged-result.model';
-import { AuditLogItem, AuditLogQuery, AuditFieldChange } from './audit-log.model';
+import { AuditLogItem, AuditLogQuery, AuditFieldChange, AuditDisplayChange } from './audit-log.model';
 
 /** Kullanıcı, rol ve diğer tanımlamaların ortak, salt okunur geçmiş servisidir. */
 @Injectable({ providedIn: 'root' })
@@ -24,19 +24,60 @@ export class AuditLogService {
   }
 
   /** Yalnızca sunucunun izinli değişiklik JSON'unu okunabilir alan satırlarına dönüştürür. */
-  public changes(item: AuditLogItem): Array<{ field: string; oldValue: string; newValue: string }> {
+  public changes(item: AuditLogItem): AuditDisplayChange[] {
     try {
       // Eşleşen rol/yetki/organizasyon adları varsa onları kullan.
       // Eski API yanıtlarında geriye dönük uyumluluk için ham kayıt okunabilir.
       const data = JSON.parse(item.displayChangesJson ?? item.changesJson)
         as Record<string, AuditFieldChange>;
       if (!data || typeof data !== 'object' || Array.isArray(data)) return [];
-      return Object.entries(data).map(([field, values]) => ({
-        field: this.fieldLabel(field),
-        oldValue: this.format(values?.oldValue),
-        newValue: this.format(values?.newValue)
-      }));
+      const isRelation = ['RolePermission', 'UserRole', 'UserPermission']
+        .includes(item.entityType);
+
+      // Rol/Yetki/Kullanıcı ilişkisi kaldırıldığında bu değerler değişmez.
+      // Değişmiş gibi eski → yeni göstermeyip "ilişki bağlamı" olarak sunulur.
+      return Object.entries(data).map(([field, values]) => {
+        const oldValue = values?.oldValue;
+        const newValue = values?.newValue;
+        const isContext = isRelation &&
+          ['RoleId', 'PermissionId', 'UserId'].includes(field) &&
+          typeof oldValue === 'string' &&
+          typeof newValue === 'string' &&
+          oldValue === newValue;
+
+        return {
+          field: this.fieldLabel(field),
+          oldValue: this.format(oldValue),
+          newValue: this.format(newValue),
+          isContext
+        };
+      });
     } catch { return []; }
+  }
+
+  /** Genel ve kayıt bazlı geçmişte işlem adlarını ilişki türüne göre açıklar. */
+  public actionLabel(item: AuditLogItem): string {
+    const relatedLabels: Record<string, string> = {
+      'RolePermission:Create': 'Role Yetki Eklendi',
+      'RolePermission:Activate': 'Rol Yetkisi Yeniden Verildi',
+      'RolePermission:Deactivate': 'Rol Yetkisi Kaldırıldı',
+      'UserRole:Create': 'Kullanıcıya Rol Atandı',
+      'UserRole:Activate': 'Rol Yeniden Atandı',
+      'UserRole:Deactivate': 'Kullanıcıdan Rol Kaldırıldı',
+      'UserPermission:Create': 'Kişisel Yetki Eklendi',
+      'UserPermission:Deactivate': 'Kişisel Yetki Kaldırıldı'
+    };
+
+    const labels: Record<string, string> = {
+      Create: 'Oluşturma',
+      Update: 'Güncelleme',
+      Delete: 'Silme',
+      Activate: 'Aktifleştirme',
+      Deactivate: 'Pasifleştirme'
+    };
+
+    return relatedLabels[`${item.entityType}:${item.action}`] ??
+      labels[item.action] ?? item.action;
   }
 
   /** Tanımlama ekranlarında teknik EF alanlarını anlaşılır Türkçe başlıklara dönüştürür. */

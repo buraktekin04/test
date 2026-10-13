@@ -38,12 +38,20 @@ internal static class AuditReferenceDisplayResolver
     {
         if (entries.Count == 0) return entries;
 
+        // Eski ilişki kaldırma hareketlerinde yalnızca Aktiflik değişmişti.
+        // Salt okunur ilişki bağlamı bunlar için de gösterilir; audit değiştirilmez.
+        var relationContexts = await AuditRelationContextResolver.LoadAsync(
+            dbContext, entries, cancellationToken);
+
         var references = FieldTypes.Values.Distinct(StringComparer.Ordinal)
             .ToDictionary(type => type, _ => new HashSet<Guid>(), StringComparer.Ordinal);
 
         foreach (var entry in entries)
         {
             if (!TryParse(entry.ChangesJson, out var root)) continue;
+
+            AuditRelationContextResolver.AppendMissingContext(
+                entry, root!, relationContexts);
 
             foreach (var field in root!)
             {
@@ -112,6 +120,9 @@ internal static class AuditReferenceDisplayResolver
                 results.Add(entry);
                 continue;
             }
+
+            AuditRelationContextResolver.AppendMissingContext(
+                entry, root!, relationContexts);
 
             foreach (var field in root!)
             {

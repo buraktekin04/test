@@ -109,11 +109,8 @@ export class AuditLogListComponent implements OnInit {
   public closeDetails(): void { this.selected.set(null); }
   public changes(item: AuditLogItem) { return this.auditService.changes(item); }
 
-  public label(action: string): string {
-    const names: Record<string, string> = {
-      Create: 'Oluşturma', Update: 'Güncelleme',
-      Delete: 'Silme', Activate: 'Aktifleştirme', Deactivate: 'Pasifleştirme'
-    };
-    return names[action] ?? action;
+  /** İlişki ekleme/kaldırma işlemlerini anlamlı başlıklarla gösterir. */
+  public label(item: AuditLogItem): string {
+    return this.auditService.actionLabel(item);
   }
 }

@@ -70,11 +70,8 @@ export class AuditHistoryComponent implements OnChanges {
   /** Ekranda yalnızca önceden seçilmiş güvenli audit alanları gösterilir. */
   public changes(entry: AuditLogItem) { return this.auditService.changes(entry); }
 
-  public actionLabel(action: string): string {
-    const labels: Record<string, string> = {
-      Create: 'Oluşturma', Update: 'Güncelleme', Delete: 'Silme',
-      Activate: 'Aktifleştirme', Deactivate: 'Pasifleştirme'
-    };
-    return labels[action] ?? action;
+  /** İlişki kaldırma hareketlerini genel bir Pasifleştirme etiketi yerine açıklar. */
+  public actionLabel(entry: AuditLogItem): string {
+    return this.auditService.actionLabel(entry);
   }
 }

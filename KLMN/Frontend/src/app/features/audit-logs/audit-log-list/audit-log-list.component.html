@@ -82,7 +82,7 @@
             <td>{{ entry.actorUserName || 'Sistem' }}</td>
             <td>{{ entry.entityType }}</td>
             <td>
-              <p-tag [value]="label(entry.action)"
+              <p-tag [value]="label(entry)"
                      [severity]="entry.action === 'Delete' ? 'danger' : entry.action === 'Create' ? 'success' : 'info'"></p-tag>
             </td>
             <td><code>{{ entry.entityId }}</code></td>
@@ -119,17 +119,24 @@
   @if (selected(); as item) {
     <div class="change-details">
       <div class="change-summary">
-        <strong>{{ item.entityType }} · {{ label(item.action) }}</strong>
+        <strong>{{ item.entityType }} · {{ label(item) }}</strong>
         <span>{{ item.actorUserName || 'Sistem' }} · {{ item.occurredAt | date:'dd.MM.yyyy HH:mm:ss' }}</span>
       </div>
       @for (change of changes(item); track change.field) {
         <div class="change-entry">
           <strong>{{ change.field }}</strong>
-          <div class="change-values">
-            <span>{{ change.oldValue }}</span>
-            <i class="pi pi-arrow-right"></i>
-            <span>{{ change.newValue }}</span>
-          </div>
+          @if (change.isContext) {
+            <div class="change-context">
+              <i class="pi pi-link" aria-hidden="true"></i>
+              <span>{{ change.newValue }}</span>
+            </div>
+          } @else {
+            <div class="change-values">
+              <span>{{ change.oldValue }}</span>
+              <i class="pi pi-arrow-right" aria-hidden="true"></i>
+              <span>{{ change.newValue }}</span>
+            </div>
+          }
         </div>
       }
     </div>

@@ -22,3 +22,19 @@
 .new-value { background: #eff6ff; color: #1e40af; }
 .history-error, .history-empty { padding: 1.8rem; color: #667085; background: #f8fafc; text-align: center; border-radius: 8px; font-size: .82rem; }
 .history-pagination { justify-content: flex-end; font-size: .8rem; color: #667085; }
+
+/* İşlem sırasında değişmeyen rol ve yetki kimlikleri, eski→yeni gibi gösterilmez. */
+.history-context-value {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  min-width: 0;
+  padding: .5rem .6rem;
+  border-radius: 7px;
+  color: #1d4ed8;
+  background: #eff6ff;
+  font-size: .77rem;
+  line-height: 1.45;
+}
+.history-context-value i { flex-shrink: 0; margin-top: .12rem; font-size: .75rem; }
+.history-context-value span { min-width: 0; overflow-wrap: anywhere; }

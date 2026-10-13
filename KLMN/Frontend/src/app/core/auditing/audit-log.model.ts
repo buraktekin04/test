@@ -30,3 +30,12 @@ export interface AuditLogQuery {
   pageNumber: number;
   pageSize: number;
 }
+
+/** Eski/yeni değerler ile salt okunur ilişki bağlamının ayrımını taşır. */
+export interface AuditDisplayChange {
+  field: string;
+  oldValue: string;
+  newValue: string;
+  /** Aynı kalan Rol/Yetki/Kullanıcı bağlantısı; gerçek bir alan değişimi değildir. */
+  isContext: boolean;
+}

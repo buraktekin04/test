@@ -17,7 +17,7 @@
       @for (entry of entries(); track entry.id) {
         <section class="history-entry">
           <div class="history-entry-head">
-            <p-tag [value]="actionLabel(entry.action)"
+            <p-tag [value]="actionLabel(entry)"
                    [severity]="entry.action === 'Delete' ? 'danger' : entry.action === 'Create' ? 'success' : 'info'"></p-tag>
             <time>{{ entry.occurredAt | date:'dd.MM.yyyy HH:mm:ss' }}</time>
           </div>
@@ -29,11 +29,18 @@
             @for (change of changes(entry); track change.field) {
               <div class="history-diff">
                 <strong>{{ change.field }}</strong>
-                <div class="history-values">
-                  <span class="old-value" [title]="change.oldValue">{{ change.oldValue }}</span>
-                  <i class="pi pi-arrow-right" aria-hidden="true"></i>
-                  <span class="new-value" [title]="change.newValue">{{ change.newValue }}</span>
-                </div>
+                @if (change.isContext) {
+                  <div class="history-context-value">
+                    <i class="pi pi-link" aria-hidden="true"></i>
+                    <span [title]="change.newValue">{{ change.newValue }}</span>
+                  </div>
+                } @else {
+                  <div class="history-values">
+                    <span class="old-value" [title]="change.oldValue">{{ change.oldValue }}</span>
+                    <i class="pi pi-arrow-right" aria-hidden="true"></i>
+                    <span class="new-value" [title]="change.newValue">{{ change.newValue }}</span>
+                  </div>
+                }
               </div>
             }
           </div>
