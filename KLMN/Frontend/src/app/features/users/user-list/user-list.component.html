@@ -520,17 +520,22 @@
           <input id="editPhoneNumber" pInputText formControlName="phoneNumber"
                  autocomplete="tel" />
         </div>
-        <div class="form-field">
+        <div class="form-field form-field-full organization-field">
           <label for="userOrganizationUnitId">Görev Yeri / Organizasyon</label>
+          <!-- PrimeNG Select'in kendi ikon ve dropdown düzeni korunur. -->
           <p-select
             inputId="userOrganizationUnitId"
             formControlName="organizationUnitId"
             [options]="organizationOptions()"
             optionLabel="label"
             optionValue="id"
+            [fluid]="true"
             [filter]="true"
             filterBy="label"
+            filterPlaceholder="Görev yeri ara..."
             [showClear]="true"
+            dropdownIcon="pi pi-chevron-down"
+            scrollHeight="260px"
             [loading]="organizationLoading()"
             [disabled]="organizationLoading() || (!!selectedUser() && !canUpdate())"
             [appendTo]="'body'"

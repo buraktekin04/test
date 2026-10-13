@@ -227,12 +227,9 @@
   color-scheme: light;
 }
 
-/* Görev yeri seçicisini diğer form alanlarıyla aynı genişlikte tutar. */
-.form-field {
-  p-select {
-    width: 100%;
-    min-width: 0;
-  }
+/* Görev yeri alanında PrimeNG Select'in kendi display/flex/ikon stilleri korunur. */
+.organization-field {
+  min-width: 0;
 
   .organization-error {
     color: #b42318;
@@ -604,12 +601,6 @@
     min-height: 39px;
     font-size: .86rem;
     border-radius: 7px;
-  }
-
-  p-select {
-    display: block;
-    width: 100%;
-    min-width: 0;
   }
 
   small { line-height: 1.4; }
