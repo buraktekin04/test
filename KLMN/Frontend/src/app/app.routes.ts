@@ -66,6 +66,21 @@ export const routes: Routes = [
             .then(component => component.RoleListComponent)
       },
       {
+        path: 'organizations',
+        canActivate: [permissionGuard],
+        data: {
+          permissions: [PermissionCodes.Organizations.Query]
+        },
+        loadComponent: () =>
+          import('./features/organizations/organization-list/organization-list.component')
+            .then(component => component.OrganizationListComponent)
+      },
+      {
+        path: 'definitions/organizations',
+        pathMatch: 'full',
+        redirectTo: 'organizations'
+      },
+      {
         path: 'definitions/roles',
         pathMatch: 'full',
         redirectTo: 'roles'

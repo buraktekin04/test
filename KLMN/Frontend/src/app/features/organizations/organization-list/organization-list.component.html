@@ -1,0 +1,293 @@
+<div class="organizations-page">
+  <div class="page-header">
+    <div>
+      <h1>Organizasyon Tanımları</h1>
+      <p>Görev yeri olarak kullanılan kurum birimlerini ve üst–alt birim ilişkilerini yönetin.</p>
+    </div>
+    @if (canCreate()) {
+      <p-button type="button" label="Yeni Birim" icon="pi pi-plus"
+                (onClick)="openCreateDialog()"></p-button>
+    }
+  </div>
+
+  <div class="organization-notices" aria-live="polite">
+    @if (successMessage()) {
+      <div class="notice notice-success" role="status">
+        <i class="pi pi-check-circle" aria-hidden="true"></i>
+        <span>{{ successMessage() }}</span>
+        <button type="button" class="notice-close" aria-label="Bildirim kapat"
+                (click)="successMessage.set(null)"><i class="pi pi-times"></i></button>
+      </div>
+    }
+    @if (errorMessage()) {
+      <div class="notice notice-error" role="alert">
+        <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+        <span>{{ errorMessage() }}</span>
+        <button type="button" class="notice-close" aria-label="Hata bildirimini kapat"
+                (click)="errorMessage.set(null)"><i class="pi pi-times"></i></button>
+      </div>
+    }
+  </div>
+
+  <section class="filter-panel" aria-label="Organizasyon arama">
+    <form [formGroup]="filterForm" (ngSubmit)="search()">
+      <div class="search-field">
+        <i class="pi pi-search" aria-hidden="true"></i>
+        <input pInputText type="text" formControlName="search"
+               placeholder="Birim adı, kodu veya üst birimde ara..."
+               aria-label="Organizasyon ara" />
+      </div>
+      <div class="inactive-filter">
+        <p-checkbox inputId="organizationsIncludeInactive"
+                    formControlName="includeInactive" [binary]="true"></p-checkbox>
+        <label for="organizationsIncludeInactive">Pasifleri dahil et</label>
+      </div>
+      <div class="filter-actions">
+        <p-button type="submit" label="Ara" icon="pi pi-search"
+                  [loading]="loading()"></p-button>
+        <p-button type="button" label="Temizle" severity="secondary"
+                  icon="pi pi-times" [outlined]="true"
+                  (onClick)="clearFilters()"></p-button>
+      </div>
+    </form>
+  </section>
+
+  <section class="organizations-table-card" aria-label="Organizasyon birimleri listesi">
+    <div class="table-toolbar">
+      <p-button type="button"
+                [label]="columnFiltersExpanded() ? 'Filtreleri Gizle' : 'Kolon Filtreleri'"
+                icon="pi pi-filter" severity="secondary"
+                [outlined]="!columnFiltersExpanded()"
+                (onClick)="toggleColumnFilters()"></p-button>
+      <p-button type="button" label="Excel'e Aktar" icon="pi pi-file-excel"
+                severity="success" [outlined]="true" [loading]="exporting()"
+                [disabled]="loading() || totalCount() === 0"
+                (onClick)="exportExcel()"></p-button>
+    </div>
+
+    @if (columnFiltersExpanded()) {
+      <form class="column-filter-panel" [formGroup]="columnFilterForm"
+            (ngSubmit)="applyColumnFilters()">
+        <div class="filter-panel-heading">
+          <strong>Kolon Filtreleri</strong>
+          <button type="button" class="notice-close" aria-label="Filtreleri gizle"
+                  (click)="toggleColumnFilters()"><i class="pi pi-times"></i></button>
+        </div>
+        <div class="column-filter-grid">
+          <div class="column-filter-field">
+            <label for="orgActiveFilter">Aktiflik</label>
+            <select id="orgActiveFilter" formControlName="isActive">
+              <option [ngValue]="null">Tümü</option>
+              <option [ngValue]="true">Aktif</option>
+              <option [ngValue]="false">Pasif</option>
+            </select>
+          </div>
+          <div class="column-filter-field">
+            <label for="orgRootFilter">Birim Seviyesi</label>
+            <select id="orgRootFilter" formControlName="rootOnly">
+              <option [ngValue]="null">Tüm Birimler</option>
+              <option [ngValue]="true">Yalnızca Kök Birimler</option>
+            </select>
+          </div>
+        </div>
+        <div class="column-filter-actions">
+          <p-button type="button" label="Tümünü Temizle" icon="pi pi-filter-slash"
+                    severity="secondary" [outlined]="true"
+                    (onClick)="clearFilters()"></p-button>
+          <p-button type="submit" label="Filtreleri Uygula" icon="pi pi-check"
+                    [loading]="loading()"></p-button>
+        </div>
+      </form>
+    }
+
+    <div class="table-scroll" role="region" aria-label="Organizasyon tablosu" tabindex="0">
+      <p-table [value]="units()" [loading]="loading()"
+               [tableStyle]="{ 'min-width': '980px', 'width': '100%' }">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Birim Adı</th>
+            <th>Birim Kodu</th>
+            <th>Üst Birim</th>
+            <th>Durum</th>
+            <th>Kullanıcı</th>
+            <th>Alt Birim</th>
+            <th>Oluşturulma</th>
+            @if (canUpdate() || canDelete() || canViewAudit()) {
+              <th>İşlemler</th>
+            }
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-unit>
+          <tr>
+            <td>
+              <div class="unit-name-cell">
+                <i class="pi" [class.pi-sitemap]="!unit.parentOrganizationUnitId"
+                   [class.pi-building]="!!unit.parentOrganizationUnitId" aria-hidden="true"></i>
+                <strong [title]="unit.name">{{ unit.name }}</strong>
+              </div>
+            </td>
+            <td><code class="unit-code">{{ unit.code }}</code></td>
+            <td>
+              @if (unit.parentOrganizationUnitId) {
+                <span class="parent-name" [title]="unit.parentOrganizationUnitName || ''">
+                  {{ unit.parentOrganizationUnitName || '—' }}
+                </span>
+              } @else {
+                <span class="root-unit">Kök Birim</span>
+              }
+            </td>
+            <td>
+              <p-tag [value]="unit.isActive ? 'Aktif' : 'Pasif'"
+                     [severity]="unit.isActive ? 'success' : 'secondary'"></p-tag>
+            </td>
+            <td>{{ unit.userCount }}</td>
+            <td>{{ unit.childCount }}</td>
+            <td>{{ unit.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
+            @if (canUpdate() || canDelete() || canViewAudit()) {
+              <td>
+                <div class="row-actions">
+                  @if (canUpdate()) {
+                    <p-button type="button" icon="pi pi-pencil" [text]="true" size="small"
+                              severity="secondary" ariaLabel="Birim düzenle"
+                              [disabled]="actionLoadingId() === unit.id"
+                              (onClick)="openEditDialog(unit)"></p-button>
+                    <p-button type="button"
+                              [icon]="unit.isActive ? 'pi pi-ban' : 'pi pi-check-circle'"
+                              [text]="true" size="small" severity="secondary"
+                              [ariaLabel]="unit.isActive ? 'Birimi pasifleştir' : 'Birimi aktifleştir'"
+                              [disabled]="actionLoadingId() === unit.id"
+                              (onClick)="confirmStatusChange(unit)"></p-button>
+                  }
+                  @if (canViewAudit()) {
+                    <p-button type="button" icon="pi pi-history" [text]="true"
+                              size="small" severity="secondary"
+                              ariaLabel="Birim işlem geçmişi"
+                              (onClick)="openAudit(unit)"></p-button>
+                  }
+                  @if (canDelete()) {
+                    <p-button type="button" icon="pi pi-trash" [text]="true"
+                              size="small" severity="danger" ariaLabel="Birim sil"
+                              [disabled]="actionLoadingId() === unit.id"
+                              (onClick)="confirmDelete(unit)"></p-button>
+                  }
+                </div>
+              </td>
+            }
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td [attr.colspan]="canUpdate() || canDelete() || canViewAudit() ? 8 : 7"
+                class="empty-table">Filtreye uygun organizasyon birimi bulunamadı.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <div class="pagination">
+      <span>{{ rangeStart() }}–{{ rangeEnd() }} / {{ totalCount() }} kayıt</span>
+      <div class="pagination-controls">
+        <button type="button" aria-label="İlk sayfa" class="page-nav"
+                [disabled]="loading() || pageNumber() <= 1"
+                (click)="goToPage(1)"><i class="pi pi-angle-double-left"></i></button>
+        <button type="button" aria-label="Önceki sayfa" class="page-nav"
+                [disabled]="loading() || pageNumber() <= 1"
+                (click)="goToPage(pageNumber()-1)"><i class="pi pi-angle-left"></i></button>
+        <span>{{ pageNumber() }} / {{ totalPages() }}</span>
+        <button type="button" aria-label="Sonraki sayfa" class="page-nav"
+                [disabled]="loading() || pageNumber() >= totalPages()"
+                (click)="goToPage(pageNumber()+1)"><i class="pi pi-angle-right"></i></button>
+        <button type="button" aria-label="Son sayfa" class="page-nav"
+                [disabled]="loading() || pageNumber() >= totalPages()"
+                (click)="goToPage(totalPages())"><i class="pi pi-angle-double-right"></i></button>
+      </div>
+      <label class="page-size">Sayfa başına
+        <select [value]="pageSize()" [disabled]="loading()"
+                (change)="onPageSizeChange($event)" aria-label="Sayfa başına kayıt">
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </label>
+    </div>
+  </section>
+</div>
+
+<!-- Rol/Kullanıcı tanımlarındaki minimalist modal: basit bölüm ayraçları. -->
+<p-dialog [header]="editingUnit() ? 'Organizasyon Düzenle' : 'Yeni Organizasyon'"
+          [visible]="dialogVisible()"
+          (visibleChange)="onDialogVisibleChange($event)"
+          [modal]="true" [draggable]="false" [resizable]="false"
+          [style]="{ width: 'min(600px, 96vw)' }">
+  <form class="organization-form" [formGroup]="organizationForm" (ngSubmit)="saveUnit()">
+    @if (formError()) {
+      <p-message severity="error" [text]="formError()!"></p-message>
+    }
+
+    <div class="form-divider"><span>Birim Bilgileri</span></div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="orgName">Birim Adı <span class="required">*</span></label>
+        <input id="orgName" pInputText formControlName="name"
+               placeholder="Örn. İnsan Kaynakları Dairesi" autocomplete="off" />
+      </div>
+      <div class="form-field">
+        <label for="orgCode">Birim Kodu <span class="required">*</span></label>
+        <input id="orgCode" pInputText formControlName="code"
+               placeholder="Örn. IK_DAIRE" autocomplete="off" />
+      </div>
+    </div>
+
+    <div class="form-divider"><span>Organizasyon Hiyerarşisi</span></div>
+    <div class="form-field">
+      <label for="orgParentUnit">Üst Birim</label>
+      <!-- PrimeNG'nin kendi fluid düzenini kullanır; iç ok/label CSS override yoktur. -->
+      <p-select inputId="orgParentUnit"
+                formControlName="parentOrganizationUnitId"
+                [options]="parentChoices()" optionLabel="label" optionValue="id"
+                [fluid]="true" [filter]="true" filterBy="label"
+                filterPlaceholder="Üst birim ara..." [showClear]="true"
+                [loading]="parentLoading()"
+                [disabled]="parentLoading() || saving()"
+                [appendTo]="'body'" scrollHeight="280px"
+                placeholder="Üst birim yok (kök birim)">
+      </p-select>
+      <small>Üst birim seçmezseniz kayıt kök organizasyon birimi olarak oluşturulur.</small>
+      @if (parentError()) {
+        <p-message severity="error" [text]="parentError()!"></p-message>
+        <p-button type="button" label="Tekrar Dene" icon="pi pi-refresh"
+                  severity="secondary" [outlined]="true" size="small"
+                  (onClick)="loadParentOptions()"></p-button>
+      }
+    </div>
+
+    @if (editingUnit(); as edited) {
+      <div class="form-info">
+        <i class="pi pi-info-circle" aria-hidden="true"></i>
+        Bu birime {{ edited.userCount }} kullanıcı ve {{ edited.childCount }} alt birim bağlı.
+        Bağlı kayıtlar varken birim silinemez.
+      </div>
+    }
+
+    <div class="dialog-actions">
+      <p-button type="button" label="Vazgeç" severity="secondary" [outlined]="true"
+                [disabled]="saving()" (onClick)="onDialogVisibleChange(false)"></p-button>
+      <p-button type="submit" label="Kaydet" icon="pi pi-check"
+                [loading]="saving()" [disabled]="parentLoading() || !!parentError()"></p-button>
+    </div>
+  </form>
+</p-dialog>
+
+<p-confirmdialog></p-confirmdialog>
+
+<!-- Audit geçmişi, uygulamadaki ortak salt okunur bileşenle gösterilir. -->
+<p-dialog header="Organizasyon İşlem Geçmişi"
+          [visible]="!!auditUnit()" (visibleChange)="!$event && auditUnit.set(null)"
+          [modal]="true" [draggable]="false" [resizable]="false"
+          [style]="{ width: 'min(760px, 96vw)' }">
+  @if (auditUnit(); as record) {
+    <app-audit-history entityType="OrganizationUnit"
+                       [entityId]="record.id"></app-audit-history>
+  }
+</p-dialog>

@@ -38,7 +38,8 @@ export class NavigationService {
         {
           label: 'Organizasyon Tanımları',
           icon: 'pi pi-sitemap',
-          requiredPermissions: [PermissionCodes.Organizations.View]
+          route: '/app/organizations',
+          requiredPermissions: [PermissionCodes.Organizations.Query]
         }
       ]
     },

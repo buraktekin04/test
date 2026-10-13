@@ -3,6 +3,7 @@ using FluentValidation;
 using KLMN.Application.Common.Exceptions;
 using KLMN.Application.Users.Exceptions;
 using KLMN.Application.Roles.Exceptions;
+using KLMN.Application.Organizations.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -136,6 +137,22 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
                 {
                     Status = StatusCodes.Status409Conflict,
                     Title = "Rol işlemi gerçekleştirilemedi.",
+                    Detail = exception.Message
+                },
+
+            OrganizationNotFoundException =>
+                new ProblemDetails
+                {
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Organizasyon birimi bulunamadı.",
+                    Detail = exception.Message
+                },
+
+            OrganizationConflictException =>
+                new ProblemDetails
+                {
+                    Status = StatusCodes.Status409Conflict,
+                    Title = "Organizasyon işlemi gerçekleştirilemedi.",
                     Detail = exception.Message
                 },
 
