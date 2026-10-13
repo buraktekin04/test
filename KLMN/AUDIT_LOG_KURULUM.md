@@ -78,3 +78,20 @@ veritabanı yöneticisine karşı kriptografik değiştirilemezlik sağlamaz.
 
 > Bu ortamda .NET SDK ve tam Angular bağımlılıkları olmadığı için gerçek derleme,
 > migration ve tarayıcı testleri kullanıcı ortamında yapılmalıdır.
+
+## Rol/Yetki GUID alanlarının okunabilir gösterimi
+
+Audit ekranlarında RolePermission/UserRole/UserPermission ilişkilerinin
+`RoleId`, `PermissionId`, `UserId` ve organizasyon kimlikleri artık
+**ad (kod)** biçiminde gösterilir. Bu dönüşüm sunucu tarafında, tek sayfadaki
+kimliklerin toplu sorgulanmasıyla yapılır ve hem genel İşlem Geçmişi'nde
+hem de kayıt bazlı geçmiş pencerelerinde kullanılır.
+
+- Veritabanındaki `ChangesJson` alanı değiştirilmez; özgün GUID'ler korunur.
+- API gösterim amaçlı `displayChangesJson` alanı ekler.
+- Daha önceki geçmiş kayıtları için de geçerlidir; migration gerektirmez.
+- Bu işlem geçmişteki **o anki isimlerin snapshot'ı değildir**: mevcut
+  rol/yetki adı daha sonra değişmişse güncel ad gösterilir. Silinmiş ama
+  veritabanında soft-delete duran ilişkili kayıtlar da çözülür.
+- Fiziksel kayıt bulunamıyorsa GUID yerine “Rol kaydı bulunamadı” gibi
+  anlaşılır bir ifade kullanılır; denetim amaçlı ham GUID API'de mevcuttur.

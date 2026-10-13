@@ -1,0 +1,182 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using KLMN.Application.Auditing.Responses;
+using KLMN.Application.Common.Interfaces.Persistence;
+using Microsoft.EntityFrameworkCore;
+
+namespace KLMN.Application.Auditing.Services;
+
+/// <summary>
+/// Audit verisini değiştirmeden GUID ilişkilerini kullanıcı dostu isimlere
+/// dönüştürür. Orijinal ChangesJson kanıt niteliğinde aynen korunur.
+/// </summary>
+internal static class AuditReferenceDisplayResolver
+{
+    /// <summary>
+    /// Yalnızca izinli ilişki alanları görüntüleme amaçlı çözümlenir;
+    /// diğer GUID alanları ve ham audit kayıtları değiştirilmez.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<string, string> FieldTypes =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["RoleId"] = "Role",
+            ["PermissionId"] = "Permission",
+            ["UserId"] = "User",
+            ["OrganizationUnitId"] = "OrganizationUnit",
+            ["ParentId"] = "OrganizationUnit",
+            ["ParentOrganizationUnitId"] = "OrganizationUnit"
+        };
+
+    /// <summary>
+    /// Sayfadaki bütün ilişki kimliklerini önce toplayıp her entity türü için
+    /// tek veritabanı sorgusu yapar. Soft-delete/pasif kayıtlar da aranır.
+    /// </summary>
+    public static async Task<IReadOnlyCollection<AuditLogResponse>> ResolveAsync(
+        IKLMNDbContext dbContext,
+        IReadOnlyList<AuditLogResponse> entries,
+        CancellationToken cancellationToken)
+    {
+        if (entries.Count == 0) return entries;
+
+        var references = FieldTypes.Values.Distinct(StringComparer.Ordinal)
+            .ToDictionary(type => type, _ => new HashSet<Guid>(), StringComparer.Ordinal);
+
+        foreach (var entry in entries)
+        {
+            if (!TryParse(entry.ChangesJson, out var root)) continue;
+
+            foreach (var field in root!)
+            {
+                if (!FieldTypes.TryGetValue(field.Key, out var entityType) ||
+                    field.Value is not JsonObject value)
+                    continue;
+
+                AddReference(value["oldValue"], references[entityType]);
+                AddReference(value["newValue"], references[entityType]);
+            }
+        }
+
+        // Eski audit hareketlerinde daha sonra silinmiş/pasifleştirilmiş
+        // rol ve izinlerin isimleri de mümkün olduğu sürece bulunur.
+        var roleIds = references["Role"];
+        var permissionIds = references["Permission"];
+        var userIds = references["User"];
+        var organizationIds = references["OrganizationUnit"];
+
+        var roleLabels = roleIds.Count == 0
+            ? new Dictionary<Guid, string>()
+            : await dbContext.Roles.IgnoreQueryFilters().AsNoTracking()
+                .Where(x => roleIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.Name, x.Code })
+                .ToDictionaryAsync(x => x.Id,
+                    x => x.Name + " (" + x.Code + ")", cancellationToken);
+
+        var permissionLabels = permissionIds.Count == 0
+            ? new Dictionary<Guid, string>()
+            : await dbContext.Permissions.IgnoreQueryFilters().AsNoTracking()
+                .Where(x => permissionIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.Name, x.Code })
+                .ToDictionaryAsync(x => x.Id,
+                    x => x.Name + " (" + x.Code + ")", cancellationToken);
+
+        var userLabels = userIds.Count == 0
+            ? new Dictionary<Guid, string>()
+            : await dbContext.Users.IgnoreQueryFilters().AsNoTracking()
+                .Where(x => userIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.UserName, x.FirstName, x.LastName })
+                .ToDictionaryAsync(x => x.Id,
+                    x => (x.FirstName + " " + x.LastName).Trim() +
+                         " (" + x.UserName + ")", cancellationToken);
+
+        var organizationLabels = organizationIds.Count == 0
+            ? new Dictionary<Guid, string>()
+            : await dbContext.OrganizationUnits.IgnoreQueryFilters().AsNoTracking()
+                .Where(x => organizationIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.Name, x.Code })
+                .ToDictionaryAsync(x => x.Id,
+                    x => x.Name + " (" + x.Code + ")", cancellationToken);
+
+        var labels = new Dictionary<string, Dictionary<Guid, string>>(StringComparer.Ordinal)
+        {
+            ["Role"] = roleLabels,
+            ["Permission"] = permissionLabels,
+            ["User"] = userLabels,
+            ["OrganizationUnit"] = organizationLabels
+        };
+
+        var results = new List<AuditLogResponse>(entries.Count);
+        foreach (var entry in entries)
+        {
+            if (!TryParse(entry.ChangesJson, out var root))
+            {
+                results.Add(entry);
+                continue;
+            }
+
+            foreach (var field in root!)
+            {
+                if (!FieldTypes.TryGetValue(field.Key, out var entityType) ||
+                    field.Value is not JsonObject value)
+                    continue;
+
+                ReplaceReference(value, "oldValue", labels[entityType], entityType);
+                ReplaceReference(value, "newValue", labels[entityType], entityType);
+            }
+
+            results.Add(entry with { DisplayChangesJson = root.ToJsonString() });
+        }
+
+        return results;
+    }
+
+    /// <summary>Bozuk/çok eski audit JSON'ları tek sayfalık sorguyu bozmaz.</summary>
+    private static bool TryParse(string json, out JsonObject? root)
+    {
+        root = null;
+        try
+        {
+            root = JsonNode.Parse(json) as JsonObject;
+            return root is not null;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>JSON alanındaki GUID'i çözümlenecek kimlikler listesine ekler.</summary>
+    private static void AddReference(JsonNode? node, HashSet<Guid> target)
+    {
+        if (node is JsonValue && Guid.TryParse(node.ToString(), out var id))
+            target.Add(id);
+    }
+
+    /// <summary>
+    /// Eski/yeni değerleri ad (kod) olarak gösterir. Kayıt bulunamıyorsa
+    /// teknik GUID yerine anlaşılır bir kayıp kayıt açıklaması gösterilir.
+    /// </summary>
+    private static void ReplaceReference(
+        JsonObject change, string key, IReadOnlyDictionary<Guid, string> lookup,
+        string entityType)
+    {
+        var node = change[key];
+        if (node is not JsonValue ||
+            !Guid.TryParse(node.ToString(), out var id))
+            return;
+
+        if (lookup.TryGetValue(id, out var label))
+        {
+            change[key] = label;
+            return;
+        }
+
+        change[key] = entityType switch
+        {
+            "Role" => "Rol kaydı bulunamadı",
+            "Permission" => "Yetki kaydı bulunamadı",
+            "User" => "Kullanıcı kaydı bulunamadı",
+            "OrganizationUnit" => "Organizasyon kaydı bulunamadı",
+            _ => "İlişkili kayıt bulunamadı"
+        };
+    }
+}

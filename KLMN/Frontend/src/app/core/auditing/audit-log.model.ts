@@ -14,6 +14,8 @@ export interface AuditLogItem {
   entityId: string;
   action: string;
   changesJson: string;
+  /** Ad/kod çözümlemeleri yapılan gösterim JSON'u; ham audit değerleri korunur. */
+  displayChangesJson?: string | null;
   ipAddress: string | null;
 }
 

@@ -26,7 +26,10 @@ export class AuditLogService {
   /** Yalnızca sunucunun izinli değişiklik JSON'unu okunabilir alan satırlarına dönüştürür. */
   public changes(item: AuditLogItem): Array<{ field: string; oldValue: string; newValue: string }> {
     try {
-      const data = JSON.parse(item.changesJson) as Record<string, AuditFieldChange>;
+      // Eşleşen rol/yetki/organizasyon adları varsa onları kullan.
+      // Eski API yanıtlarında geriye dönük uyumluluk için ham kayıt okunabilir.
+      const data = JSON.parse(item.displayChangesJson ?? item.changesJson)
+        as Record<string, AuditFieldChange>;
       if (!data || typeof data !== 'object' || Array.isArray(data)) return [];
       return Object.entries(data).map(([field, values]) => ({
         field: this.fieldLabel(field),

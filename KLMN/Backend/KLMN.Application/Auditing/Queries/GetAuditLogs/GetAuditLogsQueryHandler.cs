@@ -1,4 +1,5 @@
 using KLMN.Application.Auditing.Responses;
+using KLMN.Application.Auditing.Services;
 using KLMN.Application.Common.Interfaces.Persistence;
 using KLMN.Application.Common.Models;
 using MediatR;
@@ -50,9 +51,14 @@ public sealed class GetAuditLogsQueryHandler(IKLMNDbContext dbContext)
                 x.EntityType, x.EntityId, x.Action, x.ChangesJson, x.IpAddress))
             .ToListAsync(cancellationToken);
 
+        // GUID alanlarının ad/kod karşılıkları yalnızca response için üretilir.
+        // AuditLogs.ChangesJson veritabanında özgün haliyle saklanmaya devam eder.
+        var displayItems = await AuditReferenceDisplayResolver.ResolveAsync(
+            dbContext, items, cancellationToken);
+
         return new PagedResult<AuditLogResponse>
         {
-            Items = items, TotalCount = count,
+            Items = displayItems, TotalCount = count,
             PageNumber = request.PageNumber, PageSize = request.PageSize
         };
     }
