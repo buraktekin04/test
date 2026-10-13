@@ -203,7 +203,7 @@
           <th>Başlangıç</th>
           <th>Bitiş</th>
           <th>Oluşturulma</th>
-          @if (canUpdate() || canDelete() || canActivate() || canViewDocuments()) {
+          @if (canUpdate() || canDelete() || canActivate() || canViewDocuments() || canViewAudit()) {
             <th class="actions-column">İşlemler</th>
           }
         </tr>
@@ -264,9 +264,15 @@
           <td>{{ user.validFrom ? (user.validFrom | date:'dd.MM.yyyy HH:mm') : 'Sınırsız' }}</td>
           <td>{{ user.validTo ? (user.validTo | date:'dd.MM.yyyy HH:mm') : 'Sınırsız' }}</td>
           <td>{{ user.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
-          @if (canUpdate() || canDelete() || canActivate() || canViewDocuments()) {
+          @if (canUpdate() || canDelete() || canActivate() || canViewDocuments() || canViewAudit()) {
             <td>
               <div class="row-actions">
+                @if (canViewAudit()) {
+                  <p-button type="button" icon="pi pi-history"
+                            severity="secondary" [text]="true" size="small"
+                            ariaLabel="Kullanıcı işlem geçmişi"
+                            (onClick)="openUserAudit(user)"></p-button>
+                }
                 @if (canViewDocuments()) {
                   <p-button type="button" icon="pi pi-file-pdf"
                             severity="secondary" [text]="true" size="small"
@@ -317,7 +323,7 @@
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td [attr.colspan]="canUpdate() || canDelete() || canActivate() || canViewDocuments() ? 11 : 10"
+          <td [attr.colspan]="canUpdate() || canDelete() || canActivate() || canViewDocuments() || canViewAudit() ? 11 : 10"
               class="empty-table">Kriterlere uygun kullanıcı bulunamadı.</td>
         </tr>
       </ng-template>
@@ -634,3 +640,13 @@
 
 <!-- Kritik status ve silme işlemlerinde kullanıcı onayı istenir. -->
 <p-confirmdialog></p-confirmdialog>
+
+<!-- Tüm tanımlamalarda kullanılan ortak, yalnızca okunabilir geçmiş penceresi. -->
+<p-dialog header="Kullanıcı İşlem Geçmişi"
+          [visible]="!!auditUser()" (visibleChange)="!$event && auditUser.set(null)"
+          [modal]="true" [draggable]="false" [resizable]="false"
+          [style]="{ width: 'min(760px, 96vw)' }">
+  @if (auditUser(); as target) {
+    <app-audit-history entityType="User" [entityId]="target.id"></app-audit-history>
+  }
+</p-dialog>

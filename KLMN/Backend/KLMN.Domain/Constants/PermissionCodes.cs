@@ -78,6 +78,12 @@ public static class PermissionCodes
         public const string Print = "Reports.Print";
     }
 
+    /// <summary>Tanımlama geçmişini görüntüleme yetkisidir.</summary>
+    public static class AuditLogs
+    {
+        public const string View = "AuditLogs.View";
+    }
+
     /// <summary>İnceleme ve soruşturma permission kodlarını içerir.</summary>
     public static class Investigations
     {

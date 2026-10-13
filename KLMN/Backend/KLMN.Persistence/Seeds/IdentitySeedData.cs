@@ -50,6 +50,8 @@ internal static class IdentitySeedData
         new("Rapor Dışa Aktarma", PermissionCodes.Reports.Export, "Reports", 30),
         new("Rapor Yazdırma", PermissionCodes.Reports.Print, "Reports", 40),
 
+        new("Tanımlama İşlem Geçmişini Görüntüleme", PermissionCodes.AuditLogs.View, "AuditLogs", 10),
+
         new("İncelemeleri Görüntüleme", PermissionCodes.Investigations.View, "Investigations", 10),
         new("İnceleme Sorgulama", PermissionCodes.Investigations.Query, "Investigations", 20),
         new("İnceleme Oluşturma", PermissionCodes.Investigations.Create, "Investigations", 30),

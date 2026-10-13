@@ -26,6 +26,7 @@ import { UserListItem } from '../models/user-list-item.model';
 import { UserQuery } from '../models/user-query.model';
 import { UserMutationResponse } from '../models/user-mutation-response.model';
 import { UserService } from '../services/user.service';
+import { AuditHistoryComponent } from '../../../shared/audit-history/audit-history.component';
 
 /** Dropdown'un kullanıcıya gösterdiği kod + ad etiketli birim seçeneğidir. */
 type OrganizationSelectOption = OrganizationUnitOption & { label: string };
@@ -48,13 +49,25 @@ type OrganizationSelectOption = OrganizationUnitOption & { label: string };
     CheckboxModule,
     MessageModule,
     DialogModule,
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    AuditHistoryComponent
   ],
   providers: [ConfirmationService],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.scss'
 })
 export class UserListComponent implements OnInit {
+  /** Seçili kullanıcının değişiklik geçmişi dialog içeriğidir. */
+  public readonly auditUser = signal<UserListItem | null>(null);
+  /** Audit Log görüntüleme yetkisi backend endpoint'inde de denetlenir. */
+  public readonly canViewAudit = computed(() =>
+    this.permissionService.has(PermissionCodes.AuditLogs.View)
+  );
+
+  public openUserAudit(user: UserListItem): void {
+    if (this.canViewAudit()) this.auditUser.set(user);
+  }
+
   /** Kullanıcı endpoint'lerini çalıştıran tip güvenli API servisidir. */
   private readonly userService = inject(UserService);
 

@@ -77,6 +77,14 @@ export const routes: Routes = [
         redirectTo: 'users'
       },
       {
+        path: 'audit-logs',
+        canActivate: [permissionGuard],
+        data: { permissions: [PermissionCodes.AuditLogs.View] },
+        loadComponent: () =>
+          import('./features/audit-logs/audit-log-list/audit-log-list.component')
+            .then(component => component.AuditLogListComponent)
+      },
+      {
         path: 'change-password',
         loadComponent: () =>
           import('./features/authentication/change-password/change-password.component')

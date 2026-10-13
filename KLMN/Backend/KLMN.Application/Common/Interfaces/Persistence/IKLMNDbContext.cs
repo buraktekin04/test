@@ -1,4 +1,5 @@
 using KLMN.Domain.Entities.Identity;
+using KLMN.Domain.Entities.Auditing;
 using KLMN.Domain.Entities.Organization;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,9 @@ namespace KLMN.Application.Common.Interfaces.Persistence;
 public interface IKLMNDbContext
 {
     DbSet<User> Users { get; }
+
+    /// <summary>Audit geçmişi sorgulama modeli; interceptor haricinde yazılmaz.</summary>
+    DbSet<AuditLog> AuditLogs { get; }
 
     /// <summary>
     /// Kullanıcıya bağlı PDF meta verisi kayıtlarını sağlar.

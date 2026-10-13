@@ -750,32 +750,6 @@
   span { overflow-wrap: anywhere; }
 }
 
-.permissions-actions {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: .65rem;
-  min-width: 0;
-  padding: .85rem .95rem;
-  border-top: 1px solid #edf0f3;
-  background: #fff;
-}
-
-.permissions-save-summary {
-  display: inline-flex;
-  align-items: center;
-  gap: .35rem;
-  min-width: 0;
-  color: #667085;
-  font-size: .74rem;
-  overflow-wrap: anywhere;
-
-  &.is-dirty { color: #b54708; }
-  i { font-size: .4rem; flex-shrink: 0; }
-}
-
 /* Ekrana özel anlık bilgi mesajları. */
 .role-notices {
   position: fixed;
@@ -839,4 +813,18 @@
   .column-filter-grid { grid-template-columns: 1fr; }
   .table-toolbar { justify-content: flex-start; }
   .role-notices { top: 70px; right: 16px; }
+}
+
+/* Permission kaydetme butonu panel başlığında ilk bakışta görünür. */
+.permissions-header-actions {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+@media (max-width: 500px) {
+  .permissions-header { padding: .65rem .6rem; gap: .3rem; }
+  .permissions-header-actions { gap: .15rem; }
 }

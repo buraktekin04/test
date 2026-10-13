@@ -1,0 +1,53 @@
+<div class="audit-history">
+  <div class="history-toolbar">
+    <span>Toplam {{ total() }} değişiklik kaydı</span>
+    <p-button type="button" icon="pi pi-refresh" ariaLabel="Geçmişi yenile"
+              size="small" severity="secondary" [text]="true"
+              [disabled]="loading()" (onClick)="load()"></p-button>
+  </div>
+
+  @if (error()) {
+    <div class="history-error" role="alert">{{ error() }}</div>
+  } @else if (loading()) {
+    <div class="history-empty"><i class="pi pi-spin pi-spinner"></i> Geçmiş yükleniyor...</div>
+  } @else if (!entries().length) {
+    <div class="history-empty">Bu kayıt için henüz audit geçmişi yok.</div>
+  } @else {
+    <div class="history-list">
+      @for (entry of entries(); track entry.id) {
+        <section class="history-entry">
+          <div class="history-entry-head">
+            <p-tag [value]="actionLabel(entry.action)"
+                   [severity]="entry.action === 'Delete' ? 'danger' : entry.action === 'Create' ? 'success' : 'info'"></p-tag>
+            <time>{{ entry.occurredAt | date:'dd.MM.yyyy HH:mm:ss' }}</time>
+          </div>
+          <div class="history-actor">
+            <i class="pi pi-user"></i>
+            {{ entry.actorUserName || 'Sistem işlemi' }}
+          </div>
+          <div class="history-diffs">
+            @for (change of changes(entry); track change.field) {
+              <div class="history-diff">
+                <strong>{{ change.field }}</strong>
+                <div class="history-values">
+                  <span class="old-value" [title]="change.oldValue">{{ change.oldValue }}</span>
+                  <i class="pi pi-arrow-right" aria-hidden="true"></i>
+                  <span class="new-value" [title]="change.newValue">{{ change.newValue }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+    </div>
+    <div class="history-pagination">
+      <p-button type="button" icon="pi pi-angle-left" size="small"
+                severity="secondary" [outlined]="true"
+                [disabled]="page() === 1" (onClick)="go(-1)"></p-button>
+      <span>{{ page() }} / {{ totalPages() }}</span>
+      <p-button type="button" icon="pi pi-angle-right" size="small"
+                severity="secondary" [outlined]="true"
+                [disabled]="page() * 10 >= total()" (onClick)="go(1)"></p-button>
+    </div>
+  }
+</div>

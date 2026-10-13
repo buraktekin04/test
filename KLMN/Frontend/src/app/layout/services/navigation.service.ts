@@ -43,6 +43,12 @@ export class NavigationService {
       ]
     },
     {
+      label: 'İşlem Geçmişi',
+      icon: 'pi pi-history',
+      route: '/app/audit-logs',
+      requiredPermissions: [PermissionCodes.AuditLogs.View]
+    },
+    {
       label: 'İncelemeler',
       icon: 'pi pi-search',
       requiredPermissions: [PermissionCodes.Investigations.View]

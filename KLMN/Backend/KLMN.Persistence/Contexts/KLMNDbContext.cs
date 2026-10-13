@@ -1,5 +1,6 @@
 using KLMN.Application.Common.Interfaces.Persistence;
 using KLMN.Domain.Entities.Identity;
+using KLMN.Domain.Entities.Auditing;
 using KLMN.Domain.Entities.Organization;
 using KLMN.Persistence.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,9 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     /// Kullanıcı hesaplarına ait EF Core DbSet koleksiyonudur.
     /// </summary>
     public DbSet<User> Users => Set<User>();
+
+    /// <summary>Değiştirilemez tanımlama audit kayıtlarının sorgu kümesidir.</summary>
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     /// <summary>Kullanıcı PDF metadata kayıtlarının EF Core entity kümesidir.</summary>
     public DbSet<UserAgreementPdf> UserAgreementPdfs => Set<UserAgreementPdf>();

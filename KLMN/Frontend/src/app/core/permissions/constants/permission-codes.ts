@@ -23,6 +23,9 @@ export const PermissionCodes = {
     Delete: 'Roles.Delete',
     ManagePermissions: 'Roles.ManagePermissions'
   },
+  AuditLogs: {
+    View: 'AuditLogs.View'
+  },
   Organizations: {
     View: 'Organizations.View',
     Query: 'Organizations.Query',

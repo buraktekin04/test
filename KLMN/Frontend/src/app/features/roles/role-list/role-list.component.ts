@@ -21,6 +21,7 @@ import {
   RolePermissionOption, RoleQuery
 } from '../models/role.model';
 import { RoleService } from '../services/role.service';
+import { AuditHistoryComponent } from '../../../shared/audit-history/audit-history.component';
 
 /** Rol Tanımları: kompakt liste, CRUD ve rol-permission yönetimi ekranıdır. */
 @Component({
@@ -29,7 +30,7 @@ import { RoleService } from '../services/role.service';
   imports: [
     DatePipe, FormsModule, ReactiveFormsModule, ButtonModule, CheckboxModule,
     ConfirmDialogModule, DialogModule, InputTextModule,
-    MessageModule, TableModule, TagModule
+    MessageModule, TableModule, TagModule, AuditHistoryComponent
   ],
   providers: [ConfirmationService],
   templateUrl: './role-list.component.html',
@@ -44,6 +45,17 @@ export class RoleListComponent implements OnInit {
   private readonly permissionService = inject(PermissionService);
   /** Kritik işlemlerden önce PrimeNG onay kutusunu gösterir. */
   private readonly confirmation = inject(ConfirmationService);
+
+  /** Seçili rolün işlem geçmişinin açıldığı ortak pencere durumu. */
+  public readonly auditRole = signal<RoleItem | null>(null);
+
+  public readonly canViewAudit = computed(() =>
+    this.permissionService.has(PermissionCodes.AuditLogs.View)
+  );
+
+  public openRoleAudit(role: RoleItem): void {
+    if (this.canViewAudit()) this.auditRole.set(role);
+  }
 
   /** Kullanıcının rol tanımlama yetkileridir; backend aynı izinleri ayrıca doğrular. */
   public readonly canCreate = computed(() => this.permissionService.has(PermissionCodes.Roles.Create));

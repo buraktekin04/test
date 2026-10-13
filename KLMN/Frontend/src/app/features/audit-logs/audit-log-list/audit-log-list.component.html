@@ -1,0 +1,137 @@
+<div class="audit-page">
+  <div class="page-header">
+    <div>
+      <h1>İşlem Geçmişi</h1>
+      <p>Tanımlama kayıtlarında yapılan değişiklikleri, önceki ve yeni değerlerle inceleyin.</p>
+    </div>
+  </div>
+
+  <section class="audit-filters">
+    <form [formGroup]="form" (ngSubmit)="search()">
+      <label>
+        <span>Kayıt Türü</span>
+        <select formControlName="entityType">
+          <option value="">Tümü</option>
+          <option value="User">Kullanıcı</option>
+          <option value="Role">Rol</option>
+          <option value="OrganizationUnit">Organizasyon</option>
+          <option value="Permission">Yetki</option>
+          <option value="UserRole">Kullanıcı - Rol</option>
+          <option value="RolePermission">Rol - Yetki</option>
+          <option value="UserPermission">Kullanıcı - Yetki</option>
+          <option value="UserAgreementPdf">Kullanıcı PDF</option>
+        </select>
+      </label>
+      <label>
+        <span>İşlem</span>
+        <select formControlName="action">
+          <option value="">Tümü</option>
+          <option value="Create">Oluşturma</option>
+          <option value="Update">Güncelleme</option>
+          <option value="Delete">Silme</option>
+          <option value="Activate">Aktifleştirme</option>
+          <option value="Deactivate">Pasifleştirme</option>
+        </select>
+      </label>
+      <label>
+        <span>Başlangıç</span>
+        <input type="datetime-local" formControlName="from"/>
+      </label>
+      <label>
+        <span>Bitiş</span>
+        <input type="datetime-local" formControlName="to"/>
+      </label>
+      <label class="id-filter">
+        <span>Kayıt Kimliği (isteğe bağlı)</span>
+        <input type="text" formControlName="entityId" placeholder="GUID"/>
+      </label>
+      <div class="filter-actions">
+        <p-button type="submit" icon="pi pi-search" label="Sorgula"
+                  [loading]="loading()"></p-button>
+        <p-button type="button" severity="secondary" [outlined]="true"
+                  icon="pi pi-times" label="Temizle" (onClick)="clear()"></p-button>
+      </div>
+    </form>
+  </section>
+
+  @if (error()) {
+    <div class="audit-error" role="alert">{{ error() }}</div>
+  }
+
+  <section class="audit-list">
+    <div class="audit-list-heading">
+      <strong>Değişiklik Kayıtları</strong>
+      <span>{{ total() }} kayıt</span>
+    </div>
+    <div class="audit-table-scroll">
+      <p-table [value]="rows()" [loading]="loading()"
+               [tableStyle]="{ 'min-width': '930px', width: '100%' }">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Tarih</th>
+            <th>İşlemi Yapan</th>
+            <th>Tür</th>
+            <th>İşlem</th>
+            <th>Kayıt Kimliği</th>
+            <th>Detay</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-entry>
+          <tr>
+            <td>{{ entry.occurredAt | date:'dd.MM.yyyy HH:mm:ss' }}</td>
+            <td>{{ entry.actorUserName || 'Sistem' }}</td>
+            <td>{{ entry.entityType }}</td>
+            <td>
+              <p-tag [value]="label(entry.action)"
+                     [severity]="entry.action === 'Delete' ? 'danger' : entry.action === 'Create' ? 'success' : 'info'"></p-tag>
+            </td>
+            <td><code>{{ entry.entityId }}</code></td>
+            <td>
+              <p-button type="button" icon="pi pi-eye" label="Değişiklikler"
+                        size="small" severity="secondary" [text]="true"
+                        (onClick)="openDetails(entry)"></p-button>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr><td colspan="6" class="empty-table">İşlem geçmişi bulunamadı.</td></tr>
+        </ng-template>
+      </p-table>
+    </div>
+    <div class="audit-pagination">
+      <span>{{ total() }} kayıt · Sayfa {{ page() }} / {{ totalPages() }}</span>
+      <div>
+        <p-button type="button" icon="pi pi-angle-left" size="small"
+                  severity="secondary" [outlined]="true" [disabled]="page() === 1"
+                  (onClick)="go(-1)"></p-button>
+        <p-button type="button" icon="pi pi-angle-right" size="small"
+                  severity="secondary" [outlined]="true" [disabled]="page() >= totalPages()"
+                  (onClick)="go(1)"></p-button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<p-dialog header="Değişiklik Detayları" [visible]="!!selected()"
+          (visibleChange)="!$event && closeDetails()"
+          [modal]="true" [draggable]="false" [resizable]="false"
+          [style]="{ width: 'min(700px, 96vw)' }">
+  @if (selected(); as item) {
+    <div class="change-details">
+      <div class="change-summary">
+        <strong>{{ item.entityType }} · {{ label(item.action) }}</strong>
+        <span>{{ item.actorUserName || 'Sistem' }} · {{ item.occurredAt | date:'dd.MM.yyyy HH:mm:ss' }}</span>
+      </div>
+      @for (change of changes(item); track change.field) {
+        <div class="change-entry">
+          <strong>{{ change.field }}</strong>
+          <div class="change-values">
+            <span>{{ change.oldValue }}</span>
+            <i class="pi pi-arrow-right"></i>
+            <span>{{ change.newValue }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</p-dialog>
