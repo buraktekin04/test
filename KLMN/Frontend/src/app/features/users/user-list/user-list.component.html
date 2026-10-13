@@ -486,13 +486,8 @@
     }
 
     <section class="form-section">
-      <div class="form-section-heading">
-        <div class="form-section-icon"><i class="pi pi-user" aria-hidden="true"></i></div>
-        <div>
-          <strong>Temel Bilgiler</strong>
-          <small>Hesap ve iletişim bilgileri</small>
-        </div>
-      </div>
+      <!-- Başlık kartı yerine ince, sade bölüm ayracı. -->
+      <div class="form-divider"><span>Hesap Bilgileri</span></div>
 
       <div class="form-grid">
         <div class="form-field">
@@ -562,13 +557,7 @@
     </section>
 
     <section class="form-section">
-      <div class="form-section-heading">
-        <div class="form-section-icon"><i class="pi pi-shield" aria-hidden="true"></i></div>
-        <div>
-          <strong>Erişim Ayarları</strong>
-          <small>Mesai, hesap kilidi ve geçerlilik tarihleri</small>
-        </div>
-      </div>
+      <div class="form-divider"><span>Erişim ve Geçerlilik</span></div>
 
       <div class="access-options">
         <div class="access-option">
@@ -591,29 +580,38 @@
         }
       </div>
 
+      <!-- Tarayıcının yerleşik tarih ve saat seçicisi korunur; tek çerçeve, sade temizleme ikonu. -->
       <div class="form-grid validity-grid">
         <div class="form-field">
           <label for="userValidFrom">Geçerlilik Başlangıcı</label>
-          <div class="date-input-row">
-            <input id="userValidFrom" type="datetime-local" pInputText formControlName="validFrom" />
-            <p-button type="button" icon="pi pi-times" size="small"
-                      severity="secondary" [outlined]="true"
-                      ariaLabel="Başlangıç tarihini temizle"
-                      (onClick)="clearValidityDate('validFrom')"></p-button>
+          <div class="datetime-control">
+            <input id="userValidFrom" type="datetime-local"
+                   formControlName="validFrom" aria-describedby="validityHint" />
+            <button type="button" class="datetime-clear"
+                    aria-label="Başlangıç tarihini temizle"
+                    title="Başlangıç tarihini temizle"
+                    [disabled]="!userForm.controls.validFrom.value"
+                    (click)="clearValidityDate('validFrom')">
+              <i class="pi pi-times" aria-hidden="true"></i>
+            </button>
           </div>
         </div>
         <div class="form-field">
           <label for="userValidTo">Geçerlilik Bitişi</label>
-          <div class="date-input-row">
-            <input id="userValidTo" type="datetime-local" pInputText formControlName="validTo" />
-            <p-button type="button" icon="pi pi-times" size="small"
-                      severity="secondary" [outlined]="true"
-                      ariaLabel="Bitiş tarihini temizle"
-                      (onClick)="clearValidityDate('validTo')"></p-button>
+          <div class="datetime-control">
+            <input id="userValidTo" type="datetime-local"
+                   formControlName="validTo" aria-describedby="validityHint" />
+            <button type="button" class="datetime-clear"
+                    aria-label="Bitiş tarihini temizle"
+                    title="Bitiş tarihini temizle"
+                    [disabled]="!userForm.controls.validTo.value"
+                    (click)="clearValidityDate('validTo')">
+              <i class="pi pi-times" aria-hidden="true"></i>
+            </button>
           </div>
         </div>
       </div>
-      <small class="validity-note">Tarihleri boş bırakırsanız ilgili erişim sınırı uygulanmaz.</small>
+      <small id="validityHint" class="validity-note">Boş bırakılan tarihler için erişim süresi sınırsızdır.</small>
     </section>
 
     @if (selectedUser()) {

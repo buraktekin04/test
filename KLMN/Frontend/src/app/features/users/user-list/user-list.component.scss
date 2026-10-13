@@ -220,13 +220,6 @@
     grid-template-columns: 1fr;
   }
 }
-/* Geçerlilik tarihleri tüm tanım formlarındaki datetime-local stiliyle uyumludur. */
-.form-field input[type="datetime-local"] {
-  min-width: 0;
-  max-width: 100%;
-  color-scheme: light;
-}
-
 /* Görev yeri alanında PrimeNG Select'in kendi display/flex/ikon stilleri korunur. */
 .organization-field {
   min-width: 0;
@@ -290,20 +283,6 @@
   cursor: pointer;
 
   &:hover { background: #f2f4f7; color: #344054; }
-}
-
-/* Geçerlilik tarihlerindeki küçük temizleme butonu iki input'a özel. */
-.date-input-row {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  gap: .4rem;
-
-  input[type="datetime-local"] {
-    flex: 1 1 auto;
-    width: 0;
-    min-width: 0;
-  }
 }
 
 @media (max-width: 768px) {
@@ -547,41 +526,32 @@
 }
 
 .form-section {
-  padding: 1rem .1rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-
-  + .form-section {
-    border-top: 1px solid #e7ebf0;
-  }
+  gap: .85rem;
+  padding: .65rem 0 .9rem;
 }
 
-.form-section-heading {
+/* Sadece ince çizgi ve kısa etiket: ikon, kart veya açıklama yok. */
+.form-divider {
   display: flex;
-  gap: .65rem;
   align-items: center;
+  gap: .75rem;
   min-width: 0;
+  color: #667085;
+  font-size: .76rem;
+  font-weight: 650;
+  letter-spacing: .015em;
 
-  > div:last-child {
-    display: flex;
-    flex-direction: column;
-    gap: .18rem;
+  > span { white-space: nowrap; }
+
+  &::after {
+    content: '';
+    flex: 1 1 auto;
+    height: 1px;
+    min-width: 0;
+    background: #e7ebf0;
   }
-
-  strong { font-size: .91rem; color: #1d2939; font-weight: 650; }
-  small { font-size: .75rem; color: #667085; }
-}
-
-.form-section-icon {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
-  background: #eff6ff;
-  color: #1d4ed8;
-  flex-shrink: 0;
 }
 
 .required-mark {
@@ -641,12 +611,76 @@
   small { font-size: .72rem; line-height: 1.35; color: #667085; }
 }
 
-.validity-grid { margin-top: .1rem; }
+/* Başlangıç/bitiş: tarayıcının takvim-saat kontrolünü kesmeyen tek çerçeveli input. */
+.validity-grid { margin-top: .15rem; }
+
+.datetime-control {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  border: 1px solid #d0d5dd;
+  border-radius: 9px;
+  background: #fff;
+  transition: border-color .16s ease, box-shadow .16s ease;
+
+  &:hover { border-color: #98a2b3; }
+
+  &:focus-within {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, .1);
+  }
+
+  input[type="datetime-local"] {
+    display: block;
+    flex: 1 1 auto;
+    width: 0;
+    min-width: 0;
+    height: 100%;
+    min-height: 0;
+    border: 0;
+    border-radius: 9px 0 0 9px;
+    background: transparent;
+    outline: none;
+    box-shadow: none;
+    padding: 0 .55rem 0 .75rem;
+    font-family: inherit;
+    font-size: .83rem;
+    font-weight: 400;
+    color: #344054;
+    color-scheme: light;
+
+    &:focus { border: 0; outline: none; box-shadow: none; }
+  }
+}
+
+.datetime-clear {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 100%;
+  flex: 0 0 34px;
+  margin: 0 2px 0 0;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid #eef2f6;
+  background: transparent;
+  border-radius: 0 7px 7px 0;
+  color: #667085;
+  cursor: pointer;
+
+  i { font-size: .72rem; }
+  &:hover:not(:disabled) { background: #f2f4f7; color: #344054; }
+  &:disabled { cursor: default; color: #cbd5e1; }
+  &:focus-visible { outline: 2px solid #3b82f6; outline-offset: -2px; }
+}
+
 .validity-note {
   display: block;
-  color: #667085;
-  font-size: .73rem;
-  margin-top: -.45rem;
+  color: #98a2b3;
+  font-size: .72rem;
+  line-height: 1.4;
 }
 
 .form-info-note {
