@@ -11,3 +11,73 @@ body {
   font-family: Inter, Arial, sans-serif;
   background: #f3f4f6;
 }
+
+/*
+ * TÜM EKRANLARDA PrimeNG Select görünüm standardı.
+ * Dropdown metninin yalnızca ilk harfinin görünmesi, gereksiz yükseklik
+ * ve taşma sorunlarını genel seviyede önler. Seçim/arama/temizleme
+ * fonksiyonları ve form değerleri üzerinde değişiklik yapmaz.
+ */
+p-select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* PrimeNG Select'in kendi host sınıfı üzerinden genişliği sabitler. */
+.p-select {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 40px;
+  height: 40px;
+  box-sizing: border-box;
+}
+
+/* Metnin kalan genişliği kullanmasına izin verir, ikonları kırpmaz. */
+.p-select .p-select-label {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.25rem;
+  padding: .6rem .75rem;
+}
+
+.p-select .p-select-dropdown,
+.p-select .p-select-clear-icon {
+  flex-shrink: 0;
+}
+
+/* Seçenek paneli body'ye taşınsa da tüm ekranlarda okunaklıdır. */
+.p-select-overlay {
+  max-width: calc(100vw - 24px);
+}
+
+.p-select-overlay .p-select-list-container {
+  max-height: min(320px, 50vh);
+  overflow-y: auto;
+}
+
+.p-select-overlay .p-select-option {
+  min-height: 36px;
+  height: auto;
+  padding: .55rem .75rem;
+  line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.p-select-overlay .p-select-filter {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}

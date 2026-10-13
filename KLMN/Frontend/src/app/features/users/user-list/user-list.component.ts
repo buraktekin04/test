@@ -9,7 +9,6 @@ import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
-import { DrawerModule } from 'primeng/drawer';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { TableModule } from 'primeng/table';
@@ -49,7 +48,6 @@ type OrganizationSelectOption = OrganizationUnitOption & { label: string };
     CheckboxModule,
     MessageModule,
     DialogModule,
-    DrawerModule,
     ConfirmDialogModule
   ],
   providers: [ConfirmationService],
@@ -123,10 +121,10 @@ export class UserListComponent implements OnInit {
     this.permissionService.has(PermissionCodes.Users.ManageDocuments)
   );
 
-  /** Sağ PDF panelinin açık/kapalı durumudur; kullanıcı düzenleme modalinden bağımsızdır. */
+  /** Kullanıcı listesiyle bitişik PDF panelinin görünürlük durumudur. */
   public readonly documentsVisible = signal(false);
 
-  /** Sağ panelde belgeleri yönetilen kullanıcı; düzenlenen kullanıcıdan ayrıdır. */
+  /** Listeye bitişik panelde belgeleri yönetilen kullanıcı; düzenlenen kullanıcıdan ayrıdır. */
   public readonly documentsUser = signal<UserListItem | null>(null);
 
   /** PDF belge listesi sunucudan alınırken yükleme göstergesidir. */
@@ -571,7 +569,7 @@ export class UserListComponent implements OnInit {
   }
 
   /**
-   * Satırdaki PDF butonuyla sağdaki belge panelini açar.
+   * Satırdaki PDF butonuyla kullanıcı listesinin yanındaki belge panelini açar.
    * Düzenleme formunu ve organization endpoint'ini çalıştırmaz.
    */
   public openDocumentsPanel(user: UserListItem): void {
@@ -586,7 +584,7 @@ export class UserListComponent implements OnInit {
     this.loadAgreementPdfs(user.id);
   }
 
-  /** Panel X/mask kapatmasında yalnızca PDF ekranının durumunu temizler. */
+  /** Panel kapatma butonunda yalnızca PDF ekranının durumunu temizler. */
   public onDocumentsVisibleChange(visible: boolean): void {
     this.documentsVisible.set(visible);
     if (visible) return;
@@ -688,7 +686,7 @@ export class UserListComponent implements OnInit {
       });
   }
 
-  /** PDF'yi seçili sağ panel kullanıcısı için yetkili API'den indirir. */
+  /** PDF'yi listede seçili belge paneli kullanıcısı için yetkili API'den indirir. */
   public downloadPdf(pdf: UserAgreementPdf): void {
     const user = this.documentsUser();
     if (!user || !this.documentsVisible() || !this.canViewDocuments()) return;
@@ -712,7 +710,7 @@ export class UserListComponent implements OnInit {
     });
   }
 
-  /** PDF kaydını sağ panelde seçili kullanıcı için onay alarak siler. */
+  /** PDF kaydını listeye bitişik panelde seçili kullanıcı için onay alarak siler. */
   public confirmDeletePdf(pdf: UserAgreementPdf): void {
     const user = this.documentsUser();
     if (!user || !this.canManageDocuments()) return;

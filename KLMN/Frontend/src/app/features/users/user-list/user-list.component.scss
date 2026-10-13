@@ -25,12 +25,28 @@
   }
 }
 
-.filter-panel,
-.table-container {
+.filter-panel {
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   box-shadow: 0 1px 2px rgba(16, 24, 40, .025);
+}
+
+/* Kullanıcı listesi ve PDF paneli tek bir görsel kart oluşturur. */
+.users-list-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  min-width: 0;
+  max-width: 100%;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .025);
+}
+
+.users-list-workspace.documents-open {
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 365px);
 }
 
 .filter-panel {
@@ -77,9 +93,14 @@
 }
 
 .table-container {
-  // PrimeNG paginator'un kayıt sayısı menüsü container tarafından kırpılmaz.
   overflow: visible;
   min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* Yatay kaydırma yalnızca tabloya ait; sayfalama menüsü bunun DIŞINDA kalır. */
@@ -88,12 +109,6 @@
   overflow-x: auto;
   overflow-y: hidden;
   overscroll-behavior-x: contain;
-}
-
-/* Paginator tablo kaydırma alanına dahil edilmez. */
-.table-container {
-  width: 100%;
-  min-width: 0;
 }
 
 .table-title {
@@ -306,6 +321,7 @@
 :host { display: block; min-width: 0; }
 
 .users-page,
+.users-list-workspace,
 .table-container,
 .filter-panel {
   min-width: 0;
@@ -851,15 +867,75 @@
   strong { font-size: .84rem; color: #344054; }
 }
 
-/* PrimeNG Drawer içeriğinde kendi panelimize özel, kompakt iç boşluklar. */
-::ng-deep .user-documents-drawer .p-drawer-content {
-  padding: 1rem 1.15rem 1.5rem;
-}
-
 /* Form/doküman görünümü küçük ekranlarda taşma üretmez. */
 @media (max-width: 650px) {
   .form-grid { grid-template-columns: minmax(0, 1fr); }
   .form-section { padding: .8rem 0; }
   .document-drawer-content { gap: .85rem; }
   .document-item { gap: .4rem; }
+}
+
+
+/* Listeyle bütünleşik, aynı kartın sağ kenarında açılan belge paneli. */
+.user-documents-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+  background: #fff;
+  border-left: 1px solid #e5e7eb;
+  animation: user-documents-panel-in .16s ease-out;
+}
+
+.documents-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+  min-width: 0;
+  min-height: 67px;
+  padding: .85rem 1rem;
+  border-bottom: 1px solid #e8edf3;
+}
+
+.documents-panel-close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #667085;
+  cursor: pointer;
+
+  &:hover { background: #f2f4f7; color: #344054; }
+  &:focus-visible { outline: 2px solid #2563eb; outline-offset: 1px; }
+}
+
+.user-documents-panel .document-drawer-content {
+  padding: 1rem;
+  gap: .9rem;
+}
+
+@keyframes user-documents-panel-in {
+  from { opacity: .6; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* İçerik daraldığında panel listeden kopmadan alt sıraya yerleşir. */
+@media (max-width: 1100px) {
+  .users-list-workspace.documents-open {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .user-documents-panel {
+    border-left: 0;
+    border-top: 1px solid #e5e7eb;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .user-documents-panel { animation: none; }
 }

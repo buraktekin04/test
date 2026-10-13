@@ -72,7 +72,9 @@
     </form>
   </section>
 
-  <section class="table-container" aria-label="Kullanıcı listesi">
+  <section class="users-list-workspace" [class.documents-open]="documentsVisible()"
+           aria-label="Kullanıcı listesi ve dokümanlar">
+    <section class="table-container" aria-label="Kullanıcı listesi">
     <div class="table-title">
       <div class="table-toolbar-actions">
         <p-button
@@ -360,6 +362,111 @@
         </select>
       </label>
     </div>
+    </section>
+    <!-- Liste ile aynı kartı paylaşan, overlay olmayan kullanıcı PDF alanı. -->
+    @if (documentsVisible()) {
+      @if (documentsUser(); as documentOwner) {
+        <aside class="user-documents-panel"
+               aria-label="Seçili kullanıcının PDF dokümanları">
+          <div class="documents-panel-header">
+            <div class="document-drawer-heading">
+              <div class="document-header-icon"><i class="pi pi-file-pdf" aria-hidden="true"></i></div>
+              <div>
+                <strong>Kullanıcı Dokümanları</strong>
+                <span>{{ documentOwner.fullName }}</span>
+              </div>
+            </div>
+            <button type="button" class="documents-panel-close"
+                    aria-label="Doküman panelini kapat"
+                    (click)="onDocumentsVisibleChange(false)">
+              <i class="pi pi-times" aria-hidden="true"></i>
+            </button>
+          </div>
+
+            <div class="document-drawer-content">
+              <div class="document-summary">
+                <div class="document-summary-icon"><i class="pi pi-folder-open" aria-hidden="true"></i></div>
+                <div>
+                  <strong>{{ documentsUser()?.userName }}</strong>
+                  <span>{{ pdfLoading() ? 'Dokümanlar yükleniyor...' : agreementPdfs().length + ' PDF dokümanı' }}</span>
+                </div>
+                <p-button type="button" icon="pi pi-refresh" size="small"
+                          severity="secondary" [text]="true"
+                          ariaLabel="Doküman listesini yenile"
+                          [disabled]="pdfLoading() || pdfBusy()"
+                          (onClick)="loadAgreementPdfs(documentOwner.id)"></p-button>
+              </div>
+          
+              @if (pdfError()) {
+                <p-message severity="error" [text]="pdfError()!"></p-message>
+              }
+          
+              @if (canManageDocuments()) {
+                <div class="document-upload-card">
+                  <div class="document-upload-heading">
+                    <strong>Yeni PDF Yükle</strong>
+                    <small>PDF formatında, en fazla 10 MB</small>
+                  </div>
+                  <input type="file" accept="application/pdf,.pdf"
+                         aria-label="Kullanıcı için PDF seç" (change)="onPdfSelected($event)" />
+                  @if (selectedPdf()) {
+                    <span class="document-selected-file"><i class="pi pi-file-pdf" aria-hidden="true"></i>
+                      {{ selectedPdf()!.name }}</span>
+                  }
+                  <p-button type="button" label="Dokümanı Yükle" icon="pi pi-upload"
+                            size="small" [loading]="pdfBusy()"
+                            [disabled]="!selectedPdf() || pdfLoading()"
+                            (onClick)="uploadPdf()"></p-button>
+                </div>
+              }
+          
+              <div class="document-list-title">
+                <strong>Kayıtlı Dokümanlar</strong>
+                @if (!pdfLoading()) {
+                  <span>{{ agreementPdfs().length }} dosya</span>
+                }
+              </div>
+          
+              @if (pdfLoading()) {
+                <div class="document-empty">
+                  <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+                  <span>Dokümanlar yükleniyor...</span>
+                </div>
+              } @else if (agreementPdfs().length) {
+                <div class="document-list">
+                  @for (pdf of agreementPdfs(); track pdf.id) {
+                    <div class="document-item">
+                      <div class="document-item-icon"><i class="pi pi-file-pdf" aria-hidden="true"></i></div>
+                      <div class="document-item-info">
+                        <strong [title]="pdf.fileName">{{ pdf.fileName }}</strong>
+                        <small>{{ (pdf.sizeBytes / 1024).toFixed(1) }} KB</small>
+                      </div>
+                      <div class="document-item-actions">
+                        <p-button type="button" icon="pi pi-download"
+                                  [text]="true" size="small" severity="secondary"
+                                  ariaLabel="PDF indir" [disabled]="pdfBusy()"
+                                  (onClick)="downloadPdf(pdf)"></p-button>
+                        @if (canManageDocuments()) {
+                          <p-button type="button" icon="pi pi-trash"
+                                    [text]="true" size="small" severity="danger"
+                                    ariaLabel="PDF sil" [disabled]="pdfBusy()"
+                                    (onClick)="confirmDeletePdf(pdf)"></p-button>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="document-empty">
+                  <i class="pi pi-folder-open" aria-hidden="true"></i>
+                  <strong>Henüz doküman eklenmemiş</strong>
+                  <span>Bu kullanıcıya ait PDF dosyaları burada listelenir.</span>
+                </div>
+              }
+            </div>
+        </aside>
+      }
+    }
   </section>
 </div>
 
@@ -521,107 +628,6 @@
     </div>
   </form>
 </p-dialog>
-
-<!-- PDF butonu kullanıcı düzenleme formundan bağımsız sağ belge panelini açar. -->
-<p-drawer
-  [visible]="documentsVisible()"
-  (visibleChange)="onDocumentsVisibleChange($event)"
-  position="right"
-  [modal]="true"
-  [style]="{ width: 'min(500px, 100vw)' }"
-  styleClass="user-documents-drawer">
-  <ng-template pTemplate="header">
-    <div class="document-drawer-heading">
-      <div class="document-header-icon"><i class="pi pi-file-pdf" aria-hidden="true"></i></div>
-      <div>
-        <strong>Kullanıcı Dokümanları</strong>
-        <span>{{ documentsUser()?.fullName }}</span>
-      </div>
-    </div>
-  </ng-template>
-
-  <div class="document-drawer-content">
-    <div class="document-summary">
-      <div class="document-summary-icon"><i class="pi pi-folder-open" aria-hidden="true"></i></div>
-      <div>
-        <strong>{{ documentsUser()?.userName }}</strong>
-        <span>{{ pdfLoading() ? 'Dokümanlar yükleniyor...' : agreementPdfs().length + ' PDF dokümanı' }}</span>
-      </div>
-      <p-button type="button" icon="pi pi-refresh" size="small"
-                severity="secondary" [text]="true"
-                ariaLabel="Doküman listesini yenile"
-                [disabled]="pdfLoading() || pdfBusy()"
-                (onClick)="loadAgreementPdfs(documentsUser()!.id)"></p-button>
-    </div>
-
-    @if (pdfError()) {
-      <p-message severity="error" [text]="pdfError()!"></p-message>
-    }
-
-    @if (canManageDocuments()) {
-      <div class="document-upload-card">
-        <div class="document-upload-heading">
-          <strong>Yeni PDF Yükle</strong>
-          <small>PDF formatında, en fazla 10 MB</small>
-        </div>
-        <input type="file" accept="application/pdf,.pdf"
-               aria-label="Kullanıcı için PDF seç" (change)="onPdfSelected($event)" />
-        @if (selectedPdf()) {
-          <span class="document-selected-file"><i class="pi pi-file-pdf" aria-hidden="true"></i>
-            {{ selectedPdf()!.name }}</span>
-        }
-        <p-button type="button" label="Dokümanı Yükle" icon="pi pi-upload"
-                  size="small" [loading]="pdfBusy()"
-                  [disabled]="!selectedPdf() || pdfLoading()"
-                  (onClick)="uploadPdf()"></p-button>
-      </div>
-    }
-
-    <div class="document-list-title">
-      <strong>Kayıtlı Dokümanlar</strong>
-      @if (!pdfLoading()) {
-        <span>{{ agreementPdfs().length }} dosya</span>
-      }
-    </div>
-
-    @if (pdfLoading()) {
-      <div class="document-empty">
-        <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-        <span>Dokümanlar yükleniyor...</span>
-      </div>
-    } @else if (agreementPdfs().length) {
-      <div class="document-list">
-        @for (pdf of agreementPdfs(); track pdf.id) {
-          <div class="document-item">
-            <div class="document-item-icon"><i class="pi pi-file-pdf" aria-hidden="true"></i></div>
-            <div class="document-item-info">
-              <strong [title]="pdf.fileName">{{ pdf.fileName }}</strong>
-              <small>{{ (pdf.sizeBytes / 1024).toFixed(1) }} KB</small>
-            </div>
-            <div class="document-item-actions">
-              <p-button type="button" icon="pi pi-download"
-                        [text]="true" size="small" severity="secondary"
-                        ariaLabel="PDF indir" [disabled]="pdfBusy()"
-                        (onClick)="downloadPdf(pdf)"></p-button>
-              @if (canManageDocuments()) {
-                <p-button type="button" icon="pi pi-trash"
-                          [text]="true" size="small" severity="danger"
-                          ariaLabel="PDF sil" [disabled]="pdfBusy()"
-                          (onClick)="confirmDeletePdf(pdf)"></p-button>
-              }
-            </div>
-          </div>
-        }
-      </div>
-    } @else {
-      <div class="document-empty">
-        <i class="pi pi-folder-open" aria-hidden="true"></i>
-        <strong>Henüz doküman eklenmemiş</strong>
-        <span>Bu kullanıcıya ait PDF dosyaları burada listelenir.</span>
-      </div>
-    }
-  </div>
-</p-drawer>
 
 <!-- Kritik status ve silme işlemlerinde kullanıcı onayı istenir. -->
 <p-confirmdialog></p-confirmdialog>
