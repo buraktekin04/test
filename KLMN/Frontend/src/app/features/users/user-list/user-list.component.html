@@ -1,11 +1,6 @@
 <div class="users-page">
   <div class="page-header">
     <div>
-      <div class="breadcrumbs">
-        <span>Tanımlamalar</span>
-        <i class="pi pi-angle-right" aria-hidden="true"></i>
-        <span>Kullanıcı Tanımları</span>
-      </div>
       <h1>Kullanıcı Tanımları</h1>
       <p>Sistemdeki kullanıcıları filtreleyin, görüntüleyin ve yetkinize göre yönetin.</p>
     </div>
@@ -79,10 +74,6 @@
 
   <section class="table-container" aria-label="Kullanıcı listesi">
     <div class="table-title">
-      <div class="table-title-text">
-        <strong>Kullanıcı Listesi</strong>
-        <span>Toplam {{ totalCount() }} kayıt</span>
-      </div>
       <div class="table-toolbar-actions">
         <p-button
           type="button"
@@ -279,7 +270,7 @@
                             severity="secondary" [text]="true" size="small"
                             ariaLabel="Kullanıcı PDF belgeleri"
                             [disabled]="actionLoadingId() === user.id"
-                            (onClick)="openEditDialog(user)"></p-button>
+                            (onClick)="openDocumentsPanel(user)"></p-button>
                 }
                 @if (canUpdate()) {
                   <p-button
@@ -372,219 +363,265 @@
   </section>
 </div>
 
-<!-- Kullanıcı profil alanları ekleme ve düzenleme için aynı formdan yönetilir. -->
+<!-- Kullanıcı profili sade, iki gruplu modalde düzenlenir; PDF dokümanları burada yoktur. -->
 <p-dialog
-  [header]="selectedUser() ? (canUpdate() ? 'Kullanıcı Düzenle' : 'Kullanıcı Belgeleri') : 'Yeni Kullanıcı'"
+  [header]="selectedUser() ? 'Kullanıcı Düzenle' : 'Yeni Kullanıcı'"
   [visible]="dialogVisible()"
   (visibleChange)="dialogVisible.set($event)"
   [modal]="true"
   [draggable]="false"
   [resizable]="false"
-  [style]="{ width: 'min(640px, 96vw)' }">
+  [style]="{ width: 'min(700px, 96vw)' }"
+  styleClass="user-edit-dialog">
   <form class="user-form" [formGroup]="userForm" (ngSubmit)="saveUser()">
     @if (formError()) {
       <p-message severity="error" [text]="formError()!"></p-message>
     }
 
-    <div class="form-grid">
-      <div class="form-field">
-        <label for="editUserName">Kullanıcı Adı *</label>
-        <input id="editUserName" pInputText formControlName="userName" autocomplete="off" />
-      </div>
-      <div class="form-field">
-        <label for="editEmail">E-posta *</label>
-        <input id="editEmail" pInputText type="email" formControlName="email" autocomplete="off" />
-      </div>
-      <div class="form-field">
-        <label for="editFirstName">Ad *</label>
-        <input id="editFirstName" pInputText formControlName="firstName" />
-      </div>
-      <div class="form-field">
-        <label for="editLastName">Soyad *</label>
-        <input id="editLastName" pInputText formControlName="lastName" />
-      </div>
-      <div class="form-field form-field-full">
-        <label for="userOrganizationUnitId">Görev Yeri / Organizasyon</label>
-        <p-select
-          inputId="userOrganizationUnitId"
-          formControlName="organizationUnitId"
-          [options]="organizationOptions()"
-          optionLabel="label"
-          optionValue="id"
-          [filter]="true"
-          filterBy="label"
-          [showClear]="true"
-          [loading]="organizationLoading()"
-          [disabled]="organizationLoading() || (!!selectedUser() && !canUpdate())"
-          [appendTo]="'body'"
-          placeholder="Görev yeri seçiniz (isteğe bağlı)">
-        </p-select>
-        @if (organizationLoadError()) {
-          <small class="organization-error">{{ organizationLoadError() }}</small>
-          <p-button type="button" size="small" label="Tekrar Dene"
-                    icon="pi pi-refresh" severity="secondary" [outlined]="true"
-                    (onClick)="loadOrganizationOptions(selectedUser() ?? undefined)">
-          </p-button>
-        } @else if (!organizationLoading() && organizationOptions().length === 0) {
-          <small>Henüz aktif organizasyon birimi bulunmuyor. Önce organizasyon tanımlarını oluşturabilirsiniz.</small>
-        } @else {
-          <small>Görev yeri kullanıcının birim bilgisidir; rol veya yetki ataması değildir.</small>
-        }
-      </div>
-      <div class="form-field form-field-full">
-        <label for="editPhoneNumber">Telefon</label>
-        <input id="editPhoneNumber" pInputText formControlName="phoneNumber" />
+    <section class="form-section">
+      <div class="form-section-heading">
+        <div class="form-section-icon"><i class="pi pi-user" aria-hidden="true"></i></div>
+        <div>
+          <strong>Temel Bilgiler</strong>
+          <small>Hesap ve iletişim bilgileri</small>
+        </div>
       </div>
 
-      <!-- Kullanıcının manuel kilit durumu, mevcut IsLocked alanına kaydedilir. -->
-      @if (selectedUser()) {
-        <div class="form-field form-field-full">
-          <div class="agreement-checkbox">
-            <p-checkbox
-              inputId="userIsLocked"
-              formControlName="isLocked"
-              [binary]="true"
-              [disabled]="!canUpdate()">
-            </p-checkbox>
-            <label for="userIsLocked">Kullanıcı hesabını kilitle</label>
-          </div>
-          <small>
-            İşaretliyse giriş, token yenileme ve mevcut oturumla erişim engellenir.
-            ADMIN hesabı ve kendi hesabınız kilitlenemez.
-          </small>
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="editFirstName">Ad <span class="required-mark">*</span></label>
+          <input id="editFirstName" pInputText formControlName="firstName"
+                 autocomplete="given-name" />
         </div>
-      }
-
-      <!-- ClockLimit=true kullanıcıya mesai dışında giriş ve erişim izni vermez. -->
-      <div class="form-field form-field-full">
-        <div class="agreement-checkbox">
-          <p-checkbox
-            inputId="clockLimit"
-            formControlName="clockLimit"
-            [binary]="true">
-          </p-checkbox>
-          <label for="clockLimit">Mesai dışında uygulamaya erişimi kısıtla</label>
+        <div class="form-field">
+          <label for="editLastName">Soyad <span class="required-mark">*</span></label>
+          <input id="editLastName" pInputText formControlName="lastName"
+                 autocomplete="family-name" />
         </div>
-        <small>
-          İşaretliyse yalnızca tanımlanan mesai gün ve saatlerinde kullanılabilir.
-          Mesai dışı erişimi onaylanan kişiler için işareti kaldırın.
-        </small>
-      </div>
-      <!-- Her iki tarih isteğe bağlıdır; başlangıç dahil, bitiş hariçtir. -->
-      <div class="form-field">
-        <label for="userValidFrom">Geçerlilik Başlangıcı</label>
-        <div class="date-input-row">
-          <input id="userValidFrom" type="datetime-local" pInputText
-                 formControlName="validFrom" />
-          <p-button type="button" icon="pi pi-times" size="small"
-                    severity="secondary" [outlined]="true"
-                    ariaLabel="Başlangıç tarihini temizle"
-                    (onClick)="clearValidityDate('validFrom')"></p-button>
+        <div class="form-field">
+          <label for="editUserName">Kullanıcı Adı <span class="required-mark">*</span></label>
+          <input id="editUserName" pInputText formControlName="userName"
+                 autocomplete="username" />
         </div>
-        <small>Boş bırakılırsa başlangıç sınırı yoktur.</small>
-      </div>
-      <div class="form-field">
-        <label for="userValidTo">Geçerlilik Bitişi</label>
-        <div class="date-input-row">
-          <input id="userValidTo" type="datetime-local" pInputText
-                 formControlName="validTo" />
-          <p-button type="button" icon="pi pi-times" size="small"
-                    severity="secondary" [outlined]="true"
-                    ariaLabel="Bitiş tarihini temizle"
-                    (onClick)="clearValidityDate('validTo')"></p-button>
+        <div class="form-field">
+          <label for="editEmail">E-posta <span class="required-mark">*</span></label>
+          <input id="editEmail" type="email" pInputText formControlName="email"
+                 autocomplete="email" />
         </div>
-        <small>Seçilen andan itibaren erişim durdurulur.</small>
-      </div>
-
-      @if (!selectedUser()) {
-        <div class="form-field form-field-full">
-          <label for="newUserPassword">İlk Parola *</label>
-          <input
-            id="newUserPassword"
-            type="password"
-            pInputText
-            formControlName="password"
-            autocomplete="new-password" />
-          <small>En az 8 karakter, büyük harf, küçük harf ve rakam gereklidir.</small>
+        <div class="form-field">
+          <label for="editPhoneNumber">Telefon</label>
+          <input id="editPhoneNumber" pInputText formControlName="phoneNumber"
+                 autocomplete="tel" />
         </div>
-      }
-      @if (selectedUser()) {
-        <p class="form-note form-field-full">
-          Kullanıcı rolü, yetkileri ve parolası bu formdan değiştirilmez.
-          İlgili yönetim ekranlarından düzenlenir.
-        </p>
-      }
-    </div>
-
-    <!-- PDF içerikleri diske yüklenir; kullanıcıya bağlı metadata DB'dedir. -->
-    @if (selectedUser() && canViewDocuments()) {
-      <section class="agreement-section">
-        <div class="agreement-section-title">
-          <strong>Kullanıcı PDF Dokümanları</strong>
-          <small>PDF dosyaları özel sunucu klasöründe tutulur.</small>
+        <div class="form-field">
+          <label for="userOrganizationUnitId">Görev Yeri / Organizasyon</label>
+          <p-select
+            inputId="userOrganizationUnitId"
+            formControlName="organizationUnitId"
+            [options]="organizationOptions()"
+            optionLabel="label"
+            optionValue="id"
+            [filter]="true"
+            filterBy="label"
+            [showClear]="true"
+            [loading]="organizationLoading()"
+            [disabled]="organizationLoading() || (!!selectedUser() && !canUpdate())"
+            [appendTo]="'body'"
+            placeholder="Görev yeri seçiniz">
+          </p-select>
+          @if (organizationLoadError()) {
+            <small class="organization-error">{{ organizationLoadError() }}</small>
+            <p-button type="button" size="small" label="Tekrar Dene"
+                      icon="pi pi-refresh" severity="secondary" [outlined]="true"
+                      (onClick)="loadOrganizationOptions(selectedUser() ?? undefined)"></p-button>
+          } @else if (!organizationLoading() && organizationOptions().length === 0) {
+            <small>Aktif organizasyon kaydı bulunamadı.</small>
+          }
         </div>
-        @if (pdfError()) {
-          <p-message severity="error" [text]="pdfError()!"></p-message>
-        }
-
-        @if (canManageDocuments()) {
-          <div class="pdf-upload">
-            <input type="file" accept="application/pdf,.pdf"
-                   aria-label="PDF seç" (change)="onPdfSelected($event)" />
-            <p-button type="button" label="PDF Yükle" icon="pi pi-upload"
-                      [disabled]="!selectedPdf()" [loading]="pdfBusy()"
-                      (onClick)="uploadPdf()"></p-button>
+        @if (!selectedUser()) {
+          <div class="form-field form-field-full">
+            <label for="newUserPassword">İlk Parola <span class="required-mark">*</span></label>
+            <input id="newUserPassword" type="password" pInputText
+                   formControlName="password" autocomplete="new-password" />
+            <small>En az 8 karakter, büyük/küçük harf ve rakam içermelidir.</small>
           </div>
         }
+      </div>
+    </section>
 
-        @if (agreementPdfs().length) {
-          <div class="agreement-list">
-            @for (pdf of agreementPdfs(); track pdf.id) {
-              <div class="agreement-list-item">
-                <div>
-                  <strong>{{ pdf.fileName }}</strong>
-                  <small>{{ (pdf.sizeBytes / 1024).toFixed(1) }} KB</small>
-                </div>
-                <p-button type="button" icon="pi pi-download" [text]="true"
-                          severity="secondary" ariaLabel="PDF indir"
-                          (onClick)="downloadPdf(pdf)"></p-button>
-                @if (canManageDocuments()) {
-                  <p-button type="button" icon="pi pi-trash" [text]="true"
-                            severity="danger" ariaLabel="PDF sil"
-                            [disabled]="pdfBusy()"
-                            (onClick)="confirmDeletePdf(pdf)"></p-button>
-                }
-              </div>
-            }
+    <section class="form-section">
+      <div class="form-section-heading">
+        <div class="form-section-icon"><i class="pi pi-shield" aria-hidden="true"></i></div>
+        <div>
+          <strong>Erişim Ayarları</strong>
+          <small>Mesai, hesap kilidi ve geçerlilik tarihleri</small>
+        </div>
+      </div>
+
+      <div class="access-options">
+        <div class="access-option">
+          <p-checkbox inputId="clockLimit" formControlName="clockLimit" [binary]="true"></p-checkbox>
+          <label class="access-option-copy" for="clockLimit">
+            <strong>Mesai dışında erişimi kısıtla</strong>
+            <small>İşaretliyse yalnızca mesai saatlerinde giriş yapılabilir.</small>
+          </label>
+        </div>
+
+        @if (selectedUser()) {
+          <div class="access-option">
+            <p-checkbox inputId="userIsLocked" formControlName="isLocked"
+                        [binary]="true" [disabled]="!canUpdate()"></p-checkbox>
+            <label class="access-option-copy" for="userIsLocked">
+              <strong>Kullanıcı hesabını kilitle</strong>
+              <small>Giriş ve aktif oturum erişimi engellenir. Yönetici hesapları korunur.</small>
+            </label>
           </div>
-        } @else {
-          <small>Henüz PDF dokümanı eklenmemiş.</small>
         }
-      </section>
-    } @else {
-      <p class="form-note">PDF eklemek için önce kullanıcıyı kaydedin, ardından Düzenle ekranını açın.</p>
+      </div>
+
+      <div class="form-grid validity-grid">
+        <div class="form-field">
+          <label for="userValidFrom">Geçerlilik Başlangıcı</label>
+          <div class="date-input-row">
+            <input id="userValidFrom" type="datetime-local" pInputText formControlName="validFrom" />
+            <p-button type="button" icon="pi pi-times" size="small"
+                      severity="secondary" [outlined]="true"
+                      ariaLabel="Başlangıç tarihini temizle"
+                      (onClick)="clearValidityDate('validFrom')"></p-button>
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="userValidTo">Geçerlilik Bitişi</label>
+          <div class="date-input-row">
+            <input id="userValidTo" type="datetime-local" pInputText formControlName="validTo" />
+            <p-button type="button" icon="pi pi-times" size="small"
+                      severity="secondary" [outlined]="true"
+                      ariaLabel="Bitiş tarihini temizle"
+                      (onClick)="clearValidityDate('validTo')"></p-button>
+          </div>
+        </div>
+      </div>
+      <small class="validity-note">Tarihleri boş bırakırsanız ilgili erişim sınırı uygulanmaz.</small>
+    </section>
+
+    @if (selectedUser()) {
+      <div class="form-info-note">
+        <i class="pi pi-info-circle" aria-hidden="true"></i>
+        Rol, yetki ve parola değişiklikleri kendi yönetim ekranlarından yapılır.
+      </div>
     }
 
     <div class="dialog-actions">
-      <p-button
-        type="button"
-        label="Vazgeç"
-        severity="secondary"
-        [outlined]="true"
-        [disabled]="saving()"
-        (onClick)="dialogVisible.set(false)">
-      </p-button>
-      @if (!selectedUser() || canUpdate()) {
-        <p-button
-          type="submit"
-          label="Kaydet"
-          icon="pi pi-check"
-          [loading]="saving()">
-        </p-button>
-      }
+      <p-button type="button" label="Vazgeç"
+                severity="secondary" [outlined]="true"
+                [disabled]="saving()"
+                (onClick)="dialogVisible.set(false)"></p-button>
+      <p-button type="submit" label="Kaydet" icon="pi pi-check"
+                [loading]="saving()"></p-button>
     </div>
   </form>
 </p-dialog>
+
+<!-- PDF butonu kullanıcı düzenleme formundan bağımsız sağ belge panelini açar. -->
+<p-drawer
+  [visible]="documentsVisible()"
+  (visibleChange)="onDocumentsVisibleChange($event)"
+  position="right"
+  [modal]="true"
+  [style]="{ width: 'min(500px, 100vw)' }"
+  styleClass="user-documents-drawer">
+  <ng-template pTemplate="header">
+    <div class="document-drawer-heading">
+      <div class="document-header-icon"><i class="pi pi-file-pdf" aria-hidden="true"></i></div>
+      <div>
+        <strong>Kullanıcı Dokümanları</strong>
+        <span>{{ documentsUser()?.fullName }}</span>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="document-drawer-content">
+    <div class="document-summary">
+      <div class="document-summary-icon"><i class="pi pi-folder-open" aria-hidden="true"></i></div>
+      <div>
+        <strong>{{ documentsUser()?.userName }}</strong>
+        <span>{{ pdfLoading() ? 'Dokümanlar yükleniyor...' : agreementPdfs().length + ' PDF dokümanı' }}</span>
+      </div>
+      <p-button type="button" icon="pi pi-refresh" size="small"
+                severity="secondary" [text]="true"
+                ariaLabel="Doküman listesini yenile"
+                [disabled]="pdfLoading() || pdfBusy()"
+                (onClick)="loadAgreementPdfs(documentsUser()!.id)"></p-button>
+    </div>
+
+    @if (pdfError()) {
+      <p-message severity="error" [text]="pdfError()!"></p-message>
+    }
+
+    @if (canManageDocuments()) {
+      <div class="document-upload-card">
+        <div class="document-upload-heading">
+          <strong>Yeni PDF Yükle</strong>
+          <small>PDF formatında, en fazla 10 MB</small>
+        </div>
+        <input type="file" accept="application/pdf,.pdf"
+               aria-label="Kullanıcı için PDF seç" (change)="onPdfSelected($event)" />
+        @if (selectedPdf()) {
+          <span class="document-selected-file"><i class="pi pi-file-pdf" aria-hidden="true"></i>
+            {{ selectedPdf()!.name }}</span>
+        }
+        <p-button type="button" label="Dokümanı Yükle" icon="pi pi-upload"
+                  size="small" [loading]="pdfBusy()"
+                  [disabled]="!selectedPdf() || pdfLoading()"
+                  (onClick)="uploadPdf()"></p-button>
+      </div>
+    }
+
+    <div class="document-list-title">
+      <strong>Kayıtlı Dokümanlar</strong>
+      @if (!pdfLoading()) {
+        <span>{{ agreementPdfs().length }} dosya</span>
+      }
+    </div>
+
+    @if (pdfLoading()) {
+      <div class="document-empty">
+        <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        <span>Dokümanlar yükleniyor...</span>
+      </div>
+    } @else if (agreementPdfs().length) {
+      <div class="document-list">
+        @for (pdf of agreementPdfs(); track pdf.id) {
+          <div class="document-item">
+            <div class="document-item-icon"><i class="pi pi-file-pdf" aria-hidden="true"></i></div>
+            <div class="document-item-info">
+              <strong [title]="pdf.fileName">{{ pdf.fileName }}</strong>
+              <small>{{ (pdf.sizeBytes / 1024).toFixed(1) }} KB</small>
+            </div>
+            <div class="document-item-actions">
+              <p-button type="button" icon="pi pi-download"
+                        [text]="true" size="small" severity="secondary"
+                        ariaLabel="PDF indir" [disabled]="pdfBusy()"
+                        (onClick)="downloadPdf(pdf)"></p-button>
+              @if (canManageDocuments()) {
+                <p-button type="button" icon="pi pi-trash"
+                          [text]="true" size="small" severity="danger"
+                          ariaLabel="PDF sil" [disabled]="pdfBusy()"
+                          (onClick)="confirmDeletePdf(pdf)"></p-button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="document-empty">
+        <i class="pi pi-folder-open" aria-hidden="true"></i>
+        <strong>Henüz doküman eklenmemiş</strong>
+        <span>Bu kullanıcıya ait PDF dosyaları burada listelenir.</span>
+      </div>
+    }
+  </div>
+</p-drawer>
 
 <!-- Kritik status ve silme işlemlerinde kullanıcı onayı istenir. -->
 <p-confirmdialog></p-confirmdialog>

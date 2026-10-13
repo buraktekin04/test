@@ -9,6 +9,7 @@ import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
+import { DrawerModule } from 'primeng/drawer';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { TableModule } from 'primeng/table';
@@ -48,6 +49,7 @@ type OrganizationSelectOption = OrganizationUnitOption & { label: string };
     CheckboxModule,
     MessageModule,
     DialogModule,
+    DrawerModule,
     ConfirmDialogModule
   ],
   providers: [ConfirmationService],
@@ -120,6 +122,18 @@ export class UserListComponent implements OnInit {
   public readonly canManageDocuments = computed(() =>
     this.permissionService.has(PermissionCodes.Users.ManageDocuments)
   );
+
+  /** Sağ PDF panelinin açık/kapalı durumudur; kullanıcı düzenleme modalinden bağımsızdır. */
+  public readonly documentsVisible = signal(false);
+
+  /** Sağ panelde belgeleri yönetilen kullanıcı; düzenlenen kullanıcıdan ayrıdır. */
+  public readonly documentsUser = signal<UserListItem | null>(null);
+
+  /** PDF belge listesi sunucudan alınırken yükleme göstergesidir. */
+  public readonly pdfLoading = signal(false);
+
+  /** Geç gelen asenkron PDF liste cevaplarının yeni paneli değiştirmesini engeller. */
+  private pdfRequestVersion = 0;
 
   /** Seçili kullanıcıya ait PDF belge bilgileridir. */
   public readonly agreementPdfs = signal<UserAgreementPdf[]>([]);
@@ -427,17 +441,14 @@ export class UserListComponent implements OnInit {
       password: ''
     });
     this.formError.set(null);
-    this.agreementPdfs.set([]);
-    this.selectedPdf.set(null);
-    this.pdfError.set(null);
     this.dialogVisible.set(true);
     this.loadOrganizationOptions();
   }
 
   /** Düzenlemeden önce kaydı yeniden yükleyerek en yeni xmin değerini alır. */
   public openEditDialog(user: UserListItem): void {
-    // Sadece belge görme yetkisi olan kullanıcı düzenleme yapmadan belgeleri açabilir.
-    if (!this.canUpdate() && !this.canViewDocuments()) return;
+    // Profil düzenleme izni olmayan kullanıcı PDF butonundan belgeleri yönetir.
+    if (!this.canUpdate()) return;
 
     this.actionLoadingId.set(user.id);
     this.formError.set(null);
@@ -462,9 +473,6 @@ export class UserListComponent implements OnInit {
           });
           this.dialogVisible.set(true);
           this.loadOrganizationOptions(detail);
-          this.selectedPdf.set(null);
-          this.pdfError.set(null);
-          if (this.canViewDocuments()) this.loadAgreementPdfs(detail.id);
         },
         error: (error: HttpErrorResponse) =>
           this.errorMessage.set(this.getErrorMessage(error))
@@ -562,14 +570,69 @@ export class UserListComponent implements OnInit {
     this.userForm.controls[field].setValue('');
   }
 
-  /** Seçili kullanıcıya ait PDF metadata listesini sorgular. */
-  public loadAgreementPdfs(userId: string): void {
+  /**
+   * Satırdaki PDF butonuyla sağdaki belge panelini açar.
+   * Düzenleme formunu ve organization endpoint'ini çalıştırmaz.
+   */
+  public openDocumentsPanel(user: UserListItem): void {
+    if (!this.canViewDocuments()) return;
+
+    ++this.pdfRequestVersion;
+    this.documentsUser.set(user);
+    this.agreementPdfs.set([]);
+    this.selectedPdf.set(null);
     this.pdfError.set(null);
-    this.userService.getAgreementPdfs(userId).subscribe({
-      next: documents => this.agreementPdfs.set(documents),
-      error: (error: HttpErrorResponse) =>
-        this.pdfError.set(this.getErrorMessage(error))
-    });
+    this.documentsVisible.set(true);
+    this.loadAgreementPdfs(user.id);
+  }
+
+  /** Panel X/mask kapatmasında yalnızca PDF ekranının durumunu temizler. */
+  public onDocumentsVisibleChange(visible: boolean): void {
+    this.documentsVisible.set(visible);
+    if (visible) return;
+
+    ++this.pdfRequestVersion;
+    this.documentsUser.set(null);
+    this.agreementPdfs.set([]);
+    this.selectedPdf.set(null);
+    this.pdfError.set(null);
+    this.pdfLoading.set(false);
+  }
+
+  /**
+   * Belge listesini yalnızca panelde seçili kullanıcı için yükler.
+   * Panel kapatılıp başka kullanıcıya geçilirse eski isteğin cevabı gösterilmez.
+   */
+  public loadAgreementPdfs(userId: string): void {
+    if (!this.documentsVisible() || this.documentsUser()?.id !== userId) return;
+
+    this.pdfError.set(null);
+    this.pdfLoading.set(true);
+    const requestVersion = ++this.pdfRequestVersion;
+
+    this.userService.getAgreementPdfs(userId)
+      .pipe(finalize(() => {
+        if (this.documentsUser()?.id === userId &&
+            this.pdfRequestVersion === requestVersion) {
+          this.pdfLoading.set(false);
+        }
+      }))
+      .subscribe({
+        next: documents => {
+          if (this.documentsVisible() &&
+              this.documentsUser()?.id === userId &&
+              this.pdfRequestVersion === requestVersion) {
+            this.agreementPdfs.set(documents);
+          }
+        },
+        error: (error: HttpErrorResponse) => {
+          if (this.documentsVisible() &&
+              this.documentsUser()?.id === userId &&
+              this.pdfRequestVersion === requestVersion) {
+            this.pdfError.set(this.getErrorMessage(error));
+          }
+        }
+      });
   }
 
   /** Dosya seçimini ve PDF/10 MB istemci ön kontrollerini gerçekleştirir. */
@@ -601,9 +664,9 @@ export class UserListComponent implements OnInit {
 
   /** Sunucu klasörüne PDF yükledikten sonra doküman listesini yeniler. */
   public uploadPdf(): void {
-    const user = this.selectedUser();
+    const user = this.documentsUser();
     const file = this.selectedPdf();
-    if (!user || !file || !this.canManageDocuments() || this.pdfBusy()) return;
+    if (!user || !this.documentsVisible() || !file || !this.canManageDocuments() || this.pdfBusy()) return;
 
     this.pdfBusy.set(true);
     this.pdfError.set(null);
@@ -611,19 +674,24 @@ export class UserListComponent implements OnInit {
       .pipe(finalize(() => this.pdfBusy.set(false)))
       .subscribe({
         next: () => {
-          this.selectedPdf.set(null);
-          this.loadAgreementPdfs(user.id);
+          if (this.documentsVisible() && this.documentsUser()?.id === user.id) {
+            this.selectedPdf.set(null);
+            this.loadAgreementPdfs(user.id);
+          }
           this.successMessage.set('PDF dokümanı yüklendi.');
         },
-        error: (error: HttpErrorResponse) =>
-          this.pdfError.set(this.getErrorMessage(error))
+        error: (error: HttpErrorResponse) => {
+          if (this.documentsVisible() && this.documentsUser()?.id === user.id) {
+            this.pdfError.set(this.getErrorMessage(error));
+          }
+        }
       });
   }
 
-  /** PDF'yi kimlik doğrulaması olan API'den Blob olarak indirtir. */
+  /** PDF'yi seçili sağ panel kullanıcısı için yetkili API'den indirir. */
   public downloadPdf(pdf: UserAgreementPdf): void {
-    const user = this.selectedUser();
-    if (!user) return;
+    const user = this.documentsUser();
+    if (!user || !this.documentsVisible() || !this.canViewDocuments()) return;
 
     this.pdfError.set(null);
     this.userService.downloadAgreementPdf(user.id, pdf.id).subscribe({
@@ -636,14 +704,17 @@ export class UserListComponent implements OnInit {
         // Download başladığında kullanılan geçici URL sistemden temizlenir.
         setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
       },
-      error: (error: HttpErrorResponse) =>
-        this.pdfError.set(this.getErrorMessage(error))
+      error: (error: HttpErrorResponse) => {
+        if (this.documentsVisible() && this.documentsUser()?.id === user.id) {
+          this.pdfError.set(this.getErrorMessage(error));
+        }
+      }
     });
   }
 
-  /** PDF kaydını onay alarak siler ve arayüz listesini günceller. */
+  /** PDF kaydını sağ panelde seçili kullanıcı için onay alarak siler. */
   public confirmDeletePdf(pdf: UserAgreementPdf): void {
-    const user = this.selectedUser();
+    const user = this.documentsUser();
     if (!user || !this.canManageDocuments()) return;
 
     this.confirmationService.confirm({
@@ -653,16 +724,23 @@ export class UserListComponent implements OnInit {
       acceptLabel: 'Sil',
       rejectLabel: 'Vazgeç',
       accept: () => {
+        // Onay gecikmesi sırasında kullanıcı/panel değişmişse silme işlemi başlatma.
+        if (!this.documentsVisible() || this.documentsUser()?.id !== user.id) return;
         this.pdfBusy.set(true);
         this.userService.deleteAgreementPdf(user.id, pdf.id)
           .pipe(finalize(() => this.pdfBusy.set(false)))
           .subscribe({
             next: () => {
-              this.loadAgreementPdfs(user.id);
+              if (this.documentsVisible() && this.documentsUser()?.id === user.id) {
+                this.loadAgreementPdfs(user.id);
+              }
               this.successMessage.set('PDF dokümanı silindi.');
             },
-            error: (error: HttpErrorResponse) =>
-              this.pdfError.set(this.getErrorMessage(error))
+            error: (error: HttpErrorResponse) => {
+              if (this.documentsVisible() && this.documentsUser()?.id === user.id) {
+                this.pdfError.set(this.getErrorMessage(error));
+              }
+            }
           });
       }
     });
