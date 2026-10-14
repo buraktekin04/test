@@ -13,16 +13,15 @@ public sealed class HasPermissionAttribute : AuthorizeAttribute
     /// <summary>
     /// has permission attribute işlemini ilgili katmanın sorumluluğuna göre gerçekleştirir.
     /// </summary>
-    public HasPermissionAttribute(string permissionCode)
+    public HasPermissionAttribute(params string[] permissionCodes)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(permissionCode);
-
-        Permission = permissionCode;
-        Policy = AuthorizationPolicyNames.CreatePermissionPolicy(permissionCode);
+        Policy = AuthorizationPolicyNames.CreatePermissionPolicy(permissionCodes);
+        Permissions = permissionCodes;
     }
 
-    /// <summary>
-    /// İlgili endpoint için aranan yetki kodudur.
-    /// </summary>
-    public string Permission { get; }
+    /// <summary>Endpoint'e erişim için yeterli alternatif permission kodlarıdır (OR).</summary>
+    public IReadOnlyList<string> Permissions { get; }
+
+    /// <summary>Tek permission kullanan mevcut kodlarla geriye dönük uyumluluk.</summary>
+    public string Permission => Permissions[0];
 }

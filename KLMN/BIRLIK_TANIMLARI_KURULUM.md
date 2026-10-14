@@ -58,3 +58,14 @@ API yeniden açıldığında permission seeder `Organizations.*` izinlerini kiml
 - Tarayıcı testi ortamın süreç/socket kısıtlaması nedeniyle çalıştırılamadı.
 - Mevcut bağımlılıklardaki NuGet güvenlik uyarıları derlemede devam ediyor; bu değişiklik paket sürümlerini değiştirmez.
 - Derlemeyi engelleyen mevcut RefreshToken namespace çakışması, eksik EF/HTTP using'leri ve iki TypeScript `as` satır sonu hatası da düzeltildi.
+
+## Sadece görüntüleme yetkisi olan kullanıcılar
+
+Rol panelinde yalnızca `Birlikleri Görüntüleme (MilitaryUnits.View)` atanması,
+`Tanımlamalar > Birlik Tanımları` menüsünü ve sayfayı açmak için yeterlidir.
+`MilitaryUnits.Query` izni olan mevcut rollerin erişimi de korunur.
+Liste ve detay API'leri bu iki permission'dan herhangi birini kabul eder;
+oluşturma, düzenleme ve silme kendi ayrı permission'larını gerektirir.
+Excel dışa aktarma yalnızca `MilitaryUnits.Query` izniyle görünür ve sunucuda da bu izinle korunur.
+Yetki seti login/refresh sırasında yeniden hesaplandığından, rol değişikliği sonrası
+kullanıcı oturumunu yenilemelidir. Yeni migration gerekmiyor.

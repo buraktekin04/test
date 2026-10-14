@@ -45,7 +45,8 @@ export class NavigationService {
           label: 'Birlik Tanımları',
           icon: 'pi pi-sitemap',
           route: '/app/military-units',
-          requiredPermissions: [PermissionCodes.MilitaryUnits.Query]
+          requiredPermissions: [PermissionCodes.MilitaryUnits.View, PermissionCodes.MilitaryUnits.Query],
+          permissionMode: 'any'
         }
       ]
     },

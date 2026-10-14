@@ -23,7 +23,7 @@ public sealed class MilitaryUnitsController(ISender sender, IExcelExportService 
 {
     /// <summary>Birlik birimlerini arama, aktiflik ve kök filtreleriyle listeler.</summary>
     [HttpGet]
-    [HasPermission(PermissionCodes.MilitaryUnits.Query)]
+    [HasPermission(PermissionCodes.MilitaryUnits.View, PermissionCodes.MilitaryUnits.Query)]
     public async Task<IActionResult> GetMilitaryUnits(
         [FromQuery] GetMilitaryUnitDefsQuery query, CancellationToken ct) =>
         Ok(await sender.Send(query, ct));
@@ -86,7 +86,7 @@ public sealed class MilitaryUnitsController(ISender sender, IExcelExportService 
 
     /// <summary>Mevcut pasif kayıtlar dahil kimlik üzerinden güncel birimi getirir.</summary>
     [HttpGet("{id:guid}")]
-    [HasPermission(PermissionCodes.MilitaryUnits.Query)]
+    [HasPermission(PermissionCodes.MilitaryUnits.View, PermissionCodes.MilitaryUnits.Query)]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct) =>
         Ok(await sender.Send(new GetMilitaryUnitDefByIdQuery(id), ct));
 

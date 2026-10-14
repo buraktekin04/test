@@ -32,9 +32,13 @@ public sealed class PermissionAuthorizationHandler
             return;
         }
 
-        if (await _permissionChecker.HasPermissionAsync(requirement.PermissionCode))
+        foreach (var permissionCode in requirement.PermissionCodes)
         {
+            if (!await _permissionChecker.HasPermissionAsync(permissionCode))
+                continue;
+
             context.Succeed(requirement);
+            break;
         }
     }
 }

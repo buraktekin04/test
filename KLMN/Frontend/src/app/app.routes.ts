@@ -79,7 +79,8 @@ export const routes: Routes = [
         path: 'military-units',
         canActivate: [permissionGuard],
         data: {
-          permissions: [PermissionCodes.MilitaryUnits.Query]
+          permissions: [PermissionCodes.MilitaryUnits.View, PermissionCodes.MilitaryUnits.Query],
+          permissionMode: 'any'
         },
         loadComponent: () =>
           import('./features/military-units/military-unit-list/military-unit-list.component')

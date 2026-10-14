@@ -11,9 +11,16 @@ public static class AuthorizationPolicyNames
     /// <summary>
     /// Verilen permission kodunu dinamik authorization policy adına dönüştürür.
     /// </summary>
-    public static string CreatePermissionPolicy(string permissionCode)
+    public static string CreatePermissionPolicy(params string[] permissionCodes)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(permissionCode);
-        return $"{PermissionPrefix}{permissionCode}";
+        if (permissionCodes is null || permissionCodes.Length == 0 ||
+            permissionCodes.Any(string.IsNullOrWhiteSpace) ||
+            permissionCodes.Any(code => code.Contains('|')))
+        {
+            throw new ArgumentException("En az bir geçerli permission kodu gereklidir.", nameof(permissionCodes));
+        }
+
+        // Bir policy içindeki birden fazla kod birbirinin alternatifi olarak değerlendirilir.
+        return $"{PermissionPrefix}{string.Join("|", permissionCodes.Distinct(StringComparer.OrdinalIgnoreCase))}";
     }
 }

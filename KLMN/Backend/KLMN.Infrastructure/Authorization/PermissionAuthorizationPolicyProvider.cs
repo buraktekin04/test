@@ -30,18 +30,20 @@ public sealed class PermissionAuthorizationPolicyProvider
         }
 
         // permission code bilgisini sonraki işlem adımları için hesaplar.
-        var permissionCode =
-            policyName[AuthorizationPolicyNames.PermissionPrefix.Length..];
+        var permissionCodes =
+            policyName[AuthorizationPolicyNames.PermissionPrefix.Length..]
+                .Split('|', StringSplitOptions.TrimEntries);
 
-        if (string.IsNullOrWhiteSpace(permissionCode))
+        // Geçersiz veya boş permission kodları için policy oluşturulmaz.
+        if (permissionCodes.Length == 0 || permissionCodes.Any(string.IsNullOrWhiteSpace))
         {
             return Task.FromResult<AuthorizationPolicy?>(null);
         }
 
-        // policy bilgisini sonraki işlem adımları için hesaplar.
+        // Bir kod için mevcut davranış; birden fazla kod için OR yetkilendirmesi.
         var policy = new AuthorizationPolicyBuilder()
             .RequireAuthenticatedUser()
-            .AddRequirements(new PermissionRequirement(permissionCode))
+            .AddRequirements(new PermissionRequirement(permissionCodes))
             .Build();
 
         return Task.FromResult<AuthorizationPolicy?>(policy);
