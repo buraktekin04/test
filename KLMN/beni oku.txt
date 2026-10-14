@@ -172,6 +172,10 @@ Alım Numarası Tanımları:
   ValidTo zaten kalıtımla gelir, StartDate/EndDate YOK.
   Filtreleme, sayfalama, Excel, CRUD, status, soft delete, xmin,
   alan bazlı form hataları ve ortak audit geçmişi uygulanmıştır.
+  Ekrandaki Name alanı "Alım Adı", SupplyDescriptionName alanı
+  "Temin Tanım Adı" olarak gösterilir. Bunlar yalnızca kullanıcıya
+  görünen etiketlerdir; API property isimleri ve DB kolonları değişmedi.
+  Aynı isimler formda, filtrede, listede ve Excel başlıklarında kullanılır.
   YENİ VERİTABANI TABLOSU için migration GEREKİR (bkz. aşağısı).
 
 İşlem Geçmişi:
@@ -313,6 +317,21 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-14 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-14 (bu commit):
+  Alım Numarası Tanımları ekranında Name -> "Alım Adı",
+  SupplyDescriptionName -> "Temin Tanım Adı" olarak adlandırıldı.
+  Liste/kolon filtreleri, ekleme-düzenleme formu, alan hata mesajı ve
+  Excel sütun başlıkları uyumlu hale getirildi. Backend property adları
+  ve veritabanı şeması aynı kaldı; migration gerektirmez.
+  Statik eşleşme kontrolü yapıldı; dotnet/npm build veya tarayıcı testi
+  bu commit'te çalıştırılmadı. Değişen 4 dosya:
+    Frontend/.../purchase-number-list.component.html
+    Frontend/.../purchase-number-list.component.ts
+    Backend/KLMN.Api/Controllers/PurchaseNumbersController.cs
+    KLMN/beni oku.txt
+- 38d26ccc07034a013a136d1101b8ab2d205dc773:
+  KLMN/beni oku.txt proje devir dosyası oluşturuldu ve her commit'te
+  aynı dosyanın güncellenmesi kuralı eklendi.
 - c4904169d8f1250354cf4eb045787773fa5f5d98:
   ForcesCommandDef ve MilitaryUnitDef doğrudan BaseEntity yerine
   EffectiveDatedEntity'den türetildi. Çift ValidFrom/ValidTo özellikleri
@@ -338,11 +357,11 @@ Kabul öncesinde:
 - 1be4183eba3c81403953e9b1dc1ba5fab4d9a8e7:
   p-table kolon sıralaması frontend'de; backend sorting geri alındı.
 
-BU DOSYAYI OLUŞTURAN İŞ: Proje bağlamını yeni sohbetlere taşımak için
-KLMN/beni oku.txt eklendi. Bu ekleme yalnızca dokümantasyondur.
-Bu dosya yazılırken son uygulama/kod commit'i c4904169... idi.
-Bu bölümdeki "son commit" değeri SONRAKİ HER KOD PUSH'UNDA
-güncellenmelidir.
+BU DOSYANIN İLK OLUŞTURULMASI:
+  38d26ccc07034a013a136d1101b8ab2d205dc773
+Bu sürümdeki son kod geliştirmesi yukarıdaki "2026-10-14 (bu commit)"
+başlığı altında belirtilmiştir. Sonraki her kod push'unda bu en yeni
+geliştirme özeti mutlaka güncellenmelidir.
 
 11. BİLİNEN AÇIK İŞLER / SIRADAKİ ÖNCELİKLER
 --------------------------------------------

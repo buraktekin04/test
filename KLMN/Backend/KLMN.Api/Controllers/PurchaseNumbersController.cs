@@ -52,8 +52,8 @@ public sealed class PurchaseNumbersController(ISender sender, IExcelExportServic
         var columns = new ExcelColumn<PurchaseNumberDefResponse>[]
         {
             new("Kod", x => x.Code, Width: 20),
-            new("Ad", x => x.Name, Width: 36),
-            new("Tedarik Açıklaması", x => x.SupplyDescriptionName, Width: 48),
+            new("Alım Adı", x => x.Name, Width: 36),
+            new("Temin Tanım Adı", x => x.SupplyDescriptionName, Width: 48),
             new("Başlangıç", x => x.ValidFrom, NumberFormat: "dd.MM.yyyy HH:mm", Width: 24),
             new("Bitiş", x => x.ValidTo, NumberFormat: "dd.MM.yyyy HH:mm", Width: 24),
             new("Sağlık Raporu Bitişi", x => x.HealthReportEndDate, NumberFormat: "dd.MM.yyyy HH:mm", Width: 25),

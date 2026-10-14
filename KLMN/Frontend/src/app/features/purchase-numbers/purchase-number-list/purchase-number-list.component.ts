@@ -323,7 +323,7 @@ export class PurchaseNumberListComponent implements OnInit {
       healthReportEndDate: ValidityPeriodUtils.toUtcIso(values.healthReportEndDate)
     };
     if (!fields.name || !fields.code || !fields.supplyDescriptionName) {
-      this.formError.set('Ad, kod ve tedarik açıklaması zorunludur.');
+      this.formError.set('Alım adı, kod ve temin tanım adı zorunludur.');
       return;
     }
 

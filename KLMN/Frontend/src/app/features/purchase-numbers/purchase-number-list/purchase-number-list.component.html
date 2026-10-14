@@ -34,7 +34,7 @@
       <div class="search-field">
         <i class="pi pi-search" aria-hidden="true"></i>
         <input pInputText type="text" formControlName="search"
-               placeholder="Kod, ad veya tedarik açıklamasında ara..."
+               placeholder="Kod, alım adı veya temin tanım adında ara..."
                aria-label="Alım numarası ara" />
       </div>
       <div class="inactive-filter">
@@ -85,9 +85,9 @@
             </select>
           </div>
           <div class="column-filter-field">
-            <label for="purchaseSupplyFilter">Tedarik Açıklaması</label>
+            <label for="purchaseSupplyFilter">Temin Tanım Adı</label>
             <input pInputText id="purchaseSupplyFilter" formControlName="supplyDescription"
-                   placeholder="Açıklamada ara..." />
+                   placeholder="Temin tanım adında ara..." />
           </div>
 
         </div>
@@ -106,9 +106,9 @@
                [tableStyle]="{ 'min-width': '1320px', 'width': '100%' }">
         <ng-template pTemplate="header">
           <tr>
-            <th pSortableColumn="name">Alım Tanımı <p-sortIcon field="name" /></th>
+            <th pSortableColumn="name">Alım Adı <p-sortIcon field="name" /></th>
             <th pSortableColumn="code">Kod <p-sortIcon field="code" /></th>
-            <th pSortableColumn="supplyDescriptionName">Tedarik Açıklaması <p-sortIcon field="supplyDescriptionName" /></th>
+            <th pSortableColumn="supplyDescriptionName">Temin Tanım Adı <p-sortIcon field="supplyDescriptionName" /></th>
             <th pSortableColumn="validFrom">Başlangıç <p-sortIcon field="validFrom" /></th>
             <th pSortableColumn="validTo">Bitiş <p-sortIcon field="validTo" /></th>
             <th pSortableColumn="healthReportEndDate">Sağlık Raporu Bitişi <p-sortIcon field="healthReportEndDate" /></th>
@@ -211,15 +211,15 @@
         @if (fieldError('code'); as message) { <small class="field-error">{{ message }}</small> }
       </div>
       <div class="form-field">
-        <label for="purchase-name">Ad <span class="required">*</span></label>
+        <label for="purchase-name">Alım Adı <span class="required">*</span></label>
         <input id="purchase-name" pInputText formControlName="name" autocomplete="off"
-               placeholder="Alım tanımının adı" />
+               placeholder="Alım adı" />
         @if (fieldError('name'); as message) { <small class="field-error">{{ message }}</small> }
       </div>
       <div class="form-field form-field-full">
-        <label for="purchase-supplyDescriptionName">Tedarik Açıklaması <span class="required">*</span></label>
+        <label for="purchase-supplyDescriptionName">Temin Tanım Adı <span class="required">*</span></label>
         <input id="purchase-supplyDescriptionName" pInputText formControlName="supplyDescriptionName"
-               autocomplete="off" placeholder="Tedarik açıklaması" />
+               autocomplete="off" placeholder="Temin tanım adı" />
         @if (fieldError('supplyDescriptionName'); as message) {
           <small class="field-error">{{ message }}</small>
         }
