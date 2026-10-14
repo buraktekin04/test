@@ -148,10 +148,23 @@ internal sealed class IdentitySeeder
     }
 
     /// <summary>
-    /// Etkin ortamın InitialAdmin ayarlarından ilk yöneticiyi oluşturur; mevcut hesabın parolasını her açılışta değiştirmez.
+    /// Etkin ortamın InitialAdmin ayarlarından yalnızca ilk ADMIN hesabını oluşturur.
+    /// Önceden bir ADMIN ilişkisi oluşturulduysa sonraki başlangıçlar yeni yönetici
+    /// yaratmaz; InitialAdmin yapılandırmasının değiştirilmesi yetki yükseltmez.
     /// </summary>
     private async Task SeedInitialAdminAsync(CancellationToken cancellationToken)
     {
+        var adminRole = await _dbContext.Roles
+            .SingleAsync(x => x.Code == SystemRoles.Admin, cancellationToken);
+
+        // İlk seed sonrasında ADMIN bağlantısının geçmişte bile bulunması,
+        // bootstrap'in tamamlandığını gösterir. Tekrar hesap/rol verilmez.
+        var previouslySeededOrAssigned = await _dbContext.UserRoles
+            .IgnoreQueryFilters()
+            .AnyAsync(x => x.RoleId == adminRole.Id, cancellationToken);
+        if (previouslySeededOrAssigned)
+            return;
+
         // Yönetici hesabı için yapılandırmadan alınan kullanıcı adıdır.
         /*
          * Kullanıcı adı, e-posta ve başlangıç parolası aynı JSON dosyasında
@@ -211,10 +224,6 @@ internal sealed class IdentitySeeder
             adminUser.DeletedDate = null;
             adminUser.DeletedBy = null;
         }
-
-        // Sistem genelinde tam yetkili ADMIN rolünün veritabanı kaydıdır.
-        var adminRole = await _dbContext.Roles
-            .SingleAsync(x => x.Code == SystemRoles.Admin, cancellationToken);
 
         // Aynı yöneticiye daha önce atanmış ADMIN rol ilişkisi kaydıdır.
         var existingUserRole = await _dbContext.UserRoles

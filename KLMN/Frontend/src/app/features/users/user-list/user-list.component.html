@@ -574,7 +574,7 @@
               [options]="roleOptions()" optionLabel="label" optionValue="id"
               placeholder="Rol seçiniz" display="chip" [filter]="true"
               [showToggleAll]="false" [loading]="roleLoading()" [fluid]="true" appendTo="body" />
-            <small>Birden fazla rol seçebilirsiniz. Yetkiler seçilen rollerden gelir.</small>
+            <small>Birden fazla rol seçebilirsiniz. Yetkiler seçilen rollerden gelir. ADMIN yalnızca ilk kurulumda atanır.</small>
             @if (roleError(); as message) {
               <small class="field-error" role="alert">{{ message }}</small>
             }

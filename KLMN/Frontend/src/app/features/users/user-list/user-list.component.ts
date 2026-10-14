@@ -97,11 +97,20 @@ export class UserListComponent implements OnInit {
     this.userService.getRoleOptions().subscribe({
       next: roles => {
         if (requestId !== this.roleRequestId) return;
-        const availableIds = new Set(roles.map(role => role.id));
+        // Güvenli varsayılan: API yanlışlıkla ADMIN döndürse bile yeni atamaya sunma.
+        const assignableRoles = roles.filter(role => role.code.toUpperCase() !== 'ADMIN');
+        const availableIds = new Set(assignableRoles.map(role => role.id));
+        // Eskiden ADMIN verilmiş kullanıcıda mevcut rol gösterilir; kaldırılabilir,
+        // ancak başka bir kullanıcıya yeni ADMIN ataması yapılamaz.
         const existing = (selected?.assignedRoles ?? []).filter(role => !availableIds.has(role.id));
         this.roleOptions.set([
-          ...roles.map(role => ({ ...role, label: `${role.name} (${role.code})` })),
-          ...existing.map(role => ({ ...role, label: `${role.name} (${role.code}) — mevcut atama` }))
+          ...assignableRoles.map(role => ({ ...role, label: `${role.name} (${role.code})` })),
+          ...existing.map(role => ({
+            ...role,
+            label: role.code.toUpperCase() === 'ADMIN'
+              ? 'ADMIN (mevcut atama — kaldırılabilir)'
+              : `${role.name} (${role.code}) — mevcut atama`
+          }))
         ]);
         if (!selected && !this.userForm.controls.roleIds.dirty && this.userForm.controls.roleIds.value.length === 0) {
           const standard = roles.find(role => role.code === 'STANDARD_USER');

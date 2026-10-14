@@ -40,14 +40,33 @@ internal static class UserRoleAssignment
         var roles = await db.Roles.IgnoreQueryFilters().Where(r => ids.Contains(r.Id)).ToListAsync(ct);
         if (roles.Count != ids.Count || roles.Any(r => (r.IsDeleted || !r.IsActive) && !previous.Contains(r.Id)))
             throw new UserConflictException("Yeni atanan roller aktif ve silinmemiş olmalıdır. Rol listesini yenileyiniz.");
-        var adminIds = await db.Roles.IgnoreQueryFilters().Where(r => r.Code == SystemRoles.Admin)
+        // ADMIN rolü yalnızca IdentitySeeder tarafından ilk kurulumda atanır.
+        // Bir yönetici dahi yeni bir hesaba ADMIN atayamaz (API manipülasyonu dahil).
+        var adminIds = await db.Roles.IgnoreQueryFilters()
+            .Where(r => r.Code == SystemRoles.Admin)
             .Select(r => r.Id).ToListAsync(ct);
-        if (adminIds.Any(id => previous.Contains(id) != ids.Contains(id)))
+
+        if (adminIds.Any(id => ids.Contains(id) && !previous.Contains(id)))
+            throw new UserRoleAssignmentForbiddenException(
+                "ADMIN sistem rolü kullanıcılara atanamaz. Bu rol yalnızca ilk kurulumda seed ile verilir.");
+
+        // Önceden elle ADMIN yapılmış kullanıcıları temizlemek için rolü kaldırmaya
+        // yalnızca başka bir mevcut ADMIN izinlidir. Son ADMIN korunur.
+        if (adminIds.Any(id => previous.Contains(id) && !ids.Contains(id)))
         {
             var actor = currentUser.UserId.HasValue
                 ? await authorization.GetAsync(currentUser.UserId.Value, ct) : null;
             if (actor?.IsAdmin != true)
-                throw new UserRoleAssignmentForbiddenException("ADMIN rolünü yalnızca yönetici atayabilir veya kaldırabilir.");
+                throw new UserRoleAssignmentForbiddenException(
+                    "Mevcut ADMIN rolünü yalnızca başka bir yönetici kaldırabilir.");
+
+            var activeAdminCount = await db.UserRoles.IgnoreQueryFilters()
+                .CountAsync(link => adminIds.Contains(link.RoleId) &&
+                    link.IsActive && !link.IsDeleted &&
+                    link.User.IsActive && !link.User.IsDeleted, ct);
+            if (activeAdminCount <= 1)
+                throw new UserRoleAssignmentForbiddenException(
+                    "Sistemin son aktif ADMIN rolü kaldırılamaz.");
         }
         foreach (var link in links) link.IsActive = ids.Contains(link.RoleId);
         foreach (var id in ids.Where(id => links.All(link => link.RoleId != id)))
