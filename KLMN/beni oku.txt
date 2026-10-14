@@ -185,6 +185,9 @@ Birlik Tanımları:
 Ülke Tanımları:
   UI: /app/countries | API: /api/countries
   CountryDef : BaseEntity; Code, Name, ExternalCode?, bool? IsTownRequired.
+  IsTownRequired için kullanıcıya görünen ad "Doğum Yeri Gerekir"dir.
+  Liste/filtre/form/Excel'de bu metni kullan; C# entity, API ve DB
+  alanının teknik adı IsTownRequired olarak kalır (migration gerektirmez).
   Ülke CRUD, Excel, filtreleme/sayfalama ve audit. Şehirleri varsa
   FK ilişkisi korunur; bağlı silinmemiş şehri olan ülke silinemez.
   Aktif şehri olan ülke pasifleştirilemez.
@@ -354,6 +357,16 @@ Kabul öncesinde:
 ------------------------------------------
 2026-10-14 itibarıyla ana hatlar (sondan eskiye):
 - 2026-10-14 (bu commit):
+  Ülke Tanımları IsTownRequired alanının kullanıcıya görünen başlığı
+  "Doğum Yeri Gerekir" olarak düzenlendi. p-table liste sütunu,
+  kolon filtresi, ekleme/düzenleme formu ve Excel sütun başlığı
+  eşitlendi; belirtilmemiş değer Excel'de de "Belirtilmedi" oldu.
+  Eski API/entity/DB alanı IsTownRequired olarak kaldı; migration yok.
+  CountriesController için açıklayıcı Türkçe XML yorumlar eklendi.
+  KLMN/ULKE_SEHIR_TANIMLARI_KURULUM.md ve beni oku.txt güncellendi.
+  Statik metin/kod eşleşmeleri doğrulandı; gerçek .NET/Angular derlemesi
+  ve tarayıcı testleri çalıştırılmadı.
+- fb9e7cfb68541ca56949ca584d548e8b5cede51a:
   Yeni geliştirmelerde C# class/interface/record/metotları için Türkçe
   XML /// <summary>, Angular/TypeScript için /** ... */ JSDoc,
   kritik iş kuralları için açıklayıcı yorum ve değişiklikte yorum

@@ -73,7 +73,7 @@
             </select>
           </div>
           <div class="column-filter-field">
-                        <label for="countries-town-filter">İlçe Zorunlu</label>
+                        <label for="countries-town-filter">Doğum Yeri Gerekir</label>
             <select id="countries-town-filter" formControlName="isTownRequired">
               <option [ngValue]="null">Tümü</option>
               <option [ngValue]="true">Evet</option>
@@ -97,7 +97,7 @@
             <th pSortableColumn="name">Ülke Adı <p-sortIcon field="name" /></th>
             <th pSortableColumn="code">Kod <p-sortIcon field="code" /></th>
             <th pSortableColumn="externalCode">Harici Kod <p-sortIcon field="externalCode" /></th>
-            <th pSortableColumn="isTownRequired">İlçe Zorunlu <p-sortIcon field="isTownRequired" /></th>
+            <th pSortableColumn="isTownRequired">Doğum Yeri Gerekir <p-sortIcon field="isTownRequired" /></th>
             <th pSortableColumn="cityCount">Şehir Sayısı <p-sortIcon field="cityCount" /></th>
             <th pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
             <th pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
@@ -198,13 +198,13 @@
         @if (fieldError('externalCode'); as message) { <small class="field-error">{{ message }}</small> }
       </div>
       <div class="form-field">
-        <label for="countries-isTownRequired">İlçe Seçimi Zorunlu mu?</label>
+        <label for="countries-isTownRequired">Doğum Yeri Gerekir</label>
         <select id="countries-isTownRequired" formControlName="isTownRequired">
           <option value="">Belirtilmedi</option>
           <option value="true">Evet</option>
           <option value="false">Hayır</option>
         </select>
-        <small>Eski sistemdeki nullable IsTownRequired alanıdır.</small>
+        <small>Belirtilmedi, Evet veya Hayır seçebilirsiniz.</small>
       </div>
     </div>
     <div class="form-footer">

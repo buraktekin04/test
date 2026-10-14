@@ -14,6 +14,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KLMN.Api.Controllers;
 
+/// <summary>
+/// Ülke tanımlarını, işlem bazlı izinleri ve Excel dışa aktarımını yönetir.
+/// Kullanıcı arayüzündeki "Doğum Yeri Gerekir" alanının API karşılığı IsTownRequired'dır.
+/// </summary>
 [ApiController]
 [Route("api/countries")]
 public sealed class CountriesController(ISender sender, IExcelExportService excel) : ControllerBase
@@ -24,6 +28,9 @@ public sealed class CountriesController(ISender sender, IExcelExportService exce
     public async Task<IActionResult> List([FromQuery] GetCountryDefsQuery query, CancellationToken ct) =>
         Ok(await sender.Send(query, ct));
 
+    /// <summary>
+    /// Ülke listesini uygulanan filtrelerle Excel'e aktarır; yalnızca sorgulama izniyle kullanılabilir.
+    /// </summary>
     [HttpGet("export")]
     [HasPermission(PermissionCodes.Countries.Query)]
     public async Task<IActionResult> Export([FromQuery] GetCountryDefsQuery query, CancellationToken ct)
@@ -45,7 +52,7 @@ public sealed class CountriesController(ISender sender, IExcelExportService exce
             new("Kod", x => x.Code, Width: 22),
             new("Ülke Adı", x => x.Name, Width: 36),
             new("Harici Kod", x => x.ExternalCode, Width: 24),
-            new("İlçe Zorunlu", x => x.IsTownRequired.HasValue ? (x.IsTownRequired.Value ? "Evet" : "Hayır") : "Belirsiz", Width: 20),
+            new("Doğum Yeri Gerekir", x => x.IsTownRequired.HasValue ? (x.IsTownRequired.Value ? "Evet" : "Hayır") : "Belirtilmedi", Width: 26),
             new("Şehir Sayısı", x => x.CityCount, Width: 20),
             new("Durum", x => x.IsActive ? "Aktif" : "Pasif", Width: 16),
             new("Oluşturulma", x => x.CreatedDate, NumberFormat: "dd.MM.yyyy HH:mm", Width: 25)

@@ -9,6 +9,8 @@
   ConcurrencyToken tekrar entity'ye eklenmez: BaseEntity.Id, CreatedDate,
   UpdatedDate, CreatedBy, UpdatedBy, IsActive, Version (PostgreSQL xmin).
 - IsTownRequired üç değer alır: true/false/null, boş veya null "belirtilmedi".
+  Kullanıcıya görünen alan adı "Doğum Yeri Gerekir"dir; veritabanı ve API
+  property adı IsTownRequired olarak kalır.
 - Şehir ülkesiz oluşturulabilir. CountryId doluysa ülke aktif ve silinmemiş
   olmalıdır. City.Country optional navigation / Country.Cities koleksiyonu
   üzerinden FK Restrict ilişkisidir.
@@ -44,7 +46,9 @@
   p-table kolon sıralama yalnızca önyüzde; backend filtre/sayfalama.
 - Şehir formunda ülke select ve MERNİS sayısal doğrulaması, nullable
   geçerlilik tarihi ve UTC dönüşümü bulunur.
-- Ülke formunda IsTownRequired Belirtilmedi/Evet/Hayır select.
+- Ülke formunda "Doğum Yeri Gerekir" etiketli IsTownRequired alanı
+  Belirtilmedi/Evet/Hayır seçenekleriyle gösterilir. Aynı başlık ülke listesi,
+  kolon filtresi ve Excel dışa aktarımında kullanılır.
 - Ortak audit dialog'u CountryDef / CityDef entityType kullanır.
 
 ## Migration — KRİTİK
