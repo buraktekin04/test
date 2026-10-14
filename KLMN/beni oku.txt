@@ -28,6 +28,20 @@ KALICI ÇALIŞMA ANLAŞMASI:
   "uçtan uca test edildi" kavramlarını birbirinden ayır.
 - Her yeni geliştirmede eskiden alınmış mimari kararları koru; bir varlıkta
   BaseEntity'de zaten olan alanları ikinci kez yaratma.
+- YENİ KOD YORUM STANDARDI (ZORUNLU): Yeni yazılan veya önemli ölçüde
+  değiştirilen C# ve Angular/TypeScript sınıflarına anlaşılır TÜRKÇE
+  açıklamalar ekle. C# class, interface, record, enum, public metotlar
+  ve anlamı açık olmayan public üyelerde /// <summary> XML documentation
+  kullan; gerekiyorsa <param>, <returns> ve <exception> ekle.
+  Angular/TypeScript component, service, model ve kritik metodlara
+  /** ... */ JSDoc yaz; karmaşık template/iş kurallarında kısa açıklayıcı
+  yorum kullan. Özellikle iş kuralı, yetki kontrolü, validasyon,
+  concurrency/xmin, UTC dönüşümü, soft-delete ve FK/ilişki korumalarının
+  NEDEN yapıldığını gerektiği yerde açıkla.
+- Yorumlar mevcut davranışla aynı kalmalı: kod değişince ilgili yorum
+  da güncellenmeli. Gereksiz her satır yorumu, otomatik üretilmiş
+  anlamsız açıklamalar ve kodun aynısını tekrar eden yorumlar yazma.
+  Kısa, doğru, açıklayıcı ve sürdürülebilir dokümantasyon tercih et.
 - Dosya tek başına kendisini otomatik değiştiremez. ChatGPT tarafından
   yapılan kod commit'lerinde bu kurala uyulacak; başka araç/kişi commit
   atarsa bu dosyanın da güncellenmesi ayrıca kontrol edilmelidir.
@@ -92,6 +106,10 @@ PurchaseNumbers modüllerindeki ayrık yapıyı örnek al.
 Generic Repository / UnitOfWork ekleme. İlgili handler EF Core DbContext
 soyutlamasını IKLMNDbContext üzerinden kullanır. Tek sınıfa tüm CRUD'ları
 yığma, kısa vadeli kestirmeyle katman sınırlarını bozma.
+YENİ CLASS DOSYALARINDA AÇIKLAYICI TÜRKÇE XML/JSDoc YORUMLARI ZORUNLUDUR;
+özellikle handler'ın görevi, command/query amacı ve kritik kurallar
+anlaşılmalıdır. Var olan class'a dokunurken eksik veya eskimiş önemli
+açıklamalar da kapsam dahilinde iyileştirilir.
 
 3. ORTAK ENTITY KURALLARI — ÖZELLİKLE KORU
 -----------------------------------------
@@ -336,6 +354,14 @@ Kabul öncesinde:
 ------------------------------------------
 2026-10-14 itibarıyla ana hatlar (sondan eskiye):
 - 2026-10-14 (bu commit):
+  Yeni geliştirmelerde C# class/interface/record/metotları için Türkçe
+  XML /// <summary>, Angular/TypeScript için /** ... */ JSDoc,
+  kritik iş kuralları için açıklayıcı yorum ve değişiklikte yorum
+  güncelleme standardı "beni oku.txt" içine eklendi.
+  Bu commit YALNIZCA devir dokümanını değiştirir; mevcut kod
+  sınıflarının yorumları geriye dönük topluca değiştirilmedi.
+  Derleme, test ve migration gerektirmez.
+- d3a41a2498248374235260708a4da8a1784695d6:
   Ülke ve Şehir Tanımları uçtan uca eklendi: CountryDef (BaseEntity),
   CityDef (EffectiveDatedEntity), nullable CountryId/MernisCode/
   IsTownRequired, iki ayrı CQRS/API/Angular modülü ve yetki seed'i.
@@ -420,6 +446,9 @@ devam etmek istediğini yeni mesajında söyleyecek.
 3) Talebin backend/frontend/DB/test/dokümantasyon etkilerini belirle;
    var olan sınıfları ve ilişkileri tek tek kontrol et.
 4) Yapılacak işi tamamla, mevcut mimari ve izin kurallarını uygula.
+   Yeni veya önemli ölçüde değişen sınıflara, metodlara ve kritik iş
+   kurallarına güncel Türkçe XML documentation / JSDoc yorumları yaz;
+   yorumların uygulanmış davranışa uygunluğunu kontrol et.
 5) Mümkün olan build/testleri çalıştır; çalıştırılamayanları açıkla.
 6) KLMN/beni oku.txt içinde bu adımları güncelle:
    * Güncelleme tarihi ve son geliştirme özeti.
