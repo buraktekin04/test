@@ -23,7 +23,5 @@ public sealed record GetUsersQuery(
     bool? ClockLimit = null,
     DateOnly? ValidFromDate = null,
     DateOnly? ValidToDate = null,
-    DateOnly? CreatedDate = null,
-    string SortField = "fullName",
-    int SortOrder = 1)
+    DateOnly? CreatedDate = null)
     : IRequest<PagedResult<UserListItemResponse>>;

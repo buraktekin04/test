@@ -29,8 +29,6 @@ export interface MilitaryUnitParentOption {
 
 /** Liste sorgusu ile Excel aktarımındaki ortak filtre modelidir. */
 export interface MilitaryUnitDefQuery {
-  sortField: string;
-  sortOrder: number;
   search: string;
   includeInactive: boolean;
   isActive: boolean | null;

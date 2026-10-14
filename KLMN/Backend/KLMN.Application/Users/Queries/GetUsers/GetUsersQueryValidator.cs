@@ -13,10 +13,6 @@ public sealed class GetUsersQueryValidator
     /// </summary>
     public GetUsersQueryValidator()
     {
-        RuleFor(x => x.SortField).Must(GetUsersSorting.Definition.Supports)
-            .WithMessage("Geçersiz sıralama kolonu.");
-        RuleFor(x => x.SortOrder).Must(order => order == 1 || order == -1)
-            .WithMessage("Sıralama yönü 1 veya -1 olmalıdır.");
         RuleFor(x => x.PageNumber)
             .GreaterThanOrEqualTo(1);
 

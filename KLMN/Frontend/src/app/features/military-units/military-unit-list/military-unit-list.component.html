@@ -101,8 +101,7 @@
     }
 
     <div class="table-scroll" role="region" aria-label="Birlik tablosu" tabindex="0">
-      <p-table [lazy]="true" [lazyLoadOnInit]="false"
-      [sortField]="sortField()" [sortOrder]="sortOrder()" (onLazyLoad)="onSort($event)" [value]="units()" [loading]="loading()"
+      <p-table [value]="units()" [loading]="loading()"
                [tableStyle]="{ 'min-width': '980px', 'width': '100%' }">
         <ng-template pTemplate="header">
           <tr>

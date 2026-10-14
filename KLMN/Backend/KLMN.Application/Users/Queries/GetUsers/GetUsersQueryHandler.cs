@@ -124,7 +124,10 @@ internal sealed class GetUsersQueryHandler(
         var totalCount = await query.CountAsync(cancellationToken);
 
         // Seçili sayfada döndürülecek kullanıcı DTO kayıtlarıdır.
-        var items = await GetUsersSorting.Definition.Apply(query, request.SortField, request.SortOrder)
+        var items = await query
+            .OrderBy(x => x.FirstName)
+            .ThenBy(x => x.LastName)
+            .ThenBy(x => x.UserName)
             .Skip((request.PageNumber - 1) * request.PageSize)
             .Take(request.PageSize)
             .Select(x => new UserListItemResponse

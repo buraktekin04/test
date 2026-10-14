@@ -187,8 +187,7 @@
 
     <!-- Yalnızca tablo yatay kayar; ekranın geri kalanı yerinde kalır. -->
     <div class="users-table-scroll" tabindex="0" role="region" aria-label="Kullanıcılar tablosu, yatay kaydırılabilir">
-    <p-table [lazy]="true" [lazyLoadOnInit]="false"
-      [sortField]="sortField()" [sortOrder]="sortOrder()" (onLazyLoad)="onSort($event)"
+    <p-table
       [value]="users()"
       [loading]="loading()"
       [tableStyle]="{ 'min-width': '1330px', 'width': '100%' }">
@@ -197,8 +196,8 @@
           <th pSortableColumn="fullName">Kullanıcı <p-sortIcon field="fullName" /></th>
           <th pSortableColumn="userName">Kullanıcı Adı <p-sortIcon field="userName" /></th>
           <th pSortableColumn="email">E-posta <p-sortIcon field="email" /></th>
-          <th pSortableColumn="militaryUnit">Görev Yeri <p-sortIcon field="militaryUnit" /></th>
-          <th pSortableColumn="roles" title="İlk alfabetik rol koduna göre sıralar">Roller <p-sortIcon field="roles" /></th>
+          <th pSortableColumn="militaryUnitDefName">Görev Yeri <p-sortIcon field="militaryUnitDefName" /></th>
+          <th pSortableColumn="roles.0" title="İlk alfabetik rol koduna göre sıralar">Roller <p-sortIcon field="roles.0" /></th>
           <th pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
           <th pSortableColumn="clockLimit">Mesai Dışı <p-sortIcon field="clockLimit" /></th>
           <th pSortableColumn="validFrom">Başlangıç <p-sortIcon field="validFrom" /></th>

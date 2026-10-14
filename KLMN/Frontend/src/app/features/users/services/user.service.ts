@@ -33,8 +33,6 @@ export class UserService {
     let params = new HttpParams()
       .set('pageNumber', query.pageNumber)
       .set('pageSize', query.pageSize)
-      .set('sortField', query.sortField)
-      .set('sortOrder', query.sortOrder)
       .set('includeInactive', query.includeInactive);
 
     const textFilters = {

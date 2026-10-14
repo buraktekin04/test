@@ -28,8 +28,6 @@ export class RoleService {
     let params = new HttpParams()
       .set('pageNumber', query.pageNumber)
       .set('pageSize', query.pageSize)
-      .set('sortField', query.sortField)
-      .set('sortOrder', query.sortOrder)
       .set('includeInactive', query.includeInactive);
 
     if (query.search.trim())

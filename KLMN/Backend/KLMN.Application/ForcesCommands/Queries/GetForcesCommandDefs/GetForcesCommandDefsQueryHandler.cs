@@ -27,7 +27,7 @@ public sealed class GetForcesCommandDefsQueryHandler(IKLMNDbContext db)
             query = query.Where(x => x.IsActive == request.IsActive.Value);
 
         var count = await query.CountAsync(ct);
-        var items = await GetForcesCommandDefsSorting.Definition.Apply(query, request.SortField, request.SortOrder)
+        var items = await query.OrderBy(x => x.Name).ThenBy(x => x.Code)
             .Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize)
             .Select(ForcesCommandDefResponse.Projection).ToListAsync(ct);
         return new PagedResult<ForcesCommandDefResponse>
