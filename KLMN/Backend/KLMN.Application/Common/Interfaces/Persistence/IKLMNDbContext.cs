@@ -2,6 +2,7 @@ using KLMN.Domain.Entities.Identity;
 using KLMN.Domain.Entities.Auditing;
 using KLMN.Domain.Entities.MilitaryUnit;
 using KLMN.Domain.Entities.PurchaseNumbers;
+using KLMN.Domain.Entities.Geography;
 using Microsoft.EntityFrameworkCore;
 
 namespace KLMN.Application.Common.Interfaces.Persistence;
@@ -29,6 +30,8 @@ public interface IKLMNDbContext
     DbSet<ForcesCommandDef> ForcesCommandDefs { get; }
 
     DbSet<PurchaseNumberDef> PurchaseNumberDefs { get; }
+    DbSet<CountryDef> CountryDefs { get; }
+    DbSet<CityDef> CityDefs { get; }
 
     DbSet<MilitaryUnitDef> MilitaryUnitDefs { get; }
 

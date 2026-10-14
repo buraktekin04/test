@@ -3,6 +3,7 @@ using KLMN.Domain.Entities.Identity;
 using KLMN.Domain.Entities.Auditing;
 using KLMN.Domain.Entities.MilitaryUnit;
 using KLMN.Domain.Entities.PurchaseNumbers;
+using KLMN.Domain.Entities.Geography;
 using KLMN.Persistence.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -64,6 +65,8 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
 
     /// <summary>Alım numarası tanımlarının veri kümesi.</summary>
     public DbSet<PurchaseNumberDef> PurchaseNumberDefs => Set<PurchaseNumberDef>();
+    public DbSet<CountryDef> CountryDefs => Set<CountryDef>();
+    public DbSet<CityDef> CityDefs => Set<CityDef>();
 
     public DbSet<MilitaryUnitDef> MilitaryUnitDefs => Set<MilitaryUnitDef>();
 

@@ -42,6 +42,18 @@ export class NavigationService {
           permissionModule: 'ForcesCommands'
         },
         {
+          label: 'Ülke Tanımları',
+          icon: 'pi pi-globe',
+          route: '/app/countries',
+          permissionModule: 'Countries'
+        },
+        {
+          label: 'Şehir Tanımları',
+          icon: 'pi pi-map-marker',
+          route: '/app/cities',
+          permissionModule: 'Cities'
+        },
+        {
           label: 'Alım Numarası Tanımları',
           icon: 'pi pi-tags',
           route: '/app/purchase-numbers',

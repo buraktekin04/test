@@ -61,6 +61,23 @@ public static class PermissionCodes
     }
 
     /// <summary>Alım numarası tanımlarına ait eylem izinleri.</summary>
+    public static class Countries
+    {
+        public const string View = "Countries.View";
+        public const string Query = "Countries.Query";
+        public const string Create = "Countries.Create";
+        public const string Update = "Countries.Update";
+        public const string Delete = "Countries.Delete";
+    }
+    public static class Cities
+    {
+        public const string View = "Cities.View";
+        public const string Query = "Cities.Query";
+        public const string Create = "Cities.Create";
+        public const string Update = "Cities.Update";
+        public const string Delete = "Cities.Delete";
+    }
+
     public static class PurchaseNumbers
     {
         public const string View = "PurchaseNumbers.View";

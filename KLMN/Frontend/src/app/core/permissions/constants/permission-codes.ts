@@ -30,6 +30,14 @@ export const PermissionCodes = {
     View: 'ForcesCommands.View', Query: 'ForcesCommands.Query',
     Create: 'ForcesCommands.Create', Update: 'ForcesCommands.Update', Delete: 'ForcesCommands.Delete'
   },
+  Countries: {
+    View: 'Countries.View', Query: 'Countries.Query',
+    Create: 'Countries.Create', Update: 'Countries.Update', Delete: 'Countries.Delete'
+  },
+  Cities: {
+    View: 'Cities.View', Query: 'Cities.Query',
+    Create: 'Cities.Create', Update: 'Cities.Update', Delete: 'Cities.Delete'
+  },
   PurchaseNumbers: {
     View: 'PurchaseNumbers.View', Query: 'PurchaseNumbers.Query',
     Create: 'PurchaseNumbers.Create', Update: 'PurchaseNumbers.Update', Delete: 'PurchaseNumbers.Delete'

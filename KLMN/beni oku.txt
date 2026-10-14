@@ -164,6 +164,24 @@ Birlik Tanımları:
   Kullanıcı görev yeri MilitaryUnitDef üzerinden seçilir.
   Hiyerarşi/döngü ve bağlı kayıt kurallarını koru.
 
+Ülke Tanımları:
+  UI: /app/countries | API: /api/countries
+  CountryDef : BaseEntity; Code, Name, ExternalCode?, bool? IsTownRequired.
+  Ülke CRUD, Excel, filtreleme/sayfalama ve audit. Şehirleri varsa
+  FK ilişkisi korunur; bağlı silinmemiş şehri olan ülke silinemez.
+  Aktif şehri olan ülke pasifleştirilemez.
+
+Şehir Tanımları:
+  UI: /app/cities | API: /api/cities
+  CityDef : EffectiveDatedEntity; Code, Name, ExternalCode?,
+  Guid? CountryId, int? MernisCode. Eski StartDate/EndDate tekrar
+  oluşturulmaz; Nullable ValidFrom/ValidTo miras alınır.
+  Ülke/Şehir relation FK Restrict, ülke dropdown'u
+  GET /api/cities/country-options üzerinden Cities izniyle beslenir.
+  Filtre/sayfalama, p-table frontend kolon sıralaması, form,
+  CRUD, Excel (Query izni), audit ve xmin güvenliği.
+  İKİ YENİ TABLO için migration gereklidir; gerçek DB'de henüz uygulanmadı.
+
 Alım Numarası Tanımları:
   UI: /app/purchase-numbers
   Backend: PurchaseNumbers.
@@ -318,6 +336,17 @@ Kabul öncesinde:
 ------------------------------------------
 2026-10-14 itibarıyla ana hatlar (sondan eskiye):
 - 2026-10-14 (bu commit):
+  Ülke ve Şehir Tanımları uçtan uca eklendi: CountryDef (BaseEntity),
+  CityDef (EffectiveDatedEntity), nullable CountryId/MernisCode/
+  IsTownRequired, iki ayrı CQRS/API/Angular modülü ve yetki seed'i.
+  Ekranlarda filtre/sayfalama, PrimeNG client sorting, form CRUD,
+  ülke seçimi, Excel, audit, status/soft-delete/xmin bulunmaktadır.
+  Ülkeye bağlı şehirlerin silme/pasifleştirme koruması vardır.
+  Yeni CountryDefs ve CityDefs için yerel migration gereklidir.
+  KLMN/Tests/Geography.Regression eklendi; bu commit'te gerçek
+  dotnet/npm derlemesi, DB migration ve browser testleri koşulmadı.
+  Ayrıntılar: KLMN/ULKE_SEHIR_TANIMLARI_KURULUM.md.
+- 2026-10-14 (önceki commit):
   Alım Numarası Tanımları ekranında Name -> "Alım Adı",
   SupplyDescriptionName -> "Temin Tanım Adı" olarak adlandırıldı.
   Liste/kolon filtreleri, ekleme-düzenleme formu, alan hata mesajı ve
@@ -367,9 +396,9 @@ geliştirme özeti mutlaka güncellenmelidir.
 --------------------------------------------
 Bu liste otomatik görev emri değildir; kullanıcı hangi geliştirmeyle
 devam etmek istediğini yeni mesajında söyleyecek.
-- En yakın teknik kurulum konusu: PurchaseNumberDefs tablosu için
-  mevcut gerçek migration zinciriyle migration oluşturma, script
-  inceleme ve test veritabanına uygulama.
+- En yakın teknik kurulum konusu: PurchaseNumberDefs, CountryDefs ve
+  CityDefs tabloları için mevcut gerçek migration zinciriyle migration
+  oluşturma, SQL script inceleme ve test veritabanına uygulama.
 - Yeni alım numarası, kuvvet, birlik, kullanıcı ve rol modüllerinde
   backend/frontend build ve gerçek entegrasyon/kabul testleri.
 - Permission davranışlarının farklı rollerle incelenmesi; özellikle
@@ -413,6 +442,7 @@ devam etmek istediğini yeni mesajında söyleyecek.
   KLMN/BIRLIK_TANIMLARI_KURULUM.md
   KLMN/KUVVET_KOMUTANLIGI_TANIMLARI_KURULUM.md
   KLMN/ALIM_NUMARASI_TANIMLARI_KURULUM.md
+  KLMN/ULKE_SEHIR_TANIMLARI_KURULUM.md
   KLMN/ADMIN_ROLU_KORUMA.md
   KLMN/AUDIT_LOG_KURULUM.md
   KLMN/EXCEL_EXPORT_KURULUM.md

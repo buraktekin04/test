@@ -50,6 +50,17 @@ internal static class IdentitySeedData
         new("Birlik Güncelleme", PermissionCodes.MilitaryUnits.Update, "MilitaryUnits", 40),
         new("Birlik Silme", PermissionCodes.MilitaryUnits.Delete, "MilitaryUnits", 50),
 
+        new("Ülkeleri Görüntüleme", PermissionCodes.Countries.View, "Countries", 10),
+        new("Ülke Sorgulama", PermissionCodes.Countries.Query, "Countries", 20),
+        new("Ülke Oluşturma", PermissionCodes.Countries.Create, "Countries", 30),
+        new("Ülke Güncelleme", PermissionCodes.Countries.Update, "Countries", 40),
+        new("Ülke Silme", PermissionCodes.Countries.Delete, "Countries", 50),
+        new("Şehirleri Görüntüleme", PermissionCodes.Cities.View, "Cities", 10),
+        new("Şehir Sorgulama", PermissionCodes.Cities.Query, "Cities", 20),
+        new("Şehir Oluşturma", PermissionCodes.Cities.Create, "Cities", 30),
+        new("Şehir Güncelleme", PermissionCodes.Cities.Update, "Cities", 40),
+        new("Şehir Silme", PermissionCodes.Cities.Delete, "Cities", 50),
+
         new("Alım Numaralarını Görüntüleme", PermissionCodes.PurchaseNumbers.View, "PurchaseNumbers", 10),
         new("Alım Numarası Sorgulama", PermissionCodes.PurchaseNumbers.Query, "PurchaseNumbers", 20),
         new("Alım Numarası Oluşturma", PermissionCodes.PurchaseNumbers.Create, "PurchaseNumbers", 30),

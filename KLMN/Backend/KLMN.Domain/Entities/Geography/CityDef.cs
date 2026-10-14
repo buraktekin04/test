@@ -1,0 +1,15 @@
+using KLMN.Domain.Common;
+
+namespace KLMN.Domain.Entities.Geography;
+
+/// <summary>Eski CityDef; ValidFrom/ValidTo ayrı açılmaz, EffectiveDatedEntity'den gelir.</summary>
+public sealed class CityDef : EffectiveDatedEntity
+{
+    public string Code { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string? ExternalCode { get; set; }
+    /// <summary>Eski CityDef.Country alanı; ülke seçimi isteğe bağlıdır.</summary>
+    public Guid? CountryId { get; set; }
+    public CountryDef? Country { get; set; }
+    public int? MernisCode { get; set; }
+}

@@ -76,6 +76,28 @@ export const routes: Routes = [
         path: 'definitions/forces-commands', pathMatch: 'full', redirectTo: 'forces-commands'
       },
       {
+        path: 'countries',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'Countries' },
+        loadComponent: () =>
+          import('./features/countries/country-list/country-list.component')
+            .then(component => component.CountryListComponent)
+      },
+      {
+        path: 'cities',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'Cities' },
+        loadComponent: () =>
+          import('./features/cities/city-list/city-list.component')
+            .then(component => component.CityListComponent)
+      },
+      {
+        path: 'definitions/countries', pathMatch: 'full', redirectTo: 'countries'
+      },
+      {
+        path: 'definitions/cities', pathMatch: 'full', redirectTo: 'cities'
+      },
+      {
         path: 'purchase-numbers',
         canActivate: [permissionGuard],
         data: { permissionModule: 'PurchaseNumbers' },
