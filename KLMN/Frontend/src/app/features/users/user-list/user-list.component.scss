@@ -574,6 +574,7 @@
   }
 
   small { line-height: 1.4; }
+  .field-error { color: #b42318; font-size: .73rem; }
 }
 
 .access-options {
@@ -697,11 +698,23 @@
   i { color: #64748b; margin-top: .1rem; }
 }
 
-.user-form .dialog-actions {
-  margin-top: 1rem;
-  padding-top: 1rem;
+.user-form .form-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: .6rem;
+  padding: .65rem 0 .1rem;
   border-top: 1px solid #edf0f3;
+  background: #fff;
 }
+.user-form .dialog-actions { margin: 0; padding-top: .25rem; border: 0; }
+.user-form .form-save-error {
+  display: flex; align-items: flex-start; gap: .5rem;
+  margin-bottom: .55rem; padding: .35rem .55rem;
+  background: #fff6f5; color: #b42318; border-radius: 6px;
+  font-size: .77rem; line-height: 1.4; overflow-wrap: anywhere;
+}
+.user-form .validity-error { display: block; color: #b42318; font-size: .73rem; }
 
 /* PDF sağ paneli: dosya yükleme, dosya listesi ve boş durum. */
 .document-drawer-heading,

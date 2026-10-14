@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize, Observable } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { ConfirmationService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -33,6 +34,8 @@ import { AuditHistoryComponent } from '../../../shared/audit-history/audit-histo
 
 /** Dropdown'un kullanıcıya gösterdiği kod + ad etiketli birim seçeneğidir. */
 type MilitaryUnitSelectOption = MilitaryUnitDefOption & { label: string };
+type UserFormField = 'firstName' | 'lastName' | 'userName' | 'email' | 'phoneNumber'
+  | 'militaryUnitDefId' | 'roleIds' | 'password' | 'validFrom' | 'validTo';
 
 /**
  * Tanımlamalar > Kullanıcı Tanımları ekranının listeleme, sorgulama,
@@ -165,6 +168,11 @@ export class UserListComponent implements OnInit {
   /** Modal içindeki validation veya API hata mesajıdır. */
   public readonly formError = signal<string | null>(null);
 
+  /** Kayıt denemesinde yerel alan hatalarını görünür yapar. */
+  public readonly attemptedSave = signal(false);
+  /** FluentValidation alan hatalarını ilgili inputlarla eşler. */
+  public readonly serverFieldErrors = signal<Partial<Record<UserFormField, string>>>({});
+
   /** İşlemi devam eden kullanıcının ID'sidir; tekrar tıklamayı önler. */
   public readonly actionLoadingId = signal<string | null>(null);
 
@@ -283,6 +291,11 @@ export class UserListComponent implements OnInit {
       if (!this.errorMessage()) return;
       const timer = setTimeout(() => this.errorMessage.set(null), 10_000);
       onCleanup(() => clearTimeout(timer));
+    });
+    // Yeni veri girildiğinde eski API doğrulama mesajları artık geçerli değildir.
+    this.userForm.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.formError.set(null);
+      this.serverFieldErrors.set({});
     });
   }
 
@@ -500,7 +513,7 @@ export class UserListComponent implements OnInit {
       validTo: '',
       password: ''
     });
-    this.formError.set(null);
+    this.resetValidation();
     this.dialogVisible.set(true);
     this.loadMilitaryUnitOptions();
     this.loadRoleOptions();
@@ -512,7 +525,7 @@ export class UserListComponent implements OnInit {
     if (!this.canUpdate()) return;
 
     this.actionLoadingId.set(user.id);
-    this.formError.set(null);
+    this.resetValidation();
 
     this.userService.getUserById(user.id)
       .pipe(finalize(() => this.actionLoadingId.set(null)))
@@ -548,40 +561,38 @@ export class UserListComponent implements OnInit {
    */
   public saveUser(): void {
     if (this.saving()) return;
-    if (this.canAssignRoles() && (this.roleLoading() || this.roleLoadError() ||
-        this.userForm.controls.roleIds.value.length === 0)) {
+    if (this.selectedUser() ? !this.canUpdate() : !this.canCreate()) return;
+    this.attemptedSave.set(true);
+    this.formError.set(null);
+    this.serverFieldErrors.set({});
+
+    if (this.canAssignRoles() &&
+        (this.roleLoading() || this.roleLoadError() || !this.userForm.controls.roleIds.value.length)) {
       this.formError.set('Rol listesini yükleyip en az bir rol seçiniz.');
+      this.focusFormField('userRoleIds');
       return;
     }
-    // Salt belge görüntüleme izni kullanıcı profilinin değiştirilmesine izin vermez.
-    if (this.selectedUser() && !this.canUpdate()) return;
-
-    // Görev yeri kataloğu yoksa/kritik hata aldıysa atanmış birim
-    // yanlışlıkla null olarak kaydedilmesin veya geçersiz seçim yapılmasın.
     if (this.militaryUnitLoading() || this.militaryUnitLoadError()) {
-      this.formError.set('Görev yeri listesi henüz hazır değil. Lütfen yeniden deneyin.');
+      this.formError.set('Görev yeri listesi yüklenemedi. Seçenekleri yenileyiniz.');
+      this.focusFormField('userMilitaryUnitDefId');
       return;
     }
-
     if (this.userForm.invalid) {
       this.userForm.markAllAsTouched();
-      this.formError.set('Zorunlu alanları ve e-posta biçimini kontrol ediniz.');
+      const first = (['firstName', 'lastName', 'userName', 'email', 'phoneNumber'] as const)
+        .find(key => this.userForm.controls[key].invalid);
+      if (first) this.focusFormField(this.fieldIds[first]);
       return;
     }
 
     const value = this.userForm.getRawValue();
     const selected = this.selectedUser();
-
-    // Geçerlilik tarihleri için tüm tanım ekranlarının kullanacağı ortak kural.
     if (!ValidityPeriodUtils.hasValidRange(value.validFrom, value.validTo)) {
-      this.formError.set('Bitiş tarihi başlangıç tarihinden sonra olmalıdır.');
+      this.focusFormField('userValidTo');
       return;
     }
-
     if (!selected && !this.isValidPassword(value.password)) {
-      this.formError.set(
-        'Parola en az 8 karakter, bir büyük harf, bir küçük harf ve bir rakam içermelidir.'
-      );
+      this.focusFormField('newUserPassword');
       return;
     }
 
@@ -625,14 +636,106 @@ export class UserListComponent implements OnInit {
         this.dialogVisible.set(false);
         this.selectedUser.set(null);
         this.userForm.controls.password.setValue('');
+        this.resetValidation();
         this.successMessage.set(
           selected ? 'Kullanıcı bilgileri güncellendi.' : 'Kullanıcı başarıyla oluşturuldu.'
         );
         this.loadUsers();
       },
-      error: (error: HttpErrorResponse) =>
-        this.formError.set(this.getErrorMessage(error))
+      error: (error: HttpErrorResponse) => this.showSaveError(error)
     });
+  }
+
+  private readonly fieldIds: Record<UserFormField, string> = {
+    firstName: 'editFirstName', lastName: 'editLastName',
+    userName: 'editUserName', email: 'editEmail',
+    phoneNumber: 'editPhoneNumber', militaryUnitDefId: 'userMilitaryUnitDefId',
+    roleIds: 'userRoleIds', password: 'newUserPassword',
+    validFrom: 'userValidFrom', validTo: 'userValidTo'
+  };
+
+  private resetValidation(): void {
+    this.attemptedSave.set(false);
+    this.formError.set(null);
+    this.serverFieldErrors.set({});
+  }
+
+  /** Zorunlu alan, e-posta ve uzunluk hatalarını girişin hemen altında gösterir. */
+  public fieldError(field: UserFormField): string | null {
+    const serverMessage = this.serverFieldErrors()[field];
+    if (serverMessage) return serverMessage;
+    const control = this.userForm.controls[field];
+    if (!control.invalid || (!control.touched && !this.attemptedSave())) return null;
+    if (control.hasError('required')) return 'Bu alan zorunludur.';
+    if (control.hasError('email')) return 'Geçerli bir e-posta adresi giriniz.';
+    if (control.hasError('maxlength')) return 'Karakter sınırı aşıldı.';
+    return 'Bu alanın değerini kontrol ediniz.';
+  }
+
+  public passwordError(): string | null {
+    if (this.selectedUser()) return null;
+    const serverMessage = this.serverFieldErrors().password;
+    if (serverMessage) return serverMessage;
+    const control = this.userForm.controls.password;
+    if (!this.attemptedSave() && !control.touched) return null;
+    if (!control.value) return 'İlk parola zorunludur.';
+    return this.isValidPassword(control.value) ? null
+      : '8–128 karakter, büyük/küçük harf ve rakam gereklidir.';
+  }
+
+  public validityError(): string | null {
+    const serverMessage = this.serverFieldErrors().validTo;
+    if (serverMessage) return serverMessage;
+    const from = this.userForm.controls.validFrom;
+    const to = this.userForm.controls.validTo;
+    if (!this.attemptedSave() && !from.touched && !to.touched) return null;
+    return ValidityPeriodUtils.hasValidRange(from.value, to.value)
+      ? null : 'Bitiş tarihi başlangıçtan sonra olmalıdır.';
+  }
+
+  public roleError(): string | null {
+    if (!this.canAssignRoles()) return null;
+    const serverMessage = this.serverFieldErrors().roleIds;
+    if (serverMessage) return serverMessage;
+    return this.attemptedSave() && !this.roleLoading() &&
+      !this.userForm.controls.roleIds.value.length ? 'En az bir rol seçiniz.' : null;
+  }
+
+  /** Sorunlu inputu kaydırarak görünür kılar; ilgili alanı odaklar. */
+  private focusFormField(id: string): void {
+    requestAnimationFrame(() => {
+      if (!this.dialogVisible()) return;
+      const element = document.getElementById(id);
+      if (!element) return;
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (element instanceof HTMLElement) {
+        const input = element.matches('input,textarea,button')
+          ? element : element.querySelector<HTMLElement>('input,button,[tabindex]');
+        input?.focus({ preventScroll: true });
+      }
+    });
+  }
+
+  /** API alan hataları inline; genel/çakışma hataları Kaydet yanında görünür. */
+  private showSaveError(error: HttpErrorResponse): void {
+    const errors: unknown = error.error?.errors;
+    const mapped: Partial<Record<UserFormField, string>> = {};
+    const keys = Object.keys(this.fieldIds) as UserFormField[];
+    if (errors && typeof errors === 'object' && !Array.isArray(errors)) {
+      for (const [property, messages] of Object.entries(errors)) {
+        const field = keys.find(key => key.toLowerCase() === property.split('.').pop()?.toLowerCase());
+        if (field && Array.isArray(messages) && typeof messages[0] === 'string')
+          mapped[field] = messages[0];
+      }
+    }
+    this.serverFieldErrors.set(mapped);
+    const first = keys.find(field => mapped[field]);
+    if (first) {
+      this.formError.set('İşaretlenen alanları kontrol edip yeniden kaydediniz.');
+      this.focusFormField(this.fieldIds[first]);
+    } else {
+      this.formError.set(this.getErrorMessage(error));
+    }
   }
 
   /** Formdaki geçerlilik tarihinin değerini temizler. */

@@ -489,10 +489,6 @@
   [style]="{ width: 'min(700px, 96vw)' }"
   styleClass="user-edit-dialog">
   <form class="user-form" [formGroup]="userForm" (ngSubmit)="saveUser()">
-    @if (formError()) {
-      <p-message severity="error" [text]="formError()!"></p-message>
-    }
-
     <section class="form-section">
       <!-- Başlık kartı yerine ince, sade bölüm ayracı. -->
       <div class="form-divider"><span>Hesap Bilgileri</span></div>
@@ -502,26 +498,41 @@
           <label for="editFirstName">Ad <span class="required-mark">*</span></label>
           <input id="editFirstName" pInputText formControlName="firstName"
                  autocomplete="given-name" />
+          @if (fieldError('firstName'); as message) {
+            <small class="field-error" role="alert">{{ message }}</small>
+          }
         </div>
         <div class="form-field">
           <label for="editLastName">Soyad <span class="required-mark">*</span></label>
           <input id="editLastName" pInputText formControlName="lastName"
                  autocomplete="family-name" />
+          @if (fieldError('lastName'); as message) {
+            <small class="field-error" role="alert">{{ message }}</small>
+          }
         </div>
         <div class="form-field">
           <label for="editUserName">Kullanıcı Adı <span class="required-mark">*</span></label>
           <input id="editUserName" pInputText formControlName="userName"
                  autocomplete="username" />
+          @if (fieldError('userName'); as message) {
+            <small class="field-error" role="alert">{{ message }}</small>
+          }
         </div>
         <div class="form-field">
           <label for="editEmail">E-posta <span class="required-mark">*</span></label>
           <input id="editEmail" type="email" pInputText formControlName="email"
                  autocomplete="email" />
+          @if (fieldError('email'); as message) {
+            <small class="field-error" role="alert">{{ message }}</small>
+          }
         </div>
         <div class="form-field">
           <label for="editPhoneNumber">Telefon</label>
           <input id="editPhoneNumber" pInputText formControlName="phoneNumber"
                  autocomplete="tel" />
+          @if (fieldError('phoneNumber'); as message) {
+            <small class="field-error" role="alert">{{ message }}</small>
+          }
         </div>
         <div class="form-field form-field-full military-unit-field">
           <label for="userMilitaryUnitDefId">Görev Yeri</label>
@@ -544,6 +555,9 @@
             [appendTo]="'body'"
             placeholder="Görev yeri seçiniz">
           </p-select>
+          @if (fieldError('militaryUnitDefId'); as message) {
+            <small class="field-error" role="alert">{{ message }}</small>
+          }
           @if (militaryUnitLoadError()) {
             <small class="military-unit-error">{{ militaryUnitLoadError() }}</small>
             <p-button type="button" size="small" label="Tekrar Dene"
@@ -561,6 +575,9 @@
               placeholder="Rol seçiniz" display="chip" [filter]="true"
               [showToggleAll]="false" [loading]="roleLoading()" [fluid]="true" appendTo="body" />
             <small>Birden fazla rol seçebilirsiniz. Yetkiler seçilen rollerden gelir.</small>
+            @if (roleError(); as message) {
+              <small class="field-error" role="alert">{{ message }}</small>
+            }
             @if (roleLoadError()) {
               <small class="military-unit-error">{{ roleLoadError() }}</small>
               <p-button label="Yeniden Dene" [text]="true" size="small" (onClick)="loadRoleOptions()" />
@@ -576,6 +593,9 @@
             <input id="newUserPassword" type="password" pInputText
                    formControlName="password" autocomplete="new-password" />
             <small>En az 8 karakter, büyük/küçük harf ve rakam içermelidir.</small>
+            @if (passwordError(); as message) {
+              <small class="field-error" role="alert">{{ message }}</small>
+            }
           </div>
         }
       </div>
@@ -637,6 +657,9 @@
         </div>
       </div>
       <small id="validityHint" class="validity-note">Boş bırakılan tarihler için erişim süresi sınırsızdır.</small>
+      @if (validityError(); as message) {
+        <small class="field-error validity-error" role="alert">{{ message }}</small>
+      }
     </section>
 
     @if (selectedUser()) {
@@ -646,13 +669,21 @@
       </div>
     }
 
-    <div class="dialog-actions">
-      <p-button type="button" label="Vazgeç"
-                severity="secondary" [outlined]="true"
-                [disabled]="saving()"
-                (onClick)="dialogVisible.set(false)"></p-button>
-      <p-button type="submit" label="Kaydet" icon="pi pi-check"
-                [loading]="saving()"></p-button>
+    <div class="form-footer">
+      @if (formError()) {
+        <div class="form-save-error" role="alert" aria-live="assertive">
+          <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+          <span>{{ formError() }}</span>
+        </div>
+      }
+      <div class="dialog-actions">
+        <p-button type="button" label="Vazgeç"
+                  severity="secondary" [outlined]="true"
+                  [disabled]="saving()"
+                  (onClick)="dialogVisible.set(false)"></p-button>
+        <p-button type="submit" label="Kaydet" icon="pi pi-check"
+                  [loading]="saving()"></p-button>
+      </div>
     </div>
   </form>
 </p-dialog>
