@@ -47,6 +47,14 @@ Check(f.Db.Saves == 0, "Rejected assignment never saved");
 f = new Fixture { Admin = false };
 await Reject<UserRoleAssignmentForbiddenException>(() => f.Create(create with { RoleIds = [f.AdminRole.Id] }), "Delegated role assigner cannot grant ADMIN");
 f = new Fixture();
+await Reject<UserRoleAssignmentForbiddenException>(() => f.Create(create with { RoleIds = [f.AdminRole.Id] }), "Even ADMIN cannot grant ADMIN to a new account");
+Check(f.Db.Saves == 0, "ADMIN grant rejection does not persist a new account");
+f = new Fixture();
+var userWithStandardRole = f.Existing();
+await Reject<UserRoleAssignmentForbiddenException>(
+    () => f.Update(userWithStandardRole, [f.AdminRole.Id]),
+    "Even ADMIN cannot promote an existing account to ADMIN");
+f = new Fixture();
 f.Editor.IsActive = false;
 await Reject<UserConflictException>(() => f.Create(create with { RoleIds = [f.Editor.Id] }), "Inactive new role rejected");
 f = new Fixture();
@@ -74,6 +82,17 @@ await Reject<DbUpdateConcurrencyException>(() => f.Update(user, [f.Editor.Id], 2
 Check(f.Links.Rows.Count == 1 && f.Db.Saves == 0, "Concurrency conflict preserves memberships");
 f = new Fixture { Admin = false }; user = f.Existing(f.AdminRole);
 await Reject<UserRoleAssignmentForbiddenException>(() => f.Update(user, [f.Standard.Id]), "Delegated assigner cannot remove ADMIN");
+f = new Fixture(); user = f.Existing(f.AdminRole);
+await Reject<UserRoleAssignmentForbiddenException>(
+    () => f.Update(user, [f.Standard.Id]), "Last active ADMIN cannot be removed");
+Check(f.Links.Rows.Single().IsActive && f.Db.Saves == 0, "Last ADMIN rejection preserves role membership");
+f = new Fixture();
+user = f.Existing(f.AdminRole);
+var remainingAdmin = f.Existing(f.AdminRole);
+await f.Update(user, [f.Standard.Id]);
+Check(f.Links.Rows.Any(x => x.UserId == user.Id && x.RoleId == f.AdminRole.Id && !x.IsActive) &&
+      f.Links.Rows.Any(x => x.UserId == remainingAdmin.Id && x.RoleId == f.AdminRole.Id && x.IsActive),
+      "An existing extra ADMIN can be removed while another ADMIN remains");
 f = new Fixture(); user = f.Existing(f.Editor); f.Editor.IsActive = false;
 await f.Update(user, [f.Editor.Id, f.Standard.Id]);
 Check(f.Links.Rows.Count == 2, "Existing inactive role preserved while adding active role");
