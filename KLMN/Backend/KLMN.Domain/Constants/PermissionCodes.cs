@@ -78,6 +78,16 @@ public static class PermissionCodes
         public const string Delete = "Cities.Delete";
     }
 
+    /// <summary>İlçe Tanımları modülünün rol ve kullanıcı izin kodları.</summary>
+    public static class Towns
+    {
+        public const string View = "Towns.View";
+        public const string Query = "Towns.Query";
+        public const string Create = "Towns.Create";
+        public const string Update = "Towns.Update";
+        public const string Delete = "Towns.Delete";
+    }
+
     public static class PurchaseNumbers
     {
         public const string View = "PurchaseNumbers.View";

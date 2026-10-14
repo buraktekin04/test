@@ -203,6 +203,22 @@ Birlik Tanımları:
   CRUD, Excel (Query izni), audit ve xmin güvenliği.
   İKİ YENİ TABLO için migration gereklidir; gerçek DB'de henüz uygulanmadı.
 
+İlçe Tanımları:
+  UI /app/towns; API /api/towns. TownDef : BaseEntity;
+  Code, Name, ExternalCode?, Guid? CityId, int? MernisCode.
+  CityId eski CityDef alanının nullable FK karşılığıdır. Audit,
+  soft-delete, Version (xmin) BaseEntity'dedir; ilçe entity'sinde
+  ValidFrom/ValidTo alanları YOKTUR.
+  İzin: Towns.View/Query/Create/Update/Delete. Modüldeki herhangi
+  bir izin ekran/listeyi açar; yazma yetkileri ayrı, Excel Query ile.
+  Şehir dropdown'u sadece Towns yetkisiyle çalışır. Yeni bağlantılar
+  aktif şehirle kurulur, eski pasif şehir referansı düzenlemede
+  korunabilir. Şehre bağlı ilçe varsa şehir silinemez; aktif ilçe
+  varsa şehir pasifleştirilemez. City->Town FK Restrict'tir.
+  CRUD, filtre, sayfalama, önyüz p-table sıralama, Excel, audit ve
+  xmin koruması eklendi. TownDefs migration GEREKİR; uygulanmadı.
+  Rehber: KLMN/ILCE_TANIMLARI_KURULUM.md.
+
 Alım Numarası Tanımları:
   UI: /app/purchase-numbers
   Backend: PurchaseNumbers.
@@ -336,6 +352,7 @@ Mevcut test projeleri:
   KLMN/Tests/Users.Regression
   KLMN/Tests/MilitaryUnits.Regression
   KLMN/Tests/PurchaseNumbers.Regression
+  KLMN/Tests/Towns.Regression
 
 Son geliştirmeler GitHub üzerinden statik kontrol edilerek gönderildi.
 Bu dosyanın güncellemesi sırasında dotnet build, Angular build,
@@ -356,6 +373,14 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-14 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-14 (bu commit — İlçe Tanımları):
+  TownDef, ayrı CQRS command/query/handler/validator, EF mapping,
+  nullable şehir FK, şehirden ilçe referans korumaları, API, Excel,
+  audit, yetki seed ve Angular İlçe ekranı eklendi.
+  KLMN/Tests/Towns.Regression ve KLMN/ILCE_TANIMLARI_KURULUM.md
+  hazırlandı. Yeni TownDefs için migration ve gerçek PostgreSQL
+  testi gerekiyor. Statik kontroller dışında .NET/Angular derlemesi,
+  otomatik regresyonlar ve tarayıcı testleri bu ortamda çalıştırılmadı.
 - 2026-10-14 (bu commit):
   Ülke Tanımları IsTownRequired alanının kullanıcıya görünen başlığı
   "Doğum Yeri Gerekir" olarak düzenlendi. p-table liste sütunu,
@@ -435,9 +460,10 @@ geliştirme özeti mutlaka güncellenmelidir.
 --------------------------------------------
 Bu liste otomatik görev emri değildir; kullanıcı hangi geliştirmeyle
 devam etmek istediğini yeni mesajında söyleyecek.
-- En yakın teknik kurulum konusu: PurchaseNumberDefs, CountryDefs ve
-  CityDefs tabloları için mevcut gerçek migration zinciriyle migration
-  oluşturma, SQL script inceleme ve test veritabanına uygulama.
+- En yakın teknik kurulum konusu: PurchaseNumberDefs, CountryDefs,
+  CityDefs ve TownDefs tabloları için mevcut migration zinciriyle
+  migration, SQL script inceleme ve test veritabanına uygulama.
+  CityDefs -> TownDefs nullable Restrict FK doğrulanmalı.
 - Yeni alım numarası, kuvvet, birlik, kullanıcı ve rol modüllerinde
   backend/frontend build ve gerçek entegrasyon/kabul testleri.
 - Permission davranışlarının farklı rollerle incelenmesi; özellikle
@@ -485,6 +511,7 @@ devam etmek istediğini yeni mesajında söyleyecek.
   KLMN/KUVVET_KOMUTANLIGI_TANIMLARI_KURULUM.md
   KLMN/ALIM_NUMARASI_TANIMLARI_KURULUM.md
   KLMN/ULKE_SEHIR_TANIMLARI_KURULUM.md
+  KLMN/ILCE_TANIMLARI_KURULUM.md
   KLMN/ADMIN_ROLU_KORUMA.md
   KLMN/AUDIT_LOG_KURULUM.md
   KLMN/EXCEL_EXPORT_KURULUM.md

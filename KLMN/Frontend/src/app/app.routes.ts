@@ -84,6 +84,14 @@ export const routes: Routes = [
             .then(component => component.CountryListComponent)
       },
       {
+        path: 'towns',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'Towns' },
+        loadComponent: () =>
+          import('./features/towns/town-list/town-list.component')
+            .then(component => component.TownListComponent)
+      },
+      {
         path: 'cities',
         canActivate: [permissionGuard],
         data: { permissionModule: 'Cities' },
@@ -96,6 +104,9 @@ export const routes: Routes = [
       },
       {
         path: 'definitions/cities', pathMatch: 'full', redirectTo: 'cities'
+      },
+      {
+        path: 'definitions/towns', pathMatch: 'full', redirectTo: 'towns'
       },
       {
         path: 'purchase-numbers',

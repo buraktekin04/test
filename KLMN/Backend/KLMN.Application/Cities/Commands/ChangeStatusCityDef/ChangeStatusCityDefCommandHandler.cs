@@ -14,6 +14,8 @@ public sealed class ChangeStatusCityDefCommandHandler(IKLMNDbContext db)
         var item = await CityDefRules.LoadForChangeAsync(db, request.Id, request.Version, ct);
         if (request.IsActive)
             await CityDefRules.EnsureCountryAsync(db, item.CountryId, ct);
+        else
+            await CityDefRules.EnsureNoTownsAsync(db, item.Id, deactivate: true, ct);
         item.IsActive = request.IsActive;
         await db.SaveChangesAsync(ct);
         return new CityDefMutationResponse(item.Id, item.Version);

@@ -37,4 +37,18 @@ internal static class CityDefRules
             throw new CityConflictException("Seçilen ülke aktif ve geçerli olmalıdır.");
     }
 
+    /// <summary>
+    /// Bağlı ilçeleri korur: silinen şehir referanssız ilçe bırakmaz,
+    /// aktif ilçe barındıran şehir pasifleştirilemez.
+    /// </summary>
+    public static async Task EnsureNoTownsAsync(
+        IKLMNDbContext db, Guid cityId, bool deactivate, CancellationToken ct)
+    {
+        var linked = await db.TownDefs.IgnoreQueryFilters().AnyAsync(x =>
+            x.CityId == cityId && !x.IsDeleted && (!deactivate || x.IsActive), ct);
+        if (linked)
+            throw new CityConflictException(deactivate
+                ? "Aktif ilçesi bulunan şehir pasifleştirilemez."
+                : "Bağlı ilçesi bulunan şehir silinemez.");
+    }
 }

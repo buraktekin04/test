@@ -68,6 +68,9 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     public DbSet<CountryDef> CountryDefs => Set<CountryDef>();
     public DbSet<CityDef> CityDefs => Set<CityDef>();
 
+    /// <summary>İlçe Tanımları DbSet; EF Core entity ilişkilerini içerir.</summary>
+    public DbSet<TownDef> TownDefs => Set<TownDef>();
+
     public DbSet<MilitaryUnitDef> MilitaryUnitDefs => Set<MilitaryUnitDef>();
 
     /// <summary>

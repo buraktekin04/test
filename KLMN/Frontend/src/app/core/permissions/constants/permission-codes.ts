@@ -34,6 +34,11 @@ export const PermissionCodes = {
     View: 'Countries.View', Query: 'Countries.Query',
     Create: 'Countries.Create', Update: 'Countries.Update', Delete: 'Countries.Delete'
   },
+  /** İlçe Tanımları için UI izin kodları. */
+  Towns: {
+    View: 'Towns.View', Query: 'Towns.Query', Create: 'Towns.Create',
+    Update: 'Towns.Update', Delete: 'Towns.Delete'
+  },
   Cities: {
     View: 'Cities.View', Query: 'Cities.Query',
     Create: 'Cities.Create', Update: 'Cities.Update', Delete: 'Cities.Delete'

@@ -33,6 +33,9 @@ public interface IKLMNDbContext
     DbSet<CountryDef> CountryDefs { get; }
     DbSet<CityDef> CityDefs { get; }
 
+    /// <summary>İlçe tanımlarını sorgulama/değiştirme veri kümesi.</summary>
+    DbSet<TownDef> TownDefs { get; }
+
     DbSet<MilitaryUnitDef> MilitaryUnitDefs { get; }
 
     /// <summary>

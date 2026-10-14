@@ -54,6 +54,12 @@ export class NavigationService {
           permissionModule: 'Cities'
         },
         {
+          label: 'İlçe Tanımları',
+          icon: 'pi pi-map',
+          route: '/app/towns',
+          permissionModule: 'Towns'
+        },
+        {
           label: 'Alım Numarası Tanımları',
           icon: 'pi pi-tags',
           route: '/app/purchase-numbers',
