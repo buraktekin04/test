@@ -113,18 +113,19 @@
 
       <div class="roles-table-scroll" tabindex="0" role="region"
            aria-label="Rol tablosu, yatay kaydırılabilir">
-        <p-table [value]="roles()" [loading]="loading()"
+        <p-table [lazy]="true" [lazyLoadOnInit]="false"
+      [sortField]="sortField()" [sortOrder]="sortOrder()" (onLazyLoad)="onSort($event)" [value]="roles()" [loading]="loading()"
                  [tableStyle]="{ 'min-width': '1000px', 'width': '100%' }">
           <ng-template pTemplate="header">
             <tr>
-              <th>Rol Adı</th>
-              <th>Rol Kodu</th>
-              <th>Açıklama</th>
-              <th>Tip</th>
-              <th>Durum</th>
-              <th>Kullanıcı</th>
-              <th>Yetki</th>
-              <th>Oluşturulma</th>
+              <th pSortableColumn="name">Rol Adı <p-sortIcon field="name" /></th>
+              <th pSortableColumn="code">Rol Kodu <p-sortIcon field="code" /></th>
+              <th pSortableColumn="description">Açıklama <p-sortIcon field="description" /></th>
+              <th pSortableColumn="isSystemRole">Tip <p-sortIcon field="isSystemRole" /></th>
+              <th pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
+              <th pSortableColumn="userCount">Kullanıcı <p-sortIcon field="userCount" /></th>
+              <th pSortableColumn="permissionCount">Yetki <p-sortIcon field="permissionCount" /></th>
+              <th pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
               @if (canUpdate() || canDelete() || canManagePermissions() || canViewAudit()) {
                 <th>İşlemler</th>
               }

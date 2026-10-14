@@ -3,6 +3,8 @@
  * sayfalama kriterleridir. Excel aktarımı da bu kriterleri kullanır.
  */
 export interface UserQuery {
+  sortField: string;
+  sortOrder: number;
   /** Kullanıcılarda serbest metin aramasıdır. */
   search?: string;
   /** Pasif kullanıcıları da arama kapsamına alır. */

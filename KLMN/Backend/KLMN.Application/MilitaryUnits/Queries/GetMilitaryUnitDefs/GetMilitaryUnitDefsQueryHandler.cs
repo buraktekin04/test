@@ -36,8 +36,7 @@ public sealed class GetMilitaryUnitDefsQueryHandler(IKLMNDbContext db)
             query = query.Where(x => x.ConnectedTopUnity == null);
 
         var count = await query.CountAsync(ct);
-        var items = await query
-            .OrderBy(x => x.Name).ThenBy(x => x.Code)
+        var items = await GetMilitaryUnitDefsSorting.Definition.Apply(query, request.SortField, request.SortOrder)
             .Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize)
             .Select(MilitaryUnitDefResponse.Projection)
             .ToListAsync(ct);

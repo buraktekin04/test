@@ -11,7 +11,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
-import { TableModule } from 'primeng/table';
+import { TableModule, TableLazyLoadEvent } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 
 import { PermissionCodes } from '../../../core/permissions/constants/permission-codes';
@@ -70,6 +70,20 @@ export class RoleListComponent implements OnInit {
   /** Sunucu tarafında filtrelenmiş toplam rol adedi. */
   public readonly totalCount = signal(0);
   /** Bir tabanlı sayfa numarası. */
+  public readonly sortField = signal('name');
+  public readonly sortOrder = signal(1);
+
+  /** Sunucu sıralaması değiştiğinde ilk sayfadan başlar. */
+  public onSort(event: TableLazyLoadEvent): void {
+    const field = typeof event.sortField === 'string' ? event.sortField : 'name';
+    const order = event.sortOrder === -1 ? -1 : 1;
+    if (field === this.sortField() && order === this.sortOrder()) return;
+    this.sortField.set(field);
+    this.sortOrder.set(order);
+    this.pageNumber.set(1);
+    this.loadRoles();
+  }
+
   public readonly pageNumber = signal(1);
   /** Sayfa başına görüntülenen rol adedi. */
   public readonly pageSize = signal(20);
@@ -262,6 +276,8 @@ export class RoleListComponent implements OnInit {
     return {
       search: base.search,
       includeInactive: base.includeInactive || filters.isActive === false,
+      sortField: this.sortField(),
+      sortOrder: this.sortOrder(),
       pageNumber: this.pageNumber(),
       pageSize: this.pageSize(),
       isActive: filters.isActive,
@@ -270,17 +286,22 @@ export class RoleListComponent implements OnInit {
   }
 
   /** Eşzamanlı silme veya güncellemeler sonrası listeyi yeniler. */
+  private listRequestVersion = 0;
+
   public loadRoles(): void {
+    const version = ++this.listRequestVersion;
     this.loading.set(true);
     this.errorMessage.set(null);
     this.roleService.list(this.buildQuery())
-      .pipe(finalize(() => this.loading.set(false)))
+      .pipe(finalize(() => { if (version === this.listRequestVersion) this.loading.set(false); }))
       .subscribe({
         next: data => {
+        if (version !== this.listRequestVersion) return;
           this.roles.set([...data.items]);
           this.totalCount.set(data.totalCount);
         },
         error: (error: HttpErrorResponse) => {
+        if (version !== this.listRequestVersion) return;
           this.roles.set([]);
           this.totalCount.set(0);
           this.errorMessage.set(this.getErrorMessage(error));

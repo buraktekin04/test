@@ -37,10 +37,7 @@ public sealed class GetRolesQueryHandler(IKLMNDbContext dbContext)
             roles = roles.Where(x => x.IsSystemRole == request.IsSystemRole.Value);
 
         var count = await roles.CountAsync(cancellationToken);
-        var items = await roles
-            .OrderBy(x => x.IsSystemRole ? 0 : 1)
-            .ThenBy(x => x.Name)
-            .ThenBy(x => x.Code)
+        var items = await GetRolesSorting.Definition.Apply(roles, request.SortField, request.SortOrder)
             .Skip((request.PageNumber - 1) * request.PageSize)
             .Take(request.PageSize)
             .Select(RoleResponse.Projection)

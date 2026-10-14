@@ -101,20 +101,22 @@
     }
 
     <div class="table-scroll" role="region" aria-label="Birlik tablosu" tabindex="0">
-      <p-table [value]="units()" [loading]="loading()"
+      <p-table [lazy]="true" [lazyLoadOnInit]="false"
+      [sortField]="sortField()" [sortOrder]="sortOrder()" (onLazyLoad)="onSort($event)" [value]="units()" [loading]="loading()"
                [tableStyle]="{ 'min-width': '980px', 'width': '100%' }">
         <ng-template pTemplate="header">
           <tr>
-            <th>Birlik Adı</th>
-            <th>Birlik Kodu</th>
-            <th>Harici Kod</th>
-            <th>Kuvvet Komutanlığı</th>
-            <th>Üst Birlik</th>
-            <th>Durum</th>
-            <th>Kullanıcı</th>
-            <th>Alt Birlik</th>
-            <th>Geçerlilik</th>
-            <th>Oluşturulma</th>
+            <th pSortableColumn="name">Birlik Adı <p-sortIcon field="name" /></th>
+            <th pSortableColumn="code">Birlik Kodu <p-sortIcon field="code" /></th>
+            <th pSortableColumn="externalCode">Harici Kod <p-sortIcon field="externalCode" /></th>
+            <th pSortableColumn="forcesCommandName">Kuvvet Komutanlığı <p-sortIcon field="forcesCommandName" /></th>
+            <th pSortableColumn="connectedTopUnitName">Üst Birlik <p-sortIcon field="connectedTopUnitName" /></th>
+            <th pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
+            <th pSortableColumn="userCount">Kullanıcı <p-sortIcon field="userCount" /></th>
+            <th pSortableColumn="childCount">Alt Birlik <p-sortIcon field="childCount" /></th>
+            <th pSortableColumn="validFrom">Başlangıç <p-sortIcon field="validFrom" /></th>
+            <th pSortableColumn="validTo">Bitiş <p-sortIcon field="validTo" /></th>
+            <th pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
             @if (canUpdate() || canDelete() || canViewAudit()) {
               <th>İşlemler</th>
             }
@@ -148,8 +150,10 @@
             <td>{{ unit.userCount }}</td>
             <td>{{ unit.childCount }}</td>
             <td class="validity-cell">
-              <span>{{ unit.validFrom ? (unit.validFrom | date:'dd.MM.yyyy HH:mm') : 'Başlangıç sınırı yok' }}</span>
-              <span>{{ unit.validTo ? (unit.validTo | date:'dd.MM.yyyy HH:mm') : 'Süresiz' }}</span>
+              {{ unit.validFrom ? (unit.validFrom | date:'dd.MM.yyyy HH:mm') : 'Başlangıç sınırı yok' }}
+            </td>
+            <td class="validity-cell">
+              {{ unit.validTo ? (unit.validTo | date:'dd.MM.yyyy HH:mm') : 'Süresiz' }}
             </td>
             <td>{{ unit.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
             @if (canUpdate() || canDelete() || canViewAudit()) {
@@ -186,7 +190,7 @@
         </ng-template>
         <ng-template pTemplate="emptymessage">
           <tr>
-            <td [attr.colspan]="canUpdate() || canDelete() || canViewAudit() ? 11 : 10"
+            <td [attr.colspan]="canUpdate() || canDelete() || canViewAudit() ? 12 : 11"
                 class="empty-table">Filtreye uygun birlik bulunamadı.</td>
           </tr>
         </ng-template>

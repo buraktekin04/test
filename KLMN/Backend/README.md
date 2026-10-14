@@ -160,3 +160,9 @@ dotnet run --project KLMN/Tests/Users.Regression/Users.Regression.csproj
 ```
 
 Bu kontroller async LINQ test doubles kullanır; PostgreSQL transaction/xmin ve HTTP middleware entegrasyon testi değildir.
+
+## Tanım listelerinde sıralama
+
+Kullanıcı, Rol, Birlik ve Kuvvet Komutanlığı listeleri `sortField` ve `sortOrder` (artan: `1`, azalan: `-1`) parametrelerini kabul eder. Kolon başlığına tıklamak yönü değiştirir ve ilk sayfaya döner. İzin verilen kolonlar her CQRS sorgusunun `Sorting` sınıfında tanımlıdır. Sıralama SQL üzerinde `Skip/Take` öncesinde uygulanır; eşit değerler `Id` ile sıralanır. Excel aynı sıralama parametrelerini kullanır. Kullanıcıların çoklu rol kolonu ilk alfabetik etkin rol koduna göre sıralanır.
+
+`dotnet run --project KLMN/Tests/Sorting.Regression/Sorting.Regression.csproj` komutu sıralama yönlerini, sabit sayfalamayı, kolon doğrulamasını ve Npgsql SQL üretimini kontrol eder; canlı veritabanına bağlanmaz.

@@ -21,6 +21,8 @@ export class MilitaryUnitService {
     let params = new HttpParams()
       .set('pageNumber', query.pageNumber)
       .set('pageSize', query.pageSize)
+      .set('sortField', query.sortField)
+      .set('sortOrder', query.sortOrder)
       .set('includeInactive', query.includeInactive);
 
     if (query.search.trim()) params = params.set('search', query.search.trim());

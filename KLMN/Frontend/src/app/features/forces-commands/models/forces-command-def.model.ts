@@ -7,6 +7,8 @@ export interface ForcesCommandDefFields {
   name: string; code: string; validFrom: string | null; validTo: string | null;
 }
 export interface ForcesCommandDefQuery {
+  sortField: string;
+  sortOrder: number;
   search: string; includeInactive: boolean; isActive: boolean | null;
   pageNumber: number; pageSize: number;
 }

@@ -24,6 +24,8 @@ export interface RoleItem {
 
 /** Rol listeleme ve Excel'in ortak arama/sayfalama parametreleridir. */
 export interface RoleQuery {
+  sortField: string;
+  sortOrder: number;
   search: string;
   includeInactive: boolean;
   pageNumber: number;

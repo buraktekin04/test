@@ -10,5 +10,7 @@ public sealed record GetForcesCommandDefsQuery(
     bool IncludeInactive = false,
     int PageNumber = 1,
     int PageSize = 20,
-    bool? IsActive = null)
+    bool? IsActive = null,
+    string SortField = "name",
+    int SortOrder = 1)
     : IRequest<PagedResult<ForcesCommandDefResponse>>;

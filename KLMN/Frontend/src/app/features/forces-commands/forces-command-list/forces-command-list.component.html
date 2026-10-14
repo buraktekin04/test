@@ -95,16 +95,18 @@
     }
 
     <div class="table-scroll" role="region" aria-label="Kuvvet komutanlıkları tablosu" tabindex="0">
-      <p-table [value]="units()" [loading]="loading()"
+      <p-table [lazy]="true" [lazyLoadOnInit]="false"
+      [sortField]="sortField()" [sortOrder]="sortOrder()" (onLazyLoad)="onSort($event)" [value]="units()" [loading]="loading()"
                [tableStyle]="{ 'min-width': '980px', 'width': '100%' }">
         <ng-template pTemplate="header">
           <tr>
-            <th>Kuvvet Komutanlığı</th>
-            <th>Kod</th>
-            <th>Durum</th>
-            <th>Bağlı Birlik</th>
-            <th>Geçerlilik</th>
-            <th>Oluşturulma</th>
+            <th pSortableColumn="name">Kuvvet Komutanlığı <p-sortIcon field="name" /></th>
+            <th pSortableColumn="code">Kod <p-sortIcon field="code" /></th>
+            <th pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
+            <th pSortableColumn="militaryUnitCount">Bağlı Birlik <p-sortIcon field="militaryUnitCount" /></th>
+            <th pSortableColumn="validFrom">Başlangıç <p-sortIcon field="validFrom" /></th>
+            <th pSortableColumn="validTo">Bitiş <p-sortIcon field="validTo" /></th>
+            <th pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
             @if (canUpdate() || canDelete() || canViewAudit()) {
               <th>İşlemler</th>
             }
@@ -125,8 +127,10 @@
             </td>
             <td>{{ unit.militaryUnitCount }}</td>
             <td class="validity-cell">
-              <span>{{ unit.validFrom ? (unit.validFrom | date:'dd.MM.yyyy HH:mm') : 'Başlangıç sınırı yok' }}</span>
-              <span>{{ unit.validTo ? (unit.validTo | date:'dd.MM.yyyy HH:mm') : 'Süresiz' }}</span>
+              {{ unit.validFrom ? (unit.validFrom | date:'dd.MM.yyyy HH:mm') : 'Başlangıç sınırı yok' }}
+            </td>
+            <td class="validity-cell">
+              {{ unit.validTo ? (unit.validTo | date:'dd.MM.yyyy HH:mm') : 'Süresiz' }}
             </td>
             <td>{{ unit.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
             @if (canUpdate() || canDelete() || canViewAudit()) {
@@ -163,7 +167,7 @@
         </ng-template>
         <ng-template pTemplate="emptymessage">
           <tr>
-            <td [attr.colspan]="canUpdate() || canDelete() || canViewAudit() ? 7 : 6"
+            <td [attr.colspan]="canUpdate() || canDelete() || canViewAudit() ? 8 : 7"
                 class="empty-table">Filtreye uygun kuvvet komutanlığı bulunamadı.</td>
           </tr>
         </ng-template>

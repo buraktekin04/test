@@ -11,7 +11,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
-import { TableModule } from 'primeng/table';
+import { TableModule, TableLazyLoadEvent } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { SelectModule } from 'primeng/select';
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -139,6 +139,20 @@ export class UserListComponent implements OnInit {
   public readonly totalCount = signal(0);
 
   /** Bir tabanlı sayfalama numarasıdır. */
+  public readonly sortField = signal('fullName');
+  public readonly sortOrder = signal(1);
+
+  /** Sunucu sıralaması değiştiğinde ilk sayfadan başlar. */
+  public onSort(event: TableLazyLoadEvent): void {
+    const field = typeof event.sortField === 'string' ? event.sortField : 'fullName';
+    const order = event.sortOrder === -1 ? -1 : 1;
+    if (field === this.sortField() && order === this.sortOrder()) return;
+    this.sortField.set(field);
+    this.sortOrder.set(order);
+    this.pageNumber.set(1);
+    this.loadUsers();
+  }
+
   public readonly pageNumber = signal(1);
 
   /** Sayfa başına kullanıcı adedidir. */
@@ -358,6 +372,8 @@ export class UserListComponent implements OnInit {
       search: filters.search,
       // Pasif filtresi tek başına seçildiğinde de pasif kayıtları DB sorgusuna alır.
       includeInactive: filters.includeInactive || columns.isActive === false,
+      sortField: this.sortField(),
+      sortOrder: this.sortOrder(),
       pageNumber: this.pageNumber(),
       pageSize: this.pageSize(),
       fullName: columns.fullName,
@@ -375,18 +391,23 @@ export class UserListComponent implements OnInit {
   }
 
   /** Güncel filtrelerle API'den sayfalanmış kullanıcı listesini yükler. */
+  private listRequestVersion = 0;
+
   public loadUsers(): void {
+    const version = ++this.listRequestVersion;
     this.loading.set(true);
     this.errorMessage.set(null);
 
     this.userService.getUsers(this.buildUserQuery())
-    .pipe(finalize(() => this.loading.set(false)))
+    .pipe(finalize(() => { if (version === this.listRequestVersion) this.loading.set(false); }))
     .subscribe({
       next: response => {
+        if (version !== this.listRequestVersion) return;
         this.users.set(response.items);
         this.totalCount.set(response.totalCount);
       },
       error: (error: HttpErrorResponse) => {
+        if (version !== this.listRequestVersion) return;
         this.users.set([]);
         this.totalCount.set(0);
         this.errorMessage.set(this.getErrorMessage(error));

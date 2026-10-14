@@ -11,5 +11,7 @@ public sealed record GetMilitaryUnitDefsQuery(
     int PageNumber = 1,
     int PageSize = 20,
     bool? IsActive = null,
-    bool? RootOnly = null)
+    bool? RootOnly = null,
+    string SortField = "name",
+    int SortOrder = 1)
     : IRequest<PagedResult<MilitaryUnitDefResponse>>;

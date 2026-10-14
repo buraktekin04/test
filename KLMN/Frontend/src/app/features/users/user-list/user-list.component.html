@@ -187,22 +187,23 @@
 
     <!-- Yalnızca tablo yatay kayar; ekranın geri kalanı yerinde kalır. -->
     <div class="users-table-scroll" tabindex="0" role="region" aria-label="Kullanıcılar tablosu, yatay kaydırılabilir">
-    <p-table
+    <p-table [lazy]="true" [lazyLoadOnInit]="false"
+      [sortField]="sortField()" [sortOrder]="sortOrder()" (onLazyLoad)="onSort($event)"
       [value]="users()"
       [loading]="loading()"
       [tableStyle]="{ 'min-width': '1330px', 'width': '100%' }">
       <ng-template pTemplate="header">
         <tr>
-          <th>Kullanıcı</th>
-          <th>Kullanıcı Adı</th>
-          <th>E-posta</th>
-          <th>Görev Yeri</th>
-          <th>Roller</th>
-          <th>Durum</th>
-          <th>Mesai Dışı</th>
-          <th>Başlangıç</th>
-          <th>Bitiş</th>
-          <th>Oluşturulma</th>
+          <th pSortableColumn="fullName">Kullanıcı <p-sortIcon field="fullName" /></th>
+          <th pSortableColumn="userName">Kullanıcı Adı <p-sortIcon field="userName" /></th>
+          <th pSortableColumn="email">E-posta <p-sortIcon field="email" /></th>
+          <th pSortableColumn="militaryUnit">Görev Yeri <p-sortIcon field="militaryUnit" /></th>
+          <th pSortableColumn="roles" title="İlk alfabetik rol koduna göre sıralar">Roller <p-sortIcon field="roles" /></th>
+          <th pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
+          <th pSortableColumn="clockLimit">Mesai Dışı <p-sortIcon field="clockLimit" /></th>
+          <th pSortableColumn="validFrom">Başlangıç <p-sortIcon field="validFrom" /></th>
+          <th pSortableColumn="validTo">Bitiş <p-sortIcon field="validTo" /></th>
+          <th pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
           @if (canUpdate() || canDelete() || canActivate() || canViewDocuments() || canViewAudit()) {
             <th class="actions-column">İşlemler</th>
           }

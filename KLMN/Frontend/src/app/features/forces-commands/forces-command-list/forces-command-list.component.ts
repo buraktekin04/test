@@ -13,7 +13,7 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { SelectModule } from 'primeng/select';
-import { TableModule } from 'primeng/table';
+import { TableModule, TableLazyLoadEvent } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 
 import { PermissionCodes } from '../../../core/permissions/constants/permission-codes';
@@ -58,6 +58,20 @@ export class ForcesCommandListComponent implements OnInit {
 
   public readonly units = signal<ForcesCommandDefItem[]>([]);
   public readonly totalCount = signal(0);
+  public readonly sortField = signal('name');
+  public readonly sortOrder = signal(1);
+
+  /** Sunucu sıralaması değiştiğinde ilk sayfadan başlar. */
+  public onSort(event: TableLazyLoadEvent): void {
+    const field = typeof event.sortField === 'string' ? event.sortField : 'name';
+    const order = event.sortOrder === -1 ? -1 : 1;
+    if (field === this.sortField() && order === this.sortOrder()) return;
+    this.sortField.set(field);
+    this.sortOrder.set(order);
+    this.pageNumber.set(1);
+    this.loadUnits();
+  }
+
   public readonly pageNumber = signal(1);
   public readonly pageSize = signal(20);
   public readonly loading = signal(false);
@@ -123,6 +137,8 @@ export class ForcesCommandListComponent implements OnInit {
       search: form.search,
       includeInactive: form.includeInactive || columns.isActive === false,
       isActive: columns.isActive,
+      sortField: this.sortField(),
+      sortOrder: this.sortOrder(),
       pageNumber: this.pageNumber(),
       pageSize: this.pageSize()
     };
