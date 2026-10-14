@@ -15,6 +15,7 @@ using KLMN.Application.Users.Queries.GetUsers;
 using KLMN.Application.Users.Responses;
 using KLMN.Domain.Constants;
 using MediatR;
+using KLMN.Application.Users.Queries.GetUserRoleOptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KLMN.Api.Controllers;
@@ -123,6 +124,12 @@ public sealed class UsersController(ISender sender, IExcelExportService excelExp
         return Ok(result);
     }
 
+    /// <summary>Kullanıcı formunda atanabilen etkin rol seçeneklerini getirir.</summary>
+    [HttpGet("role-options")]
+    [HasPermission(PermissionCodes.Users.AssignRole)]
+    public async Task<IActionResult> GetRoleOptions(CancellationToken cancellationToken) =>
+        Ok(await sender.Send(new GetUserRoleOptionsQuery(), cancellationToken));
+
     /// <summary>Seçilen kullanıcıyı düzenleme ekranı için getirir.</summary>
     [HttpGet("{id:guid}")]
     [HasPermission(PermissionCodes.Users.Query)]
@@ -131,7 +138,7 @@ public sealed class UsersController(ISender sender, IExcelExportService excelExp
         [FromRoute] Guid id, CancellationToken cancellationToken) =>
         Ok(await sender.Send(new GetUserByIdQuery(id), cancellationToken));
 
-    /// <summary>Parolası hash'lenmiş standart rol sahibi yeni kullanıcı oluşturur.</summary>
+    /// <summary>Parolası hash'lenmiş, seçilen rollerle yeni kullanıcı oluşturur.</summary>
     [HttpPost]
     [HasPermission(PermissionCodes.Users.Create)]
     [ProducesResponseType(typeof(UserMutationResponse), StatusCodes.Status201Created)]

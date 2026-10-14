@@ -22,6 +22,9 @@ public sealed record CreateUserCommand : IRequest<UserMutationResponse>
     /// Mevcut şemayla uyumluluk için boş olabilir; rol ve yetki ataması değildir.
     /// </summary>
     public Guid? MilitaryUnitDefId { get; init; }
+
+    /// <summary>Null: oluştururken standart rol; düzenlerken mevcut rolleri korur.</summary>
+    public IReadOnlyCollection<Guid>? RoleIds { get; init; }
     /// <summary>Yalnızca bu istekte alınan, veritabanına açık yazılmayan ilk paroladır.</summary>
     public required string Password { get; init; }
 

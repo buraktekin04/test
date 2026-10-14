@@ -1,3 +1,4 @@
+import { UserRoleOption } from '../models/user-role-option.model';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -89,7 +90,12 @@ export class UserService {
     );
   }
 
-  /** Kullanıcının son düzenlenmiş profilini ve xmin versiyonunu okur. */
+  /** Atama yetkisine uygun aktif rol seçeneklerini getirir. */
+  public getRoleOptions(): Observable<UserRoleOption[]> {
+    return this.http.get<UserRoleOption[]>(`${this.apiBaseUrl}/users/role-options`);
+  }
+
+  /** Kullanıcının profilini, mevcut rol atamalarını ve xmin versiyonunu okur. */
   public getUserById(id: string): Observable<UserListItem> {
     return this.http.get<UserListItem>(`${this.apiBaseUrl}/users/${id}`);
   }

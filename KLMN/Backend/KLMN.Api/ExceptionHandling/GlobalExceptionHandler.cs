@@ -117,6 +117,14 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
                     Detail = exception.Message
                 },
 
+            UserRoleAssignmentForbiddenException =>
+                new ProblemDetails
+                {
+                    Status = StatusCodes.Status403Forbidden,
+                    Title = "Rol atama işlemi reddedildi.",
+                    Detail = exception.Message
+                },
+
             UserConflictException =>
                 new ProblemDetails
                 {

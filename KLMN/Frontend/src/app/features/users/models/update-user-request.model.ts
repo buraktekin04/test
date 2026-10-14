@@ -1,5 +1,5 @@
 /**
- * Kullanıcı profilini parola/rol değiştirmeden güncelleme isteğidir.
+ * Kullanıcı profilini ve yetki dahilindeki rollerini parola değiştirmeden güncelleme isteğidir.
  * PostgreSQL xmin versiyonu değişen kayıtları korur.
  */
 export interface UpdateUserRequest {
@@ -22,6 +22,8 @@ export interface UpdateUserRequest {
    * İsteğe bağlıdır ve herhangi bir rol/permission ataması yapmaz.
    */
   militaryUnitDefId: string | null;
+  /** Gönderilmezse varsayılan rol / mevcut atamalar korunur. */
+  roleIds?: string[];
   /** true: mesai dışı erişim kısıtlıdır; false: mesai dışı izinlidir. */
   clockLimit: boolean;
   /** Hesabın manuel olarak kilitlenip kilitlenmediği; mevcut alan güncellenir. */

@@ -551,6 +551,23 @@
             <small>Aktif birlik kaydı bulunamadı.</small>
           }
         </div>
+        <div class="form-field form-field-full">
+          <label for="userRoleIds">Roller</label>
+          @if (canAssignRoles()) {
+            <p-multiselect inputId="userRoleIds" formControlName="roleIds"
+              [options]="roleOptions()" optionLabel="label" optionValue="id"
+              placeholder="Rol seçiniz" display="chip" [filter]="true"
+              [showToggleAll]="false" [loading]="roleLoading()" [fluid]="true" appendTo="body" />
+            <small>Birden fazla rol seçebilirsiniz. Yetkiler seçilen rollerden gelir.</small>
+            @if (roleLoadError()) {
+              <small class="military-unit-error">{{ roleLoadError() }}</small>
+              <p-button label="Yeniden Dene" [text]="true" size="small" (onClick)="loadRoleOptions()" />
+            }
+          } @else {
+            <small>{{ selectedUser() ? (selectedUser()!.roles.join(', ') || 'Atanmış aktif rol yok') : 'Standart Kullanıcı rolü otomatik atanır.' }}</small>
+            <small>Rol değişikliği için yetkili başka bir kullanıcı işlem yapmalıdır.</small>
+          }
+        </div>
         @if (!selectedUser()) {
           <div class="form-field form-field-full">
             <label for="newUserPassword">İlk Parola <span class="required-mark">*</span></label>

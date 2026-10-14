@@ -18,6 +18,8 @@ export interface CreateUserRequest {
    * İsteğe bağlıdır ve herhangi bir rol/permission ataması yapmaz.
    */
   militaryUnitDefId: string | null;
+  /** Gönderilmezse varsayılan rol / mevcut atamalar korunur. */
+  roleIds?: string[];
   /** En az sekiz karakter ve büyük/küçük harf ile rakam içeren parola. */
   password: string;
   /** true: mesai dışı erişim kısıtlıdır; false: mesai dışı izinlidir. */

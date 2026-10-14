@@ -5,7 +5,7 @@ namespace KLMN.Application.Users.Commands.UpdateUser;
 
 /// <summary>
 /// Kullanıcı profilini eşzamanlılık versiyonu ile güncelleme isteğidir.
-/// Parola, rol ve özel yetkiler bu komutla değiştirilemez.
+/// Roller atama yetkisiyle değiştirilebilir; parola ve özel yetkiler korunur.
 /// </summary>
 public sealed record UpdateUserCommand : IRequest<UserMutationResponse>
 {
@@ -29,6 +29,9 @@ public sealed record UpdateUserCommand : IRequest<UserMutationResponse>
     /// Mevcut şemayla uyumluluk için boş olabilir; rol ve yetki ataması değildir.
     /// </summary>
     public Guid? MilitaryUnitDefId { get; init; }
+
+    /// <summary>Null: oluştururken standart rol; düzenlerken mevcut rolleri korur.</summary>
+    public IReadOnlyCollection<Guid>? RoleIds { get; init; }
 
     /// <summary>true ise mesai dışı giriş engellenir, false ise mesai dışı erişime izin verilir.</summary>
     public bool ClockLimit { get; init; } = true;

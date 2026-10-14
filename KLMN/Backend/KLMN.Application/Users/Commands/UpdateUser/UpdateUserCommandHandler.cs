@@ -4,6 +4,8 @@ using KLMN.Domain.Constants;
 using KLMN.Application.Users.Exceptions;
 using KLMN.Application.Users.Responses;
 using MediatR;
+using KLMN.Application.Users.Commands.Common;
+using KLMN.Application.Common.Interfaces.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace KLMN.Application.Users.Commands.UpdateUser;
@@ -14,7 +16,9 @@ namespace KLMN.Application.Users.Commands.UpdateUser;
 /// </summary>
 public sealed class UpdateUserCommandHandler(
     IKLMNDbContext dbContext,
-    ICurrentUserService currentUserService)
+    ICurrentUserService currentUserService,
+    IPermissionChecker permissionChecker,
+    IUserAuthorizationService authorizationService)
     : IRequestHandler<UpdateUserCommand, UserMutationResponse>
 {
     /// <summary>Mevcut versiyonu doğrular; birden çok kullanıcının çakışmasını 409'a dönüştürür.</summary>
@@ -112,6 +116,9 @@ public sealed class UpdateUserCommandHandler(
         user.NormalizedEmail = normalizedEmail;
         user.PhoneNumber = string.IsNullOrWhiteSpace(request.PhoneNumber)
             ? null : request.PhoneNumber.Trim();
+
+        await UserRoleAssignment.ApplyAsync(dbContext, currentUserService, permissionChecker,
+            authorizationService, user, request.RoleIds, false, cancellationToken);
 
         // SaveChangesInterceptor UpdatedDate ve UpdatedBy bilgisini doldurur.
         await dbContext.SaveChangesAsync(cancellationToken);

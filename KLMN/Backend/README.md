@@ -145,3 +145,18 @@ Kontrol sırası:
 > GitHub'daki örnek projenin namespace ve cookie öneki `KLMN`'dir.
 > Visual Studio'da **MSKBS** çalıştırıyorsanız, güncel GitHub kodunu
 > yerel projeye birebir uyarlamadan sorunun çözüldüğü varsayılamaz.
+
+
+## Kullanıcı formunda rol atama
+
+Kullanıcı Tanımları > Yeni Kullanıcı / Düzenle formundaki **Roller** alanı birden fazla rol seçimini destekler. Seçenekler `GET /api/users/role-options` üzerinden alınır. Form ve endpoint mevcut `Users.AssignRole` iznini kullanır; ayrıca oluşturma/düzenleme izni gerekir. ADMIN atama/kaldırma yalnızca ADMIN tarafından yapılabilir; kullanıcı kendi rollerini değiştiremez.
+
+Create/Update isteklerindeki isteğe bağlı `roleIds` alanı gönderilmezse oluştururken `STANDARD_USER` atanır, düzenlerken mevcut roller korunur. Gönderilen liste boş olamaz. Yeni atanan roller aktif ve silinmemiş olmalıdır. Kullanıcı ve rol bağlantıları tek `SaveChangesAsync` işleminde kaydedilir; rol değişikliği security stamp'i değiştirerek eski access token'ları geçersiz kılar ve kullanıcı `xmin` kontrolünü korur. Mevcut `UserRoles` tablosu kullanılır; bu değişiklik için migration gerekmez.
+
+Handler ve doğrulama regresyon kontrolleri:
+
+```bash
+dotnet run --project KLMN/Tests/Users.Regression/Users.Regression.csproj
+```
+
+Bu kontroller async LINQ test doubles kullanır; PostgreSQL transaction/xmin ve HTTP middleware entegrasyon testi değildir.

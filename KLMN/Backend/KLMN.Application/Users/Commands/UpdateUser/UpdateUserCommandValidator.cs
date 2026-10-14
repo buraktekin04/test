@@ -11,6 +11,10 @@ public sealed class UpdateUserCommandValidator : AbstractValidator<UpdateUserCom
     {
         RuleFor(x => x.Id).NotEmpty();
         RuleFor(x => x.Version).GreaterThan(0u);
+        RuleFor(x => x.RoleIds)
+            .Must(ids => ids is null || (ids.Count > 0 && ids.Count <= 100 &&
+                ids.All(id => id != Guid.Empty) && ids.Distinct().Count() == ids.Count))
+            .WithMessage("En az bir rol seçiniz; roller benzersiz ve geçerli olmalıdır (en fazla 100).");
         RuleFor(x => x.UserName).NotEmpty().MaximumLength(100);
         RuleFor(x => x.FirstName).NotEmpty().MaximumLength(100);
         RuleFor(x => x.LastName).NotEmpty().MaximumLength(100);

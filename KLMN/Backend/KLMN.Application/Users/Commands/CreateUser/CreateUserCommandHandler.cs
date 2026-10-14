@@ -5,18 +5,23 @@ using KLMN.Application.Users.Responses;
 using KLMN.Domain.Constants;
 using KLMN.Domain.Entities.Identity;
 using MediatR;
+using KLMN.Application.Users.Commands.Common;
+using KLMN.Application.Common.Interfaces.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace KLMN.Application.Users.Commands.CreateUser;
 
 /// <summary>
 /// Benzersiz kullanıcı oluşturur; ilk parolayı hash'ler ve
-/// önceden seed edilmiş STANDARD_USER rolünü varsayılan atar.
+/// seçilen rolleri veya seçim gönderilmezse STANDARD_USER rolünü atar.
 /// </summary>
 public sealed class CreateUserCommandHandler(
     IKLMNDbContext dbContext,
     IPasswordHasherService passwordHasherService,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    ICurrentUserService currentUserService,
+    IPermissionChecker permissionChecker,
+    IUserAuthorizationService authorizationService)
     : IRequestHandler<CreateUserCommand, UserMutationResponse>
 {
     /// <summary>İlk kullanıcıyı yalnızca gerekli identity bilgileriyle oluşturur.</summary>
@@ -59,17 +64,6 @@ public sealed class CreateUserCommandHandler(
             }
         }
 
-        // Yeni kullanıcıya verilecek varsayılan sistem rolü oluşturulmuş olmalıdır.
-        var roleId = await dbContext.Roles
-            .Where(x => x.Code == SystemRoles.StandardUser)
-            .Select(x => (Guid?)x.Id)
-            .SingleOrDefaultAsync(cancellationToken);
-
-        if (!roleId.HasValue)
-        {
-            throw new UserConflictException("Standart kullanıcı rolü bulunamadı. Seed verilerini kontrol ediniz.");
-        }
-
         // Domain entity; açık parola yerine Identity PasswordHasher çıktısı saklanır.
         var user = new User
         {
@@ -90,11 +84,8 @@ public sealed class CreateUserCommandHandler(
         };
 
         await dbContext.Users.AddAsync(user, cancellationToken);
-        await dbContext.UserRoles.AddAsync(new UserRole
-        {
-            UserId = user.Id,
-            RoleId = roleId.Value
-        }, cancellationToken);
+        await UserRoleAssignment.ApplyAsync(dbContext, currentUserService, permissionChecker,
+            authorizationService, user, request.RoleIds, true, cancellationToken);
 
         // SaveChanges interceptor'ı CreatedDate/CreatedBy alanlarını doldurur.
         await dbContext.SaveChangesAsync(cancellationToken);

@@ -60,8 +60,11 @@ public sealed class UserListItemResponse
     public string? MilitaryUnitDefName { get; init; }
 
     /// <summary>
-    /// Kullanıcının aktif rol ilişkilerinden elde edilen rol kodlarını içerir.
+    /// Düzenleme formunda mevcut atamaları korumak için rol kimliklerini ve adlarını içerir.
     /// </summary>
+    public IReadOnlyCollection<UserRoleOptionResponse> AssignedRoles { get; init; } = [];
+
+    /// <summary>Kullanıcının etkin rol kodlarıdır.</summary>
     public IReadOnlyCollection<string> Roles { get; init; } = [];
 
     /// <summary>

@@ -1,3 +1,5 @@
+import { UserRoleOption } from './user-role-option.model';
+
 /**
  * Kullanıcı listeleme özet modelidir.
  */
@@ -24,6 +26,7 @@ export interface UserListItem {
   militaryUnitDefName: string | null;
   /** Kullanıcının aktif rol kodlarını içerir. */
   roles: string[];
+  assignedRoles: UserRoleOption[];
   /** Kaydın iş süreçlerinde aktif olup olmadığını gösterir. */
   isActive: boolean;
   /** Kullanıcı hesabının erişim kilidi durumudur. */

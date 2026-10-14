@@ -14,7 +14,10 @@ import { MessageModule } from 'primeng/message';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { SelectModule } from 'primeng/select';
+import { MultiSelectModule } from 'primeng/multiselect';
 
+import { AuthService } from '../../../core/auth/services/auth.service';
+import { UserRoleOption } from '../models/user-role-option.model';
 import { ValidityPeriodUtils } from '../../../core/utils/validity-period.utils';
 import { PermissionCodes } from '../../../core/permissions/constants/permission-codes';
 import { PermissionService } from '../../../core/permissions/services/permission.service';
@@ -41,6 +44,7 @@ type MilitaryUnitSelectOption = MilitaryUnitDefOption & { label: string };
   imports: [
     DatePipe,
     SelectModule,
+    MultiSelectModule,
     ReactiveFormsModule,
     TableModule,
     ButtonModule,
@@ -70,6 +74,45 @@ export class UserListComponent implements OnInit {
 
   /** Kullanıcı endpoint'lerini çalıştıran tip güvenli API servisidir. */
   private readonly userService = inject(UserService);
+  private readonly authService = inject(AuthService);
+  public readonly canAssignRoles = computed(() =>
+    this.permissionService.has(PermissionCodes.Users.AssignRole) &&
+    this.selectedUser()?.id !== this.authService.currentUser()?.id);
+  public readonly roleOptions = signal<(UserRoleOption & { label: string })[]>([]);
+  public readonly roleLoading = signal(false);
+  public readonly roleLoadError = signal<string | null>(null);
+  private roleRequestId = 0;
+
+  public loadRoleOptions(): void {
+    const requestId = ++this.roleRequestId;
+    this.roleLoadError.set(null);
+    this.roleLoading.set(false);
+    this.roleOptions.set([]);
+    if (!this.canAssignRoles()) return;
+    const selected = this.selectedUser();
+    this.roleLoading.set(true);
+    this.userService.getRoleOptions().subscribe({
+      next: roles => {
+        if (requestId !== this.roleRequestId) return;
+        const availableIds = new Set(roles.map(role => role.id));
+        const existing = (selected?.assignedRoles ?? []).filter(role => !availableIds.has(role.id));
+        this.roleOptions.set([
+          ...roles.map(role => ({ ...role, label: `${role.name} (${role.code})` })),
+          ...existing.map(role => ({ ...role, label: `${role.name} (${role.code}) — mevcut atama` }))
+        ]);
+        if (!selected && !this.userForm.controls.roleIds.dirty && this.userForm.controls.roleIds.value.length === 0) {
+          const standard = roles.find(role => role.code === 'STANDARD_USER');
+          if (standard) this.userForm.controls.roleIds.setValue([standard.id]);
+        }
+        this.roleLoading.set(false);
+      },
+      error: () => {
+        if (requestId !== this.roleRequestId) return;
+        this.roleLoading.set(false);
+        this.roleLoadError.set('Rol listesi yüklenemedi. Yeniden deneyiniz.');
+      }
+    });
+  }
 
   /** Reactive form kontrollerini oluşturan Angular form servisidir. */
   private readonly formBuilder = inject(FormBuilder);
@@ -241,7 +284,7 @@ export class UserListComponent implements OnInit {
 
   /**
    * Kullanıcı temel alanlarının formudur.
-   * Rol/permission yönetimi ayrı işlemdir; edit sırasında parola değişmez.
+   * Roller atama yetkisiyle düzenlenir; edit sırasında parola değişmez.
    */
   public readonly userForm = this.formBuilder.nonNullable.group({
     userName: ['', [Validators.required, Validators.maxLength(100)]],
@@ -251,6 +294,7 @@ export class UserListComponent implements OnInit {
     phoneNumber: ['', [Validators.maxLength(30)]],
     // Mevcut tabloda birlik ataması boş kalabileceği için nullable'dır.
     militaryUnitDefId: this.formBuilder.control<string | null>(null),
+    roleIds: this.formBuilder.nonNullable.control<string[]>([]),
     clockLimit: [true],
     isLocked: [false],
     validFrom: [''],
@@ -445,6 +489,7 @@ export class UserListComponent implements OnInit {
       email: '',
       phoneNumber: '',
       militaryUnitDefId: null,
+      roleIds: [],
       clockLimit: true,
       isLocked: false,
       validFrom: '',
@@ -454,6 +499,7 @@ export class UserListComponent implements OnInit {
     this.formError.set(null);
     this.dialogVisible.set(true);
     this.loadMilitaryUnitOptions();
+    this.loadRoleOptions();
   }
 
   /** Düzenlemeden önce kaydı yeniden yükleyerek en yeni xmin değerini alır. */
@@ -476,6 +522,7 @@ export class UserListComponent implements OnInit {
             email: detail.email,
             phoneNumber: detail.phoneNumber ?? '',
             militaryUnitDefId: detail.militaryUnitDefId,
+            roleIds: detail.assignedRoles.map(role => role.id),
             clockLimit: detail.clockLimit,
             isLocked: detail.isLocked,
             validFrom: ValidityPeriodUtils.toLocalInput(detail.validFrom),
@@ -484,6 +531,7 @@ export class UserListComponent implements OnInit {
           });
           this.dialogVisible.set(true);
           this.loadMilitaryUnitOptions(detail);
+          this.loadRoleOptions();
         },
         error: (error: HttpErrorResponse) =>
           this.errorMessage.set(this.getErrorMessage(error))
@@ -495,6 +543,12 @@ export class UserListComponent implements OnInit {
    * Yeni kayıtta parola güvenlik şartları sağlanmalıdır.
    */
   public saveUser(): void {
+    if (this.saving()) return;
+    if (this.canAssignRoles() && (this.roleLoading() || this.roleLoadError() ||
+        this.userForm.controls.roleIds.value.length === 0)) {
+      this.formError.set('Rol listesini yükleyip en az bir rol seçiniz.');
+      return;
+    }
     // Salt belge görüntüleme izni kullanıcı profilinin değiştirilmesine izin vermez.
     if (this.selectedUser() && !this.canUpdate()) return;
 
@@ -534,6 +588,7 @@ export class UserListComponent implements OnInit {
       email: value.email.trim(),
       phoneNumber: value.phoneNumber.trim() || null,
       militaryUnitDefId: value.militaryUnitDefId,
+      roleIds: this.canAssignRoles() ? value.roleIds : undefined,
       clockLimit: value.clockLimit,
       ...ValidityPeriodUtils.fromLocalInputs(value.validFrom, value.validTo)
     };

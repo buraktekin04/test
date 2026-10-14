@@ -37,6 +37,8 @@ public sealed class GetUserByIdQueryHandler(IKLMNDbContext dbContext)
                     ? x.MilitaryUnitDef.Code : null,
                 MilitaryUnitDefName = x.MilitaryUnitDef != null
                     ? x.MilitaryUnitDef.Name : null,
+                AssignedRoles = x.UserRoles.Where(ur => ur.IsActive && !ur.IsDeleted)
+                    .Select(ur => new UserRoleOptionResponse(ur.RoleId, ur.Role.Code, ur.Role.Name)).ToArray(),
                 Roles = x.UserRoles
                     .Where(ur => ur.IsActive && !ur.IsDeleted
                         && ur.Role.IsActive && !ur.Role.IsDeleted)
