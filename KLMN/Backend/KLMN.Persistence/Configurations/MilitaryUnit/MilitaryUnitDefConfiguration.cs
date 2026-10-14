@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace KLMN.Persistence.Configurations.MilitaryUnit;
 
 /// <summary>MilitaryUnitDef hiyerarşi ve index mapping'ini tanımlar.</summary>
-public sealed class MilitaryUnitDefConfiguration : BaseEntityConfiguration<MilitaryUnitDef>
+public sealed class MilitaryUnitDefConfiguration : EffectiveDatedEntityConfiguration<MilitaryUnitDef>
 {
     /// <summary>
     /// Entity'nin tablo, sütun tipi, foreign key, index ve silme davranışlarını yapılandırır.
@@ -19,8 +19,6 @@ public sealed class MilitaryUnitDefConfiguration : BaseEntityConfiguration<Milit
         builder.Property(x => x.Code).IsRequired().HasMaxLength(100);
         builder.Property(x => x.Name).IsRequired().HasMaxLength(250);
         builder.Property(x => x.ExternalCode).HasMaxLength(100);
-        builder.Property(x => x.ValidFrom).HasColumnType("timestamp with time zone");
-        builder.Property(x => x.ValidTo).HasColumnType("timestamp with time zone");
         builder.HasIndex(x => x.ForcesCommandDef);
         builder.HasOne(x => x.ForceCommand)
             .WithMany(x => x.MilitaryUnits)

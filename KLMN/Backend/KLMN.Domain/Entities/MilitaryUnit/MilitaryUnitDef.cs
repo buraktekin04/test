@@ -4,7 +4,7 @@ using KLMN.Domain.Entities.Identity;
 namespace KLMN.Domain.Entities.MilitaryUnit;
 
 /// <summary>Kurum içerisindeki hiyerarşik birlikni temsil eder.</summary>
-public sealed class MilitaryUnitDef : BaseEntity
+public sealed class MilitaryUnitDef : EffectiveDatedEntity
 {
     /// <summary>Uygulama içinde benzersiz tanımlama ve referans için kullanılan teknik koddur.</summary>
     public string Code { get; set; } = string.Empty;
@@ -16,10 +16,6 @@ public sealed class MilitaryUnitDef : BaseEntity
     public Guid? ForcesCommandDef { get; set; }
     /// <summary>Kuvvet komutanlığı navigation özelliğidir.</summary>
     public ForcesCommandDef? ForceCommand { get; set; }
-    /// <summary>Görev yeri olarak seçilebileceği UTC başlangıç; null ise alt sınır yoktur.</summary>
-    public DateTime? ValidFrom { get; set; }
-    /// <summary>Görev yeri olarak seçilebileceği UTC bitiş (hariç); null ise üst sınır yoktur.</summary>
-    public DateTime? ValidTo { get; set; }
     /// <summary>Üst birliğin kimliğidir; kök birimlerde null olabilir.</summary>
     public Guid? ConnectedTopUnity { get; set; }
     /// <summary>Hiyerarşideki üst birime ait navigation özelliğidir.</summary>
