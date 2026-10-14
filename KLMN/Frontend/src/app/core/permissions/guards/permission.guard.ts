@@ -12,6 +12,14 @@ export const permissionGuard: CanActivateFn =
     // Başarılı işlem veya oturum kaybı sonrası ekran geçişlerini gerçekleştirir.
     const router = inject(Router);
 
+    // Tanım ekranına girişte aynı modülün herhangi bir yetkisi yeterlidir.
+    const permissionModule = route.data['permissionModule'] as string | undefined;
+    if (permissionModule) {
+      return permissionService.hasModule(permissionModule)
+        ? true
+        : router.createUrlTree(['/app']);
+    }
+
     // Kullanıcının etkin permission kodlarını içerir.
     const permissions =
       route.data['permissions'] as string[] | undefined;

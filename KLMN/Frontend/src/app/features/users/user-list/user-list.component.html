@@ -176,9 +176,11 @@
           </label>
         </div>
         <div class="column-filter-actions">
+          @if (canExport()) {
           <p-button type="button" label="Tümünü Temizle" icon="pi pi-filter-slash"
                     [outlined]="true" severity="secondary"
                     (onClick)="clearFilters()"></p-button>
+        }
           <p-button type="submit" label="Filtreleri Uygula" icon="pi pi-check"
                     [loading]="loading()"></p-button>
         </div>

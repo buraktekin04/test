@@ -21,7 +21,11 @@ public sealed class ForcesCommandsController(ISender sender, IExcelExportService
 {
     /// <summary>Kuvvet komutanlıklarını arama ve aktiflik filtreleriyle listeler.</summary>
     [HttpGet]
-    [HasPermission(PermissionCodes.ForcesCommands.Query)]
+    [HasPermission(PermissionCodes.ForcesCommands.View,
+        PermissionCodes.ForcesCommands.Query,
+        PermissionCodes.ForcesCommands.Create,
+        PermissionCodes.ForcesCommands.Update,
+        PermissionCodes.ForcesCommands.Delete)]
     public async Task<IActionResult> GetForcesCommands(
         [FromQuery] GetForcesCommandDefsQuery query, CancellationToken ct) =>
         Ok(await sender.Send(query, ct));
@@ -69,7 +73,11 @@ public sealed class ForcesCommandsController(ISender sender, IExcelExportService
 
     /// <summary>Mevcut pasif kayıtlar dahil kimlik üzerinden güncel birimi getirir.</summary>
     [HttpGet("{id:guid}")]
-    [HasPermission(PermissionCodes.ForcesCommands.Query)]
+    [HasPermission(PermissionCodes.ForcesCommands.View,
+        PermissionCodes.ForcesCommands.Query,
+        PermissionCodes.ForcesCommands.Create,
+        PermissionCodes.ForcesCommands.Update,
+        PermissionCodes.ForcesCommands.Delete)]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct) =>
         Ok(await sender.Send(new GetForcesCommandDefByIdQuery(id), ct));
 

@@ -23,7 +23,12 @@ public sealed class RolesController(ISender sender, IExcelExportService excelExp
 {
     /// <summary>Rol listesini yetkili, filtreli ve sayfalı olarak sunar.</summary>
     [HttpGet]
-    [HasPermission(PermissionCodes.Roles.Query)]
+    [HasPermission(PermissionCodes.Roles.View,
+        PermissionCodes.Roles.Query,
+        PermissionCodes.Roles.Create,
+        PermissionCodes.Roles.Update,
+        PermissionCodes.Roles.Delete,
+        PermissionCodes.Roles.ManagePermissions)]
     public async Task<IActionResult> GetRoles(
         [FromQuery] GetRolesQuery query, CancellationToken ct) =>
         Ok(await sender.Send(query, ct));
@@ -83,7 +88,12 @@ public sealed class RolesController(ISender sender, IExcelExportService excelExp
 
     /// <summary>Role ait güncel alanları, kullanıcı sayısını ve atanmış permission'ları getirir.</summary>
     [HttpGet("{id:guid}")]
-    [HasPermission(PermissionCodes.Roles.Query)]
+    [HasPermission(PermissionCodes.Roles.View,
+        PermissionCodes.Roles.Query,
+        PermissionCodes.Roles.Create,
+        PermissionCodes.Roles.Update,
+        PermissionCodes.Roles.Delete,
+        PermissionCodes.Roles.ManagePermissions)]
     [ProducesResponseType(typeof(RoleResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetRoleById(Guid id, CancellationToken ct) =>
         Ok(await sender.Send(new GetRoleByIdQuery(id), ct));

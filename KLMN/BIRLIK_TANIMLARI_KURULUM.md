@@ -69,3 +69,19 @@ oluşturma, düzenleme ve silme kendi ayrı permission'larını gerektirir.
 Excel dışa aktarma yalnızca `MilitaryUnits.Query` izniyle görünür ve sunucuda da bu izinle korunur.
 Yetki seti login/refresh sırasında yeniden hesaplandığından, rol değişikliği sonrası
 kullanıcı oturumunu yenilemelidir. Yeni migration gerekmiyor.
+
+## Modül bazlı genel ekran erişimi
+
+Users, Roles, MilitaryUnits ve ForcesCommands tanımlarında kullanıcıya ilgili
+modülün herhangi bir etkin yetkisi verilmişse menü ve sayfa görünür.
+Liste/detay GET endpoint'leri de aynı modülün mevcut eylem izinlerinden
+herhangi biriyle çalışır; bu, Create/Update/Delete gibi işlemlerin yapılabilmesi
+için gerekli salt-okunur liste erişimini sağlar. Değiştirme/role atama/permission
+güncelleme gibi endpoint'ler kendi özel izinlerinden vazgeçmez.
+
+Excel dışa aktarma yalnızca Query iznini kabul eder (buton da buna göre görünür).
+Kullanıcı formu birlik seçeneklerini Users.Query/Create/Update ile,
+Birlik formu ise üst birlik ve kuvvet seçeneklerini
+MilitaryUnits.View/Query/Create/Update ile yükleyebilir.
+Rol değişiklikleri kullanıcı yeniden giriş yaptığında güncellenir.
+Migration gerekmiyor.

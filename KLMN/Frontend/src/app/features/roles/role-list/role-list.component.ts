@@ -57,6 +57,10 @@ export class RoleListComponent implements OnInit {
     if (this.canViewAudit()) this.auditRole.set(role);
   }
 
+  /** Excel için ayrıca sorgulama yetkisi gereklidir. */
+  public readonly canExport = computed(() =>
+    this.permissionService.has(PermissionCodes.Roles.Query));
+
   /** Kullanıcının rol tanımlama yetkileridir; backend aynı izinleri ayrıca doğrular. */
   public readonly canCreate = computed(() => this.permissionService.has(PermissionCodes.Roles.Create));
   public readonly canUpdate = computed(() => this.permissionService.has(PermissionCodes.Roles.Update));
@@ -323,7 +327,7 @@ export class RoleListComponent implements OnInit {
 
   /** Sunucuda Excel oluşturarak filtrelenmiş tüm rol kayıtlarını indirir. */
   public exportExcel(): void {
-    if (this.exporting()) return;
+    if (!this.canExport() || this.exporting()) return;
     this.exporting.set(true);
     this.roleService.export(this.buildQuery())
       .pipe(finalize(() => this.exporting.set(false)))

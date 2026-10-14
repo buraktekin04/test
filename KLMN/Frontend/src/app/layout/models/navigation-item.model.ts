@@ -8,6 +8,8 @@ export interface NavigationItem {
   icon?: string;
   /** Tıklandığında açılacak Angular uygulama rotasıdır. */
   route?: string;
+  /** Modülün herhangi bir etkin izni menünün görünmesi için yeterlidir. */
+  permissionModule?: string;
   /** Menü öğesini göstermek için aranan permission kodlarıdır. */
   requiredPermissions?: readonly string[];
   /** Birden fazla permission için tamamı veya herhangi biri koşulunu seçer. */

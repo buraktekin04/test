@@ -30,7 +30,16 @@ public sealed class UsersController(ISender sender, IExcelExportService excelExp
 {
     /// <summary>Yetki kontrollü ve sayfalı kullanıcı listesi döndürür.</summary>
     [HttpGet]
-    [HasPermission(PermissionCodes.Users.Query)]
+    [HasPermission(PermissionCodes.Users.View,
+        PermissionCodes.Users.Query,
+        PermissionCodes.Users.Create,
+        PermissionCodes.Users.Update,
+        PermissionCodes.Users.Delete,
+        PermissionCodes.Users.Activate,
+        PermissionCodes.Users.AssignRole,
+        PermissionCodes.Users.ManagePermissions,
+        PermissionCodes.Users.ViewDocuments,
+        PermissionCodes.Users.ManageDocuments)]
     public async Task<IActionResult> GetUsers(
         [FromQuery] GetUsersQuery query, CancellationToken cancellationToken) =>
         Ok(await sender.Send(query, cancellationToken));
@@ -113,7 +122,7 @@ public sealed class UsersController(ISender sender, IExcelExportService excelExp
     /// Kullanıcı listesi iznine sahip olmak yeterlidir; rol atama izni verilmez.
     /// </summary>
     [HttpGet("military-unit-options")]
-    [HasPermission(PermissionCodes.Users.Query)]
+    [HasPermission(PermissionCodes.Users.Query, PermissionCodes.Users.Create, PermissionCodes.Users.Update)]
     [ProducesResponseType(typeof(IReadOnlyList<MilitaryUnitDefOptionResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<MilitaryUnitDefOptionResponse>>> GetMilitaryUnitOptions(
         CancellationToken cancellationToken)
@@ -132,7 +141,16 @@ public sealed class UsersController(ISender sender, IExcelExportService excelExp
 
     /// <summary>Seçilen kullanıcıyı düzenleme ekranı için getirir.</summary>
     [HttpGet("{id:guid}")]
-    [HasPermission(PermissionCodes.Users.Query)]
+    [HasPermission(PermissionCodes.Users.View,
+        PermissionCodes.Users.Query,
+        PermissionCodes.Users.Create,
+        PermissionCodes.Users.Update,
+        PermissionCodes.Users.Delete,
+        PermissionCodes.Users.Activate,
+        PermissionCodes.Users.AssignRole,
+        PermissionCodes.Users.ManagePermissions,
+        PermissionCodes.Users.ViewDocuments,
+        PermissionCodes.Users.ManageDocuments)]
     [ProducesResponseType(typeof(UserListItemResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<UserListItemResponse>> GetUserById(
         [FromRoute] Guid id, CancellationToken cancellationToken) =>

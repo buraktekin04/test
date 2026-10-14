@@ -29,6 +29,18 @@ export class PermissionService {
     );
   }
 
+  /**
+   * Menü ve route erişimi: kullanıcının modüldeki herhangi bir yetkisi yeterli.
+   * Bu kontrol işlem izinlerini genişletmez; sunucu her eylemi ayrı doğrular.
+   */
+  public hasModule(module: string): boolean {
+    const user = this.authStore.user();
+    if (!user || !module.trim()) return false;
+    if (user.roles.some(role => role.toUpperCase() === 'ADMIN')) return true;
+    const prefix = module.trim().toLowerCase() + '.';
+    return user.permissions.some(code => code.toLowerCase().startsWith(prefix));
+  }
+
   /** İstenen izinlerden en az birinin mevcut olmasını kontrol eder. */
   public hasAny(...permissions: string[]): boolean {
     return permissions.some(permission => this.has(permission));

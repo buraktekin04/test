@@ -23,7 +23,11 @@ public sealed class MilitaryUnitsController(ISender sender, IExcelExportService 
 {
     /// <summary>Birlik birimlerini arama, aktiflik ve kök filtreleriyle listeler.</summary>
     [HttpGet]
-    [HasPermission(PermissionCodes.MilitaryUnits.View, PermissionCodes.MilitaryUnits.Query)]
+    [HasPermission(PermissionCodes.MilitaryUnits.View,
+        PermissionCodes.MilitaryUnits.Query,
+        PermissionCodes.MilitaryUnits.Create,
+        PermissionCodes.MilitaryUnits.Update,
+        PermissionCodes.MilitaryUnits.Delete)]
     public async Task<IActionResult> GetMilitaryUnits(
         [FromQuery] GetMilitaryUnitDefsQuery query, CancellationToken ct) =>
         Ok(await sender.Send(query, ct));
@@ -74,19 +78,25 @@ public sealed class MilitaryUnitsController(ISender sender, IExcelExportService 
     }
 
     [HttpGet("force-options")]
-    [HasPermission(PermissionCodes.MilitaryUnits.Query)]
+    [HasPermission(PermissionCodes.MilitaryUnits.View, PermissionCodes.MilitaryUnits.Query,
+        PermissionCodes.MilitaryUnits.Create, PermissionCodes.MilitaryUnits.Update)]
     public async Task<IActionResult> GetForceOptions(CancellationToken ct) =>
         Ok(await sender.Send(new GetForceCommandOptionsQuery(), ct));
 
     /// <summary>Yeni birim oluştururken seçilebilecek aktif üst birimleri getirir.</summary>
     [HttpGet("parent-options")]
-    [HasPermission(PermissionCodes.MilitaryUnits.Query)]
+    [HasPermission(PermissionCodes.MilitaryUnits.View, PermissionCodes.MilitaryUnits.Query,
+        PermissionCodes.MilitaryUnits.Create, PermissionCodes.MilitaryUnits.Update)]
     public async Task<IActionResult> GetParentOptions(CancellationToken ct) =>
         Ok(await sender.Send(new GetMilitaryUnitParentOptionsQuery(), ct));
 
     /// <summary>Mevcut pasif kayıtlar dahil kimlik üzerinden güncel birimi getirir.</summary>
     [HttpGet("{id:guid}")]
-    [HasPermission(PermissionCodes.MilitaryUnits.View, PermissionCodes.MilitaryUnits.Query)]
+    [HasPermission(PermissionCodes.MilitaryUnits.View,
+        PermissionCodes.MilitaryUnits.Query,
+        PermissionCodes.MilitaryUnits.Create,
+        PermissionCodes.MilitaryUnits.Update,
+        PermissionCodes.MilitaryUnits.Delete)]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct) =>
         Ok(await sender.Send(new GetMilitaryUnitDefByIdQuery(id), ct));
 

@@ -198,6 +198,10 @@ export class UserListComponent implements OnInit {
   /** PDF API işleminin hata açıklamasıdır. */
   public readonly pdfError = signal<string | null>(null);
 
+  /** Excel için ayrıca sorgulama yetkisi gereklidir. */
+  public readonly canExport = computed(() =>
+    this.permissionService.has(PermissionCodes.Users.Query));
+
   /** Yeni kullanıcı butonunu görme iznidir; gerçek kontrol API'dedir. */
   public readonly canCreate = computed(() =>
     this.permissionService.has(PermissionCodes.Users.Create)
@@ -453,7 +457,7 @@ export class UserListComponent implements OnInit {
    * JWT ve kullanıcı okuma yetkisi backend'de denetlenmeye devam eder.
    */
   public exportExcel(): void {
-    if (this.exporting()) return;
+    if (!this.canExport() || this.exporting()) return;
 
     this.exporting.set(true);
     this.userService.exportUsers(this.buildUserQuery())

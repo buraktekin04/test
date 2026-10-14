@@ -27,26 +27,25 @@ export class NavigationService {
           label: 'Kullanıcı Tanımları',
           icon: 'pi pi-users',
           route: '/app/users',
-          requiredPermissions: [PermissionCodes.Users.Query]
+          permissionModule: 'Users'
         },
         {
           label: 'Rol Tanımları',
           icon: 'pi pi-shield',
           route: '/app/roles',
-          requiredPermissions: [PermissionCodes.Roles.Query]
+          permissionModule: 'Roles'
         },
         {
           label: 'Kuvvet Komutanlığı Tanımları',
           icon: 'pi pi-flag',
           route: '/app/forces-commands',
-          requiredPermissions: [PermissionCodes.ForcesCommands.Query]
+          permissionModule: 'ForcesCommands'
         },
         {
           label: 'Birlik Tanımları',
           icon: 'pi pi-sitemap',
           route: '/app/military-units',
-          requiredPermissions: [PermissionCodes.MilitaryUnits.View, PermissionCodes.MilitaryUnits.Query],
-          permissionMode: 'any'
+          permissionModule: 'MilitaryUnits'
         }
       ]
     },
@@ -98,6 +97,9 @@ export class NavigationService {
 
   /** Menü öğesinin gerekli permission kodlarının mevcut olduğunu doğrular. */
   private canView(item: NavigationItem): boolean {
+    if (item.permissionModule && !this.permissionService.hasModule(item.permissionModule))
+      return false;
+
     const permissions = item.requiredPermissions;
 
     if (!permissions?.length) return true;

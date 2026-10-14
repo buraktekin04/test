@@ -49,7 +49,7 @@ export const routes: Routes = [
         path: 'users',
         canActivate: [permissionGuard],
         data: {
-          permissions: [PermissionCodes.Users.Query]
+          permissionModule: 'Users'
         },
         loadComponent: () =>
           import('./features/users/user-list/user-list.component')
@@ -59,7 +59,7 @@ export const routes: Routes = [
         path: 'roles',
         canActivate: [permissionGuard],
         data: {
-          permissions: [PermissionCodes.Roles.Query]
+          permissionModule: 'Roles'
         },
         loadComponent: () =>
           import('./features/roles/role-list/role-list.component')
@@ -68,7 +68,7 @@ export const routes: Routes = [
       {
         path: 'forces-commands',
         canActivate: [permissionGuard],
-        data: { permissions: [PermissionCodes.ForcesCommands.Query] },
+        data: { permissionModule: 'ForcesCommands' },
         loadComponent: () => import('./features/forces-commands/forces-command-list/forces-command-list.component')
           .then(component => component.ForcesCommandListComponent)
       },
@@ -79,8 +79,7 @@ export const routes: Routes = [
         path: 'military-units',
         canActivate: [permissionGuard],
         data: {
-          permissions: [PermissionCodes.MilitaryUnits.View, PermissionCodes.MilitaryUnits.Query],
-          permissionMode: 'any'
+          permissionModule: 'MilitaryUnits'
         },
         loadComponent: () =>
           import('./features/military-units/military-unit-list/military-unit-list.component')

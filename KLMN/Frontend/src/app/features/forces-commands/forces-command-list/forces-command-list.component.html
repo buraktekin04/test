@@ -59,10 +59,12 @@
                 icon="pi pi-filter" severity="secondary"
                 [outlined]="!columnFiltersExpanded()"
                 (onClick)="toggleColumnFilters()"></p-button>
-      <p-button type="button" label="Excel'e Aktar" icon="pi pi-file-excel"
+      @if (canExport()) {
+          <p-button type="button" label="Excel'e Aktar" icon="pi pi-file-excel"
                 severity="success" [outlined]="true" [loading]="exporting()"
                 [disabled]="loading() || totalCount() === 0"
                 (onClick)="exportExcel()"></p-button>
+        }
     </div>
 
     @if (columnFiltersExpanded()) {

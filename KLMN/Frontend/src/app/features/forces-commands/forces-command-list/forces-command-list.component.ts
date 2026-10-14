@@ -46,6 +46,10 @@ export class ForcesCommandListComponent implements OnInit {
   private readonly permissionService = inject(PermissionService);
   private readonly confirmations = inject(ConfirmationService);
 
+  /** Excel için ayrıca sorgulama yetkisi gereklidir. */
+  public readonly canExport = computed(() =>
+    this.permissionService.has(PermissionCodes.ForcesCommands.Query));
+
   /** Menü ve satır butonlarındaki UI görünürlük kontrolleridir; API ayrıca korunur. */
   public readonly canCreate = computed(
     () => this.permissionService.has(PermissionCodes.ForcesCommands.Create));
@@ -181,7 +185,7 @@ export class ForcesCommandListComponent implements OnInit {
 
   /** Listeyi değil, sunucudaki tüm filtrelenmiş kayıtları Excel'e aktarır. */
   public exportExcel(): void {
-    if (this.exporting()) return;
+    if (!this.canExport() || this.exporting()) return;
     this.exporting.set(true);
     this.service.export(this.buildQuery())
       .pipe(finalize(() => this.exporting.set(false)))
