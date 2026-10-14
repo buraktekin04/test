@@ -1,4 +1,5 @@
 using KLMN.Application.ForcesCommands.Exceptions;
+using KLMN.Application.PurchaseNumbers.Exceptions;
 using System.Diagnostics;
 using FluentValidation;
 using KLMN.Application.Common.Exceptions;
@@ -153,6 +154,13 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
                 new ProblemDetails { Status = StatusCodes.Status404NotFound, Title = "Kuvvet komutanlığı bulunamadı.", Detail = exception.Message },
             ForcesCommandConflictException =>
                 new ProblemDetails { Status = StatusCodes.Status409Conflict, Title = "Kuvvet komutanlığı işlemi gerçekleştirilemedi.", Detail = exception.Message },
+            PurchaseNumberNotFoundException =>
+                new ProblemDetails { Status = StatusCodes.Status404NotFound,
+                    Title = "Alım numarası bulunamadı.", Detail = exception.Message },
+            PurchaseNumberConflictException =>
+                new ProblemDetails { Status = StatusCodes.Status409Conflict,
+                    Title = "Alım numarası kaydedilemedi.", Detail = exception.Message },
+
             MilitaryUnitNotFoundException =>
                 new ProblemDetails
                 {

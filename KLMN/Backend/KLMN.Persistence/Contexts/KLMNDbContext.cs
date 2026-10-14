@@ -2,6 +2,7 @@ using KLMN.Application.Common.Interfaces.Persistence;
 using KLMN.Domain.Entities.Identity;
 using KLMN.Domain.Entities.Auditing;
 using KLMN.Domain.Entities.MilitaryUnit;
+using KLMN.Domain.Entities.PurchaseNumbers;
 using KLMN.Persistence.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -60,6 +61,9 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     /// Hiyerarşik birlik birimlerine ait DbSet koleksiyonudur.
     /// </summary>
     public DbSet<ForcesCommandDef> ForcesCommandDefs => Set<ForcesCommandDef>();
+
+    /// <summary>Alım numarası tanımlarının veri kümesi.</summary>
+    public DbSet<PurchaseNumberDef> PurchaseNumberDefs => Set<PurchaseNumberDef>();
 
     public DbSet<MilitaryUnitDef> MilitaryUnitDefs => Set<MilitaryUnitDef>();
 

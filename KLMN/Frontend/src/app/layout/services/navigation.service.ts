@@ -42,6 +42,12 @@ export class NavigationService {
           permissionModule: 'ForcesCommands'
         },
         {
+          label: 'Alım Numarası Tanımları',
+          icon: 'pi pi-tags',
+          route: '/app/purchase-numbers',
+          permissionModule: 'PurchaseNumbers'
+        },
+        {
           label: 'Birlik Tanımları',
           icon: 'pi pi-sitemap',
           route: '/app/military-units',

@@ -60,6 +60,16 @@ public static class PermissionCodes
         public const string Delete = "ForcesCommands.Delete";
     }
 
+    /// <summary>Alım numarası tanımlarına ait eylem izinleri.</summary>
+    public static class PurchaseNumbers
+    {
+        public const string View = "PurchaseNumbers.View";
+        public const string Query = "PurchaseNumbers.Query";
+        public const string Create = "PurchaseNumbers.Create";
+        public const string Update = "PurchaseNumbers.Update";
+        public const string Delete = "PurchaseNumbers.Delete";
+    }
+
     public static class MilitaryUnits
     {
         /// <summary>Modül kayıtlarını görüntüleyebilme yetkisinin teknik kodudur.</summary>

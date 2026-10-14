@@ -1,6 +1,7 @@
 using KLMN.Domain.Entities.Identity;
 using KLMN.Domain.Entities.Auditing;
 using KLMN.Domain.Entities.MilitaryUnit;
+using KLMN.Domain.Entities.PurchaseNumbers;
 using Microsoft.EntityFrameworkCore;
 
 namespace KLMN.Application.Common.Interfaces.Persistence;
@@ -26,6 +27,8 @@ public interface IKLMNDbContext
     DbSet<RefreshToken> RefreshTokens { get; }
     DbSet<PasswordResetToken> PasswordResetTokens { get; }
     DbSet<ForcesCommandDef> ForcesCommandDefs { get; }
+
+    DbSet<PurchaseNumberDef> PurchaseNumberDefs { get; }
 
     DbSet<MilitaryUnitDef> MilitaryUnitDefs { get; }
 

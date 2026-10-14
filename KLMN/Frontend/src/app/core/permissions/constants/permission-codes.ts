@@ -30,6 +30,10 @@ export const PermissionCodes = {
     View: 'ForcesCommands.View', Query: 'ForcesCommands.Query',
     Create: 'ForcesCommands.Create', Update: 'ForcesCommands.Update', Delete: 'ForcesCommands.Delete'
   },
+  PurchaseNumbers: {
+    View: 'PurchaseNumbers.View', Query: 'PurchaseNumbers.Query',
+    Create: 'PurchaseNumbers.Create', Update: 'PurchaseNumbers.Update', Delete: 'PurchaseNumbers.Delete'
+  },
   MilitaryUnits: {
     View: 'MilitaryUnits.View',
     Query: 'MilitaryUnits.Query',
