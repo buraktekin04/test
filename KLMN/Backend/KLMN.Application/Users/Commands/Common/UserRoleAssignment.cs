@@ -64,7 +64,9 @@ internal static class UserRoleAssignment
                 .CountAsync(link => adminIds.Contains(link.RoleId) &&
                     link.IsActive && !link.IsDeleted &&
                     link.User.IsActive && !link.User.IsDeleted, ct);
-            if (activeAdminCount <= 1)
+            // Pasif eski ADMIN kullanıcıları aktif yöneticilerin sayısını azaltmaz.
+            // Yalnızca hedef etkin yöneticiyse son ADMIN koruması uygulanır.
+            if (user.IsActive && !user.IsDeleted && activeAdminCount <= 1)
                 throw new UserRoleAssignmentForbiddenException(
                     "Sistemin son aktif ADMIN rolü kaldırılamaz.");
         }

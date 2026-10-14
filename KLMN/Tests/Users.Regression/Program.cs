@@ -93,6 +93,14 @@ await f.Update(user, [f.Standard.Id]);
 Check(f.Links.Rows.Any(x => x.UserId == user.Id && x.RoleId == f.AdminRole.Id && !x.IsActive) &&
       f.Links.Rows.Any(x => x.UserId == remainingAdmin.Id && x.RoleId == f.AdminRole.Id && x.IsActive),
       "An existing extra ADMIN can be removed while another ADMIN remains");
+f = new Fixture();
+var activeRootAdmin = f.Existing(f.AdminRole);
+user = f.Existing(f.AdminRole);
+user.IsActive = false;
+await f.Update(user, [f.Standard.Id]);
+Check(f.Links.Rows.Any(x => x.UserId == activeRootAdmin.Id && x.RoleId == f.AdminRole.Id && x.IsActive) &&
+      f.Links.Rows.Any(x => x.UserId == user.Id && x.RoleId == f.AdminRole.Id && !x.IsActive),
+      "Inactive legacy ADMIN can be cleaned up without removing the last active administrator");
 f = new Fixture(); user = f.Existing(f.Editor); f.Editor.IsActive = false;
 await f.Update(user, [f.Editor.Id, f.Standard.Id]);
 Check(f.Links.Rows.Count == 2, "Existing inactive role preserved while adding active role");
