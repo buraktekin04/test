@@ -1,0 +1,408 @@
+KLMN PROJESİ — BENİ OKU / DEVİR DOSYASI
+====================================
+Güncelleme tarihi: 14.10.2026
+Repo: https://github.com/buraktekin04/test
+Proje kökü: KLMN/
+Varsayılan dal: main
+Durum: Aktif geliştirme; production'a hazır olduğu teyit edilmedi.
+
+ÖNEMLİ — HER YENİ SOHBETTE ÖNCE BU DOSYAYI OKU
+------------------------------------------------
+Bu dosya, KLMN projesinin kalıcı bağlamıdır. Kullanıcıdan projeyi tekrar
+baştan anlatmasını isteme. Yeni sohbet açıldığında bu dosyanın GITHUB'DAKİ
+EN GÜNCEL SÜRÜMÜNÜ ve ilgili gerçek kaynak dosyalarını incele. Bu dosya
+tek başına kaynak koddan daha yetkili değildir; uyuşmazlık varsa güncel
+main kodunu, testleri ve son commit'leri karşılaştır, ardından açıklığa
+kavuşturup bu dosyayı güncelle.
+
+KALICI ÇALIŞMA ANLAŞMASI:
+- Kullanıcı açıkça aksini istemedikçe, KLMN için yapılan her yeni
+  geliştirmeyi bütün backend + frontend + gerekli dokümantasyon + testlerle
+  BİTİR; sonra TEK COMMIT halinde GitHub main dalına PUSHLA.
+- Her kod commit'inde "KLMN/beni oku.txt" dosyasını da AYNI COMMIT içinde
+  güncelle. En son yapılan iş, dosya/modül kapsamı, mimari kararlar,
+  test/derleme sonucu, migration gereksinimi, halen açık işler ve sıradaki
+  adım kısa, anlaşılır ve DOĞRU şekilde değişmelidir.
+- Eksik/yeterince sınanmamış işi tamamlandı veya test edildi diye yazma.
+  "GitHub'a kod pushlandı" ile "derlendi", "DB migration uygulandı" ve
+  "uçtan uca test edildi" kavramlarını birbirinden ayır.
+- Her yeni geliştirmede eskiden alınmış mimari kararları koru; bir varlıkta
+  BaseEntity'de zaten olan alanları ikinci kez yaratma.
+- Dosya tek başına kendisini otomatik değiştiremez. ChatGPT tarafından
+  yapılan kod commit'lerinde bu kurala uyulacak; başka araç/kişi commit
+  atarsa bu dosyanın da güncellenmesi ayrıca kontrol edilmelidir.
+- GitHub main geçmişini gereksiz yere rewrite / force-push yapma.
+  Kullanıcı daha önce parçalı commit'lerin birleştirilmesini özel olarak
+  istemişti. Bundan sonra doğrudan tek commit hazırlanmalı.
+- Gerçek JWT secret, şifre, token, özel veritabanı bilgisi, canlı SMTP
+  kimlik bilgisi, kurum içi hassas bilgi ve kullanıcı verileri kamuya açık
+  GitHub reposuna ASLA pushlanmamalıdır.
+
+1. PROJENİN GEÇMİŞİ VE AMACI
+---------------------------
+KLMN, eski MSKBS uygulamasını çağdaş .NET ve Angular mimarisiyle
+modernize etme çalışmasıdır. Eski sistemdeki gerçek iş kuralları ve veri
+ilişkileri korunurken, eski uygulamanın tekrar eden, bakımı zor ve
+güvenlik açısından eksik yönleri iyileştirilir.
+
+Ana hedefler:
+- Sürdürülebilir, okunaklı, test edilebilir ve modüler kurumsal uygulama.
+- Ortak kimlik doğrulama, rol/permission yetkilendirme, kullanıcı ve
+  referans/tanım verilerini güvenle yönetebilme.
+- Tanım modüllerini aynı CRUD, filtre, sıralama, audit, concurrency ve
+  UI/UX standardında büyütme.
+- Eski verilerin ve iş süreçlerinin gerçek kullanıcılarla doğrulanması.
+  Eski kodu okuyarak iş mantığını anlamak başlangıçtır; son kullanıcı ve
+  alan sorumlularıyla görüşme, kabul testleri ve veri geçişi ayrıca gerekir.
+- Yeni ekranları tek tek geliştirip güvenli biçimde canlıya alınabilir
+  hale getirme. Planlanan bitiş tarihi tanımlanmış DEĞİL; tamamlanma,
+  teknik/işlevsel kabul kriterleri sağlandığında değerlendirilecektir.
+
+2. TEKNOLOJİ VE DİZİN YAPISI
+---------------------------
+Backend: .NET 10, ASP.NET Core Web API, EF Core 10, PostgreSQL,
+Clean Architecture, CQRS + MediatR, FluentValidation, JWT, role + permission
+authorization, optimistic concurrency, soft delete ve audit interceptor.
+Katmanlar: KLMN.Domain, KLMN.Application, KLMN.Persistence,
+KLMN.Infrastructure, KLMN.Api.
+Solution: KLMN/Backend/KLMN.slnx.
+Backend ana dosyalar:
+  KLMN/Backend/KLMN.Api/Program.cs
+  KLMN/Backend/KLMN.Persistence/Contexts/KLMNDbContext.cs
+  KLMN/Backend/KLMN.Application/Common/Interfaces/Persistence/IKLMNDbContext.cs
+  KLMN/Backend/KLMN.Domain/Constants/PermissionCodes.cs
+  KLMN/Backend/KLMN.Persistence/Seeds/IdentitySeedData.cs
+  KLMN/Backend/KLMN.Persistence/Seeds/IdentitySeeder.cs
+
+Frontend: Angular 21 (standalone), PrimeNG 21, PrimeIcons, Reactive Forms,
+signals, RxJS, ayrı services/models, permissionGuard, authGuard.
+Proje: KLMN/Frontend/
+Önemli dosyalar:
+  src/app/app.routes.ts
+  src/app/layout/services/navigation.service.ts
+  src/app/core/permissions/services/permission.service.ts
+  src/app/core/permissions/constants/permission-codes.ts
+  src/environments/environment.development.ts
+Angular CLI proxy YOK; API adresi environment'dan okunur.
+
+MİMARİ KURALI: Her CQRS işleminin kendi klasörü ve ayrı
+Command/CommandHandler/CommandValidator veya Query/QueryHandler/
+QueryValidator dosyaları olmalı. Users/Roles/MilitaryUnits/ForcesCommands/
+PurchaseNumbers modüllerindeki ayrık yapıyı örnek al.
+Generic Repository / UnitOfWork ekleme. İlgili handler EF Core DbContext
+soyutlamasını IKLMNDbContext üzerinden kullanır. Tek sınıfa tüm CRUD'ları
+yığma, kısa vadeli kestirmeyle katman sınırlarını bozma.
+
+3. ORTAK ENTITY KURALLARI — ÖZELLİKLE KORU
+-----------------------------------------
+BaseEntity zaten şunları taşır:
+  Guid Id,
+  DateTime CreatedDate,
+  Guid? CreatedBy,
+  DateTime? UpdatedDate,
+  Guid? UpdatedBy,
+  bool IsActive,
+  bool IsDeleted,
+  DateTime? DeletedDate,
+  Guid? DeletedBy,
+  uint Version.
+
+- Version = PostgreSQL xmin (EF Core/Npgsql IsRowVersion); AYRI bir normal
+  Version kolonu oluşturma. Update / status / delete istekleri güncel
+  Version ister; eşzamanlı değişiklikte 409 dönmelidir.
+- AuditableEntitySaveChangesInterceptor oluşturma/güncelleme/silme
+  alanlarını doldurur. Delete fiziksel silme değil soft delete'dir.
+- Global EF query filter aktiflik + silinmişlik durumunu kapsar;
+  pasif kayıtları listeleyen sorgularda gerektiğinde IgnoreQueryFilters()
+  ve açık IsDeleted filtresi kullanılır.
+- Tüm tarihleri PostgreSQL'de UTC tut; Angular datetime-local
+  dönüşümlerinde ValidityPeriodUtils'ı kullan.
+- Tanım geçerlilik tarihi gerekiyorsa entity'yi EffectiveDatedEntity'den
+  türet. EffectiveDatedEntity : BaseEntity; nullable DateTime? ValidFrom
+  (dahil) ve ValidTo (hariç) içerir. Null = o tarafta tarih sınırı yok.
+  Her iki tarih girilirse başlangıç bitişten önce olmalıdır.
+- Tarih kullanılan EF konfigürasyonunda
+  EffectiveDatedEntityConfiguration<TEntity> kullan. ValidFrom/ValidTo
+  property'lerini entity içerisinde veya konfigürasyonlarını ayrı
+  ayrı TEKRAR TANIMLAMA.
+- Bu standart şimdilik ForcesCommandDef, MilitaryUnitDef ve
+  PurchaseNumberDef üzerinde geçerlidir.
+- Yeni tanım entity'sinde ObjectId, CreationDate, LastUpdate, CreatedBy,
+  ConcurrencyToken, IsActive gibi BaseEntity karşılıklarını yeniden
+  kolon olarak açma; eski entity şemasını önce ortak modelle eşleştir.
+
+4. ŞU AN KODU BULUNAN MODÜLLER / EKRANLAR
+---------------------------------------
+Kullanıcı Tanımları:
+  UI: /app/users
+  Backend: Users CQRS + API.
+  Kullanıcı listesi, arama/filtre/sayfalama, kullanıcı ekle/düzenle,
+  role atama, görev yeri/birlik seçimi, geçerlilik süresi, bazı ek
+  kullanıcı güvenlik alanları, PDF belge yönetimi, parola işlemleri.
+  Uzun ekleme/düzenleme formunda alan altı doğrulama mesajları,
+  hatalı alana otomatik odak ve kaydetme bölümündeki genel hata mesajı
+  geliştirilmiştir.
+
+Rol Tanımları:
+  UI: /app/roles
+  Backend: Roles CQRS + API.
+  Rol CRUD, rol permission kataloğu ve yönetim paneli.
+  Her işlem ayrı CQRS klasöründedir.
+
+Kuvvet Komutanlığı Tanımları:
+  UI: /app/forces-commands
+  Backend: ForcesCommands.
+  ForcesCommandDef : EffectiveDatedEntity, Code/Name ve bağlı birlikler.
+  Birliğe bağlı kuvvet silme/pasifleştirme sınırlamaları API'dedir.
+  Birlikler kuvvet tablosuna FK ile bağlanır.
+
+Birlik Tanımları:
+  UI: /app/military-units
+  Backend: MilitaryUnits.
+  MilitaryUnitDef : EffectiveDatedEntity, Code/Name/ExternalCode,
+  ForcesCommandDef FK, ConnectedTopUnity (üst birlik) ilişkisi.
+  Kullanıcı görev yeri MilitaryUnitDef üzerinden seçilir.
+  Hiyerarşi/döngü ve bağlı kayıt kurallarını koru.
+
+Alım Numarası Tanımları:
+  UI: /app/purchase-numbers
+  Backend: PurchaseNumbers.
+  PurchaseNumberDef : EffectiveDatedEntity; Code, Name,
+  SupplyDescriptionName, DateTime? HealthReportEndDate. ValidFrom ve
+  ValidTo zaten kalıtımla gelir, StartDate/EndDate YOK.
+  Filtreleme, sayfalama, Excel, CRUD, status, soft delete, xmin,
+  alan bazlı form hataları ve ortak audit geçmişi uygulanmıştır.
+  YENİ VERİTABANI TABLOSU için migration GEREKİR (bkz. aşağısı).
+
+İşlem Geçmişi:
+  UI: /app/audit-logs
+  Backend: Auditing/AuditLogs.
+  AuditLog geçmişi aynı SaveChanges transaction'ında tutulur.
+  Kullanıcı/rol/birlik/kuvvet/alım numarası ve izin ilişkilerinin
+  beyaz listelenen alanları takip edilir. Hassas parolalar,
+  JWT/refresh token, güvenliğe duyarlı bilgiler audit'e yazılmaz.
+
+Kimlik Doğrulama:
+  Login, JWT access token, refresh rotation + HttpOnly cookie,
+  logout, change/forgot/reset password, session initialization,
+  hesap kısıtları, CORS ve 401 yönetimi. JWT localStorage'da
+  saklanmaz; refresh cookie JS üzerinden okunmaz.
+
+Rapora ve inceleme/soruşturmaya ait permission kodları tanımlanmıştır;
+menüde başlıklar bulunsa da bunları üretime hazır işlevsel modül
+olarak varsayma. Kullanıcı yeni modülleri sırayla söyleyecektir.
+
+5. ROL VE PERMISSION KURALLARI
+------------------------------
+- Yetki kodları hem Domain.PermissionCodes.cs hem Angular
+  permission-codes.ts hem seed hem API/UI tarafında eşleşmelidir.
+- Tanım ekranı menü ve route erişimi: kullanıcı modülün herhangi bir
+  aktif permission'ına (View/Query/Create/Update/Delete...) sahipse
+  o ekranı açabilir. Sadece Create yetkisi olan da ekrana girip kayıt
+  listesini görebilmeli, aksi halde form kullanılamaz.
+- GERÇEK işlem yetkisi ayrı kalır: Create sadece oluşturur, Update
+  günceller ve status değiştirir, Delete soft delete yapar,
+  Query Excel dışa aktarımını açar. Yalnızca View veya Create,
+  Excel ya da başka bir mutation hakkı sağlamaz.
+- Angular'da permissionService.hasModule ve route permissionModule;
+  API'de [HasPermission(...)] her ilgili eylemde kontrol edilir.
+- Rol izinleri değiştikten sonra kullanıcı refresh/re-login ile
+  yeni yetkileri alır.
+- ADMIN sistemi ilk kurulumda IdentitySeeder verir. Sonradan yeni
+  ADMIN rolü kullanıcıya atanamaz; bir ADMIN kullanıcısı bile atayamaz.
+  API düzeyinde engellenir; role dropdown'u da bu rolü sunmaz.
+  Önceden fazladan ADMIN verilmiş kullanıcıda rol başka bir admin
+  tarafından kaldırılabilir. Son aktif ADMIN korunur.
+  ADMIN kullanıcısının silinmesi/pasifleştirilmesi korunur.
+  Ayrıntı: KLMN/ADMIN_ROLU_KORUMA.md.
+
+6. TASNİF/CRUD EKRANLARI İÇİN UI STANDARDI
+------------------------------------------
+- Kullanıcı Tanımları ekranındaki minimalist tasarım referans alınır.
+  Başlık, kompakt filtre çubuğu, kolon filtre paneli, PrimeNG p-table,
+  sayfalama, sade modal ve ince bölüm ayraçları.
+- FİLTRELEME ve SAYFALAMA backend'e uygulanır; yalnızca ekranda
+  yüklü sayfanın filtrelenmesi yeterli değildir.
+- KOLON SIRALAMASI bu projede kullanıcı talebiyle SADECE
+  frontend PrimeNG p-table pSortableColumn/p-sortIcon üzerinden yapılır.
+  Sırf kolon sıralaması için backend sorting ekleme.
+  Bu, halen yüklü sayfadaki kayıtların sıralamasıdır; tüm veri kümesi
+  sıralaması olarak sunma.
+- Ekleme/düzenleme ve aktifleştirme/pasifleştirme/silme için
+  permission'a göre butonlar göster; API aynı işlemleri ayrıca korur.
+- Excel yalnızca ilgili Query yetkisiyle; Excel sunucu tarafında
+  filtrelenmiş tüm sonuçlardan üretilir (ilgili endpoint limiti olabilir).
+- ValidFrom/ValidTo girişleri boş olabilir; datetime-local / UTC
+  dönüştürmesinde ortak yardımcı kullan.
+- Uzun formlarda hata sadece en üstte kalmamalı: ilgili alanda kısa
+  hata, ilk sorunlu inputa odak ve kaydetme bölgesinde genel hata.
+- UX sade, okunaklı, tutarlı olmalı; gereksiz büyük paneller ekleme.
+
+7. GÜVENLİK VE GİZLİLİK
+----------------------
+Repo "buraktekin04/test" PUBLIC. Gerçek JWT imzalama anahtarı,
+veritabanı şifresi, SMTP kullanıcı/parolası, access/refresh token,
+gerçek kurum veri kümesi veya kişisel verileri pushlama.
+Development: KLMN/Backend/KLMN.Api/appsettings.Development.json.
+Production: KLMN/Backend/KLMN.Api/appsettings.json.
+Production örnek değerleri gerçek sunucu ayarı sanma.
+Angular HTTPS API'ye environment üzerinden doğrudan bağlanır;
+proxy yok. CORS allowed origins ortam bazlı kontrol edilir.
+Gerçek ortam değerleri yerelde/güvenli secret deposunda yönetilmelidir.
+Auth/cookie/SameSite ayrıntısı için KLMN/Backend/README.md'ye bak.
+
+8. MIGRATION / VERİ KAYBI UYARISI — KRİTİK
+-----------------------------------------
+Repo içinde EF Core'un güncel Migrations ve ModelSnapshot zinciri
+bulunmuyor; kullanıcı tarafındaki yerel veritabanında ve projede
+önceden uygulanmış migration'lar olabilir. Bunları silme, snapshot'ı
+rastgele yeniden oluşturma, InitialCreate'i körlemesine yeniden
+uygulama veya tüm tabloyu Drop/Create ile değiştirme.
+Değişen gerçek entity/kolonları mevcut local snapshot'a göre
+migration ile üret, script'i incele, uygun ortama uygula.
+
+Özellikle:
+- Birlik/OrganizationUnit dönüşümünde eski kullanıcı-görev yeri
+  bağlantıları ve gerçek FK'ler korunmalı.
+- Kuvvet bağlantılarında eski nullable GUID'ler varsa referans
+  veri geçişi doğrulanmalı; yanlış GUID'leri zorla null yapma.
+- Yeni PurchaseNumberDefs tablosu için gerçek migration uygulanmalı.
+- Son ForcesCommandDef/MilitaryUnitDef kalıtım refactor'u sadece C#
+  miras/mapping tekrarını kaldırır; mevcut ValidFrom/ValidTo sütun
+  tipleri aynı olduğundan tek başına migration gerektirmemeli.
+- xmin için normal Version kolonu oluşturulmaz.
+- Uygulama Program.cs başlatılırken Database.MigrateAsync()
+  çağırır. Migration oluşturma / test aşamasındaki durumla canlı
+  veritabanı hazırlığı birbirine karıştırılmamalıdır.
+Yardımcılar: KLMN/Backend/KLMN.Persistence/MigrationSupport.
+Ayrıntılar ilgili *_KURULUM.md dosyalarındadır.
+
+9. DERLEME VE TEST — BİLDİĞİMİZ GERÇEK DURUM
+-------------------------------------------
+Örnek backend komutları (KLMN/Backend içinden):
+  dotnet restore KLMN.slnx
+  dotnet build KLMN.slnx
+  dotnet run --project KLMN.Api --launch-profile "KLMN.Api (Development)"
+
+Örnek frontend komutları (KLMN/Frontend içinden):
+  npm install
+  npm run build
+  npm start
+
+Mevcut test projeleri:
+  KLMN/Tests/Users.Regression
+  KLMN/Tests/MilitaryUnits.Regression
+  KLMN/Tests/PurchaseNumbers.Regression
+
+Son geliştirmeler GitHub üzerinden statik kontrol edilerek gönderildi.
+Bu dosyanın güncellemesi sırasında dotnet build, Angular build,
+gerçek PostgreSQL migration, otomatik regresyon ve tarayıcı testleri
+yeniden çalıştırılmadı. Önceki dokümanlarda farklı tarihlerdeki
+derleme/mini test çıktıları yer alabilir. Bunları SON SÜRÜMÜN
+tamamı test edilmiş şeklinde aktarma.
+Kabul öncesinde:
+  - Backend build; frontend build.
+  - FluentValidation, farklı permission kombinasyonları, 401/403/409,
+    session refresh, frontend route ve menu kontrolleri.
+  - Eski kullanıcı/rol/birlik/kuvvet/alım ilişkilerinin migration
+    sonrasında bozulmadığına dair DB kabul testleri.
+  - Create/update/delete/status ve eşzamanlı güncelleme (xmin).
+  - Gerçek kullanıcıyla iş kuralı / kullanılabilirlik değerlendirmesi.
+  - Secrets/CORS/SMTP güvenlik incelemesi gerekir.
+
+10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
+------------------------------------------
+2026-10-14 itibarıyla ana hatlar (sondan eskiye):
+- c4904169d8f1250354cf4eb045787773fa5f5d98:
+  ForcesCommandDef ve MilitaryUnitDef doğrudan BaseEntity yerine
+  EffectiveDatedEntity'den türetildi. Çift ValidFrom/ValidTo özellikleri
+  kaldırıldı, configuration sınıfları ortak
+  EffectiveDatedEntityConfiguration kullanacak şekilde düzenlendi.
+  4 dosyalık, TEK commit; veritabanı kolonları değişmedi.
+- e048210d4ffbc0a9fad62320d4031c34a2e5b92a:
+  Alım Numarası Tanımları full-stack eklendi. Backend CQRS, API,
+  audit, permission seed, frontend p-table/form, Excel, test ve
+  kurulum notları; başlangıç/bitiş alanları StartDate/EndDate
+  DEĞİL, kalıtımla ValidFrom/ValidTo. Bu özellik geçmişteki
+  dört parçalı commit birleştirilerek TEK feature commit yapıldı.
+- 57c658bd4d4276577d5bc5016e3fcbfa69d35e1e ve önceki
+  ilgili commit'ler: ADMIN rolünün yalnızca ilk seed ataması;
+  normal ekranda ve backend'de yeni ADMIN atamasının engellenmesi,
+  eski fazla ADMIN'lerin güvenli kaldırılması.
+- b0d8fa7039200077a107d88646dadc9eb5c829a2:
+  Kullanıcı ekle/düzenle formundaki alan bazlı hata gösterimi,
+  odaklama ve modal alt genel hata.
+- f3901b4c97b28d88c3643d178130114ff351a912:
+  Tanım ekranlarında modülün herhangi bir yetkisiyle menü/sayfa
+  erişimi; eylem permission'ları ayrı.
+- 1be4183eba3c81403953e9b1dc1ba5fab4d9a8e7:
+  p-table kolon sıralaması frontend'de; backend sorting geri alındı.
+
+BU DOSYAYI OLUŞTURAN İŞ: Proje bağlamını yeni sohbetlere taşımak için
+KLMN/beni oku.txt eklendi. Bu ekleme yalnızca dokümantasyondur.
+Bu dosya yazılırken son uygulama/kod commit'i c4904169... idi.
+Bu bölümdeki "son commit" değeri SONRAKİ HER KOD PUSH'UNDA
+güncellenmelidir.
+
+11. BİLİNEN AÇIK İŞLER / SIRADAKİ ÖNCELİKLER
+--------------------------------------------
+Bu liste otomatik görev emri değildir; kullanıcı hangi geliştirmeyle
+devam etmek istediğini yeni mesajında söyleyecek.
+- En yakın teknik kurulum konusu: PurchaseNumberDefs tablosu için
+  mevcut gerçek migration zinciriyle migration oluşturma, script
+  inceleme ve test veritabanına uygulama.
+- Yeni alım numarası, kuvvet, birlik, kullanıcı ve rol modüllerinde
+  backend/frontend build ve gerçek entegrasyon/kabul testleri.
+- Permission davranışlarının farklı rollerle incelenmesi; özellikle
+  yalnızca View veya yalnızca Create alan hesaplar.
+- Legacy MSKBS veri/iş kuralı eşleşmesi ve alan kullanıcılarıyla
+  görüşmelerin sürdürülmesi.
+- İhtiyaç halinde diğer tanım ve iş modüllerinin aynı desenle
+  sırayla eklenmesi; inceleme ve rapor ekranları ayrıca planlanacak.
+- Gerçek production yayını, ölçek, yedekleme, log retansiyonu,
+  güvenlik denetimi ve kullanıcı kabulü henüz tamamlandı olarak
+  beyan edilmemelidir.
+
+12. BİR SONRAKİ ASİSTAN İÇİN İŞ AKIŞI
+------------------------------------
+1) En son GitHub main içindeki KLMN/beni oku.txt dosyasını oku.
+2) GitHub main son commit'ini ve kullanıcının dokunmak istediği
+   dosyaların GERÇEK son halini getir. Bu dosyayı güncel kod
+   yerine varsayım olarak kullanma.
+3) Talebin backend/frontend/DB/test/dokümantasyon etkilerini belirle;
+   var olan sınıfları ve ilişkileri tek tek kontrol et.
+4) Yapılacak işi tamamla, mevcut mimari ve izin kurallarını uygula.
+5) Mümkün olan build/testleri çalıştır; çalıştırılamayanları açıkla.
+6) KLMN/beni oku.txt içinde bu adımları güncelle:
+   * Güncelleme tarihi ve son geliştirme özeti.
+   * Eklenen/değişen modüller ve dosyalar.
+   * Yeni teknik/iş kuralı kararları.
+   * Migration gerekliliği ve uygulanıp uygulanmadığı.
+   * Gerçekten koşulan testler ve sonuçları.
+   * Bilinen eksik/hatalar ve sıradaki iş.
+7) Değişen TÜM kaynak dosyaları + bu TXT + gerekiyorsa diğer belgeleri
+   TEK COMMIT içinde topla; main'e pushla. Commit sonrası SHA/link ver.
+8) Kullanıcıya eksik işi tamamlanmış gibi sunma; kısa ve somut
+   özet ver.
+
+13. AYRINTILI REFERANSLAR
+------------------------
+  KLMN/Backend/README.md
+  KLMN/Frontend/README.md
+  KLMN/CODE_DOCUMENTATION.md
+  KLMN/ROL_TANIMLARI_KURULUM.md
+  KLMN/BIRLIK_TANIMLARI_KURULUM.md
+  KLMN/KUVVET_KOMUTANLIGI_TANIMLARI_KURULUM.md
+  KLMN/ALIM_NUMARASI_TANIMLARI_KURULUM.md
+  KLMN/ADMIN_ROLU_KORUMA.md
+  KLMN/AUDIT_LOG_KURULUM.md
+  KLMN/EXCEL_EXPORT_KURULUM.md
+  KLMN/USER_DEFINITIONS_INSTALL.md
+
+YENİ SOHBETTE KISA BAŞLANGIÇ İFADESİ:
+"buraktekin04/test reposunun main dalındaki KLMN/beni oku.txt
+dosyasını oku, son commit'leri ve gerçek kodu kontrol et.
+Oradaki mimariye ve tek commit + TXT güncelleme kuralına göre
+KLMN geliştirmesine kaldığımız yerden devam edelim."
+
+DOSYA SONU
