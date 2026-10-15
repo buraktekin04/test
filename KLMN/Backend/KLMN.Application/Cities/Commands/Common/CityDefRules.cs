@@ -38,6 +38,21 @@ internal static class CityDefRules
     }
 
     /// <summary>
+    /// Silinmemiş okulları şehir silme işleminde, aktif okulları ise
+    /// şehir pasifleştirme işleminde korur.
+    /// </summary>
+    public static async Task EnsureNoMilitarySchoolsAsync(
+        IKLMNDbContext db, Guid cityId, bool deactivate, CancellationToken ct)
+    {
+        var linked = await db.MilitarySchoolDefs.IgnoreQueryFilters().AnyAsync(x =>
+            x.CityId == cityId && !x.IsDeleted && (!deactivate || x.IsActive), ct);
+        if (linked)
+            throw new CityConflictException(deactivate
+                ? "Aktif askerî okulu bulunan şehir pasifleştirilemez."
+                : "Bağlı askerî okulu bulunan şehir silinemez.");
+    }
+
+    /// <summary>
     /// Bağlı ilçeleri korur: silinen şehir referanssız ilçe bırakmaz,
     /// aktif ilçe barındıran şehir pasifleştirilemez.
     /// </summary>

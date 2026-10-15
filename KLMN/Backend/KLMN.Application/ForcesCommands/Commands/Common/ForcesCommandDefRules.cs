@@ -24,4 +24,19 @@ internal static class ForcesCommandDefRules
             throw new DbUpdateConcurrencyException("Kuvvet komutanlığı başka bir işlemde değiştirildi. Listeyi yenileyiniz.");
         return force;
     }
+    /// <summary>
+    /// Komutanlığa bağlı askerî okulların silme ve pasifleştirmede
+    /// referanssız ya da geçersiz durumda kalmasını engeller.
+    /// </summary>
+    public static async Task EnsureNoMilitarySchoolsAsync(
+        IKLMNDbContext db, Guid forceId, bool deactivate, CancellationToken ct)
+    {
+        var linked = await db.MilitarySchoolDefs.IgnoreQueryFilters().AnyAsync(x =>
+            x.ForcesCommandDefId == forceId && !x.IsDeleted &&
+            (!deactivate || x.IsActive), ct);
+        if (linked)
+            throw new ForcesCommandConflictException(deactivate
+                ? "Aktif askerî okulu bulunan kuvvet komutanlığı pasifleştirilemez."
+                : "Bağlı askerî okulu bulunan kuvvet komutanlığı silinemez.");
+    }
 }

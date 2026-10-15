@@ -29,6 +29,9 @@ public interface IKLMNDbContext
     DbSet<PasswordResetToken> PasswordResetTokens { get; }
     DbSet<ForcesCommandDef> ForcesCommandDefs { get; }
 
+    /// <summary>Askerî okulların sorgu ve komut işlemleri için veri kümesi.</summary>
+    DbSet<MilitarySchoolDef> MilitarySchoolDefs { get; }
+
     DbSet<PurchaseNumberDef> PurchaseNumberDefs { get; }
     DbSet<CountryDef> CountryDefs { get; }
     DbSet<CityDef> CityDefs { get; }

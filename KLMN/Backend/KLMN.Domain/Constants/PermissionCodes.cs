@@ -88,6 +88,16 @@ public static class PermissionCodes
         public const string Delete = "Towns.Delete";
     }
 
+    /// <summary>Askerî Okul Tanımları için eylem bazlı permission kodları.</summary>
+    public static class MilitarySchools
+    {
+        public const string View = "MilitarySchools.View";
+        public const string Query = "MilitarySchools.Query";
+        public const string Create = "MilitarySchools.Create";
+        public const string Update = "MilitarySchools.Update";
+        public const string Delete = "MilitarySchools.Delete";
+    }
+
     public static class PurchaseNumbers
     {
         public const string View = "PurchaseNumbers.View";

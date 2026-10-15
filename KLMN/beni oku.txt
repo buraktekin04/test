@@ -1,6 +1,6 @@
 KLMN PROJESİ — BENİ OKU / DEVİR DOSYASI
 ====================================
-Güncelleme tarihi: 14.10.2026
+Güncelleme tarihi: 15.10.2026
 Repo: https://github.com/buraktekin04/test
 Proje kökü: KLMN/
 Varsayılan dal: main
@@ -144,7 +144,7 @@ BaseEntity zaten şunları taşır:
   property'lerini entity içerisinde veya konfigürasyonlarını ayrı
   ayrı TEKRAR TANIMLAMA.
 - Bu standart şimdilik ForcesCommandDef, MilitaryUnitDef ve
-  PurchaseNumberDef üzerinde geçerlidir.
+  PurchaseNumberDef, CityDef ve MilitarySchoolDef üzerinde geçerlidir.
 - Yeni tanım entity'sinde ObjectId, CreationDate, LastUpdate, CreatedBy,
   ConcurrencyToken, IsActive gibi BaseEntity karşılıklarını yeniden
   kolon olarak açma; eski entity şemasını önce ortak modelle eşleştir.
@@ -218,6 +218,29 @@ Birlik Tanımları:
   CRUD, filtre, sayfalama, önyüz p-table sıralama, Excel, audit ve
   xmin koruması eklendi. TownDefs migration GEREKİR; uygulanmadı.
   Rehber: KLMN/ILCE_TANIMLARI_KURULUM.md.
+
+Askerî Okul Tanımları:
+  UI: /app/military-schools | API: /api/military-schools
+  MilitarySchoolDef : EffectiveDatedEntity. Code, Name, nullable
+  CityId ve ForcesCommandDefId FK'leri; navigasyonlar City ve
+  ForcesCommand. Fotoğraftaki StartDate/EndDate, kalıtımla gelen
+  nullable ValidFrom/ValidTo'ya dönüştürüldü (UTC). BaseEntity
+  kimlik, audit, aktiflik, soft-delete ve xmin alanları tekrar
+  yazılmaz.
+  Ayrı CQRS CRUD/durum, sorgu/filtre/sayfalama, aynı izinle şehir
+  ve kuvvet dropdown seçenekleri, p-table sıralama (frontend),
+  Excel (yalnızca Query), audit ve alan doğrulamaları mevcuttur.
+  Okula yeni bağlanan şehir/kuvvet aktif olmalıdır. Düzenlemede
+  değiştirilmemiş geçmiş pasif bağlantısı korunur. Okul tekrar
+  aktive edilirken bağlı her iki referans aktif olmalıdır.
+  Aktif okulu olan şehir/kuvvet pasifleştirilemez; silinmemiş
+  okul bağlıyken şehir/kuvvet silinemez.
+  CityDef.MilitarySchools ve ForcesCommandDef.MilitarySchools
+  iki ayrı nullable Restrict FK ilişkisiyle eşlenir.
+  Permission: MilitarySchools.View/Query/Create/Update/Delete.
+  YENİ MilitarySchoolDefs tablosu için migration gerekir;
+  repo yerel migration snapshot'ını içermediğinden uygulanmadı.
+  KLMN/ASKERI_OKUL_TANIMLARI_KURULUM.md belgesine bak.
 
 Alım Numarası Tanımları:
   UI: /app/purchase-numbers
@@ -353,6 +376,7 @@ Mevcut test projeleri:
   KLMN/Tests/MilitaryUnits.Regression
   KLMN/Tests/PurchaseNumbers.Regression
   KLMN/Tests/Towns.Regression
+  KLMN/Tests/MilitarySchools.Regression
 
 Son geliştirmeler GitHub üzerinden statik kontrol edilerek gönderildi.
 Bu dosyanın güncellemesi sırasında dotnet build, Angular build,
@@ -372,7 +396,20 @@ Kabul öncesinde:
 
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
-2026-10-14 itibarıyla ana hatlar (sondan eskiye):
+2026-10-15 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-15 (bu commit — Askerî Okul Tanımları):
+  MilitarySchoolDef ve nullable CityId/ForcesCommandDefId, ortak
+  ValidFrom/ValidTo, iki Restrict FK, tüm ayrı CQRS CRUD/Query
+  katmanları, API, Excel, audit, permission seed, Angular form/liste
+  ve navigasyon eklendi. CityDef ve ForcesCommandDef silme/
+  pasifleştirme kurallarına bağlı okul korumaları eklendi.
+  KLMN/Tests/MilitarySchools.Regression ve
+  KLMN/ASKERI_OKUL_TANIMLARI_KURULUM.md hazırlandı.
+  Kod açıklamalarında Türkçe XML/JSDoc standardı korundu.
+  MilitarySchoolDefs migration gerekli ve henüz uygulanmadı.
+  Statik kod/sözleşme kontrolleri yapıldı; dotnet build,
+  Angular build, gerçek DB migration, regresyon çalıştırma
+  ve browser testleri bu commit'te yapılmadı.
 - 2026-10-14 (bu commit — İlçe Tanımları):
   TownDef, ayrı CQRS command/query/handler/validator, EF mapping,
   nullable şehir FK, şehirden ilçe referans korumaları, API, Excel,
@@ -461,7 +498,7 @@ geliştirme özeti mutlaka güncellenmelidir.
 Bu liste otomatik görev emri değildir; kullanıcı hangi geliştirmeyle
 devam etmek istediğini yeni mesajında söyleyecek.
 - En yakın teknik kurulum konusu: PurchaseNumberDefs, CountryDefs,
-  CityDefs ve TownDefs tabloları için mevcut migration zinciriyle
+  CityDefs, TownDefs ve MilitarySchoolDefs için mevcut migration zinciriyle
   migration, SQL script inceleme ve test veritabanına uygulama.
   CityDefs -> TownDefs nullable Restrict FK doğrulanmalı.
 - Yeni alım numarası, kuvvet, birlik, kullanıcı ve rol modüllerinde
@@ -512,6 +549,7 @@ devam etmek istediğini yeni mesajında söyleyecek.
   KLMN/ALIM_NUMARASI_TANIMLARI_KURULUM.md
   KLMN/ULKE_SEHIR_TANIMLARI_KURULUM.md
   KLMN/ILCE_TANIMLARI_KURULUM.md
+  KLMN/ASKERI_OKUL_TANIMLARI_KURULUM.md
   KLMN/ADMIN_ROLU_KORUMA.md
   KLMN/AUDIT_LOG_KURULUM.md
   KLMN/EXCEL_EXPORT_KURULUM.md

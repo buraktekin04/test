@@ -12,6 +12,7 @@ public sealed class DeleteCityDefCommandHandler(IKLMNDbContext db) : IRequestHan
         // Şehir soft-delete edilse bile ilçeler var olan CityId değerlerini taşır.
         // Bu nedenle silinmemiş herhangi bir ilçe varsa işlemi reddet.
         await CityDefRules.EnsureNoTownsAsync(db, item.Id, deactivate: false, ct);
+        await CityDefRules.EnsureNoMilitarySchoolsAsync(db, item.Id, deactivate: false, ct);
         db.CityDefs.Remove(item);
         await db.SaveChangesAsync(ct);
 

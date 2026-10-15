@@ -35,6 +35,12 @@ export const PermissionCodes = {
     Create: 'Countries.Create', Update: 'Countries.Update', Delete: 'Countries.Delete'
   },
   /** İlçe Tanımları için UI izin kodları. */
+  /** Askerî Okul Tanımları işlem izinleri. */
+  MilitarySchools: {
+    View: 'MilitarySchools.View', Query: 'MilitarySchools.Query',
+    Create: 'MilitarySchools.Create', Update: 'MilitarySchools.Update',
+    Delete: 'MilitarySchools.Delete'
+  },
   Towns: {
     View: 'Towns.View', Query: 'Towns.Query', Create: 'Towns.Create',
     Update: 'Towns.Update', Delete: 'Towns.Delete'

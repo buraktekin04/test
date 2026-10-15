@@ -2,6 +2,7 @@ using KLMN.Application.ForcesCommands.Exceptions;
 using KLMN.Application.PurchaseNumbers.Exceptions;
 using KLMN.Application.Countries.Exceptions;
 using KLMN.Application.Cities.Exceptions;
+using KLMN.Application.MilitarySchools.Exceptions;
 using KLMN.Application.Towns.Exceptions;
 using System.Diagnostics;
 using FluentValidation;
@@ -169,6 +170,12 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             TownConflictException =>
                 new ProblemDetails { Status = StatusCodes.Status409Conflict,
                     Title = "İlçe işlemi gerçekleştirilemedi.", Detail = exception.Message },
+            MilitarySchoolNotFoundException =>
+                new ProblemDetails { Status = StatusCodes.Status404NotFound,
+                    Title = "Askerî okul bulunamadı.", Detail = exception.Message },
+            MilitarySchoolConflictException =>
+                new ProblemDetails { Status = StatusCodes.Status409Conflict,
+                    Title = "Askerî okul işlemi gerçekleştirilemedi.", Detail = exception.Message },
             CityNotFoundException =>
                 new ProblemDetails { Status = StatusCodes.Status404NotFound,
                     Title = "Şehir bulunamadı.", Detail = exception.Message },
