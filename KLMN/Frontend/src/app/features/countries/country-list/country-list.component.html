@@ -33,7 +33,7 @@
     <form [formGroup]="filterForm" (ngSubmit)="search()">
       <div class="search-field">
         <i class="pi pi-search" aria-hidden="true"></i>
-        <input pInputText formControlName="search" placeholder="Kod, ad veya harici kod ara..."
+        <input pInputText formControlName="search" placeholder="Kod, ad, ülke kısa kodu veya harici kod ara..."
                aria-label="Ülke ara" />
       </div>
       <div class="inactive-filter">
@@ -73,7 +73,12 @@
             </select>
           </div>
           <div class="column-filter-field">
-                        <label for="countries-town-filter">Doğum Yeri Gerekir</label>
+            <label for="countries-shortCode-filter">Ülke Kısa Kodu</label>
+            <input pInputText id="countries-shortCode-filter" formControlName="shortCode"
+                   placeholder="TR, DE, USA..." autocomplete="off" />
+          </div>
+          <div class="column-filter-field">
+            <label for="countries-town-filter">Doğum Yeri Gerekir</label>
             <select id="countries-town-filter" formControlName="isTownRequired">
               <option [ngValue]="null">Tümü</option>
               <option [ngValue]="true">Evet</option>
@@ -91,11 +96,12 @@
     }
     <div class="table-scroll" role="region" tabindex="0" aria-label="Ülke kayıtları">
       <p-table [value]="records()" [loading]="loading()"
-               [tableStyle]="{ 'min-width': '980px', 'width': '100%' }">
+               [tableStyle]="{ 'min-width': '1110px', 'width': '100%' }">
         <ng-template pTemplate="header">
           <tr>
             <th pSortableColumn="name">Ülke Adı <p-sortIcon field="name" /></th>
             <th pSortableColumn="code">Kod <p-sortIcon field="code" /></th>
+            <th pSortableColumn="shortCode">Ülke Kısa Kodu <p-sortIcon field="shortCode" /></th>
             <th pSortableColumn="externalCode">Harici Kod <p-sortIcon field="externalCode" /></th>
             <th pSortableColumn="isTownRequired">Doğum Yeri Gerekir <p-sortIcon field="isTownRequired" /></th>
             <th pSortableColumn="cityCount">Şehir Sayısı <p-sortIcon field="cityCount" /></th>
@@ -109,6 +115,7 @@
             <td><div class="record-name-cell"><i class="pi pi-map-marker" aria-hidden="true"></i>
               <strong [title]="item.name">{{ item.name }}</strong></div></td>
             <td><code class="record-code">{{ item.code }}</code></td>
+            <td>{{ item.shortCode || '—' }}</td>
             <td>{{ item.externalCode || '—' }}</td>
             <td>{{ item.isTownRequired === null ? 'Belirtilmedi' : (item.isTownRequired ? 'Evet' : 'Hayır') }}</td>
             <td>{{ item.cityCount }}</td>
@@ -144,7 +151,7 @@
           </tr>
         </ng-template>
         <ng-template pTemplate="emptymessage">
-          <tr><td [attr.colspan]="canUpdate() || canDelete() || canAudit() ? 8 : 7"
+          <tr><td [attr.colspan]="canUpdate() || canDelete() || canAudit() ? 9 : 8"
                   class="empty-table">Arama koşullarına uygun kayıt bulunamadı.</td></tr>
         </ng-template>
       </p-table>
@@ -190,6 +197,13 @@
         <input pInputText id="countries-name" formControlName="name" autocomplete="off"
                placeholder="Ülke adı" />
         @if (fieldError('name'); as message) { <small class="field-error">{{ message }}</small> }
+      </div>
+      <div class="form-field">
+        <label for="countries-shortCode">Ülke Kısa Kodu</label>
+        <input pInputText id="countries-shortCode" formControlName="shortCode" autocomplete="off"
+               maxlength="10" placeholder="Örn. TR, DE, USA" />
+        <small>2–10 Latin harfi; harici koddan bağımsızdır. Eski kayıtlarda boş olabilir.</small>
+        @if (fieldError('shortCode'); as message) { <small class="field-error">{{ message }}</small> }
       </div>
       <div class="form-field">
         <label for="countries-externalCode">Harici Kod</label>

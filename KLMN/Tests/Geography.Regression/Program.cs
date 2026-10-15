@@ -17,13 +17,19 @@ static void Check(bool result, string name)
     if (!result) throw new Exception("FAIL " + name);
     Console.WriteLine("PASS " + name);
 }
-var country = new CreateCountryDefCommand("TR", "Türkiye", "TUR", true);
+// Mevcut ExternalCode alanı (ör. eski sistem TUR) korunur; ShortCode ayrı alan olmalıdır.
+var country = new CreateCountryDefCommand("TR", "Türkiye", "TUR", true, "TR");
 var countryValidator = new CreateCountryDefCommandValidator();
 Check(countryValidator.Validate(country).IsValid, "Ülke formu geçerli");
+Check(countryValidator.Validate(country with { ShortCode = null }).IsValid, "Eski ülke için nullable kısa kod");
+Check(countryValidator.Validate(country with { ShortCode = "USA" }).IsValid, "Üç harfli kısa kod");
+Check(!countryValidator.Validate(country with { ShortCode = "X" }).IsValid, "Tek harf kısa kod reddedilir");
+Check(!countryValidator.Validate(country with { ShortCode = "T1" }).IsValid, "Rakam içeren kısa kod reddedilir");
+Check(!countryValidator.Validate(country with { ShortCode = "TOOLONGCOUNTRY" }).IsValid, "Uzun kısa kod reddedilir");
 Check(!countryValidator.Validate(country with { Code = "" }).IsValid, "Ülke kodu zorunlu");
 Check(!countryValidator.Validate(country with { Name = "" }).IsValid, "Ülke adı zorunlu");
 Check(countryValidator.Validate(country with { IsTownRequired = null }).IsValid, "Nullable ilçe zorunluluğu");
-Check(!new UpdateCountryDefCommandValidator().Validate(new UpdateCountryDefCommand(Guid.Empty, 0, "TR", "Türkiye", null, null)).IsValid,
+Check(!new UpdateCountryDefCommandValidator().Validate(new UpdateCountryDefCommand(Guid.Empty, 0, "TR", "Türkiye", null, null, "TR")).IsValid,
     "Ülke güncellemesi Id ve xmin ister");
 Check(!new DeleteCountryDefCommandValidator().Validate(new DeleteCountryDefCommand(Guid.NewGuid(), 0)).IsValid,
     "Ülke silmesi xmin ister");
@@ -52,9 +58,13 @@ Check(!new GetCountryDefsQueryValidator().Validate(new GetCountryDefsQuery(PageS
     "Ülke sayfa üst sınırı");
 Check(!new GetCityDefsQueryValidator().Validate(new GetCityDefsQuery(PageNumber:0)).IsValid,
     "Şehir sayfa alt sınırı");
-var countryEntity = new CountryDef { Code="TR", Name="Türkiye", IsTownRequired=null };
+var countryEntity = new CountryDef { Code="TR", Name="Türkiye", ExternalCode="LEGACY_EXTERNAL", ShortCode="TR", IsTownRequired=null };
 var countryDto = CountryDefResponse.Projection.Compile()(countryEntity);
 Check(countryDto.Id == countryEntity.Id && countryDto.CityCount == 0, "Ülke response projection");
+Check(countryDto.ShortCode == "TR" && countryDto.ExternalCode == "LEGACY_EXTERNAL",
+    "Ülke kısa kodu ve harici kod DTO'da birbirinden bağımsız");
+Check(countryValidator.Validate(country with { ShortCode = "de", ExternalCode = "CUSTOM-EXT" }).IsValid,
+    "Kısa kod ve harici kod farklı amaçlarla girilebilir");
 var cityEntity = new CityDef { Code="06", Name="Ankara", CountryId=countryEntity.Id, ValidFrom=start };
 var cityDto = CityDefResponse.Projection.Compile()(cityEntity);
 Check(cityDto.Id == cityEntity.Id && cityDto.ValidFrom == start, "Şehir response projection");

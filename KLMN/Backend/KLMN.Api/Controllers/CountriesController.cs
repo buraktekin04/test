@@ -52,6 +52,7 @@ public sealed class CountriesController(ISender sender, IExcelExportService exce
             new("Kod", x => x.Code, Width: 22),
             new("Ülke Adı", x => x.Name, Width: 36),
             new("Harici Kod", x => x.ExternalCode, Width: 24),
+            new("Ülke Kısa Kodu", x => x.ShortCode, Width: 20),
             new("Doğum Yeri Gerekir", x => x.IsTownRequired.HasValue ? (x.IsTownRequired.Value ? "Evet" : "Hayır") : "Belirtilmedi", Width: 26),
             new("Şehir Sayısı", x => x.CityCount, Width: 20),
             new("Durum", x => x.IsActive ? "Aktif" : "Pasif", Width: 16),

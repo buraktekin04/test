@@ -8,6 +8,7 @@ import {
   UpdateCountryDefRequest, ChangeCountryDefStatusRequest, CountryDefMutationResponse
 } from '../models/countries.model';
 
+/** Ülke kısa kodunu ExternalCode alanına dokunmadan API'de kullanır. */
 @Injectable({ providedIn: 'root' })
 export class CountryService {
   private readonly http = inject(HttpClient);
@@ -20,6 +21,7 @@ export class CountryService {
     if (query.search.trim()) params = params.set('search', query.search.trim());
     if (query.isActive !== null) params = params.set('isActive', query.isActive);
     if (query.isTownRequired !== null) params = params.set('isTownRequired', query.isTownRequired);
+    if (query.shortCode?.trim()) params = params.set('shortCode', query.shortCode.trim());
     return params;
   }
   public list(query: CountryQuery): Observable<PagedResult<CountryDefItem>> {

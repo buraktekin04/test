@@ -16,6 +16,18 @@ internal static class CountryDefRules
             throw new CountryConflictException("Bu ülke kodu zaten kayıtlıdır.");
     }
 
+    /// <summary>Ülke kısa kodunu harici koddan bağımsız olarak doğrular; soft-delete tekilliği korur.</summary>
+    public static async Task EnsureUniqueShortCodeAsync(
+        IKLMNDbContext db, string? shortCode, Guid? excludedId, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(shortCode)) return;
+        var normalized = shortCode.Trim().ToUpperInvariant();
+        if (await db.CountryDefs.IgnoreQueryFilters().AnyAsync(x =>
+            !x.IsDeleted && (!excludedId.HasValue || x.Id != excludedId.Value) &&
+            x.ShortCode != null && x.ShortCode.ToUpper() == normalized, ct))
+            throw new CountryConflictException("Bu ülke kısa kodu zaten kullanılıyor.");
+    }
+
     public static async Task<CountryDef> LoadForChangeAsync(IKLMNDbContext db, Guid id, uint version, CancellationToken ct)
     {
         var entity = await db.CountryDefs.IgnoreQueryFilters()

@@ -184,7 +184,14 @@ Birlik Tanımları:
 
 Ülke Tanımları:
   UI: /app/countries | API: /api/countries
-  CountryDef : BaseEntity; Code, Name, ExternalCode?, bool? IsTownRequired.
+  CountryDef : BaseEntity; Code, Name, ExternalCode?,
+  ShortCode? (Ülke Kısa Kodu), bool? IsTownRequired.
+  ShortCode harici entegrasyon kodundan BAĞIMSIZ bir alandır,
+  TR/DE/USA gibi 2–10 Latin harfi, opsiyonel ve benzersizdir.
+  Eski veriye geriye dönük müdahale edilmez; mevcut ExternalCode
+  asla otomatik ShortCode'a kopyalanmaz.
+  Ekranda ayrı form alanı, liste/kolon sıralama, kolon filtresi,
+  backend genel arama/ShortCode filtresi, Excel ve audit bulunur.
   IsTownRequired için kullanıcıya görünen ad "Doğum Yeri Gerekir"dir.
   Liste/filtre/form/Excel'de bu metni kullan; C# entity, API ve DB
   alanının teknik adı IsTownRequired olarak kalır (migration gerektirmez).
@@ -460,7 +467,23 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-15 itibarıyla ana hatlar (sondan eskiye):
-- 2026-10-15 (bu commit — Askerî Sınıf Grubu ve Eşleştirmeler):
+- 2026-10-15 (bu commit — Ülke Kısa Kodu):
+  CountryDef'e nullable ShortCode (kısa ülke kodu) eklendi.
+  Code ve ExternalCode alanları değiştirilmedi.
+  CQRS Create/Update/Validator, kod benzersizlik kontrolü,
+  EF Core nullable kolonu/partial unique index, Country DTO,
+  liste araması/ShortCode filtresi, Excel ve audit genişletildi.
+  Angular Ülke Tanımları popup'ı, liste/kısa kod sıralaması,
+  kolon filtresi, servis/model ve form hataları güncellendi.
+  Geography.Regression test kaynakları ve
+  KLMN/ULKE_SEHIR_TANIMLARI_KURULUM.md yenilendi.
+  Var olan ülkeler için ShortCode NULL bırakılır;
+  ExternalCode değerleri otomatik aktarılmaz veya değiştirilmez.
+  Migration GEREKLİ: AddCountryShortCode yerel mevcut EF
+  ModelSnapshot üzerinden oluşturulmalı; bu commit'te
+  migration oluşturulmadı/uygulanmadı. Gerçek DB ve build/
+  tarayıcı testleri çalıştırılmadı. Statik sözleşme kontrolü yapılacak.
+- 2026-10-15 (önceki commit — Askerî Sınıf Grubu ve Eşleştirmeler):
   MilitaryClassGroupDef, MilitaryClassGroupRelation, EF FK/partial
   unique index, ayrı CQRS Handler/Validator/Query sınıfları,
   API, Excel, iki Angular tanım/eşleştirme ekranı, permission seed,

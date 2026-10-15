@@ -9,6 +9,8 @@ public sealed class CountryDefResponse
     public string Code { get; init; } = string.Empty;
     public string Name { get; init; } = string.Empty;
     public string? ExternalCode { get; init; }
+    /// <summary>Harici koddan bağımsız, örneğin TR/DE/USA kısa ülke kodu.</summary>
+    public string? ShortCode { get; init; }
     public bool? IsTownRequired { get; init; }
     public int CityCount { get; init; }
     public bool IsActive { get; init; }
@@ -21,7 +23,7 @@ public sealed class CountryDefResponse
     public static Expression<Func<CountryDef, CountryDefResponse>> Projection => x =>
         new CountryDefResponse
         {
-            Id=x.Id, Code=x.Code, Name=x.Name, ExternalCode=x.ExternalCode,
+            Id=x.Id, Code=x.Code, Name=x.Name, ExternalCode=x.ExternalCode, ShortCode=x.ShortCode,
             IsTownRequired=x.IsTownRequired, CityCount=x.Cities.Count(c => !c.IsDeleted),
             IsActive=x.IsActive, CreatedDate=x.CreatedDate, CreatedBy=x.CreatedBy,
             UpdatedDate=x.UpdatedDate, UpdatedBy=x.UpdatedBy, Version=x.Version

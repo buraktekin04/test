@@ -20,9 +20,9 @@ import {
 } from '../models/countries.model';
 import { CountryService } from '../services/countries.service';
 
-type FormField = 'code' | 'name' | 'externalCode' | 'isTownRequired';
+type FormField = 'code' | 'name' | 'shortCode' | 'externalCode' | 'isTownRequired';
 
-/** Ülke Tanımları: backend filtreleri, ayrı işlem yetkileri ve sade form. */
+/** Ülke Tanımları: ExternalCode'dan bağımsız ShortCode, izin bazlı CRUD ve sade form. */
 @Component({
   selector: 'app-country-list',
   standalone: true,
@@ -66,12 +66,14 @@ export class CountryListComponent implements OnInit {
   public readonly filterForm = this.fb.nonNullable.group({ search: '', includeInactive: false });
   public readonly columnFilterForm = this.fb.group({
     isActive: this.fb.control<boolean | null>(null),
-    isTownRequired: this.fb.control<boolean | null>(null)
+    isTownRequired: this.fb.control<boolean | null>(null),
+    shortCode: ''
   });
   public readonly itemForm = this.fb.nonNullable.group({
     code: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/^[A-Za-z0-9_-]+$/)]],
     name: ['', [Validators.required, Validators.maxLength(250)]],
     externalCode: ['', Validators.maxLength(100)],
+    shortCode: ['', [Validators.maxLength(10), Validators.pattern(/^$|^[A-Za-z]{2,10}$/)]],
     isTownRequired: ['']
   });
   public readonly totalPages = computed(() => Math.max(1, Math.ceil(this.totalCount() / this.pageSize())));
@@ -98,6 +100,7 @@ export class CountryListComponent implements OnInit {
       includeInactive: search.includeInactive || filters.isActive === false,
       isActive: filters.isActive,
       isTownRequired: filters.isTownRequired,
+      shortCode: filters.shortCode.trim() || null,
       pageNumber: this.pageNumber(), pageSize: this.pageSize()
     };
   }
@@ -125,7 +128,7 @@ export class CountryListComponent implements OnInit {
   public applyFilters(): void { this.pageNumber.set(1); this.loadRecords(); }
   public clearFilters(): void {
     this.filterForm.reset({search:'', includeInactive:false});
-    this.columnFilterForm.reset({ isActive:null, isTownRequired:null });
+    this.columnFilterForm.reset({ isActive:null, isTownRequired:null, shortCode:'' });
     this.pageNumber.set(1);
     this.loadRecords();
   }
@@ -161,7 +164,7 @@ export class CountryListComponent implements OnInit {
     if (!this.canCreate() || this.saving()) return;
     ++this.dialogRequestId;
     this.editing.set(null);
-    this.itemForm.reset({ code:'', name:'', externalCode:'', isTownRequired:'' });
+    this.itemForm.reset({ code:'', name:'', shortCode:'', externalCode:'', isTownRequired:'' });
     this.attemptedSave.set(false);
     this.fieldServerErrors.set({});
     this.formError.set(null);
@@ -177,7 +180,8 @@ export class CountryListComponent implements OnInit {
       next: detail => {
         if (requestId !== this.dialogRequestId) return;
         this.editing.set(detail);
-        this.itemForm.reset({ code: detail.code, name: detail.name, externalCode: detail.externalCode ?? '',
+        this.itemForm.reset({ code: detail.code, name: detail.name, shortCode: detail.shortCode ?? '',
+          externalCode: detail.externalCode ?? '',
           isTownRequired: detail.isTownRequired === null ? '' : String(detail.isTownRequired) });
         this.attemptedSave.set(false);
         this.fieldServerErrors.set({});
@@ -219,7 +223,7 @@ export class CountryListComponent implements OnInit {
     this.fieldServerErrors.set({});
     if (this.itemForm.invalid) {
       this.itemForm.markAllAsTouched();
-      const first = (['code','name','externalCode'] as FormField[])
+      const first = (['code','name','shortCode','externalCode'] as FormField[])
         .find(f => this.itemForm.controls[f].invalid);
       if (first) this.focusField(first);
       return;
@@ -229,6 +233,7 @@ export class CountryListComponent implements OnInit {
     const fields: CountryFields = {
       code: values.code.trim().toUpperCase(),
       name: values.name.trim(),
+      shortCode: values.shortCode.trim().toUpperCase() || null,
       externalCode: values.externalCode.trim() || null,
       isTownRequired: values.isTownRequired === '' ? null : values.isTownRequired === 'true'
     };

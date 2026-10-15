@@ -4,6 +4,8 @@ export interface CountryDefItem {
   code: string;
   name: string;
   externalCode: string | null;
+  /** Harici koddan bağımsız kısa ülke kodu (TR, DE, USA). */
+  shortCode: string | null;
     isTownRequired: boolean | null;
   cityCount: number;
   isActive: boolean;
@@ -15,11 +17,13 @@ export interface CountryDefItem {
 }
 export interface CountryFields {
   code: string; name: string; externalCode: string | null;
+  shortCode: string | null;
   isTownRequired: boolean | null;
 }
 export interface CountryQuery {
   search: string; includeInactive: boolean; isActive: boolean | null;
   isTownRequired: boolean | null;
+  shortCode: string | null;
   pageNumber: number; pageSize: number;
 }
 export interface UpdateCountryDefRequest extends CountryFields { id: string; version: number; }

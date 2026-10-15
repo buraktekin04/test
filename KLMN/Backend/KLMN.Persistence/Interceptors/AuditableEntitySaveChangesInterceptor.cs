@@ -36,7 +36,7 @@ public sealed class AuditableEntitySaveChangesInterceptor(
                 "ValidFrom", "ValidTo", "IsActive"),
             ["MilitaryClassGroupRelation"] = Fields("ForcesCommandId", "MilitaryClassId",
                 "MilitaryClassGroupId", "IsActive"),
-            ["CountryDef"] = Fields("Code", "Name", "ExternalCode", "IsTownRequired", "IsActive"),
+            ["CountryDef"] = Fields("Code", "Name", "ShortCode", "ExternalCode", "IsTownRequired", "IsActive"),
             ["CityDef"] = Fields("Code", "Name", "ExternalCode", "CountryId", "MernisCode",
                 "ValidFrom", "ValidTo", "IsActive"),
             ["TownDef"] = Fields("Code", "Name", "ExternalCode", "CityId", "MernisCode", "IsActive"),

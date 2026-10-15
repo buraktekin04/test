@@ -10,10 +10,12 @@ public sealed class UpdateCountryDefCommandHandler(IKLMNDbContext db) : IRequest
     {
         var item = await CountryDefRules.LoadForChangeAsync(db, request.Id, request.Version, ct);
         await CountryDefRules.EnsureUniqueCodeAsync(db, request.Code, item.Id, ct);
+        await CountryDefRules.EnsureUniqueShortCodeAsync(db, request.ShortCode, item.Id, ct);
 
         item.Code = request.Code.Trim().ToUpperInvariant();
         item.Name = request.Name.Trim();
         item.ExternalCode = string.IsNullOrWhiteSpace(request.ExternalCode) ? null : request.ExternalCode.Trim();
+        item.ShortCode = string.IsNullOrWhiteSpace(request.ShortCode) ? null : request.ShortCode.Trim().ToUpperInvariant();
         item.IsTownRequired = request.IsTownRequired;
 
         await db.SaveChangesAsync(ct);

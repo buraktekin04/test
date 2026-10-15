@@ -1,7 +1,13 @@
 # Ülke ve Şehir Tanımları — KLMN (14.10.2026)
 
 ## Eski MSKBS modeli -> KLMN
-- CountryDef: Code, Name, ExternalCode?, IsTownRequired? (bool?).
+- CountryDef: Code, Name, ExternalCode?, ShortCode?, IsTownRequired? (bool?).
+  ShortCode: ülkelerin kısaltılmış harf kodu (TR, DE, USA);
+  ExternalCode: harici entegrasyon kodudur ve farklı amaçla korunur.
+  Bu iki alan birbirine eşit kabul edilmez ve otomatik kopyalanmaz.
+  ShortCode isteğe bağlıdır (eski kayıtları kırmamak için NULL); doluysa
+  2–10 Latin harfi olarak büyük harfle saklanır ve silinmemiş kayıtlar
+  arasında tektir. Mevcut CountryDef.Code ve ExternalCode değişmedi.
 - CityDef: Code, Name, ExternalCode?, Country (Guid?), MernisCode? (int?),
   StartDate/EndDate. KLMN'de isimler CountryId (nullable FK), ValidFrom,
   ValidTo'dur. CityDef : EffectiveDatedEntity.
@@ -27,7 +33,9 @@
 
 ## HTTP ve yetki
 - GET /api/countries ve /api/cities: search, includeInactive, isActive,
-  pageNumber/pageSize; ülke için isTownRequired, şehir için countryId filtresi.
+  pageNumber/pageSize; ülke için isTownRequired, shortCode
+  (kısa koda göre filtre), şehir için countryId filtresi.
+  Ülke genel search araması ShortCode alanında da arama yapar.
 - GET /api/countries/{id} ve /api/cities/{id}: detay ve Version.
 - GET /api/cities/country-options: şehir oluşturma/düzenlemede aktif
   ülke seçimi; yalnızca Cities modülündeki herhangi bir yetki yeterli,
@@ -46,6 +54,10 @@
   p-table kolon sıralama yalnızca önyüzde; backend filtre/sayfalama.
 - Şehir formunda ülke select ve MERNİS sayısal doğrulaması, nullable
   geçerlilik tarihi ve UTC dönüşümü bulunur.
+- Ülke formunda bağımsız "Ülke Kısa Kodu" alanı (TR, DE, USA),
+  mevcut "Harici Kod" alanının yanında yer alır. Ülke listesinde
+  ayrı sıralanabilir kolon, kolon filtresi, genel arama ve Excel
+  sütunu olarak da gösterilir; kısa kod boş olabilir.
 - Ülke formunda "Doğum Yeri Gerekir" etiketli IsTownRequired alanı
   Belirtilmedi/Evet/Hayır seçenekleriyle gösterilir. Aynı başlık ülke listesi,
   kolon filtresi ve Excel dışa aktarımında kullanılır.
@@ -62,6 +74,15 @@ Yerel KLMN/Backend klasöründe mevcut snapshot üzerinden:
 Üretilen migrasyonda CountryDefs, CityDefs, unique/index'ler, nullable
 CountryId ve Restrict FK olmalı. ValidFrom/ValidTo yalnızca CityDefs'e
 nullable timestamptz olarak açılır; Version diye normal sütun açılmaz.
+Yeni ShortCode alanı için ülke tablosu mevcutsa ayrı ve GÜVENLİ migration:
+  dotnet ef migrations add AddCountryShortCode --project KLMN.Persistence --startup-project KLMN.Api --context KLMNDbContext
+  dotnet ef migrations script --project KLMN.Persistence --startup-project KLMN.Api --context KLMNDbContext
+  dotnet ef database update --project KLMN.Persistence --startup-project KLMN.Api --context KLMNDbContext
+SQL incelemesinde CountryDefs tablosuna NULL kabul eden varchar(10)
+ShortCode kolonu ve silinmemiş, ShortCode dolu kayıtlar için unique
+partial index eklenmeli. Mevcut ExternalCode sütunu ve değerleri
+KESİNLİKLE değiştirilmemeli, ShortCode'a otomatik aktarılmamalıdır.
+Bu commit'te gerçek DB migration'ı uygulanmadı.
 İlişkili eski ülke/şehir verileri göç ettirilecekse gerçek Country GUID'leri
 doğrulanmalı; düzmece veri veya varsayımsal eşleştirme yapılmamalıdır.
 PostgreSQL + tarayıcı canlı kabul testleri bu commit'te çalıştırılmadı.
