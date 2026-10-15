@@ -112,7 +112,7 @@
             <th pSortableColumn="validTo">Geçerli Bitiş <p-sortIcon field="validTo" /></th>
             <th pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
             <th pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
-            @if (canUpdate() || canDelete() || canAudit()) { <th>İşlemler</th> }
+            @if (canUpdate() || canDelete() || canAudit()) { <th class="sticky-actions-col">İşlemler</th> }
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item>
@@ -128,7 +128,7 @@
                        [severity]="item.isActive ? 'success' : 'secondary'"></p-tag></td>
             <td>{{ item.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
             @if (canUpdate() || canDelete() || canAudit()) {
-              <td><div class="row-actions">
+              <td class="sticky-actions-col"><div class="row-actions">
                 @if (canUpdate()) {
                   <p-button type="button" icon="pi pi-pencil" size="small" severity="secondary"
                             [text]="true" ariaLabel="Düzenle"

@@ -85,6 +85,27 @@
             </select>
           </div>
           <div class="column-filter-field">
+            <label for="orgForceColumnFilter">Kuvvet Komutanlığı</label>
+            <select id="orgForceColumnFilter" formControlName="forcesCommandDef">
+              <option [ngValue]="null">Tüm kuvvet komutanlıkları</option>
+              @for (force of columnForceOptions(); track force.id) {
+                <option [ngValue]="force.id">{{ force.name }} ({{ force.code }})</option>
+              }
+            </select>
+          </div>
+          <div class="column-filter-field">
+            <label for="orgParentColumnFilter">Üst Birlik</label>
+            <select id="orgParentColumnFilter" formControlName="connectedTopUnity"
+                    (change)="onParentColumnFilterChanged()">
+              <option [ngValue]="null">Tüm üst birlikler</option>
+              @for (parent of columnParentOptions(); track parent.id) {
+                <option [ngValue]="parent.id">{{ parent.name }} ({{ parent.code }})
+                  @if (parent.forceName) { — {{ parent.forceName }} }
+                </option>
+              }
+            </select>
+          </div>
+          <div class="column-filter-field">
             <label for="orgRootFilter">Birlik Seviyesi</label>
             <select id="orgRootFilter" formControlName="rootOnly">
               <option [ngValue]="null">Tüm Birlikler</option>
@@ -92,6 +113,15 @@
             </select>
           </div>
         </div>
+        @if (columnOptionsLoading()) {
+          <small role="status" class="form-info">Kuvvet ve üst birlik seçenekleri yükleniyor...</small>
+        }
+        @if (columnOptionsError()) {
+          <div class="form-save-error" role="alert">
+            {{ columnOptionsError() }}
+            <button type="button" (click)="loadColumnFilterOptions()">Tekrar dene</button>
+          </div>
+        }
         <div class="column-filter-actions">
           <p-button type="button" label="Tümünü Temizle" icon="pi pi-filter-slash"
                     severity="secondary" [outlined]="true"
@@ -119,7 +149,7 @@
             <th pSortableColumn="validTo">Bitiş <p-sortIcon field="validTo" /></th>
             <th pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
             @if (canUpdate() || canDelete() || canViewAudit()) {
-              <th>İşlemler</th>
+              <th class="sticky-actions-col">İşlemler</th>
             }
           </tr>
         </ng-template>
@@ -158,7 +188,7 @@
             </td>
             <td>{{ unit.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
             @if (canUpdate() || canDelete() || canViewAudit()) {
-              <td>
+              <td class="sticky-actions-col">
                 <div class="row-actions">
                   @if (canUpdate()) {
                     <p-button type="button" icon="pi pi-pencil" [text]="true" size="small"

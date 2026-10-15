@@ -206,7 +206,7 @@
           <th pSortableColumn="validTo">Bitiş <p-sortIcon field="validTo" /></th>
           <th pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
           @if (canUpdate() || canDelete() || canActivate() || canViewDocuments() || canViewAudit()) {
-            <th class="actions-column">İşlemler</th>
+            <th class="actions-column sticky-actions-col">İşlemler</th>
           }
         </tr>
       </ng-template>
@@ -267,7 +267,7 @@
           <td>{{ user.validTo ? (user.validTo | date:'dd.MM.yyyy HH:mm') : 'Sınırsız' }}</td>
           <td>{{ user.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
           @if (canUpdate() || canDelete() || canActivate() || canViewDocuments() || canViewAudit()) {
-            <td>
+            <td class="sticky-actions-col">
               <div class="row-actions">
                 @if (canViewAudit()) {
                   <p-button type="button" icon="pi pi-history"

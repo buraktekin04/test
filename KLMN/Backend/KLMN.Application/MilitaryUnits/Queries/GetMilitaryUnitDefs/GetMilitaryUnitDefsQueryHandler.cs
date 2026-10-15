@@ -34,6 +34,11 @@ public sealed class GetMilitaryUnitDefsQueryHandler(IKLMNDbContext db)
             query = query.Where(x => x.IsActive == request.IsActive.Value);
         if (request.RootOnly == true)
             query = query.Where(x => x.ConnectedTopUnity == null);
+        // Kuvvet ve üst birlik FK filtreleri Count/Skip/Take öncesi uygulanır.
+        if (request.ForcesCommandDef.HasValue)
+            query = query.Where(x => x.ForcesCommandDef == request.ForcesCommandDef.Value);
+        if (request.ConnectedTopUnity.HasValue)
+            query = query.Where(x => x.ConnectedTopUnity == request.ConnectedTopUnity.Value);
 
         var count = await query.CountAsync(ct);
         var items = await query

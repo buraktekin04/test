@@ -109,7 +109,7 @@
             <th pSortableColumn="validTo">Bitiş <p-sortIcon field="validTo" /></th>
             <th pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
             @if (canUpdate() || canDelete() || canViewAudit()) {
-              <th>İşlemler</th>
+              <th class="sticky-actions-col">İşlemler</th>
             }
           </tr>
         </ng-template>
@@ -135,7 +135,7 @@
             </td>
             <td>{{ unit.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
             @if (canUpdate() || canDelete() || canViewAudit()) {
-              <td>
+              <td class="sticky-actions-col">
                 <div class="row-actions">
                   @if (canUpdate()) {
                     <p-button type="button" icon="pi pi-pencil" [text]="true" size="small"

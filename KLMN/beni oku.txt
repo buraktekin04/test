@@ -515,7 +515,23 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-15 itibarıyla ana hatlar (sondan eskiye):
-- 2026-10-15 (bu commit — Tanım ekranları ortak tasarım kararı):
+- 2026-10-15 (bu commit — popup, birlik filtreleri ve sabit işlemler):
+  Alım Numarası Yeni/Düzenle popup'ında Kod ve Temin Tanım Adı
+  yan yana; uzun Alım Adı alt satırda tam genişlikte.
+  Birlik tanımlarına Kuvvet Komutanlığı ve Üst Birlik kolon
+  filtreleri, yeni GetMilitaryUnitFilterOptionsQuery/Handler,
+  liste+Excel backend nullable Guid koşulları, validators,
+  frontend model/servis/form seçenekleri eklendi. Silinmemiş
+  pasif/geçmiş kuvvet/üst birlik bağlantıları filtrelenebilir;
+  kayıt düzenleme seçenekleri değişmedi.
+  12 tanım ekranının İşlemler başlık ve satır hücreleri yatay
+  kaydırmaya karşı SAĞA SABİTLENDİ; yüksek z-index, sabit
+  arka plan ve nowrap satır aksiyonları ortak styles.scss'de.
+  Permission görünürlüğü korunur. MilitaryUnits.Regression
+  doğrulama kaynakları genişletildi. Schema ve migration YOK.
+  Statik kaynak kontrolleri yapıldı; dotnet/Angular derleme
+  ve gerçek tarayıcı/DB testi burada ÇALIŞTIRILMADI.
+- 2026-10-15 (önceki commit — Tanım ekranları ortak tasarım kararı):
   Kullanıcı onaylı tanım ekranları UI/UX şablonunun tüm mevcut ve
   gelecek tanım ekranları için SABİT ve zorunlu standart olduğunu
   yeniden teyit etti. "Kolon Filtreleri" açılır paneli, arama/

@@ -22,3 +22,60 @@ p-select {
   min-width: 0;
   max-width: 100%;
 }
+
+/*
+ * Tanım listelerinde sağdaki İşlemler sütunu yatay kaydırmada sabit kalır.
+ * Sadece izin nedeniyle gerçekten oluşturulan th/td'lere sınıf verilir;
+ * İşlemler kolonu olmayan salt görüntüleme tablolarına uygulanmaz.
+ * Header ile satırlar kendi z-index katmanlarında bulunduğundan
+ * uzun hücre içeriği işlem düğmelerinin üzerine gelemez.
+ */
+:where(.table-scroll, .users-table-scroll, .roles-table-scroll) .p-datatable-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+:where(.table-scroll, .users-table-scroll, .roles-table-scroll)
+  .p-datatable-thead > tr > th.sticky-actions-col,
+:where(.table-scroll, .users-table-scroll, .roles-table-scroll)
+  .p-datatable-tbody > tr > td.sticky-actions-col {
+  position: sticky;
+  right: 0;
+  width: 1%;
+  min-width: 135px;
+  white-space: nowrap;
+  box-sizing: border-box;
+  border-left: 1px solid #e5e7eb;
+  box-shadow: -7px 0 14px -12px rgba(16, 24, 40, .34);
+}
+
+:where(.table-scroll, .users-table-scroll, .roles-table-scroll)
+  .p-datatable-thead > tr > th.sticky-actions-col {
+  z-index: 5;
+  background: #f8fafc;
+}
+
+:where(.table-scroll, .users-table-scroll, .roles-table-scroll)
+  .p-datatable-tbody > tr > td.sticky-actions-col {
+  z-index: 3;
+  background: #fff;
+}
+
+:where(.table-scroll, .users-table-scroll, .roles-table-scroll)
+  .p-datatable-tbody > tr:hover > td.sticky-actions-col {
+  background: #f9fafb;
+}
+
+.roles-table-scroll .p-datatable-tbody > tr.selected-role-row > td.sticky-actions-col {
+  background: #eef4ff;
+}
+
+:where(.table-scroll, .users-table-scroll, .roles-table-scroll)
+  .p-datatable-tbody > tr > td.sticky-actions-col .row-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  width: max-content;
+  min-width: 100%;
+  align-items: center;
+  justify-content: flex-start;
+}

@@ -8,6 +8,7 @@ using KLMN.Application.MilitaryUnits.Commands.DeleteMilitaryUnitDef;
 using KLMN.Application.MilitaryUnits.Queries.GetMilitaryUnitDefs;
 using KLMN.Application.MilitaryUnits.Queries.GetMilitaryUnitDefById;
 using KLMN.Application.MilitaryUnits.Queries.GetMilitaryUnitParentOptions;
+using KLMN.Application.MilitaryUnits.Queries.GetMilitaryUnitFilterOptions;
 using KLMN.Application.MilitaryUnits.Responses;
 using KLMN.Domain.Constants;
 using MediatR;
@@ -76,6 +77,19 @@ public sealed class MilitaryUnitsController(ISender sender, IExcelExportService 
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             $"Birlik_Tanimlari_{DateTime.UtcNow:yyyyMMdd_HHmm}.xlsx");
     }
+
+    /// <summary>
+    /// Liste kolon filtresi için silinmemiş kuvvet ve üst birlikleri getirir.
+    /// Formun yalnızca aktif kayıt gösteren seçim listesini değiştirmez.
+    /// </summary>
+    [HttpGet("filter-options")]
+    [HasPermission(PermissionCodes.MilitaryUnits.View,
+        PermissionCodes.MilitaryUnits.Query,
+        PermissionCodes.MilitaryUnits.Create,
+        PermissionCodes.MilitaryUnits.Update,
+        PermissionCodes.MilitaryUnits.Delete)]
+    public async Task<IActionResult> GetFilterOptions(CancellationToken ct) =>
+        Ok(await sender.Send(new GetMilitaryUnitFilterOptionsQuery(), ct));
 
     [HttpGet("force-options")]
     [HasPermission(PermissionCodes.MilitaryUnits.View, PermissionCodes.MilitaryUnits.Query,

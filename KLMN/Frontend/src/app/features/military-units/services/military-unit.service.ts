@@ -5,7 +5,7 @@ import { API_BASE_URL } from '../../../core/config/api.tokens';
 import { PagedResult } from '../../../core/models/paged-result.model';
 import {
   ChangeMilitaryUnitDefStatusRequest,
-  ForceCommandOption, MilitaryUnitParentOption, MilitaryUnitDefFields,
+  ForceCommandOption, MilitaryUnitParentOption, MilitaryUnitFilterOptions, MilitaryUnitDefFields,
   MilitaryUnitDefItem, MilitaryUnitDefMutationResponse, MilitaryUnitDefQuery,
   UpdateMilitaryUnitDefRequest
 } from '../models/military-unit-def.model';
@@ -26,6 +26,8 @@ export class MilitaryUnitService {
     if (query.search.trim()) params = params.set('search', query.search.trim());
     if (query.isActive !== null) params = params.set('isActive', query.isActive);
     if (query.rootOnly !== null) params = params.set('rootOnly', query.rootOnly);
+    if (query.forcesCommandDef) params = params.set('forcesCommandDef', query.forcesCommandDef);
+    if (query.connectedTopUnity) params = params.set('connectedTopUnity', query.connectedTopUnity);
     return params;
   }
 
@@ -48,6 +50,11 @@ export class MilitaryUnitService {
   /** Yalnızca aktif üst birlik seçeneklerini döndürür. */
   public parentOptions(): Observable<MilitaryUnitParentOption[]> {
     return this.http.get<MilitaryUnitParentOption[]>(this.url + '/parent-options');
+  }
+
+  /** Silinmemiş kayıtları liste kolon filtrelerine sunar; edit popup seçenekleri değişmez. */
+  public filterOptions(): Observable<MilitaryUnitFilterOptions> {
+    return this.http.get<MilitaryUnitFilterOptions>(this.url + '/filter-options');
   }
 
   /** Filtreye uygun tüm birlikleri gerçek XLSX olarak indirir. */

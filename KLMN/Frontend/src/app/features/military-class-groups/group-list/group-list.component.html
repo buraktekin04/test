@@ -96,7 +96,7 @@
             <th pSortableColumn="validFrom">Başlangıç <p-sortIcon field="validFrom" /></th>
             <th pSortableColumn="validTo">Bitiş <p-sortIcon field="validTo" /></th>
             <th pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
-          @if (canUpdate() || canDelete() || canAudit()) { <th>İşlemler</th> }
+          @if (canUpdate() || canDelete() || canAudit()) { <th class="sticky-actions-col">İşlemler</th> }
         </tr></ng-template>
         <ng-template pTemplate="body" let-item><tr>
             <td><strong>{{ item.name }}</strong></td>
@@ -108,7 +108,7 @@
           <td><p-tag [value]="item.isActive ? 'Aktif' : 'Pasif'"
                      [severity]="item.isActive ? 'success' : 'secondary'"></p-tag></td>
           @if (canUpdate() || canDelete() || canAudit()) {
-            <td>
+            <td class="sticky-actions-col">
               <div class="row-actions">
                 @if (canUpdate()) {
                   <p-button type="button" icon="pi pi-pencil" severity="secondary" [text]="true"

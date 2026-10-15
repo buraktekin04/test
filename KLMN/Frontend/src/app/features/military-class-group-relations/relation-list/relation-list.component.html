@@ -113,7 +113,7 @@
             <th pSortableColumn="militaryClassName">Askerî Sınıf <p-sortIcon field="militaryClassName" /></th>
             <th pSortableColumn="militaryClassGroupName">Askerî Sınıf Grubu <p-sortIcon field="militaryClassGroupName" /></th>
             <th pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
-          @if (canUpdate() || canDelete() || canAudit()) { <th>İşlemler</th> }
+          @if (canUpdate() || canDelete() || canAudit()) { <th class="sticky-actions-col">İşlemler</th> }
         </tr></ng-template>
         <ng-template pTemplate="body" let-item><tr>
             <td><strong>{{ item.forcesCommandName }}</strong></td>
@@ -122,7 +122,7 @@
           <td><p-tag [value]="item.isActive ? 'Aktif' : 'Pasif'"
                      [severity]="item.isActive ? 'success' : 'secondary'"></p-tag></td>
           @if (canUpdate() || canDelete() || canAudit()) {
-            <td>
+            <td class="sticky-actions-col">
               <div class="row-actions">
                 @if (canUpdate()) {
                   <p-button type="button" icon="pi pi-pencil" severity="secondary" [text]="true"

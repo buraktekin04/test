@@ -85,3 +85,33 @@ Birlik formu ise üst birlik ve kuvvet seçeneklerini
 MilitaryUnits.View/Query/Create/Update ile yükleyebilir.
 Rol değişiklikleri kullanıcı yeniden giriş yaptığında güncellenir.
 Migration gerekmiyor.
+
+    
+## Kuvvet Komutanlığı ve Üst Birlik kolon filtreleri (15.10.2026)
+
+Birlik Tanımları'nın açılır Kolon Filtreleri panelinde iki yeni
+seçici bulunur: Kuvvet Komutanlığı (ForcesCommandDef nullable FK)
+ve Üst Birlik (ConnectedTopUnity nullable FK). İkisi de mevcut
+Aktiflik/Kök Birlik filtrelerine eklenmiştir. Üst birlik seçimi
+"Yalnızca Kök Birlikler" seçimini temizler.
+
+GET /api/military-units/filter-options, modülün mevcut
+View/Query/Create/Update/Delete izinlerinden biriyle okunur.
+Yeni GetMilitaryUnitFilterOptionsQuery ve Handler, silinmemiş
+kuvvet ve üst birlikleri aktiflikten bağımsız getirir. Bu
+seçenekler, ekleme/düzenleme popup'ında sadece aktif birimleri
+gösteren mevcut seçeneklerden AYRIDIR.
+
+GetMilitaryUnitDefsQuery, Handler ve Validator nullable Guid
+filtreleri uygular. Filtreler PostgreSQL'de Count/Skip/Take
+öncesinde çalışır. Angular MilitaryUnitDefQuery ile
+MilitaryUnitService.params liste ve Excel için aynı koşulları
+gönderir; yalnızca sayfada görünen satırlar filtrelenmez.
+
+Ortak görünüm: Ülke, Şehir, İlçe, Kuvvet, Birlik, Alım Numarası,
+Askerî Okul, Askerî Sınıf, Sınıf Grubu, Sınıf–Grup Eşleştirmesi,
+Kullanıcı ve Rol tanımları tablolarında İşlemler sütunu yatay
+scroll sırasında sağa sabittir. Başlık ve satır aksiyon hücreleri
+global Frontend/src/styles.scss içindeki sticky-actions-col
+ile yönetilir. Yetki yoksa İşlemler sütunu oluşmaz.
+Bu değişiklikler için DB migration gerekmez.

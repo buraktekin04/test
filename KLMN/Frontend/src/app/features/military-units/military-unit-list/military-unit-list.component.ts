@@ -20,7 +20,7 @@ import { PermissionCodes } from '../../../core/permissions/constants/permission-
 import { PermissionService } from '../../../core/permissions/services/permission.service';
 import { AuditHistoryComponent } from '../../../shared/audit-history/audit-history.component';
 import {
-  ForceCommandOption, MilitaryUnitParentOption,
+  ForceCommandOption, MilitaryUnitParentOption, MilitaryUnitFilterOption,
   MilitaryUnitDefFields,
   MilitaryUnitDefItem,
   MilitaryUnitDefMutationResponse,
@@ -83,7 +83,9 @@ export class MilitaryUnitListComponent implements OnInit {
   /** Kullanıcı ekranındaki aynı kompakt filtre bileşenleri kullanılır. */
   public readonly columnFilterForm = this.fb.group({
     isActive: this.fb.control<boolean | null>(null),
-    rootOnly: this.fb.control<boolean | null>(null)
+    rootOnly: this.fb.control<boolean | null>(null),
+    forcesCommandDef: this.fb.control<string | null>(null),
+    connectedTopUnity: this.fb.control<string | null>(null)
   });
 
   public readonly dialogVisible = signal(false);
@@ -92,6 +94,12 @@ export class MilitaryUnitListComponent implements OnInit {
   public readonly parentOptions = signal<MilitaryUnitParentOption[]>([]);
   public readonly parentLoading = signal(false);
   public readonly parentError = signal<string | null>(null);
+  /** Kolon filtre seçimleri düzenleme popup'ının aktif kayıt listesine bağlı değildir. */
+  public readonly columnForceOptions = signal<MilitaryUnitFilterOption[]>([]);
+  public readonly columnParentOptions = signal<MilitaryUnitFilterOption[]>([]);
+  public readonly columnOptionsLoading = signal(false);
+  public readonly columnOptionsError = signal<string | null>(null);
+  private columnOptionsRequestId = 0;
   public readonly formError = signal<string | null>(null);
   public readonly saving = signal(false);
 
@@ -184,6 +192,8 @@ export class MilitaryUnitListComponent implements OnInit {
       includeInactive: form.includeInactive || columns.isActive === false,
       isActive: columns.isActive,
       rootOnly: columns.rootOnly,
+      forcesCommandDef: columns.forcesCommandDef,
+      connectedTopUnity: columns.connectedTopUnity,
       pageNumber: this.pageNumber(),
       pageSize: this.pageSize()
     };
@@ -217,10 +227,41 @@ export class MilitaryUnitListComponent implements OnInit {
   public applyColumnFilters(): void { this.pageNumber.set(1); this.loadUnits(); }
   public toggleColumnFilters(): void {
     this.columnFiltersExpanded.update(value => !value);
+    if (this.columnFiltersExpanded() && !this.columnForceOptions().length &&
+        !this.columnParentOptions().length && !this.columnOptionsLoading())
+      this.loadColumnFilterOptions();
+  }
+
+  /** Seçim listelerinde eski/pasif bağlı kuvvet ve üst birlikler de görünür. */
+  public loadColumnFilterOptions(): void {
+    const requestId = ++this.columnOptionsRequestId;
+    this.columnOptionsLoading.set(true);
+    this.columnOptionsError.set(null);
+    this.service.filterOptions().pipe(finalize(() => {
+      if (requestId === this.columnOptionsRequestId) this.columnOptionsLoading.set(false);
+    })).subscribe({
+      next: options => {
+        if (requestId !== this.columnOptionsRequestId) return;
+        this.columnForceOptions.set(options.forces);
+        this.columnParentOptions.set(options.parents);
+      },
+      error: (error: HttpErrorResponse) => {
+        if (requestId !== this.columnOptionsRequestId) return;
+        this.columnOptionsError.set(this.errorText(error));
+      }
+    });
+  }
+
+  /** Üst birlik seçimi yapıldığında çelişen "yalnızca kökler" filtresini sıfırlar. */
+  public onParentColumnFilterChanged(): void {
+    if (this.columnFilterForm.controls.connectedTopUnity.value)
+      this.columnFilterForm.controls.rootOnly.setValue(null);
   }
   public clearFilters(): void {
     this.filterForm.reset({ search: '', includeInactive: false });
-    this.columnFilterForm.reset({ isActive: null, rootOnly: null });
+    this.columnFilterForm.reset({
+      isActive: null, rootOnly: null, forcesCommandDef: null, connectedTopUnity: null
+    });
     this.pageNumber.set(1);
     this.loadUnits();
   }

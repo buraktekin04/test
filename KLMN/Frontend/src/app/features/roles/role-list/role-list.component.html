@@ -128,7 +128,7 @@
               <th pSortableColumn="permissionCodes.length">Yetki <p-sortIcon field="permissionCodes.length" /></th>
               <th pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
               @if (canUpdate() || canDelete() || canManagePermissions() || canViewAudit()) {
-                <th>İşlemler</th>
+                <th class="sticky-actions-col">İşlemler</th>
               }
             </tr>
           </ng-template>
@@ -151,7 +151,7 @@
               <td>{{ role.permissionCodes.length }}</td>
               <td>{{ role.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
               @if (canUpdate() || canDelete() || canManagePermissions() || canViewAudit()) {
-                <td>
+                <td class="sticky-actions-col">
                   <div class="row-actions">
                     @if (canViewAudit()) {
                       <p-button type="button" icon="pi pi-history"

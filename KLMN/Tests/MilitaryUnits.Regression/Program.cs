@@ -71,6 +71,22 @@ foreach (var schema in new string?[] { null, "mskbs" })
     var forceSql = string.Join("\n", db.GetService<IMigrationsSqlGenerator>().Generate(forceMigration.Operations).Select(x => x.CommandText));
     Check(forceSql.Contains("FOREIGN KEY (\"ForcesCommandDef\")") && forceSql.Contains("ON DELETE RESTRICT"), "Force migration emits restrictive FK");
 }
+// Kuvvet ve üst birlik FK filtreleri için parametre doğrulama.
+var forceFilterId = Guid.NewGuid();
+var parentFilterId = Guid.NewGuid();
+var filteredQuery = new KLMN.Application.MilitaryUnits.Queries.GetMilitaryUnitDefs.GetMilitaryUnitDefsQuery(
+    ForcesCommandDef: forceFilterId, ConnectedTopUnity: parentFilterId);
+var filterValidator = new KLMN.Application.MilitaryUnits.Queries.GetMilitaryUnitDefs.GetMilitaryUnitDefsQueryValidator();
+Check(filterValidator.Validate(filteredQuery).IsValid, "Force and parent GUID filters accepted");
+Check(!filterValidator.Validate(filteredQuery with { ForcesCommandDef = Guid.Empty }).IsValid,
+    "Force filter rejects empty GUID");
+Check(!filterValidator.Validate(filteredQuery with { ConnectedTopUnity = Guid.Empty }).IsValid,
+    "Parent filter rejects empty GUID");
+var filterSql = db.MilitaryUnitDefs.IgnoreQueryFilters().Where(x =>
+    x.ForcesCommandDef == forceFilterId && x.ConnectedTopUnity == parentFilterId).ToQueryString();
+Check(filterSql.Contains("\"ForcesCommandDef\"") && filterSql.Contains("\"ConnectedTopUnity\""),
+    "Both FK filters translate into PostgreSQL SQL");
+
 var projectedSql = db.MilitaryUnitDefs.IgnoreQueryFilters().Select(KLMN.Application.MilitaryUnits.Responses.MilitaryUnitDefResponse.Projection).ToQueryString();
 Check(projectedSql.Contains("ForcesCommandDefs"), "Military list projects force labels in SQL");
 Console.WriteLine("All regression checks passed. No database connection was opened.");

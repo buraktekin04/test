@@ -114,7 +114,7 @@
             <th pSortableColumn="healthReportEndDate">Sağlık Raporu Bitişi <p-sortIcon field="healthReportEndDate" /></th>
             <th pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
             <th pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
-            @if (canUpdate() || canDelete() || canViewAudit()) { <th>İşlemler</th> }
+            @if (canUpdate() || canDelete() || canViewAudit()) { <th class="sticky-actions-col">İşlemler</th> }
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-record>
@@ -132,7 +132,7 @@
                        [severity]="record.isActive ? 'success' : 'secondary'"></p-tag></td>
             <td>{{ record.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
             @if (canUpdate() || canDelete() || canViewAudit()) {
-              <td><div class="row-actions">
+              <td class="sticky-actions-col"><div class="row-actions">
                 @if (canUpdate()) {
                   <p-button type="button" icon="pi pi-pencil" [text]="true" size="small"
                             severity="secondary" ariaLabel="Alım numarası düzenle"
@@ -210,19 +210,20 @@
                placeholder="Alım numarası" />
         @if (fieldError('code'); as message) { <small class="field-error">{{ message }}</small> }
       </div>
-      <div class="form-field">
-        <label for="purchase-name">Alım Adı <span class="required">*</span></label>
-        <input id="purchase-name" pInputText formControlName="name" autocomplete="off"
-               placeholder="Alım adı" />
-        @if (fieldError('name'); as message) { <small class="field-error">{{ message }}</small> }
-      </div>
-      <div class="form-field form-field-full">
+<div class="form-field">
         <label for="purchase-supplyDescriptionName">Temin Tanım Adı <span class="required">*</span></label>
         <input id="purchase-supplyDescriptionName" pInputText formControlName="supplyDescriptionName"
                autocomplete="off" placeholder="Temin tanım adı" />
         @if (fieldError('supplyDescriptionName'); as message) {
           <small class="field-error">{{ message }}</small>
         }
+      </div>
+
+      <div class="form-field form-field-full">
+        <label for="purchase-name">Alım Adı <span class="required">*</span></label>
+        <input id="purchase-name" pInputText formControlName="name" autocomplete="off"
+               placeholder="Alım adı" />
+        @if (fieldError('name'); as message) { <small class="field-error">{{ message }}</small> }
       </div>
     </div>
     <div class="form-divider"><span>Tarih Bilgileri</span></div>
