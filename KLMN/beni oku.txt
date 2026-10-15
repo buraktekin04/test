@@ -394,6 +394,48 @@ olarak varsayma. Kullanıcı yeni modülleri sırayla söyleyecektir.
   hata, ilk sorunlu inputa odak ve kaydetme bölgesinde genel hata.
 - UX sade, okunaklı, tutarlı olmalı; gereksiz büyük paneller ekleme.
 
+KALICI VE ZORUNLU TANIM EKRANI TASARIM ŞABLONU — DEĞİŞTİRME:
+- Kullanıcı kararı: Bundan sonra geliştirilecek TÜM tanım ekranları
+  mevcut onaylanmış tanım ekranlarıyla AYNI UI/UX MODELİNİ kullanacak.
+  Ekrandan ekrana yeni tasarım, yeni filtre yerleşimi, ayrı bir popup
+  tarzı, farklı buton standardı veya keyfî görünüm değişikliği YAPMA.
+  Kullanıcı açıkça yeni tasarım istemedikçe bu standart sabittir.
+- Uygulamadan önce güncel GitHub main'deki Kullanıcı Tanımları,
+  Askerî Sınıf Tanımları, Askerî Okul Tanımları ve en son düzenlenen
+  Askerî Sınıf Grubu / Sınıf–Grup Eşleştirmeleri HTML/SCSS/TS
+  dosyalarını kontrol et; güncel referansı kullan. Eski tahmin veya
+  geçmiş sohbet kodundan şablon üretme.
+- Aynı sayfa başlığı, boşluklar, tipografi, minimalist kart görünümü,
+  arama çubuğu, "Pasifleri dahil et", temizleme/arama aksiyonları,
+  PrimeNG p-table, durum etiketi, sayfalama, satır işlem ikonları,
+  Excel ve audit geçmişi düzeni korunacak.
+- KOLON FİLTRELERİ: İlk açılışta KAPALI panel. "Kolon Filtreleri"
+  düğmesiyle açılıp "Filtreleri Gizle" ile kapanır. Panel başlığı
+  "Kolon Filtreleri"; aksiyonlar "Tümünü Temizle" ve "Filtreleri
+  Uygula". Kullanılan alanlar ekrana özgü olabilir, fakat
+  buton/panel/görünüm/etkileşim bütün tanım ekranlarında AYNI kalır.
+  Durum filtresi gereksiz "Aktif kayıtlar" seçeneği içermez:
+  SADECE "Tümü / Aktif / Pasif". Mevcut "Pasifleri dahil et"
+  davranışıyla çelişmemeli.
+- İlişkili dropdown'lar ilgili backend seçeneklerinden yüklenir.
+  Kuvvet/şehir gibi üst seçim değişince alt seçenekler güncellenir,
+  geçersiz eski alt seçim sıfırlanır. Liste kolon filtre seçenekleri
+  ekleme/düzenleme popup'ının seçimleriyle karışmaz.
+- EKLE/DÜZENLE POPUP: Diğer tanım ekranlarıyla aynı sade modal
+  genişliği, alan yerleşimi, ince bölüm ayraçları, kaydet/vazgeç
+  düğmeleri, alan bazlı hata ve kaydetme bölgesindeki genel hata.
+  Aktif/pasif popup'a mükerrer alan olarak EKLENMEZ;
+  BaseEntity.IsActive mevcut liste durum işlemiyle yönetilir.
+- Backend filtre/sayfalama, yalnız yüklü sayfada p-table kolon
+  sıralaması, rol/permission görünürlüğü ve server API güvenliği
+  tüm ekranlarda aynı kuralda kalır. Yeni ekran yalnızca kendine
+  özgü İŞ ALANLARI, ilişkiler ve uygun kolon filtreleriyle ayrışır.
+- Yeni tanım ekranına başlamadan önce ve tamamlandıktan sonra
+  referans ekranla tasarım/HTML/SCSS/TypeScript karşılaştırması yap.
+  Refactor veya kişisel estetik tercihle bütün ekranların tasarımını
+  değiştirme. Böyle bir talep olursa önce kullanıcıdan açık istek
+  al; yalnız istenen kapsamı değiştir. Mevcut ekranları bozma.
+
 7. GÜVENLİK VE GİZLİLİK
 ----------------------
 Repo "buraktekin04/test" PUBLIC. Gerçek JWT imzalama anahtarı,
@@ -473,7 +515,17 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-15 itibarıyla ana hatlar (sondan eskiye):
-- 2026-10-15 (bu commit — Sınıf grubu/eşleştirme kolon filtreleri):
+- 2026-10-15 (bu commit — Tanım ekranları ortak tasarım kararı):
+  Kullanıcı onaylı tanım ekranları UI/UX şablonunun tüm mevcut ve
+  gelecek tanım ekranları için SABİT ve zorunlu standart olduğunu
+  yeniden teyit etti. "Kolon Filtreleri" açılır paneli, arama/
+  sayfalama, tablo, durum, işlem butonları ve minimal popup
+  davranışı referans tasarımla aynı kalacak; kullanıcı ayrıca
+  istemedikçe arayüz modeli değiştirilmez. Bu karar madde 6'ya
+  ayrıntılarıyla eklendi. Yalnız beni oku.txt güncellendi;
+  UI/backend kodu, migration veya DB değiştirilmedi. Build/test
+  gerektirecek kod değişikliği yapılmadı.
+- 2026-10-15 (önceki commit — Sınıf grubu/eşleştirme kolon filtreleri):
   Askerî Sınıf Grubu ve Sınıf–Grup Eşleştirmeleri ekranlarında
   kolon filtreleri diğer tanım ekranlarındaki gibi varsayılan
   KAPALI, butonla açılan panel haline getirildi.
@@ -669,6 +721,8 @@ devam etmek istediğini yeni mesajında söyleyecek.
 3) Talebin backend/frontend/DB/test/dokümantasyon etkilerini belirle;
    var olan sınıfları ve ilişkileri tek tek kontrol et.
 4) Yapılacak işi tamamla, mevcut mimari ve izin kurallarını uygula.
+   YENİ TANIM EKRANI ise önce madde 6'daki SABİT UI/UX ŞABLONUNU
+   referans ekranların güncel koduyla karşılaştır, tasarımı değiştirme.
    Yeni veya önemli ölçüde değişen sınıflara, metodlara ve kritik iş
    kurallarına güncel Türkçe XML documentation / JSDoc yorumları yaz;
    yorumların uygulanmış davranışa uygunluğunu kontrol et.
