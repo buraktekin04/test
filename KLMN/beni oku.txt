@@ -144,7 +144,7 @@ BaseEntity zaten şunları taşır:
   property'lerini entity içerisinde veya konfigürasyonlarını ayrı
   ayrı TEKRAR TANIMLAMA.
 - Bu standart şimdilik ForcesCommandDef, MilitaryUnitDef ve
-  PurchaseNumberDef, CityDef ve MilitarySchoolDef üzerinde geçerlidir.
+  PurchaseNumberDef, CityDef, MilitarySchoolDef ve MilitaryClassDef üzerinde geçerlidir.
 - Yeni tanım entity'sinde ObjectId, CreationDate, LastUpdate, CreatedBy,
   ConcurrencyToken, IsActive gibi BaseEntity karşılıklarını yeniden
   kolon olarak açma; eski entity şemasını önce ortak modelle eşleştir.
@@ -241,6 +241,27 @@ Askerî Okul Tanımları:
   YENİ MilitarySchoolDefs tablosu için migration gerekir;
   repo yerel migration snapshot'ını içermediğinden uygulanmadı.
   KLMN/ASKERI_OKUL_TANIMLARI_KURULUM.md belgesine bak.
+
+Askerî Sınıf Tanımları:
+  UI: /app/military-classes | API: /api/military-classes.
+  MilitaryClassDef : EffectiveDatedEntity; Code, Name, ShortName?,
+  ExternalCode? ve eski modeldeki bool? Active alanlarını taşır.
+  Fotoğraftaki Type, MpvtCode, Town ve yorum satırına alınmış
+  MilitaryClassGroup alanları YENİ MODÜLE EKLENMEDİ.
+  StartDate/EndDate yerine ortak nullable ValidFrom/ValidTo kullanılır.
+  Kimlik/audit/soft-delete/IsActive/Version(xmin) BaseEntity'den gelir.
+  DİKKAT: Active (nullable iş alanı) ve IsActive (kaydın yönetim
+  aktifliği) iki FARKLI özelliktir; status komutu yalnızca IsActive'i
+  değiştirir. Frontend'de Active Bilgisi Belirtilmedi/Evet/Hayırdır.
+  Ayrı CQRS Create/Update/Delete/Status ve liste/detay sorguları,
+  FluentValidation, audit, Excel, server arama/filtre/sayfalama ve
+  sadece PrimeNG üzerinde kolon sıralama eklendi.
+  Permission MilitaryClasses.View/Query/Create/Update/Delete;
+  herhangi biri ekran/listeye erişim açar, işlemler kendi yetkisiyle.
+  Excel yalnız Query izni gerektirir. Kod açıklamaları Türkçedir.
+  YENİ MilitaryClassDefs tablosu için migration gerekiyor ve gerçek
+  veritabanına UYGULANMADI. Kurulum:
+  KLMN/ASKERI_SINIF_TANIMLARI_KURULUM.md.
 
 Alım Numarası Tanımları:
   UI: /app/purchase-numbers
@@ -377,6 +398,7 @@ Mevcut test projeleri:
   KLMN/Tests/PurchaseNumbers.Regression
   KLMN/Tests/Towns.Regression
   KLMN/Tests/MilitarySchools.Regression
+  KLMN/Tests/MilitaryClasses.Regression
 
 Son geliştirmeler GitHub üzerinden statik kontrol edilerek gönderildi.
 Bu dosyanın güncellemesi sırasında dotnet build, Angular build,
@@ -397,6 +419,20 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-15 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-15 (bu commit — Askerî Sınıf Tanımları):
+  MilitaryClassDef, EffectiveDatedEntity/EF mapping, ayrı CQRS
+  command/handler/validator, sorgular, API, Excel, permission seed,
+  audit, Angular form/liste, p-table sorting ve yetki bazlı menü
+  eklendi. Type/MpvtCode/Town ve MilitaryClassGroup YOK.
+  ShortName, ExternalCode ve nullable Active KORUNDU; Active ve
+  IsActive farklı. ValidFrom/ValidTo ortak sınıftan gelir.
+  KLMN/Tests/MilitaryClasses.Regression ve
+  KLMN/ASKERI_SINIF_TANIMLARI_KURULUM.md eklendi.
+  Migration gereklidir ancak mevcut gerçek snapshot olmadığından
+  üretilmedi/uygulanmadı. .NET SDK bu ortamda yok; backend build
+  ve regresyonlar çalıştırılamadı. npm/Angular build ve gerçek
+  PostgreSQL/browser testleri de çalıştırılmadı. Statik kontroller
+  tamamlanacaktır.
 - 2026-10-15 (bu commit — Askerî Okul Tanımları):
   MilitarySchoolDef ve nullable CityId/ForcesCommandDefId, ortak
   ValidFrom/ValidTo, iki Restrict FK, tüm ayrı CQRS CRUD/Query
@@ -489,8 +525,7 @@ Kabul öncesinde:
 
 BU DOSYANIN İLK OLUŞTURULMASI:
   38d26ccc07034a013a136d1101b8ab2d205dc773
-Bu sürümdeki son kod geliştirmesi yukarıdaki "2026-10-14 (bu commit)"
-başlığı altında belirtilmiştir. Sonraki her kod push'unda bu en yeni
+Bu sürümdeki son kod geliştirmesi kronolojinin EN ÜSTÜNDE belirtilmiştir. Sonraki her kod push'unda bu en yeni
 geliştirme özeti mutlaka güncellenmelidir.
 
 11. BİLİNEN AÇIK İŞLER / SIRADAKİ ÖNCELİKLER
@@ -498,7 +533,7 @@ geliştirme özeti mutlaka güncellenmelidir.
 Bu liste otomatik görev emri değildir; kullanıcı hangi geliştirmeyle
 devam etmek istediğini yeni mesajında söyleyecek.
 - En yakın teknik kurulum konusu: PurchaseNumberDefs, CountryDefs,
-  CityDefs, TownDefs ve MilitarySchoolDefs için mevcut migration zinciriyle
+  CityDefs, TownDefs, MilitarySchoolDefs ve MilitaryClassDefs için mevcut migration zinciriyle
   migration, SQL script inceleme ve test veritabanına uygulama.
   CityDefs -> TownDefs nullable Restrict FK doğrulanmalı.
 - Yeni alım numarası, kuvvet, birlik, kullanıcı ve rol modüllerinde
@@ -550,6 +585,7 @@ devam etmek istediğini yeni mesajında söyleyecek.
   KLMN/ULKE_SEHIR_TANIMLARI_KURULUM.md
   KLMN/ILCE_TANIMLARI_KURULUM.md
   KLMN/ASKERI_OKUL_TANIMLARI_KURULUM.md
+  KLMN/ASKERI_SINIF_TANIMLARI_KURULUM.md
   KLMN/ADMIN_ROLU_KORUMA.md
   KLMN/AUDIT_LOG_KURULUM.md
   KLMN/EXCEL_EXPORT_KURULUM.md

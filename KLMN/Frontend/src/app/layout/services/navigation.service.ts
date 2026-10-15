@@ -66,6 +66,12 @@ export class NavigationService {
           permissionModule: 'MilitarySchools'
         },
         {
+          label: 'Askerî Sınıf Tanımları',
+          icon: 'pi pi-book',
+          route: '/app/military-classes',
+          permissionModule: 'MilitaryClasses'
+        },
+        {
           label: 'Alım Numarası Tanımları',
           icon: 'pi pi-tags',
           route: '/app/purchase-numbers',

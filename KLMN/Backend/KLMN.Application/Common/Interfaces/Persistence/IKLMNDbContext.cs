@@ -32,6 +32,9 @@ public interface IKLMNDbContext
     /// <summary>Askerî okulların sorgu ve komut işlemleri için veri kümesi.</summary>
     DbSet<MilitarySchoolDef> MilitarySchoolDefs { get; }
 
+    /// <summary>Askerî sınıf entity'lerinin sorgulandığı veri kümesi.</summary>
+    DbSet<MilitaryClassDef> MilitaryClassDefs { get; }
+
     DbSet<PurchaseNumberDef> PurchaseNumberDefs { get; }
     DbSet<CountryDef> CountryDefs { get; }
     DbSet<CityDef> CityDefs { get; }

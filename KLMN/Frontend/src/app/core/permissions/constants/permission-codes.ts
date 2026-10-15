@@ -36,6 +36,12 @@ export const PermissionCodes = {
   },
   /** İlçe Tanımları için UI izin kodları. */
   /** Askerî Okul Tanımları işlem izinleri. */
+  /** Askerî Sınıf Tanımları işlemlerinin istemci permission kodları. */
+  MilitaryClasses: {
+    View: 'MilitaryClasses.View', Query: 'MilitaryClasses.Query',
+    Create: 'MilitaryClasses.Create', Update: 'MilitaryClasses.Update',
+    Delete: 'MilitaryClasses.Delete'
+  },
   MilitarySchools: {
     View: 'MilitarySchools.View', Query: 'MilitarySchools.Query',
     Create: 'MilitarySchools.Create', Update: 'MilitarySchools.Update',

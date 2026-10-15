@@ -39,6 +39,11 @@ internal static class IdentitySeedData
         new("Rol Silme", PermissionCodes.Roles.Delete, "Roles", 50),
         new("Rol Yetkilerini Yönetme", PermissionCodes.Roles.ManagePermissions, "Roles", 60),
 
+        new("Askerî Sınıfları Görüntüleme", PermissionCodes.MilitaryClasses.View, "MilitaryClasses", 10),
+        new("Askerî Sınıf Sorgulama", PermissionCodes.MilitaryClasses.Query, "MilitaryClasses", 20),
+        new("Askerî Sınıf Oluşturma", PermissionCodes.MilitaryClasses.Create, "MilitaryClasses", 30),
+        new("Askerî Sınıf Güncelleme", PermissionCodes.MilitaryClasses.Update, "MilitaryClasses", 40),
+        new("Askerî Sınıf Silme", PermissionCodes.MilitaryClasses.Delete, "MilitaryClasses", 50),
         new("Askerî Okulları Görüntüleme", PermissionCodes.MilitarySchools.View, "MilitarySchools", 10),
         new("Askerî Okul Sorgulama", PermissionCodes.MilitarySchools.Query, "MilitarySchools", 20),
         new("Askerî Okul Oluşturma", PermissionCodes.MilitarySchools.Create, "MilitarySchools", 30),
