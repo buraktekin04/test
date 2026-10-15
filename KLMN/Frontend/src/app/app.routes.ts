@@ -84,6 +84,22 @@ export const routes: Routes = [
             .then(component => component.CountryListComponent)
       },
       {
+        path: 'military-class-groups',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'MilitaryClassGroups' },
+        loadComponent: () =>
+          import('./features/military-class-groups/group-list/group-list.component')
+            .then(component => component.MilitaryClassGroupListComponent)
+      },
+      {
+        path: 'military-class-group-relations',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'MilitaryClassGroupRelations' },
+        loadComponent: () =>
+          import('./features/military-class-group-relations/relation-list/relation-list.component')
+            .then(component => component.MilitaryClassGroupRelationListComponent)
+      },
+      {
         path: 'military-classes',
         canActivate: [permissionGuard],
         data: { permissionModule: 'MilitaryClasses' },
@@ -129,6 +145,13 @@ export const routes: Routes = [
       },
       {
         path: 'definitions/military-classes', pathMatch: 'full', redirectTo: 'military-classes'
+      },
+      {
+        path: 'definitions/military-class-groups', pathMatch: 'full', redirectTo: 'military-class-groups'
+      },
+      {
+        path: 'definitions/military-class-group-relations', pathMatch: 'full',
+        redirectTo: 'military-class-group-relations'
       },
       {
         path: 'purchase-numbers',

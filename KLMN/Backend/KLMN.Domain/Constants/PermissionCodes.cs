@@ -90,6 +90,26 @@ public static class PermissionCodes
 
     /// <summary>Askerî Okul Tanımları için eylem bazlı permission kodları.</summary>
     /// <summary>Askerî Sınıf Tanımları için eylem bazlı yetki kodları.</summary>
+    /// <summary>Kuvvete bağlı askerî sınıf grubu tanım modülü.</summary>
+    public static class MilitaryClassGroups
+    {
+        public const string View = "MilitaryClassGroups.View";
+        public const string Query = "MilitaryClassGroups.Query";
+        public const string Create = "MilitaryClassGroups.Create";
+        public const string Update = "MilitaryClassGroups.Update";
+        public const string Delete = "MilitaryClassGroups.Delete";
+    }
+
+    /// <summary>Kuvvet-sınıf-grup eşleştirmesi modülü.</summary>
+    public static class MilitaryClassGroupRelations
+    {
+        public const string View = "MilitaryClassGroupRelations.View";
+        public const string Query = "MilitaryClassGroupRelations.Query";
+        public const string Create = "MilitaryClassGroupRelations.Create";
+        public const string Update = "MilitaryClassGroupRelations.Update";
+        public const string Delete = "MilitaryClassGroupRelations.Delete";
+    }
+
     public static class MilitaryClasses
     {
         public const string View = "MilitaryClasses.View";

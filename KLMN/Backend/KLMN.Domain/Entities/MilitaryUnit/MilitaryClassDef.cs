@@ -23,4 +23,7 @@ public sealed class MilitaryClassDef : EffectiveDatedEntity
     /// <summary>Harici sistemlerde kullanılan isteğe bağlı kod.</summary>
     public string? ExternalCode { get; set; }
 
+    /// <summary>Bu sınıfın kuvvet bazlı grup eşleştirmeleri.</summary>
+    public ICollection<MilitaryClassGroupRelation> MilitaryClassGroupRelations { get; set; } = new List<MilitaryClassGroupRelation>();
+
 }

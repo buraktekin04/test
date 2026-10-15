@@ -19,7 +19,10 @@ public sealed class ChangeForcesCommandDefStatusCommandHandler(IKLMNDbContext db
             .AnyAsync(x => x.ForcesCommandDef == force.Id && x.IsActive && !x.IsDeleted, ct))
             throw new ForcesCommandConflictException("Aktif birlikleri bulunan kuvvet komutanlığı pasifleştirilemez.");
         if (!request.IsActive)
+        {
             await ForcesCommandDefRules.EnsureNoMilitarySchoolsAsync(db, force.Id, deactivate: true, ct);
+            await ForcesCommandDefRules.EnsureNoMilitaryClassGroupsAsync(db, force.Id, deactivate: true, ct);
+        }
         force.IsActive = request.IsActive;
         await db.SaveChangesAsync(ct);
         return new ForcesCommandDefMutationResponse(force.Id, force.Version);

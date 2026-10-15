@@ -35,6 +35,12 @@ public interface IKLMNDbContext
     /// <summary>Askerî sınıf entity'lerinin sorgulandığı veri kümesi.</summary>
     DbSet<MilitaryClassDef> MilitaryClassDefs { get; }
 
+    /// <summary>Askerî sınıf grupları.</summary>
+    DbSet<MilitaryClassGroupDef> MilitaryClassGroupDefs { get; }
+
+    /// <summary>Kuvvet, askerî sınıf ve grup arasındaki üçlü eşleştirmeler.</summary>
+    DbSet<MilitaryClassGroupRelation> MilitaryClassGroupRelations { get; }
+
     DbSet<PurchaseNumberDef> PurchaseNumberDefs { get; }
     DbSet<CountryDef> CountryDefs { get; }
     DbSet<CityDef> CityDefs { get; }

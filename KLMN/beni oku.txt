@@ -266,6 +266,43 @@ Askerî Sınıf Tanımları:
   Ayrıntılar: KLMN/ASKERI_SINIF_TANIMLARI_KURULUM.md.
 
 
+Askerî Sınıf Grubu Tanımları:
+  UI: /app/military-class-groups
+  API: /api/military-class-groups
+  MilitaryClassGroupDef : EffectiveDatedEntity; Code, Name,
+  ShortName?, ForcesCommandId (zorunlu), Kuvvet navigasyonu,
+  nullable ValidFrom/ValidTo (ortak). BaseEntity Id, audit,
+  IsActive, IsDeleted, xmin Version tekrar yazılmaz.
+  Grup kodu aynı kuvvet içinde silinmemiş kayıtlarda benzersiz.
+  Ayrı CQRS Create/Update/ChangeStatus/Delete ve Query/Options,
+  backend filtre/paging, frontend PrimeNG kolon sıralaması,
+  Excel (Query izni), audit, form alan hataları ve yetkiler var.
+  Gruba ilişki bağlandıysa kuvvet değişikliği/silme engellenir;
+  aktif eşleştirme varsa grup pasifleştirilemez.
+
+Askerî Sınıf–Grup Eşleştirmeleri:
+  UI: /app/military-class-group-relations
+  API: /api/military-class-group-relations
+  MilitaryClassGroupRelation : BaseEntity; ForcesCommandId,
+  MilitaryClassId, MilitaryClassGroupId zorunlu FK. Tarihler YOK.
+  Kuvvet → Askerî Sınıf → Askerî Sınıf Grubu eşleştirme ekranı:
+  önce kuvvet seçilir, grup seçenekleri yalnız o kuvvete göre
+  yüklenir; kuvvet değişince grup seçimi sıfırlanır.
+  Backend üç referans aktifliğini, grubun seçilen kuvvete ait
+  olmasını, tekrar üçlü kaydı ve xmin çakışmalarını kontrol eder.
+  Aktif eşleştirme bağlı iken üst sınıf/kuvvet/grup pasif olamaz;
+  silinmemiş ilişki varken üst kayıtlar silinemez.
+  Ayrı izinler: MilitaryClassGroups.* ve
+  MilitaryClassGroupRelations.* (View/Query/Create/Update/Delete).
+  Herhangi bir modül yetkisi liste/menü erişimini sağlar;
+  mutasyon ve Excel yetkileri ayrı. Türkçe XML/JSDoc yorum standardı
+  ve tek commit kuralı uygulanır.
+  Migration GEREKLİ: MilitaryClassGroupDefs ve
+  MilitaryClassGroupRelations tabloları, unique partial indeksler
+  ve 3 Restrict FK yerel gerçek ModelSnapshot üzerinden üretilecek.
+  GitHub'da tam migration zinciri olmadığı için uygulanmadı.
+  Belge: KLMN/ASKERI_SINIF_GRUBU_VE_ESLESTIRME_KURULUM.md.
+
 Alım Numarası Tanımları:
   UI: /app/purchase-numbers
   Backend: PurchaseNumbers.
@@ -402,6 +439,7 @@ Mevcut test projeleri:
   KLMN/Tests/Towns.Regression
   KLMN/Tests/MilitarySchools.Regression
   KLMN/Tests/MilitaryClasses.Regression
+  KLMN/Tests/MilitaryClassGroups.Regression
 
 Son geliştirmeler GitHub üzerinden statik kontrol edilerek gönderildi.
 Bu dosyanın güncellemesi sırasında dotnet build, Angular build,
@@ -422,6 +460,17 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-15 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-15 (bu commit — Askerî Sınıf Grubu ve Eşleştirmeler):
+  MilitaryClassGroupDef, MilitaryClassGroupRelation, EF FK/partial
+  unique index, ayrı CQRS Handler/Validator/Query sınıfları,
+  API, Excel, iki Angular tanım/eşleştirme ekranı, permission seed,
+  menü/route, audit, üst kayıt silme/pasifleştirme kontrolleri,
+  KLMN/Tests/MilitaryClassGroups.Regression ve detaylı kurulum notu
+  eklendi. Üçlü ilişki kuvvet/grup tutarlılığını doğrular; kuvvet
+  değişince grup dropdown'u yeniden yüklenir.
+  Yerel ModelSnapshot olmadığından migration oluşturulup DB'ye
+  uygulanmadı. Derleme, tarayıcı ve gerçek PostgreSQL testleri
+  bu commit'te çalıştırılmış olarak beyan edilmeyecek.
 - 2026-10-15 (bu commit — Askerî Sınıf Active düzeltmesi):
   MilitaryClassDef.Active (bool?) MÜKERRER olduğu için kaldırıldı.
   Entity, Create/Update command+handler, GetMilitaryClassDefsQuery,
@@ -551,7 +600,7 @@ geliştirme özeti mutlaka güncellenmelidir.
 Bu liste otomatik görev emri değildir; kullanıcı hangi geliştirmeyle
 devam etmek istediğini yeni mesajında söyleyecek.
 - En yakın teknik kurulum konusu: PurchaseNumberDefs, CountryDefs,
-  CityDefs, TownDefs, MilitarySchoolDefs ve MilitaryClassDefs için mevcut migration zinciriyle
+  CityDefs, TownDefs, MilitarySchoolDefs, MilitaryClassDefs, MilitaryClassGroupDefs ve MilitaryClassGroupRelations için mevcut migration zinciriyle
   migration, SQL script inceleme ve test veritabanına uygulama.
   CityDefs -> TownDefs nullable Restrict FK doğrulanmalı.
 - Yeni alım numarası, kuvvet, birlik, kullanıcı ve rol modüllerinde
@@ -604,6 +653,7 @@ devam etmek istediğini yeni mesajında söyleyecek.
   KLMN/ILCE_TANIMLARI_KURULUM.md
   KLMN/ASKERI_OKUL_TANIMLARI_KURULUM.md
   KLMN/ASKERI_SINIF_TANIMLARI_KURULUM.md
+  KLMN/ASKERI_SINIF_GRUBU_VE_ESLESTIRME_KURULUM.md
   KLMN/ADMIN_ROLU_KORUMA.md
   KLMN/AUDIT_LOG_KURULUM.md
   KLMN/EXCEL_EXPORT_KURULUM.md

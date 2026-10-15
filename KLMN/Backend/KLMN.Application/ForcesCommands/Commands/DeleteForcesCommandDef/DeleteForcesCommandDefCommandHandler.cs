@@ -18,6 +18,7 @@ public sealed class DeleteForcesCommandDefCommandHandler(IKLMNDbContext db)
         if (await db.MilitaryUnitDefs.IgnoreQueryFilters().AnyAsync(x => x.ForcesCommandDef == force.Id && !x.IsDeleted, ct))
             throw new ForcesCommandConflictException("Bağlı birlikleri bulunan kuvvet komutanlığı silinemez.");
         await ForcesCommandDefRules.EnsureNoMilitarySchoolsAsync(db, force.Id, deactivate: false, ct);
+        await ForcesCommandDefRules.EnsureNoMilitaryClassGroupsAsync(db, force.Id, deactivate: false, ct);
         db.ForcesCommandDefs.Remove(force);
         await db.SaveChangesAsync(ct);
     }

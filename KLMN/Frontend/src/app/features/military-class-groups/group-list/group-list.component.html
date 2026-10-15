@@ -1,0 +1,223 @@
+<div class="military-class-groups-page">
+  <div class="page-header">
+    <div><h1>Askerî Sınıf Grubu Tanımları</h1><p>Kuvvet komutanlıklarına bağlı askerî sınıf gruplarını yönetin.</p></div>
+    @if (canCreate()) {
+      <p-button type="button" label="Yeni Grup" icon="pi pi-plus" (onClick)="openCreateDialog()"></p-button>
+    }
+  </div>
+  <div class="military-record-notices" aria-live="polite">
+    @if (successMessage()) {
+      <div class="notice notice-success" role="status">
+        <i class="pi pi-check-circle"></i><span>{{ successMessage() }}</span>
+        <button class="notice-close" type="button" aria-label="Bildirimi kapat"
+                (click)="successMessage.set(null)"><i class="pi pi-times"></i></button>
+      </div>
+    }
+    @if (errorMessage()) {
+      <div class="notice notice-error" role="alert">
+        <i class="pi pi-exclamation-circle"></i><span>{{ errorMessage() }}</span>
+        <button class="notice-close" type="button" aria-label="Hatayı kapat"
+                (click)="errorMessage.set(null)"><i class="pi pi-times"></i></button>
+      </div>
+    }
+  </div>
+  <section class="filter-panel" aria-label="Arama ve durum filtresi">
+    <form [formGroup]="filterForm" (ngSubmit)="search()">
+      <div class="search-field">
+        <i class="pi pi-search"></i>
+        <input pInputText formControlName="search" placeholder="Grup kodu, adı veya kuvvet ara..."
+               aria-label="Kayıt ara" />
+      </div>
+      <div class="inactive-filter">
+        <p-checkbox inputId="military-class-groups-inactive" formControlName="includeInactive" [binary]="true"></p-checkbox>
+        <label for="military-class-groups-inactive">Pasifleri dahil et</label>
+      </div>
+      <div class="filter-actions">
+        <p-button type="submit" label="Ara" icon="pi pi-search" [loading]="loading()"></p-button>
+        <p-button type="button" label="Temizle" severity="secondary" [outlined]="true"
+                  icon="pi pi-times" (onClick)="clearFilters()"></p-button>
+      </div>
+    </form>
+  </section>
+  <section class="military-class-groups-table-card">
+    <div class="table-toolbar">
+      @if (canExport()) {
+        <p-button type="button" label="Excel'e Aktar" icon="pi pi-file-excel"
+                  severity="success" [outlined]="true" [loading]="exporting()"
+                  (onClick)="exportExcel()"></p-button>
+      }
+    </div>
+    <form class="column-filter-panel" [formGroup]="columnFilterForm" (ngSubmit)="search()">
+      <div class="column-filter-grid">
+        <div class="column-filter-field">
+          <label for="military-class-groups-force-filter">Kuvvet Komutanlığı</label>
+          <select id="military-class-groups-force-filter" formControlName="forcesCommandId">
+            <option value="">Tüm kuvvetler</option>
+            @for (force of forcesOptions(); track force.id) {
+              <option [value]="force.id">{{ force.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="column-filter-field">
+          <label for="military-class-groups-status-filter">Durum</label>
+          <select id="military-class-groups-status-filter" formControlName="isActive">
+            <option value="">Aktif kayıtlar</option>
+            <option value="true">Aktif</option>
+            <option value="false">Pasif</option>
+          </select>
+        </div>
+      </div>
+      <div class="column-filter-actions">
+        <p-button type="submit" label="Filtrele" icon="pi pi-filter" size="small"></p-button>
+      </div>
+    </form>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Askerî Sınıf Grubu Tanımları tablosu">
+      <p-table [value]="records()" [loading]="loading()"
+               [tableStyle]="{ 'min-width': '1120px', 'width': '100%' }">
+        <ng-template pTemplate="header"><tr>
+            <th pSortableColumn="name">Grup Adı <p-sortIcon field="name" /></th>
+            <th pSortableColumn="code">Kod <p-sortIcon field="code" /></th>
+            <th pSortableColumn="shortName">Kısa Ad <p-sortIcon field="shortName" /></th>
+            <th pSortableColumn="forcesCommandName">Kuvvet Komutanlığı <p-sortIcon field="forcesCommandName" /></th>
+            <th pSortableColumn="validFrom">Başlangıç <p-sortIcon field="validFrom" /></th>
+            <th pSortableColumn="validTo">Bitiş <p-sortIcon field="validTo" /></th>
+            <th pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
+          @if (canUpdate() || canDelete() || canAudit()) { <th>İşlemler</th> }
+        </tr></ng-template>
+        <ng-template pTemplate="body" let-item><tr>
+            <td><strong>{{ item.name }}</strong></td>
+            <td><code class="record-code">{{ item.code }}</code></td>
+            <td>{{ item.shortName || '—' }}</td>
+            <td>{{ item.forcesCommandName }}</td>
+            <td>{{ item.validFrom ? (item.validFrom | date:'dd.MM.yyyy HH:mm') : '—' }}</td>
+            <td>{{ item.validTo ? (item.validTo | date:'dd.MM.yyyy HH:mm') : 'Süresiz' }}</td>
+          <td><p-tag [value]="item.isActive ? 'Aktif' : 'Pasif'"
+                     [severity]="item.isActive ? 'success' : 'secondary'"></p-tag></td>
+          @if (canUpdate() || canDelete() || canAudit()) {
+            <td>
+              <div class="row-actions">
+                @if (canUpdate()) {
+                  <p-button type="button" icon="pi pi-pencil" severity="secondary" [text]="true"
+                            [disabled]="!!actionLoadingId()" (onClick)="openEditDialog(item)"
+                            ariaLabel="Düzenle"></p-button>
+                  <p-button type="button" [icon]="item.isActive ? 'pi pi-ban' : 'pi pi-check-circle'"
+                            severity="secondary" [text]="true" [disabled]="!!actionLoadingId()"
+                            (onClick)="confirmStatusChange(item)"
+                            [ariaLabel]="item.isActive ? 'Pasifleştir' : 'Aktifleştir'"></p-button>
+                }
+                @if (canDelete()) {
+                  <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true"
+                            [disabled]="!!actionLoadingId()" (onClick)="confirmDelete(item)"
+                            ariaLabel="Sil"></p-button>
+                }
+                @if (canAudit()) {
+                  <p-button type="button" icon="pi pi-history" severity="secondary" [text]="true"
+                            (onClick)="openAudit(item)" ariaLabel="İşlem geçmişi"></p-button>
+                }
+              </div>
+            </td>
+          }
+        </tr></ng-template>
+        <ng-template pTemplate="emptymessage"><tr>
+          <td [attr.colspan]="canUpdate() || canDelete() || canAudit() ? 8 : 7"
+              class="empty-table">Arama koşullarına uygun kayıt bulunamadı.</td>
+        </tr></ng-template>
+      </p-table>
+    </div>
+    <div class="pagination">
+      <span>Toplam {{ totalCount() }} kayıt • Sayfa {{ pageNumber() }} / {{ totalPages() }}</span>
+      <div class="pagination-controls">
+        <p-button type="button" icon="pi pi-chevron-left" [text]="true"
+                  [disabled]="pageNumber() <= 1 || loading()"
+                  (onClick)="goToPage(pageNumber()-1)" ariaLabel="Önceki sayfa"></p-button>
+        <p-button type="button" icon="pi pi-chevron-right" [text]="true"
+                  [disabled]="pageNumber() >= totalPages() || loading()"
+                  (onClick)="goToPage(pageNumber()+1)" ariaLabel="Sonraki sayfa"></p-button>
+      </div>
+      <div class="page-size">
+        <label for="military-class-groups-page-size">Sayfa boyutu</label>
+        <select id="military-class-groups-page-size" [value]="pageSize()" (change)="onPageSizeChange($event)">
+          @for (size of [10, 20, 50, 100]; track size) {
+            <option [value]="size">{{ size }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  </section>
+</div>
+
+<p-dialog [header]="editing() ? 'Askerî Sınıf Grubu Tanımları Düzenle' : 'Yeni Grup'"
+          [visible]="dialogVisible()" (visibleChange)="onDialogVisibleChange($event)"
+          [modal]="true" [draggable]="false" [resizable]="false"
+          [style]="{ width: 'min(680px, 96vw)' }">
+  <form class="military-record-form" [formGroup]="itemForm" (ngSubmit)="save()" novalidate>
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="military-class-groups-code">Kod <span class="required">*</span></label>
+        <input pInputText id="military-class-groups-code" formControlName="code" autocomplete="off" />
+        @if (fieldError('code'); as message) { <small class="field-error">{{ message }}</small> }
+      </div>
+      <div class="form-field">
+        <label for="military-class-groups-name">Grup Adı <span class="required">*</span></label>
+        <input pInputText id="military-class-groups-name" formControlName="name" autocomplete="off" />
+        @if (fieldError('name'); as message) { <small class="field-error">{{ message }}</small> }
+      </div>
+      <div class="form-field">
+        <label for="military-class-groups-shortName">Kısa Ad</label>
+        <input pInputText id="military-class-groups-shortName" formControlName="shortName" autocomplete="off" />
+        @if (fieldError('shortName'); as message) { <small class="field-error">{{ message }}</small> }
+      </div>
+      <div class="form-field">
+        <label for="military-class-groups-forcesCommandId">Kuvvet Komutanlığı <span class="required">*</span></label>
+        <select id="military-class-groups-forcesCommandId" formControlName="forcesCommandId">
+          <option value="">Kuvvet seçiniz</option>
+          @for (force of forcesOptions(); track force.id) {
+            <option [value]="force.id">{{ force.name }} ({{ force.code }})</option>
+          }
+        </select>
+        @if (fieldError('forcesCommandId'); as message) { <small class="field-error">{{ message }}</small> }
+      </div>
+    </div>
+    <div class="form-divider"><span>Geçerlilik Tarihleri</span></div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="military-class-groups-validFrom">Geçerli Başlangıç</label>
+        <input pInputText type="datetime-local" id="military-class-groups-validFrom" formControlName="validFrom" />
+      </div>
+      <div class="form-field">
+        <label for="military-class-groups-validTo">Geçerli Bitiş</label>
+        <input pInputText type="datetime-local" id="military-class-groups-validTo" formControlName="validTo" />
+        @if (fieldError('validTo'); as message) { <small class="field-error">{{ message }}</small> }
+      </div>
+    </div>
+    @if (optionsLoading()) { <p class="form-info">Seçenekler yükleniyor...</p> }
+    @if (optionsError()) {
+      <div class="form-save-error" role="alert">
+        {{ optionsError() }}
+        <button type="button" (click)="loadOptions(itemForm.controls.forcesCommandId.value)">Tekrar dene</button>
+      </div>
+    }
+    <div class="form-footer">
+      @if (formError()) {
+        <div class="form-save-error" role="alert">
+          <i class="pi pi-exclamation-circle"></i><span>{{ formError() }}</span>
+        </div>
+      }
+      <div class="dialog-actions">
+        <p-button type="button" label="Vazgeç" severity="secondary" [outlined]="true"
+                  [disabled]="saving()" (onClick)="onDialogVisibleChange(false)"></p-button>
+        <p-button type="submit" label="Kaydet" icon="pi pi-check"
+                  [disabled]="optionsLoading()" [loading]="saving()"></p-button>
+      </div>
+    </div>
+  </form>
+</p-dialog>
+<p-confirmdialog></p-confirmdialog>
+<p-dialog header="Askerî Sınıf Grubu Tanımları İşlem Geçmişi" [visible]="!!auditRecord()"
+          (visibleChange)="!$event && auditRecord.set(null)"
+          [modal]="true" [draggable]="false" [resizable]="false"
+          [style]="{ width: 'min(760px, 96vw)' }">
+  @if (auditRecord(); as item) {
+    <app-audit-history entityType="MilitaryClassGroupDef" [entityId]="item.id"></app-audit-history>
+  }
+</p-dialog>

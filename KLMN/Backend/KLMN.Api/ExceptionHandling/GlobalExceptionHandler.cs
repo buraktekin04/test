@@ -4,6 +4,8 @@ using KLMN.Application.Countries.Exceptions;
 using KLMN.Application.Cities.Exceptions;
 using KLMN.Application.MilitarySchools.Exceptions;
 using KLMN.Application.MilitaryClasses.Exceptions;
+using KLMN.Application.MilitaryClassGroups.Exceptions;
+using KLMN.Application.MilitaryClassGroupRelations.Exceptions;
 using KLMN.Application.Towns.Exceptions;
 using System.Diagnostics;
 using FluentValidation;
@@ -171,6 +173,14 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             TownConflictException =>
                 new ProblemDetails { Status = StatusCodes.Status409Conflict,
                     Title = "İlçe işlemi gerçekleştirilemedi.", Detail = exception.Message },
+            MilitaryClassGroupNotFoundException => new ProblemDetails { Status = 404,
+                Title = "Sınıf grubu bulunamadı.", Detail = exception.Message },
+            MilitaryClassGroupConflictException => new ProblemDetails { Status = 409,
+                Title = "Sınıf grubu işlem çakışması.", Detail = exception.Message },
+            MilitaryClassGroupRelationNotFoundException => new ProblemDetails { Status = 404,
+                Title = "Eşleştirme bulunamadı.", Detail = exception.Message },
+            MilitaryClassGroupRelationConflictException => new ProblemDetails { Status = 409,
+                Title = "Eşleştirme işlem çakışması.", Detail = exception.Message },
             MilitaryClassNotFoundException =>
                 new ProblemDetails { Status = StatusCodes.Status404NotFound,
                     Title = "Askerî sınıf bulunamadı.", Detail = exception.Message },

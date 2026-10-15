@@ -37,6 +37,18 @@ export const PermissionCodes = {
   /** İlçe Tanımları için UI izin kodları. */
   /** Askerî Okul Tanımları işlem izinleri. */
   /** Askerî Sınıf Tanımları işlemlerinin istemci permission kodları. */
+  /** Askerî sınıf grubu tanımlama işlem yetkileri. */
+  MilitaryClassGroups: {
+    View: 'MilitaryClassGroups.View', Query: 'MilitaryClassGroups.Query',
+    Create: 'MilitaryClassGroups.Create', Update: 'MilitaryClassGroups.Update',
+    Delete: 'MilitaryClassGroups.Delete'
+  },
+  /** Kuvvet-sınıf-grup eşleştirme yetkileri; tanım yönetiminden bağımsızdır. */
+  MilitaryClassGroupRelations: {
+    View: 'MilitaryClassGroupRelations.View', Query: 'MilitaryClassGroupRelations.Query',
+    Create: 'MilitaryClassGroupRelations.Create', Update: 'MilitaryClassGroupRelations.Update',
+    Delete: 'MilitaryClassGroupRelations.Delete'
+  },
   MilitaryClasses: {
     View: 'MilitaryClasses.View', Query: 'MilitaryClasses.Query',
     Create: 'MilitaryClasses.Create', Update: 'MilitaryClasses.Update',

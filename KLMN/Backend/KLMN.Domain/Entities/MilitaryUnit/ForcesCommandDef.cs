@@ -11,4 +11,10 @@ public sealed class ForcesCommandDef : EffectiveDatedEntity
 
     /// <summary>Komutanlığa bağlı askerî okullar; silme ve pasifleştirme kısıtlarını belirler.</summary>
     public ICollection<MilitarySchoolDef> MilitarySchools { get; set; } = new List<MilitarySchoolDef>();
+
+    /// <summary>Kuvvet altındaki askerî sınıf grupları.</summary>
+    public ICollection<MilitaryClassGroupDef> MilitaryClassGroups { get; set; } = new List<MilitaryClassGroupDef>();
+
+    /// <summary>Kuvvet bazlı sınıf-grup eşleştirmeleri.</summary>
+    public ICollection<MilitaryClassGroupRelation> MilitaryClassGroupRelations { get; set; } = new List<MilitaryClassGroupRelation>();
 }

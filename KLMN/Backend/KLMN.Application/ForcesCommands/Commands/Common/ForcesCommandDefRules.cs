@@ -39,4 +39,16 @@ internal static class ForcesCommandDefRules
                 ? "Aktif askerî okulu bulunan kuvvet komutanlığı pasifleştirilemez."
                 : "Bağlı askerî okulu bulunan kuvvet komutanlığı silinemez.");
     }
+    /// <summary>Kuvvete bağlı sınıf grupları ve eşleştirmelerin silme/pasifleştirme güvenliği.</summary>
+    public static async Task EnsureNoMilitaryClassGroupsAsync(
+        IKLMNDbContext db, Guid forceId, bool deactivate, CancellationToken ct)
+    {
+        var groups = await db.MilitaryClassGroupDefs.IgnoreQueryFilters().AnyAsync(x =>
+            x.ForcesCommandId == forceId && !x.IsDeleted && (!deactivate || x.IsActive), ct);
+        var links = await db.MilitaryClassGroupRelations.IgnoreQueryFilters().AnyAsync(x =>
+            x.ForcesCommandId == forceId && !x.IsDeleted && (!deactivate || x.IsActive), ct);
+        if (groups || links) throw new ForcesCommandConflictException(deactivate
+            ? "Aktif sınıf grubu veya eşleştirmesi bulunan kuvvet pasifleştirilemez."
+            : "Sınıf grubu veya eşleştirmesi bulunan kuvvet silinemez.");
+    }
 }

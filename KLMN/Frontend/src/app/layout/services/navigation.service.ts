@@ -72,6 +72,18 @@ export class NavigationService {
           permissionModule: 'MilitaryClasses'
         },
         {
+          label: 'Askerî Sınıf Grubu Tanımları',
+          icon: 'pi pi-clone',
+          route: '/app/military-class-groups',
+          permissionModule: 'MilitaryClassGroups'
+        },
+        {
+          label: 'Sınıf–Grup Eşleştirmeleri',
+          icon: 'pi pi-link',
+          route: '/app/military-class-group-relations',
+          permissionModule: 'MilitaryClassGroupRelations'
+        },
+        {
           label: 'Alım Numarası Tanımları',
           icon: 'pi pi-tags',
           route: '/app/purchase-numbers',
