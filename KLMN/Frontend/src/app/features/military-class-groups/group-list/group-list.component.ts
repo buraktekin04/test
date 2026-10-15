@@ -59,6 +59,8 @@ export class MilitaryClassGroupListComponent implements OnInit {
   public readonly formError = signal<string | null>(null);
   public readonly fieldServerErrors = signal<Record<string, string>>({});
   public readonly attemptedSave = signal(false);
+  /** Diğer tanım ekranlarıyla aynı, isteğe bağlı kolon filtre paneli. */
+  public readonly filtersVisible = signal(false);
   /** Formlar sadece kendi modül izinleriyle üst tanımların kod/adlarını okur. */
   public readonly forcesOptions = signal<MilitaryClassGroupOption[]>([]);
 
@@ -67,8 +69,9 @@ export class MilitaryClassGroupListComponent implements OnInit {
   public readonly filterForm = this.fb.nonNullable.group({
     search: '', includeInactive: false
   });
-  public readonly columnFilterForm = this.fb.nonNullable.group({
-    isActive: '', forcesCommandId: ''
+  public readonly columnFilterForm = this.fb.group({
+    isActive: this.fb.control<boolean | null>(null),
+    forcesCommandId: this.fb.nonNullable.control('')
   });
   public readonly itemForm = this.fb.nonNullable.group({
     code: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/^[A-Za-z0-9_-]+$/)]],
@@ -102,7 +105,7 @@ export class MilitaryClassGroupListComponent implements OnInit {
   private buildQuery(): MilitaryClassGroupQuery {
     const q = this.filterForm.getRawValue();
     const f = this.columnFilterForm.getRawValue();
-    const isActive = f.isActive === 'true' ? true : f.isActive === 'false' ? false : null;
+    const isActive = f.isActive;
     return {
       search: q.search,
       includeInactive: q.includeInactive || isActive === false,
@@ -132,9 +135,11 @@ export class MilitaryClassGroupListComponent implements OnInit {
     });
   }
   public search(): void { this.pageNumber.set(1); this.loadRecords(); }
+  /** Kolon filtrelerini uygular; backend sorgusunda ilk sayfaya döner. */
+  public applyFilters(): void { this.pageNumber.set(1); this.loadRecords(); }
   public clearFilters(): void {
     this.filterForm.reset({ search:'', includeInactive:false });
-    this.columnFilterForm.reset({ isActive:'', forcesCommandId:'' });
+    this.columnFilterForm.reset({ isActive:null, forcesCommandId:'' });
     this.pageNumber.set(1); this.loadRecords();
   }
   public onPageSizeChange(event: Event): void {

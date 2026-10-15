@@ -58,18 +58,28 @@ export class MilitaryClassGroupRelationListComponent implements OnInit {
   public readonly formError = signal<string | null>(null);
   public readonly fieldServerErrors = signal<Record<string, string>>({});
   public readonly attemptedSave = signal(false);
+  /** Diğer tanım ekranlarıyla aynı, isteğe bağlı kolon filtre paneli. */
+  public readonly filtersVisible = signal(false);
   /** Formlar sadece kendi modül izinleriyle üst tanımların kod/adlarını okur. */
   public readonly forcesOptions = signal<MilitaryClassGroupRelationOption[]>([]);
   public readonly classOptions = signal<MilitaryClassGroupRelationOption[]>([]);
   public readonly groupOptions = signal<MilitaryClassGroupRelationOption[]>([]);
+  /** Liste filtresi seçenekleri, kayıt formundan bağımsız tutulur. */
+  public readonly filterClassOptions = signal<MilitaryClassGroupRelationOption[]>([]);
+  public readonly filterGroupOptions = signal<MilitaryClassGroupRelationOption[]>([]);
+  public readonly filterOptionsLoading = signal(false);
+  private filterOptionsRequestId = 0;
 
   public readonly optionsLoading = signal(false);
   public readonly optionsError = signal<string | null>(null);
   public readonly filterForm = this.fb.nonNullable.group({
     search: '', includeInactive: false
   });
-  public readonly columnFilterForm = this.fb.nonNullable.group({
-    isActive: '', forcesCommandId: ''
+  public readonly columnFilterForm = this.fb.group({
+    isActive: this.fb.control<boolean | null>(null),
+    forcesCommandId: this.fb.nonNullable.control(''),
+    militaryClassId: this.fb.nonNullable.control(''),
+    militaryClassGroupId: this.fb.nonNullable.control('')
   });
   public readonly itemForm = this.fb.nonNullable.group({
     forcesCommandId: ['', Validators.required],
@@ -80,7 +90,39 @@ export class MilitaryClassGroupRelationListComponent implements OnInit {
   private dialogRequestId = 0;
   private optionsRequestId = 0;
 
-  public ngOnInit(): void { this.loadRecords(); this.loadOptions(); }
+  public ngOnInit(): void {
+    this.loadRecords();
+    this.loadOptions();
+    this.loadFilterOptions();
+  }
+
+  /** Kolon filtresinde kuvvet değişirse farklı kuvvetin grubu seçili kalamaz. */
+  public onFilterForceChanged(): void {
+    this.columnFilterForm.controls.militaryClassGroupId.setValue('');
+    this.loadFilterOptions();
+  }
+
+  /** Filtre listelerinde seçimleri popup'tan bağımsız ve kuvvete bağlı yükler. */
+  public loadFilterOptions(): void {
+    const requestId = ++this.filterOptionsRequestId;
+    const forceId = this.columnFilterForm.controls.forcesCommandId.value || null;
+    this.filterOptionsLoading.set(true);
+    this.api.options(forceId).pipe(finalize(() => {
+      if (requestId === this.filterOptionsRequestId) this.filterOptionsLoading.set(false);
+    })).subscribe({
+      next: response => {
+        if (requestId !== this.filterOptionsRequestId) return;
+        this.filterClassOptions.set(response.militaryClasses);
+        this.filterGroupOptions.set(response.groups);
+      },
+      error: (err: HttpErrorResponse) => {
+        if (requestId !== this.filterOptionsRequestId) return;
+        this.filterClassOptions.set([]);
+        this.filterGroupOptions.set([]);
+        this.errorMessage.set(this.errorText(err));
+      }
+    });
+  }
 
   /** Kuvvet değiştiğinde grupları yalnızca o kuvvete göre yükler ve önceki grup seçimini temizler. */
   public onForceChanged(): void {
@@ -113,14 +155,14 @@ export class MilitaryClassGroupRelationListComponent implements OnInit {
   private buildQuery(): MilitaryClassGroupRelationQuery {
     const q = this.filterForm.getRawValue();
     const f = this.columnFilterForm.getRawValue();
-    const isActive = f.isActive === 'true' ? true : f.isActive === 'false' ? false : null;
+    const isActive = f.isActive;
     return {
       search: q.search,
       includeInactive: q.includeInactive || isActive === false,
       isActive,
       forcesCommandId: f.forcesCommandId || null,
-      militaryClassId: null,
-      militaryClassGroupId: null,
+      militaryClassId: f.militaryClassId || null,
+      militaryClassGroupId: f.militaryClassGroupId || null,
 
       pageNumber: this.pageNumber(), pageSize: this.pageSize()
     };
@@ -145,9 +187,14 @@ export class MilitaryClassGroupRelationListComponent implements OnInit {
     });
   }
   public search(): void { this.pageNumber.set(1); this.loadRecords(); }
+  /** Kolon filtrelerini uygular; backend sorgusunda ilk sayfaya döner. */
+  public applyFilters(): void { this.pageNumber.set(1); this.loadRecords(); }
   public clearFilters(): void {
     this.filterForm.reset({ search:'', includeInactive:false });
-    this.columnFilterForm.reset({ isActive:'', forcesCommandId:'' });
+    this.columnFilterForm.reset({
+      isActive:null, forcesCommandId:'', militaryClassId:'', militaryClassGroupId:''
+    });
+    this.loadFilterOptions();
     this.pageNumber.set(1); this.loadRecords();
   }
   public onPageSizeChange(event: Event): void {

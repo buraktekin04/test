@@ -41,17 +41,27 @@
   </section>
   <section class="military-class-group-relations-table-card">
     <div class="table-toolbar">
+      <p-button type="button" [label]="filtersVisible() ? 'Filtreleri Gizle' : 'Kolon Filtreleri'"
+                icon="pi pi-filter" severity="secondary" [outlined]="!filtersVisible()"
+                (onClick)="filtersVisible.update(value => !value)"></p-button>
       @if (canExport()) {
         <p-button type="button" label="Excel'e Aktar" icon="pi pi-file-excel"
                   severity="success" [outlined]="true" [loading]="exporting()"
+                  [disabled]="loading() || !totalCount()"
                   (onClick)="exportExcel()"></p-button>
       }
     </div>
-    <form class="column-filter-panel" [formGroup]="columnFilterForm" (ngSubmit)="search()">
-      <div class="column-filter-grid">
+    @if (filtersVisible()) {
+      <form class="column-filter-panel" [formGroup]="columnFilterForm" (ngSubmit)="applyFilters()">
+        <div class="filter-panel-heading">
+          <strong>Kolon Filtreleri</strong>
+          <button type="button" class="notice-close" aria-label="Filtreleri gizle"
+                  (click)="filtersVisible.set(false)"><i class="pi pi-times"></i></button>
+        </div>
+        <div class="column-filter-grid">
         <div class="column-filter-field">
           <label for="military-class-group-relations-force-filter">Kuvvet Komutanlığı</label>
-          <select id="military-class-group-relations-force-filter" formControlName="forcesCommandId">
+          <select id="military-class-group-relations-force-filter" formControlName="forcesCommandId" (change)="onFilterForceChanged()">
             <option value="">Tüm kuvvetler</option>
             @for (force of forcesOptions(); track force.id) {
               <option [value]="force.id">{{ force.name }}</option>
@@ -59,19 +69,43 @@
           </select>
         </div>
         <div class="column-filter-field">
-          <label for="military-class-group-relations-status-filter">Durum</label>
-          <select id="military-class-group-relations-status-filter" formControlName="isActive">
-            <option value="">Aktif kayıtlar</option>
-            <option value="true">Aktif</option>
-            <option value="false">Pasif</option>
+          <label for="military-class-group-relations-class-filter">Askerî Sınıf</label>
+          <select id="military-class-group-relations-class-filter" formControlName="militaryClassId"
+                  [disabled]="filterOptionsLoading()">
+            <option value="">Tüm sınıflar</option>
+            @for (cls of filterClassOptions(); track cls.id) {
+              <option [value]="cls.id">{{ cls.name }}</option>
+            }
           </select>
         </div>
-      </div>
-      <div class="column-filter-actions">
-        <p-button type="submit" label="Filtrele" icon="pi pi-filter" size="small"></p-button>
-      </div>
-    </form>
-    <div class="table-scroll" role="region" tabindex="0" aria-label="Sınıf–Grup Eşleştirmeleri tablosu">
+        <div class="column-filter-field">
+          <label for="military-class-group-relations-group-filter">Askerî Sınıf Grubu</label>
+          <select id="military-class-group-relations-group-filter" formControlName="militaryClassGroupId"
+                  [disabled]="!columnFilterForm.controls.forcesCommandId.value || filterOptionsLoading()">
+            <option value="">{{ columnFilterForm.controls.forcesCommandId.value ? 'Tüm gruplar' : 'Önce kuvvet seçiniz' }}</option>
+            @for (group of filterGroupOptions(); track group.id) {
+              <option [value]="group.id">{{ group.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="column-filter-field">
+          <label for="military-class-group-relations-status-filter">Durum</label>
+          <select id="military-class-group-relations-status-filter" formControlName="isActive">
+            <option [ngValue]="null">Tümü</option>
+            <option [ngValue]="true">Aktif</option>
+            <option [ngValue]="false">Pasif</option>
+          </select>
+        </div>
+        </div>
+        <div class="column-filter-actions">
+          <p-button type="button" label="Tümünü Temizle" icon="pi pi-filter-slash"
+                    severity="secondary" [outlined]="true" (onClick)="clearFilters()"></p-button>
+          <p-button type="submit" label="Filtreleri Uygula" icon="pi pi-check"
+                    [loading]="loading()"></p-button>
+        </div>
+      </form>
+    }
+        <div class="table-scroll" role="region" tabindex="0" aria-label="Sınıf–Grup Eşleştirmeleri tablosu">
       <p-table [value]="records()" [loading]="loading()"
                [tableStyle]="{ 'min-width': '970px', 'width': '100%' }">
         <ng-template pTemplate="header"><tr>

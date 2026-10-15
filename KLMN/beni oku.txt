@@ -284,6 +284,8 @@ Askerî Sınıf Grubu Tanımları:
   Ayrı CQRS Create/Update/ChangeStatus/Delete ve Query/Options,
   backend filtre/paging, frontend PrimeNG kolon sıralaması,
   Excel (Query izni), audit, form alan hataları ve yetkiler var.
+  Kolon filtreleri diğer tanım ekranlarıyla aynı açılır panelde;
+  Kuvvet ve Durum (Tümü/Aktif/Pasif) filtreleri sunucuda çalışır.
   Gruba ilişki bağlandıysa kuvvet değişikliği/silme engellenir;
   aktif eşleştirme varsa grup pasifleştirilemez.
 
@@ -295,6 +297,10 @@ Askerî Sınıf–Grup Eşleştirmeleri:
   Kuvvet → Askerî Sınıf → Askerî Sınıf Grubu eşleştirme ekranı:
   önce kuvvet seçilir, grup seçenekleri yalnız o kuvvete göre
   yüklenir; kuvvet değişince grup seçimi sıfırlanır.
+  LİSTE kolon filtre panelinde Kuvvet, Askerî Sınıf,
+  Kuvvete bağlı Sınıf Grubu ve Durum (Tümü/Aktif/Pasif) var.
+  Form dropdown'larıyla kolon filtre dropdown'ları bağımsızdır.
+  Gereksiz "Aktif kayıtlar" durum seçeneği KALDIRILDI.
   Backend üç referans aktifliğini, grubun seçilen kuvvete ait
   olmasını, tekrar üçlü kaydı ve xmin çakışmalarını kontrol eder.
   Aktif eşleştirme bağlı iken üst sınıf/kuvvet/grup pasif olamaz;
@@ -467,7 +473,23 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-15 itibarıyla ana hatlar (sondan eskiye):
-- 2026-10-15 (bu commit — Ülke Kısa Kodu):
+- 2026-10-15 (bu commit — Sınıf grubu/eşleştirme kolon filtreleri):
+  Askerî Sınıf Grubu ve Sınıf–Grup Eşleştirmeleri ekranlarında
+  kolon filtreleri diğer tanım ekranlarındaki gibi varsayılan
+  KAPALI, butonla açılan panel haline getirildi.
+  Panelde "Kolon Filtreleri", "Tümünü Temizle" ve "Filtreleri
+  Uygula" aksiyonları var. Durum listesindeki "Aktif kayıtlar"
+  gereksiz seçeneği kaldırılıp Tümü/Aktif/Pasif kullanıldı;
+  Pasifleri dahil et mantığı ve mevcut IsActive API korundu.
+  Eşleştirme listesine Askerî Sınıf ve Sınıf Grubu seçilebilir
+  dropdown filtreleri eklendi; grup filtresi kuvvete bağlıdır.
+  Liste seçenekleri edit popup'ından AYRI yüklendi; geç eski
+  yanıtların yeni filtreyi ezmesini engelleyen request ID var.
+  p-table kolon sıralaması frontend'de KALDI; backend ve DB
+  şeması değiştirilmedi, migration GEREKMİYOR.
+  Statik HTML/TypeScript/sorgu alan eşleşmeleri denetlendi;
+  gerçek Angular build/browser testi çalıştırılmadı.
+- 2026-10-15 (önceki commit — Ülke Kısa Kodu):
   CountryDef'e nullable ShortCode (kısa ülke kodu) eklendi.
   Code ve ExternalCode alanları değiştirilmedi.
   CQRS Create/Update/Validator, kod benzersizlik kontrolü,

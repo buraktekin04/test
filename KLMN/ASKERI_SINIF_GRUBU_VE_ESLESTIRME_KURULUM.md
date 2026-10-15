@@ -60,8 +60,20 @@ tarihi formu var. Eşleştirmede önce kuvvet seçilir; grup dropdown'u
 yalnızca o kuvvetin gruplarıyla doldurulur, kuvvet değişirse önceki
 grup seçimi sıfırlanır. Sınıf listesi ayrıca gösterilir.
 Backend filtre ve sayfalama; PrimeNG p-table yalnızca yüklü sayfada
-kolon sıralaması. Inline validasyon/genel hata, Excel, audit,
-aktif/pasif, silme ve mobil kaydırma davranışı desteklenir.
+kolon sıralaması. İki ekranda da "Kolon Filtreleri" düğmesiyle
+açılan/kapanan panel, "Tümünü Temizle" ve "Filtreleri Uygula"
+bulunur. Grup ekranında Kuvvet Komutanlığı + Durum;
+Eşleştirme ekranında Kuvvet Komutanlığı + Askerî Sınıf +
+seçili kuvvete ait Sınıf Grubu + Durum filtreleri vardır.
+Durum seçenekleri Tümü/Aktif/Pasif; ayrı ve gereksiz
+"Aktif kayıtlar" seçeneği bulunmaz. Liste filtreleri için
+sınıf/grup seçenekleri popup seçeneklerinden ayrı tutulur:
+liste kuvveti değişirse grup temizlenir ve yeniden yüklenir.
+Filtreler backend sorgu parametrelerine, aynı filtreler
+Excel isteğine gönderilir. Sayfa numarası filtre uygulandığında
+1'e döner. "Pasifleri dahil et" mevcut davranışını korur.
+Inline validasyon/genel hata, Excel, audit, aktif/pasif,
+silme ve mobil kaydırma davranışı desteklenir.
 
 ## Migration — MEVCUT SNAPSHOT KORUNMALI
 GitHub deposunda yerel Migrations/ModelSnapshot tam zinciri YOK.

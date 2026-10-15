@@ -41,14 +41,24 @@
   </section>
   <section class="military-class-groups-table-card">
     <div class="table-toolbar">
+      <p-button type="button" [label]="filtersVisible() ? 'Filtreleri Gizle' : 'Kolon Filtreleri'"
+                icon="pi pi-filter" severity="secondary" [outlined]="!filtersVisible()"
+                (onClick)="filtersVisible.update(value => !value)"></p-button>
       @if (canExport()) {
         <p-button type="button" label="Excel'e Aktar" icon="pi pi-file-excel"
                   severity="success" [outlined]="true" [loading]="exporting()"
+                  [disabled]="loading() || !totalCount()"
                   (onClick)="exportExcel()"></p-button>
       }
     </div>
-    <form class="column-filter-panel" [formGroup]="columnFilterForm" (ngSubmit)="search()">
-      <div class="column-filter-grid">
+    @if (filtersVisible()) {
+      <form class="column-filter-panel" [formGroup]="columnFilterForm" (ngSubmit)="applyFilters()">
+        <div class="filter-panel-heading">
+          <strong>Kolon Filtreleri</strong>
+          <button type="button" class="notice-close" aria-label="Filtreleri gizle"
+                  (click)="filtersVisible.set(false)"><i class="pi pi-times"></i></button>
+        </div>
+        <div class="column-filter-grid">
         <div class="column-filter-field">
           <label for="military-class-groups-force-filter">Kuvvet Komutanlığı</label>
           <select id="military-class-groups-force-filter" formControlName="forcesCommandId">
@@ -61,17 +71,21 @@
         <div class="column-filter-field">
           <label for="military-class-groups-status-filter">Durum</label>
           <select id="military-class-groups-status-filter" formControlName="isActive">
-            <option value="">Aktif kayıtlar</option>
-            <option value="true">Aktif</option>
-            <option value="false">Pasif</option>
+            <option [ngValue]="null">Tümü</option>
+            <option [ngValue]="true">Aktif</option>
+            <option [ngValue]="false">Pasif</option>
           </select>
         </div>
-      </div>
-      <div class="column-filter-actions">
-        <p-button type="submit" label="Filtrele" icon="pi pi-filter" size="small"></p-button>
-      </div>
-    </form>
-    <div class="table-scroll" role="region" tabindex="0" aria-label="Askerî Sınıf Grubu Tanımları tablosu">
+        </div>
+        <div class="column-filter-actions">
+          <p-button type="button" label="Tümünü Temizle" icon="pi pi-filter-slash"
+                    severity="secondary" [outlined]="true" (onClick)="clearFilters()"></p-button>
+          <p-button type="submit" label="Filtreleri Uygula" icon="pi pi-check"
+                    [loading]="loading()"></p-button>
+        </div>
+      </form>
+    }
+        <div class="table-scroll" role="region" tabindex="0" aria-label="Askerî Sınıf Grubu Tanımları tablosu">
       <p-table [value]="records()" [loading]="loading()"
                [tableStyle]="{ 'min-width': '1120px', 'width': '100%' }">
         <ng-template pTemplate="header"><tr>
