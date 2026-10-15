@@ -72,14 +72,6 @@
               <option [ngValue]="false">Pasif</option>
             </select>
           </div>
-          <div class="column-filter-field">
-            <label for="military-classes-active-filter-legacy">Active Bilgisi</label>
-            <select id="military-classes-active-filter-legacy" formControlName="active">
-              <option value="">Tümü</option>
-              <option value="true">Evet</option>
-              <option value="false">Hayır</option>
-            </select>
-          </div>
         </div>
         <div class="column-filter-actions">
           <p-button type="button" label="Tümünü Temizle" icon="pi pi-filter-slash"
@@ -98,7 +90,6 @@
             <th pSortableColumn="code">Kod <p-sortIcon field="code" /></th>
             <th pSortableColumn="shortName">Kısa Ad <p-sortIcon field="shortName" /></th>
             <th pSortableColumn="externalCode">Harici Kod <p-sortIcon field="externalCode" /></th>
-            <th pSortableColumn="active">Active Bilgisi <p-sortIcon field="active" /></th>
             <th pSortableColumn="validFrom">Geçerli Başlangıç <p-sortIcon field="validFrom" /></th>
             <th pSortableColumn="validTo">Geçerli Bitiş <p-sortIcon field="validTo" /></th>
             <th pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
@@ -113,7 +104,6 @@
             <td><code class="record-code">{{ item.code }}</code></td>
             <td>{{ item.shortName || '—' }}</td>
             <td>{{ item.externalCode || '—' }}</td>
-            <td>{{ item.active === null ? 'Belirtilmedi' : (item.active ? 'Evet' : 'Hayır') }}</td>
             <td>{{ item.validFrom ? (item.validFrom | date:'dd.MM.yyyy HH:mm') : '—' }}</td>
             <td>{{ item.validTo ? (item.validTo | date:'dd.MM.yyyy HH:mm') : 'Süresiz' }}</td>
             <td><p-tag [value]="item.isActive ? 'Aktif' : 'Pasif'"
@@ -148,7 +138,7 @@
           </tr>
         </ng-template>
         <ng-template pTemplate="emptymessage">
-          <tr><td [attr.colspan]="canUpdate() || canDelete() || canAudit() ? 10 : 9"
+          <tr><td [attr.colspan]="canUpdate() || canDelete() || canAudit() ? 9 : 8"
                   class="empty-table">Arama koşullarına uygun kayıt bulunamadı.</td></tr>
         </ng-template>
       </p-table>
@@ -207,15 +197,6 @@
         <input pInputText id="military-classes-externalCode" formControlName="externalCode"
                autocomplete="off" placeholder="İsteğe bağlı harici kod" />
         @if (fieldError('externalCode'); as message) { <small class="field-error">{{ message }}</small> }
-      </div>
-      <div class="form-field">
-        <label for="military-classes-active-legacy">Active Bilgisi</label>
-        <select id="military-classes-active-legacy" formControlName="active">
-          <option value="">Belirtilmedi</option>
-          <option value="true">Evet</option>
-          <option value="false">Hayır</option>
-        </select>
-        <small>Eski nullable Active alanıdır; kaydın Aktif/Pasif durumundan bağımsızdır.</small>
       </div>
     </div>
     <div class="form-divider"><span>Geçerlilik Tarihleri</span></div>

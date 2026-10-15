@@ -20,7 +20,7 @@ import {
 } from '../models/military-classes.model';
 import { MilitaryClassService } from '../services/military-classes.service';
 
-type FormField = 'code' | 'name' | 'shortName' | 'externalCode' | 'active' | 'validFrom' | 'validTo';
+type FormField = 'code' | 'name' | 'shortName' | 'externalCode' | 'validFrom' | 'validTo';
 
 /** Askerî Sınıf Tanımları: backend filtreleri, ayrı işlem yetkileri ve sade form. */
 @Component({
@@ -65,14 +65,12 @@ export class MilitaryClassListComponent implements OnInit {
   public readonly filterForm = this.fb.nonNullable.group({ search: '', includeInactive: false });
   public readonly columnFilterForm = this.fb.group({
     isActive: this.fb.control<boolean | null>(null),
-    active: ''
   });
   public readonly itemForm = this.fb.nonNullable.group({
     code: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/^[A-Za-z0-9_-]+$/)]],
     name: ['', [Validators.required, Validators.maxLength(250)]],
     shortName: ['', Validators.maxLength(100)],
     externalCode: ['', Validators.maxLength(100)],
-    active: [''],
     validFrom: [''],
     validTo: ['']
   });
@@ -98,7 +96,6 @@ export class MilitaryClassListComponent implements OnInit {
       search: search.search,
       includeInactive: search.includeInactive || filters.isActive === false,
       isActive: filters.isActive,
-      active: filters.active === '' || filters.active === null ? null : filters.active === 'true',
       pageNumber: this.pageNumber(), pageSize: this.pageSize()
     };
   }
@@ -126,7 +123,7 @@ export class MilitaryClassListComponent implements OnInit {
   public applyFilters(): void { this.pageNumber.set(1); this.loadRecords(); }
   public clearFilters(): void {
     this.filterForm.reset({search:'', includeInactive:false});
-    this.columnFilterForm.reset({ isActive:null, active:'' });
+    this.columnFilterForm.reset({ isActive:null });
     this.pageNumber.set(1);
     this.loadRecords();
   }
@@ -164,7 +161,7 @@ export class MilitaryClassListComponent implements OnInit {
     if (!this.canCreate() || this.saving()) return;
     ++this.dialogRequestId;
     this.editing.set(null);
-    this.itemForm.reset({ code:'', name:'', shortName:'', externalCode:'', active:'', validFrom:'', validTo:'' });
+    this.itemForm.reset({ code:'', name:'', shortName:'', externalCode:'', validFrom:'', validTo:'' });
     this.attemptedSave.set(false);
     this.fieldServerErrors.set({});
     this.formError.set(null);
@@ -183,7 +180,6 @@ export class MilitaryClassListComponent implements OnInit {
         this.editing.set(detail);
         this.itemForm.reset({ code: detail.code, name: detail.name,
           shortName: detail.shortName ?? '', externalCode: detail.externalCode ?? '',
-          active: detail.active === null ? '' : String(detail.active),
           validFrom: ValidityPeriodUtils.toLocalInput(detail.validFrom),
           validTo: ValidityPeriodUtils.toLocalInput(detail.validTo) });
         this.attemptedSave.set(false);
@@ -223,7 +219,7 @@ export class MilitaryClassListComponent implements OnInit {
       element?.focus({ preventScroll:true });
     });
   }
-  /** Nullable Active ile sistemin IsActive değerini ayrı tutarak kaydeder. */
+  /** Sınıf alanlarını kaydeder; aktiflik ayrı status işlemiyle değişir. */
   public save(): void {
     if (this.saving() || (this.editing() ? !this.canUpdate() : !this.canCreate())) return;
     this.attemptedSave.set(true);
@@ -246,7 +242,6 @@ export class MilitaryClassListComponent implements OnInit {
       name: values.name.trim(),
       shortName: values.shortName.trim() || null,
       externalCode: values.externalCode.trim() || null,
-      active: values.active === '' ? null : values.active === 'true',
       ...ValidityPeriodUtils.fromLocalInputs(values.validFrom, values.validTo)
     };
     const edited = this.editing();

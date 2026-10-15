@@ -19,7 +19,6 @@ public sealed class UpdateMilitaryClassDefCommandHandler(IKLMNDbContext db)
         item.Name = request.Name.Trim();
         item.ShortName = string.IsNullOrWhiteSpace(request.ShortName) ? null : request.ShortName.Trim();
         item.ExternalCode = string.IsNullOrWhiteSpace(request.ExternalCode) ? null : request.ExternalCode.Trim();
-        item.Active = request.Active;
         item.ValidFrom = request.ValidFrom;
         item.ValidTo = request.ValidTo;
 

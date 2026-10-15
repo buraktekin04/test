@@ -53,7 +53,6 @@ public sealed class MilitaryClassesController(ISender sender, IExcelExportServic
             new("Askerî Sınıf Adı", x => x.Name, Width: 36),
             new("Kısa Ad", x => x.ShortName, Width: 22),
             new("Harici Kod", x => x.ExternalCode, Width: 22),
-            new("Active Bilgisi", x => x.Active.HasValue ? (x.Active.Value ? "Evet" : "Hayır") : "Belirtilmedi", Width: 22),
             new("Geçerli Başlangıç", x => x.ValidFrom, NumberFormat: "dd.MM.yyyy HH:mm", Width: 25),
             new("Geçerli Bitiş", x => x.ValidTo, NumberFormat: "dd.MM.yyyy HH:mm", Width: 25),
             new("Kayıt Durumu", x => x.IsActive ? "Aktif" : "Pasif", Width: 18),
@@ -91,7 +90,7 @@ public sealed class MilitaryClassesController(ISender sender, IExcelExportServic
         return Ok(await sender.Send(request, ct));
     }
 
-    /// <summary>IsActive durumunu değiştirir; nullable Active alanı değişmez.</summary>
+    /// <summary>BaseEntity.IsActive durumunu diğer tanım ekranları gibi değiştirir.</summary>
     [HttpPatch("{id:guid}/status")]
     [HasPermission(PermissionCodes.MilitaryClasses.Update)]
     public async Task<IActionResult> Status(

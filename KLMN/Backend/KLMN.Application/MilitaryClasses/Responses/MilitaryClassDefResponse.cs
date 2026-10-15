@@ -4,8 +4,8 @@ using KLMN.Domain.Entities.MilitaryUnit;
 namespace KLMN.Application.MilitaryClasses.Responses;
 
 /// <summary>
-/// Liste ve detay DTO'sudur. Eski Active alanını sistemin IsActive
-/// alanından ayrı tutar; güncel xmin Version alanını içerir.
+/// Liste ve detay DTO'sudur. Aktiflik yalnızca BaseEntity.IsActive
+/// alanıyla yönetilir; güncel xmin Version alanını içerir.
 /// </summary>
 public sealed class MilitaryClassDefResponse
 {
@@ -14,7 +14,6 @@ public sealed class MilitaryClassDefResponse
     public string Name { get; init; } = string.Empty;
     public string? ShortName { get; init; }
     public string? ExternalCode { get; init; }
-    public bool? Active { get; init; }
     public bool IsActive { get; init; }
     public DateTime? ValidFrom { get; init; }
     public DateTime? ValidTo { get; init; }
@@ -30,7 +29,7 @@ public sealed class MilitaryClassDefResponse
         {
             Id = x.Id, Code = x.Code, Name = x.Name,
             ShortName = x.ShortName, ExternalCode = x.ExternalCode,
-            Active = x.Active, IsActive = x.IsActive,
+            IsActive = x.IsActive,
             ValidFrom = x.ValidFrom, ValidTo = x.ValidTo,
             CreatedDate = x.CreatedDate, CreatedBy = x.CreatedBy,
             UpdatedDate = x.UpdatedDate, UpdatedBy = x.UpdatedBy,

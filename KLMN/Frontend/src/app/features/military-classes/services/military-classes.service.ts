@@ -15,14 +15,13 @@ export class MilitaryClassService {
   private readonly http = inject(HttpClient);
   private readonly url = inject(API_BASE_URL) + '/military-classes';
 
-  /** İki ayrı aktiflik filtresini karıştırmadan sorgu parametrelerini oluşturur. */
+  /** BaseEntity.IsActive filtresini API sorgusuna ekler. */
   private params(query: MilitaryClassQuery): HttpParams {
     let params = new HttpParams()
       .set('pageNumber', query.pageNumber).set('pageSize', query.pageSize)
       .set('includeInactive', query.includeInactive);
     if (query.search.trim()) params = params.set('search', query.search.trim());
     if (query.isActive !== null) params = params.set('isActive', query.isActive);
-    if (query.active !== null) params = params.set('active', query.active);
     return params;
   }
   public list(query: MilitaryClassQuery): Observable<PagedResult<MilitaryClassDefItem>> {

@@ -10,7 +10,7 @@ namespace KLMN.Application.MilitaryClasses.Queries.GetMilitaryClassDefs;
 public sealed class GetMilitaryClassDefsQueryHandler(IKLMNDbContext db)
     : IRequestHandler<GetMilitaryClassDefsQuery, PagedResult<MilitaryClassDefResponse>>
 {
-    /// <summary>Silinmemiş askerî sınıfları ayrı Active ve IsActive filtreleriyle listeler.</summary>
+    /// <summary>Silinmemiş askerî sınıfları BaseEntity.IsActive filtresiyle listeler.</summary>
     public async Task<PagedResult<MilitaryClassDefResponse>> Handle(GetMilitaryClassDefsQuery request, CancellationToken ct)
     {
         var query = db.MilitaryClassDefs.IgnoreQueryFilters().AsNoTracking()
@@ -26,8 +26,6 @@ public sealed class GetMilitaryClassDefsQueryHandler(IKLMNDbContext db)
         }
         if (request.IsActive.HasValue)
             query = query.Where(x => x.IsActive == request.IsActive.Value);
-        if (request.Active.HasValue)
-            query = query.Where(x => x.Active == request.Active.Value);
 
         var total = await query.CountAsync(ct);
         var items = await query.OrderBy(x => x.Name).ThenBy(x => x.Code)

@@ -244,24 +244,27 @@ Askerî Okul Tanımları:
 
 Askerî Sınıf Tanımları:
   UI: /app/military-classes | API: /api/military-classes.
-  MilitaryClassDef : EffectiveDatedEntity; Code, Name, ShortName?,
-  ExternalCode? ve eski modeldeki bool? Active alanlarını taşır.
-  Fotoğraftaki Type, MpvtCode, Town ve yorum satırına alınmış
-  MilitaryClassGroup alanları YENİ MODÜLE EKLENMEDİ.
-  StartDate/EndDate yerine ortak nullable ValidFrom/ValidTo kullanılır.
-  Kimlik/audit/soft-delete/IsActive/Version(xmin) BaseEntity'den gelir.
-  DİKKAT: Active (nullable iş alanı) ve IsActive (kaydın yönetim
-  aktifliği) iki FARKLI özelliktir; status komutu yalnızca IsActive'i
-  değiştirir. Frontend'de Active Bilgisi Belirtilmedi/Evet/Hayırdır.
-  Ayrı CQRS Create/Update/Delete/Status ve liste/detay sorguları,
-  FluentValidation, audit, Excel, server arama/filtre/sayfalama ve
-  sadece PrimeNG üzerinde kolon sıralama eklendi.
+  MilitaryClassDef : EffectiveDatedEntity; yalnızca Code, Name,
+  ShortName? ve ExternalCode? alanları tutulur. Geçerlilik dönemi
+  ortak nullable ValidFrom/ValidTo'dur; BaseEntity.Id, audit,
+  IsActive, soft-delete ve PostgreSQL xmin Version miras alınır.
+  MÜKERRER Active alanı kaldırıldı: yalnızca BaseEntity.IsActive
+  kullanılır. Ekleme/düzenleme popup'ında aktiflik alanı YOK.
+  Aktif/Pasif işlemleri diğer tanım ekranları gibi listede ayrı
+  ChangeStatusMilitaryClassDefCommand (Update permission) ile yapılır.
+  Listede tek Durum filtresi/kolonu (IsActive) vardır. Type,
+  MpvtCode, Town ve yorumdaki MilitaryClassGroup da ALINMADI.
+  CQRS create/update/status/delete, backend filtre/sayfalama,
+  frontend p-table kolon sıralama, FluentValidation, Excel (Query),
+  audit, soft-delete ve xmin koruması devam eder.
   Permission MilitaryClasses.View/Query/Create/Update/Delete;
-  herhangi biri ekran/listeye erişim açar, işlemler kendi yetkisiyle.
-  Excel yalnız Query izni gerektirir. Kod açıklamaları Türkçedir.
-  YENİ MilitaryClassDefs tablosu için migration gerekiyor ve gerçek
-  veritabanına UYGULANMADI. Kurulum:
-  KLMN/ASKERI_SINIF_TANIMLARI_KURULUM.md.
+  herhangi biri menü/route/listeyi açar; mutasyonlar ayrı izinlidir.
+  Migration hâlâ gerekli. Bu commit'te veritabanına dokunulmadı.
+  Şayet daha önce yerel DB'ye nullable Active sütununu içeren
+  migration uygulandıysa sütun güvenli yeni migration ile çıkarılır;
+  mevcut migration zinciri ve tablolar silinip sıfırlanmaz.
+  Ayrıntılar: KLMN/ASKERI_SINIF_TANIMLARI_KURULUM.md.
+
 
 Alım Numarası Tanımları:
   UI: /app/purchase-numbers
@@ -419,13 +422,28 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-15 itibarıyla ana hatlar (sondan eskiye):
-- 2026-10-15 (bu commit — Askerî Sınıf Tanımları):
+- 2026-10-15 (bu commit — Askerî Sınıf Active düzeltmesi):
+  MilitaryClassDef.Active (bool?) MÜKERRER olduğu için kaldırıldı.
+  Entity, Create/Update command+handler, GetMilitaryClassDefsQuery,
+  response DTO, Excel kolonu, audit alanı, Angular model/service,
+  filtre, p-table kolonu ve popup Active alanı temizlendi.
+  Aktif/Pasif yalnız BaseEntity.IsActive ve eski
+  ChangeStatusMilitaryClassDefCommand üzerinden çalışır.
+  Mevcut permission, soft-delete, xmin, ValidFrom/ValidTo,
+  arama/sayfalama ve PrimeNG sıralaması KORUNDU.
+  Askerî sınıf regresyon test kaynakları ve kurulum dokümanı
+  güncellendi. Bu commit'te migration yapılmadı; üretim DB'sinde
+  daha önce Active kolonu oluştuysa güvenli yeni migration gerekir.
+  Statik kaynak kontrolleri tamamlandı; gerçek .NET/Angular build
+  ve PostgreSQL/browser testleri çalıştırılmadı.
+- 2026-10-15 (önceki commit — Askerî Sınıf Tanımları):
   MilitaryClassDef, EffectiveDatedEntity/EF mapping, ayrı CQRS
   command/handler/validator, sorgular, API, Excel, permission seed,
   audit, Angular form/liste, p-table sorting ve yetki bazlı menü
   eklendi. Type/MpvtCode/Town ve MilitaryClassGroup YOK.
-  ShortName, ExternalCode ve nullable Active KORUNDU; Active ve
-  IsActive farklı. ValidFrom/ValidTo ortak sınıftan gelir.
+  Önceki sürümde gereksiz nullable Active eklenmişti; hemen sonraki
+  düzeltmeyle kaldırıldı. ShortName/ExternalCode korunuyor;
+  yalnızca BaseEntity.IsActive ve ortak ValidFrom/ValidTo kullanılır.
   KLMN/Tests/MilitaryClasses.Regression ve
   KLMN/ASKERI_SINIF_TANIMLARI_KURULUM.md eklendi.
   Migration gereklidir ancak mevcut gerçek snapshot olmadığından

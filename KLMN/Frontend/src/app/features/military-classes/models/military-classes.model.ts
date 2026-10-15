@@ -5,8 +5,6 @@ export interface MilitaryClassDefItem {
   name: string;
   shortName: string | null;
   externalCode: string | null;
-  /** Eski nullable Active alanı; IsActive ile aynı değildir. */
-  active: boolean | null;
   isActive: boolean;
   validFrom: string | null;
   validTo: string | null;
@@ -23,17 +21,15 @@ export interface MilitaryClassFields {
   name: string;
   shortName: string | null;
   externalCode: string | null;
-  active: boolean | null;
   validFrom: string | null;
   validTo: string | null;
 }
 
-/** Sorgu sayfalama ve iki farklı aktiflik bilgisini ayrı filtreler. */
+/** Sorgu sayfalama ve BaseEntity.IsActive alanını filtreler. */
 export interface MilitaryClassQuery {
   search: string;
   includeInactive: boolean;
   isActive: boolean | null;
-  active: boolean | null;
   pageNumber: number;
   pageSize: number;
 }

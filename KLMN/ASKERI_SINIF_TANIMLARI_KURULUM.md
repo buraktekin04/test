@@ -1,57 +1,77 @@
-# Askerî Sınıf Tanımları — KLMN
+# Askerî Sınıf Tanımları — Güncel Mimari ve Kurulum
 
-## Alan kararları
-Eski MilitaryClassDef fotoğrafında görülen Type, MpvtCode ve Town
-alanları kullanıcı isteği üzerine bilinçli olarak ALINMADI.
-Yorum satırındaki MilitaryClassGroup da alınmadı.
-Yeni MilitaryClassDef : EffectiveDatedEntity:
-Code (zorunlu), Name (zorunlu), ShortName?, ExternalCode?,
-bool? Active. StartDate/EndDate yerine ortak nullable UTC
-ValidFrom/ValidTo kullanılır. BaseEntity.Id, CreatedDate,
-CreatedBy, UpdatedDate, UpdatedBy, IsActive, IsDeleted ve uint Version
-(PostgreSQL xmin) tekrar tanımlanmaz.
+## Entity ve alan kararları
+Yeni MilitaryClassDef : EffectiveDatedEntity; kendine özgü alanları
+yalnızca Code, Name, ShortName? ve ExternalCode? olarak tutulur.
+Kullanılmayan Type, MpvtCode, Town ve yorumdaki MilitaryClassGroup
+ALINMAZ. StartDate/EndDate tekrar yazılmaz; nullable/UTC
+ValidFrom ve ValidTo ortak EffectiveDatedEntity'den miras alınır.
 
-Eski bool? Active, kayıt yönetimindeki BaseEntity.IsActive
-ile aynı şey DEĞİLDİR. Active için Belirtilmedi/Evet/Hayır,
-IsActive için ayrı durum değiştirme işlemi vardır.
-Kodlar büyük harfle saklanır; silinmemiş kayıtlarda tekildir.
+Aktif/pasif DURUMU yalnızca BaseEntity.IsActive ile yönetilir.
+Önceki sürümde yanlışlıkla eklenen bool? Active kaldırılmıştır.
+Create/Update formunda aktiflik input'u YOKTUR. Kullanıcı listede
+Aktifleştir/Pasifleştir butonlarıyla ayrı ChangeStatusMilitaryClassDef
+komutunu çağırır (MilitaryClasses.Update). Soft-delete, CreatedDate,
+CreatedBy, UpdatedDate, UpdatedBy, IsDeleted ve PostgreSQL xmin Version
+BaseEntity mekanizmasına dahildir; bir kez daha tanımlanmaz.
 
-## Modül
-GET /api/military-classes: search, includeInactive, isActive, active,
-pageNumber/pageSize. Arama/sayfalama backend'de.
-GET /api/military-classes/{id}: detay ve xmin.
-POST /api/military-classes: Create.
-PUT /api/military-classes/{id}: Update + xmin.
-PATCH /api/military-classes/{id}/status: IsActive + xmin.
-DELETE /api/military-classes/{id}?version=...: soft-delete.
-GET /api/military-classes/export: en fazla 5000 kayıt XLSX.
+## Backend / yetki
+- CreateMilitaryClassDefCommand, UpdateMilitaryClassDefCommand,
+  ChangeStatusMilitaryClassDefCommand, DeleteMilitaryClassDefCommand
+  farklı dosyalarda Handler ve FluentValidation ile düzenlenmiştir.
+- Liste GetMilitaryClassDefsQuery, detay GetMilitaryClassDefByIdQuery.
+- GET /api/military-classes?search=&includeInactive=&isActive=&pageNumber=&pageSize=
+- GET /api/military-classes/{id}
+- POST /api/military-classes
+- PUT /api/military-classes/{id}
+- PATCH /api/military-classes/{id}/status
+- DELETE /api/military-classes/{id}?version=...
+- GET /api/military-classes/export (maksimum 5000 satır; Query izni)
 
-Askerî Sınıf Tanımları ekranı /app/military-classes.
-Liste, kolon filtreleri, yerel p-table sorting, form alan hataları,
-audit, Excel ve işlem bazlı permission kontrolleri bulunur.
-MilitaryClasses.View/Query/Create/Update/Delete kodları Domain,
-IdentitySeedData, API ve Angular'da eşleştirilmiştir.
-Sadece Create izni ekranı açar ama Update/Delete/Excel vermez.
-Excel yalnız Query yetkisiyle açılır.
-Geçerlilik tarihleri Angular'da ValidityPeriodUtils ile UTC'ye döner.
+MilitaryClasses.View/Query/Create/Update/Delete yetkileri korunur.
+Herhangi bir izin liste/menü/route erişimini sağlar. Ekleme yalnız
+Create; düzenleme ve durum değişimi yalnız Update; silme Delete;
+Excel aktarma Query izni gerektirir. Kodlar silinmemiş kayıtlarda
+tekildir. Update/status/delete uint xmin çakışması 409,
+silme soft-delete ve audit interceptor üzerinden gerçekleştirilir.
 
-## Migration
-GitHub'da gerçek yerel EF migrations/ModelSnapshot zinciri YOKTUR.
-Canlı tabloları silmeyin; mevcut migration geçmişi üzerinden:
+## Angular
+Menü: Tanımlamalar > Askerî Sınıf Tanımları.
+Route: /app/military-classes.
+Form alanları: Kod, Ad, Kısa Ad, Harici Kod, Geçerli Başlangıç/Bitiş.
+Durum seçimi ekleme/düzenleme popup'ında YOKTUR.
+Liste: tek IsActive Durum kolonu/filtresi; butondan aktif/pasif.
+Arama, durum filtresi ve sayfalama backend'de; PrimeNG kolon
+sıralaması sadece yüklü sayfada frontend'de çalışır.
+Form hataları alanın altında ve kaydetme bölümünde gösterilir.
+Excel ve audit korunur. Tarihler ValidityPeriodUtils ile UTC'ye döner.
+
+## Migration / Veritabanı
+GitHub kaynaklarında mevcut gerçek yerel EF Migrations/ModelSnapshot
+bulunmuyor. Bu commit'te veritabanına müdahale edilmedi.
+Henüz tablolar oluşturulmadıysa güncel entity ile
+MilitaryClassDefs tablosunu mevcut migration zincirinden oluşturun.
+Sütunlar: BaseEntity ve ortak ValidFrom/ValidTo ile Code,
+Name, ShortName?, ExternalCode?. Ayrı Active sütunu YOKTUR.
+Eğer önceki sürümün migration'ı DB'ye zaten uygulanmışsa
+geçmiş migration'ları silmek yerine yeni bir migration ile
+sadece gereksiz Active kolonunun kaldırılmasını değerlendirin.
+Her durumda SQL script'ini inceleyin ve veri kaybı riskini
+kontrol edin; canlı tabloyu sıfırlamayın.
   cd KLMN/Backend
-  dotnet ef migrations add AddMilitaryClassDefinitions --project KLMN.Persistence --startup-project KLMN.Api --context KLMNDbContext
+  dotnet ef migrations add RemoveMilitaryClassDuplicateActive --project KLMN.Persistence --startup-project KLMN.Api --context KLMNDbContext
   dotnet ef migrations script --project KLMN.Persistence --startup-project KLMN.Api --context KLMNDbContext
   dotnet ef database update --project KLMN.Persistence --startup-project KLMN.Api --context KLMNDbContext
-SQL'de MilitaryClassDefs tablosu, Code partial unique index,
-nullable ShortName/ExternalCode/Active, nullable UTC timestamptz
-ValidFrom/ValidTo olmalı. Type/MpvtCode/Town FK veya kolon olarak
-bulunmamalı. Version için normal sütun EKLEME; Npgsql xmin kullan.
+Migration adı gereksinime göre değiştirilebilir. PostgreSQL xmin için
+normal Version kolonu açılmaz.
 
 ## Test ve kabul
-dotnet run --project KLMN/Tests/MilitaryClasses.Regression/MilitaryClasses.Regression.csproj
-dotnet build KLMN/Backend/KLMN.slnx
-npm --prefix KLMN/Frontend run build
-.NET SDK burada yok; gerçek build/DB/E2E testleri çalıştırılmadı.
-Test veri setinde Active=null/true/false, IsActive bağımsızlığı,
-UTC tarih sınırları, 409 çakışması, yetki modülleri ve
-soft-delete/unique kod davranışı ayrıca doğrulanmalıdır.
+  dotnet run --project KLMN/Tests/MilitaryClasses.Regression/MilitaryClasses.Regression.csproj
+  dotnet build KLMN/Backend/KLMN.slnx
+  npm --prefix KLMN/Frontend run build
+Regresyon kaynakları yalnızca IsActive DTO projeksiyonunu test eder;
+status/delete/integration için gerçek DB testleri ayrıca gereklidir.
+Bu işlemde .NET ve Angular derlemesi veya gerçek PostgreSQL/browser
+testleri çalıştırılmamıştır. Aktif/pasif, permission (Create-only,
+Update-only, Query-only), concurrency, Excel ve soft-delete kabul
+testleri lokal geliştirme ortamında çalıştırılmalıdır.
