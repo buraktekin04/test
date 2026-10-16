@@ -1,11 +1,8 @@
 <div class="login-page">
   <main class="login-container">
     <div class="login-brand">
-      <img [src]="branding.logoUrl" alt="" width="42" height="42">
-      <div class="login-brand-text">
-        <strong>{{ branding.name }}</strong>
-        <span>{{ branding.subtitle }}</span>
-      </div>
+      <img [src]="branding.logoUrl" alt="" width="88" height="88">
+      <strong>{{ branding.name }}</strong>
     </div>
 
     <section class="login-card" aria-labelledby="login-title">
@@ -74,4 +71,8 @@
       </form>
     </section>
   </main>
+
+  <footer class="login-footer">
+    Sürüm v{{ branding.version }}
+  </footer>
 </div>

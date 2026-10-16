@@ -53,8 +53,11 @@ Farklı ekranlarda tekrar `#hex` tanımlamak yerine mevcut token'ları kullanın
 ## Giriş ekranı
 - Tek kolonlu, ortalanmış form; gösterişli tanıtım paneli, slogan,
   dekoratif grafik veya gereksiz güvenlik/metin tekrarları kullanılmaz.
-- Nötr açık gri sayfa, ince kenarlıklı beyaz form, ölçülü
-  KLMN logosu ve tek koyu lacivert giriş butonu kullanılır.
+- Nötr açık gri sayfa, ince kenarlıklı beyaz form ve tek koyu lacivert
+  giriş butonu kullanılır. Büyük ama sade KLMN logosu formun ÜZERİNDE
+  ortalanır; uygulama adı logonun ALTINDADIR.
+- Sürüm numarası APP_BRANDING.version'dan okunur ve sayfanın sağ alt
+  köşesinde küçük, ikincil metin olarak gösterilir.
 - Giriş ekranında işletim sisteminin standart Segoe UI / Arial
   yazı tipleri kullanılır; harici font veya gösterişli başlık yoktur.
 - Kullanıcı adı/e-posta, parola, parolayı göster/gizle,

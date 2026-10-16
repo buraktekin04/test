@@ -563,6 +563,22 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-16 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-16 (bu commit — Giriş logosu ve sürüm yerleşimi):
+  Kullanıcının sade kurumsal login tasarımı korunarak logo giriş
+  kartının ÜZERİNDE, yatay ortada 88x88 px (mobilde 76x76 px)
+  olarak düzenlendi. "KLMN" uygulama adı logonun altına taşındı;
+  yan yana logo/metin düzeni ve ikinci açıklama satırı kaldırıldı.
+  APP_BRANDING.version üzerinden "Sürüm v1.0.0" sağ alt köşede
+  küçük ikincil metin olarak gösteriliyor. Uzun içerik/mobil için
+  altta boşluk bırakıldı. Sade kart/form, fontlar, renkler,
+  validasyon ve tüm login/JWT/parola sıfırlama akışı korundu.
+  Güncellenenler: Frontend/.../login.component.html,
+  login.component.scss, Frontend/UI_DESIGN_SYSTEM.md ve bu TXT.
+  Backend, veritabanı ve ortak tema değişmedi; migration yok.
+  HTML/SCSS şablon statik kontrolleri yapıldı; Angular build,
+  gerçek tarayıcı ve API testi burada çalıştırılmadı.
+  Kullanıcı isteği doğrultusunda tamamı TEK COMMIT/TEK PUSH.
+
 - 2026-10-16 (bu commit — Login ekranı sade kurumsal tasarım):
   Kullanıcının önceki iki kolonlu, slogan ve dekoratif renk ağırlıklı
   login tasarımını beğenmemesi üzerine yalnız GİRİŞ ekranı yenilendi.
