@@ -119,6 +119,16 @@ public static class PermissionCodes
         public const string Delete = "MilitaryClasses.Delete";
     }
 
+    /// <summary>Askerlik şubesi tanımlarının işlem yetkileri.</summary>
+    public static class MilitaryOffices
+    {
+        public const string View = "MilitaryOffices.View";
+        public const string Query = "MilitaryOffices.Query";
+        public const string Create = "MilitaryOffices.Create";
+        public const string Update = "MilitaryOffices.Update";
+        public const string Delete = "MilitaryOffices.Delete";
+    }
+
     public static class MilitarySchools
     {
         public const string View = "MilitarySchools.View";

@@ -19,4 +19,8 @@ public sealed class CityDef : EffectiveDatedEntity
     /// <summary>Şehre bağlı askerî okullar; FK ile referans bütünlüğü korunur.</summary>
     public ICollection<KLMN.Domain.Entities.MilitaryUnit.MilitarySchoolDef> MilitarySchools { get; set; }
         = new List<KLMN.Domain.Entities.MilitaryUnit.MilitarySchoolDef>();
+
+    /// <summary>Şehirle ilişkili askerlik şubeleri; silmede FK Restrict uygulanır.</summary>
+    public ICollection<KLMN.Domain.Entities.MilitaryUnit.MilitaryOfficeDef> MilitaryOffices { get; set; }
+        = new List<KLMN.Domain.Entities.MilitaryUnit.MilitaryOfficeDef>();
 }

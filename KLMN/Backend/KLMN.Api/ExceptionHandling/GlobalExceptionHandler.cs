@@ -3,6 +3,7 @@ using KLMN.Application.PurchaseNumbers.Exceptions;
 using KLMN.Application.Countries.Exceptions;
 using KLMN.Application.Cities.Exceptions;
 using KLMN.Application.MilitarySchools.Exceptions;
+using KLMN.Application.MilitaryOffices.Exceptions;
 using KLMN.Application.MilitaryClasses.Exceptions;
 using KLMN.Application.MilitaryClassGroups.Exceptions;
 using KLMN.Application.MilitaryClassGroupRelations.Exceptions;
@@ -187,6 +188,12 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             MilitaryClassConflictException =>
                 new ProblemDetails { Status = StatusCodes.Status409Conflict,
                     Title = "Askerî sınıf işlemi gerçekleştirilemedi.", Detail = exception.Message },
+            MilitaryOfficeNotFoundException =>
+                new ProblemDetails { Status = StatusCodes.Status404NotFound,
+                    Title = "Askerlik şubesi bulunamadı.", Detail = exception.Message },
+            MilitaryOfficeConflictException =>
+                new ProblemDetails { Status = StatusCodes.Status409Conflict,
+                    Title = "Askerlik şubesi işlemi gerçekleştirilemedi.", Detail = exception.Message },
             MilitarySchoolNotFoundException =>
                 new ProblemDetails { Status = StatusCodes.Status404NotFound,
                     Title = "Askerî okul bulunamadı.", Detail = exception.Message },

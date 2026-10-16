@@ -53,6 +53,21 @@ internal static class CityDefRules
     }
 
     /// <summary>
+    /// Şehir silinirken bağlı silinmemiş şube, pasifleştirilirken aktif
+    /// şube bulunmasını engeller. İlişki boşta bırakılmaz.
+    /// </summary>
+    public static async Task EnsureNoMilitaryOfficesAsync(
+        IKLMNDbContext db, Guid cityId, bool deactivate, CancellationToken ct)
+    {
+        var linked = await db.MilitaryOfficeDefs.IgnoreQueryFilters().AnyAsync(x =>
+            x.CityId == cityId && !x.IsDeleted && (!deactivate || x.IsActive), ct);
+        if (linked)
+            throw new CityConflictException(deactivate
+                ? "Aktif askerlik şubesi bulunan şehir pasifleştirilemez."
+                : "Bağlı askerlik şubesi bulunan şehir silinemez.");
+    }
+
+    /// <summary>
     /// Bağlı ilçeleri korur: silinen şehir referanssız ilçe bırakmaz,
     /// aktif ilçe barındıran şehir pasifleştirilemez.
     /// </summary>

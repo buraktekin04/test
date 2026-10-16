@@ -549,6 +549,7 @@ Mevcut test projeleri:
   KLMN/Tests/MilitaryUnits.Regression
   KLMN/Tests/PurchaseNumbers.Regression
   KLMN/Tests/Towns.Regression
+  KLMN/Tests/MilitaryOffices.Regression
   KLMN/Tests/MilitarySchools.Regression
   KLMN/Tests/MilitaryClasses.Regression
   KLMN/Tests/MilitaryClassGroups.Regression

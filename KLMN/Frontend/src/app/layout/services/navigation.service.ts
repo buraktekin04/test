@@ -60,6 +60,12 @@ export class NavigationService {
           permissionModule: 'Towns'
         },
         {
+          label: 'Askerlik Şubesi Tanımları',
+          icon: 'pi pi-building',
+          route: '/app/military-offices',
+          permissionModule: 'MilitaryOffices'
+        },
+        {
           label: 'Askerî Okul Tanımları',
           icon: 'pi pi-graduation-cap',
           route: '/app/military-schools',

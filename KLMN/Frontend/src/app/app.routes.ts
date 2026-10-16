@@ -108,6 +108,14 @@ export const routes: Routes = [
             .then(component => component.MilitaryClassListComponent)
       },
       {
+        path: 'military-offices',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'MilitaryOffices' },
+        loadComponent: () =>
+          import('./features/military-offices/military-office-list/military-office-list.component')
+            .then(component => component.MilitaryOfficeListComponent)
+      },
+      {
         path: 'military-schools',
         canActivate: [permissionGuard],
         data: { permissionModule: 'MilitarySchools' },
@@ -139,6 +147,9 @@ export const routes: Routes = [
       },
       {
         path: 'definitions/towns', pathMatch: 'full', redirectTo: 'towns'
+      },
+      {
+        path: 'definitions/military-offices', pathMatch: 'full', redirectTo: 'military-offices'
       },
       {
         path: 'definitions/military-schools', pathMatch: 'full', redirectTo: 'military-schools'

@@ -63,6 +63,9 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     /// </summary>
     public DbSet<ForcesCommandDef> ForcesCommandDefs => Set<ForcesCommandDef>();
 
+    /// <summary>Askerlik Şubesi Tanımları veri kümesi.</summary>
+    public DbSet<MilitaryOfficeDef> MilitaryOfficeDefs => Set<MilitaryOfficeDef>();
+
     /// <summary>Askerî Okul Tanımları veri kümesi.</summary>
     public DbSet<MilitarySchoolDef> MilitarySchoolDefs => Set<MilitarySchoolDef>();
 
