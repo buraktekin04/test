@@ -9,16 +9,6 @@
   max-width: 100%;
 }
 
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-
-  h1 { color: var(--ui-text-strong); font-size: 1.65rem; font-weight: 700; margin: 0; }
-  p { color: var(--ui-muted); font-size: .9rem; margin: .4rem 0 0; }
-}
 
 .filter-panel,
 .military-class-group-relations-table-card {
