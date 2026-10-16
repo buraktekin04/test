@@ -25,7 +25,10 @@ export class AppLayoutComponent {
 
   public expandSidebar(): void {
     this.sidebarCollapsed.set(false);
-    this.sidebarOpen.set(true);
+    this.sidebarOpen.set(
+      typeof window !== 'undefined' &&
+      window.matchMedia('(max-width: 992px)').matches
+    );
   }
 
   public closeSidebar(): void {
