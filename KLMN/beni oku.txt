@@ -575,6 +575,47 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-16 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-16 (bu commit — Başvuru Grubu Tanımları):
+  Fotoğraftaki HcAdmissionTypeDef esas alındı: Code int, Name,
+  14 adet bool (ForcesCommandRequired, RankRequired,
+  MilitaryClassRequired, MilitaryUnitRequired, SenderChairRequired,
+  MilitaryOfficeRequired, RegistryNumberRequired,
+  MilitarySchoolRequired, LastNominationDateRequired,
+  HeightWeightRequired, NthAdmissionRequired,
+  DispatchDocumentDateRequired, DispatchDocumentNoRequired,
+  PertemApprovalRequired). Adları backend entity/DTO/command ve
+  Angular camelCase model/form arasında BİREBİR eşlendi.
+  Eski ObjectId/CreationDate/CreatedBy/LastUpdate/UpdatedBy/
+  ConcurrencyToken/IsActive, ortak BaseEntity'den; StartDate/
+  EndDate, EffectiveDatedEntity'deki UTC ValidFrom/ValidTo'dan.
+  Yeni HcAdmissionTypeDef entity ve EF mapping oluşturuldu;
+  unique int Code soft-delete index, DbContext/IKLMNDbContext.
+  CQRS Create/Update/Delete/ChangeStatus ve GetList/GetById
+  ayrı command/query/handler/validator yapıları. PermissionCodes
+  backend/frontend, IdentitySeedData, API controller, 5000 limitli
+  Excel, ProblemDetails 404/409, audit whitelist/validator ve
+  işlem geçmişi tür filtresi eklendi.
+  Angular Tanımlamalar → Başvuru Grubu Tanımları menüsü/route:
+  diğer tanım ekranıyla aynı liste, arama, durum kolon filtresi,
+  frontend p-table sıralama, sayfalama, CRUD/status popup,
+  Excel ve audit. YENİ FORM: Kod(int), Ad, 14 adet tıklanabilir
+  checkbox (8 askerî, 3 başvuru/sağlık, 3 belge/onay),
+  geçerli başlangıç/bitiş tarihleri. Seçili=true (zorunlu),
+  değilse=false. Kayıt IsActive checkbox DEĞİL; ayrı status.
+  Liste "n/14 zorunlu" değeri yalnız hesaplanan UI bilgisidir.
+  Başka tablo/FK/filter-options query YOKTUR.
+  Dosyalar: Domain/Entities/Admissions, Persistence Configurations,
+  Application/AdmissionTypes, Api/AdmissionTypesController,
+  Frontend/features/admission-types, app.routes, navigation,
+  permission codes, seed, audit, GlobalExceptionHandler,
+  KLMN/Tests/AdmissionTypes.Regression,
+  KLMN/BASVURU_GRUBU_TANIMLARI_KURULUM.md ve beni oku.txt.
+  Mevcut migration snapshot GitHub'da yok; migration/dotnet ef
+  database update üretim ortamında UYGULANMADI.
+  Statik sözleşme/şablon kontrolleri yapıldı; gerçek dotnet/npm
+  derleme, PostgreSQL, E2E/tarayıcı testi bu ortamda yapılmadı.
+  Tüm kaynaklar hazırlandıktan sonra TEK COMMIT / TEK PUSH.
+
 - 2026-10-16 (bu commit — giriş sonrası nizamlı kurumsal tema):
   Kullanıcının yeni tercihiyle iç uygulamanın sol menüsü,
   üst barı, ana sayfası ve ortak tema sert ve sade kurumsal

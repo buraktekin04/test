@@ -1,6 +1,7 @@
 using KLMN.Domain.Entities.Identity;
 using KLMN.Domain.Entities.Auditing;
 using KLMN.Domain.Entities.MilitaryUnit;
+using KLMN.Domain.Entities.Admissions;
 using KLMN.Domain.Entities.PurchaseNumbers;
 using KLMN.Domain.Entities.Geography;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,9 @@ public interface IKLMNDbContext
     DbSet<RefreshToken> RefreshTokens { get; }
     DbSet<PasswordResetToken> PasswordResetTokens { get; }
     DbSet<ForcesCommandDef> ForcesCommandDefs { get; }
+
+    /// <summary>Başvuru gruplarının DbSet sorgu/değiştirme kümesi.</summary>
+    DbSet<HcAdmissionTypeDef> HcAdmissionTypeDefs { get; }
 
     /// <summary>Askerlik şubelerinin CQRS işlem veri kümesi.</summary>
     DbSet<MilitaryOfficeDef> MilitaryOfficeDefs { get; }

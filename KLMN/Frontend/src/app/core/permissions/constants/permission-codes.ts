@@ -55,6 +55,12 @@ export const PermissionCodes = {
     Delete: 'MilitaryClasses.Delete'
   },
   /** Askerlik Şubesi Tanımları için eylem bazlı izin kodları. */
+  /** Başvuru Grubu Tanımları eylem bazlı izin kodları. */
+  AdmissionTypes: {
+    View: 'AdmissionTypes.View', Query: 'AdmissionTypes.Query',
+    Create: 'AdmissionTypes.Create', Update: 'AdmissionTypes.Update',
+    Delete: 'AdmissionTypes.Delete'
+  },
   MilitaryOffices: {
     View: 'MilitaryOffices.View', Query: 'MilitaryOffices.Query',
     Create: 'MilitaryOffices.Create', Update: 'MilitaryOffices.Update',

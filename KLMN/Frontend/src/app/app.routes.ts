@@ -108,6 +108,14 @@ export const routes: Routes = [
             .then(component => component.MilitaryClassListComponent)
       },
       {
+        path: 'admission-types',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'AdmissionTypes' },
+        loadComponent: () =>
+          import('./features/admission-types/admission-type-list/admission-type-list.component')
+            .then(component => component.AdmissionTypeListComponent)
+      },
+      {
         path: 'military-offices',
         canActivate: [permissionGuard],
         data: { permissionModule: 'MilitaryOffices' },
@@ -147,6 +155,9 @@ export const routes: Routes = [
       },
       {
         path: 'definitions/towns', pathMatch: 'full', redirectTo: 'towns'
+      },
+      {
+        path: 'definitions/admission-types', pathMatch: 'full', redirectTo: 'admission-types'
       },
       {
         path: 'definitions/military-offices', pathMatch: 'full', redirectTo: 'military-offices'

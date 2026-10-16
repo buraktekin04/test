@@ -120,6 +120,16 @@ public static class PermissionCodes
     }
 
     /// <summary>Askerlik şubesi tanımlarının işlem yetkileri.</summary>
+    /// <summary>Başvuru Grubu Tanımları izin kodları.</summary>
+    public static class AdmissionTypes
+    {
+        public const string View = "AdmissionTypes.View";
+        public const string Query = "AdmissionTypes.Query";
+        public const string Create = "AdmissionTypes.Create";
+        public const string Update = "AdmissionTypes.Update";
+        public const string Delete = "AdmissionTypes.Delete";
+    }
+
     public static class MilitaryOffices
     {
         public const string View = "MilitaryOffices.View";

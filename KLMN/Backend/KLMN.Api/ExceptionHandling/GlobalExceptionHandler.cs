@@ -4,6 +4,7 @@ using KLMN.Application.Countries.Exceptions;
 using KLMN.Application.Cities.Exceptions;
 using KLMN.Application.MilitarySchools.Exceptions;
 using KLMN.Application.MilitaryOffices.Exceptions;
+using KLMN.Application.AdmissionTypes.Exceptions;
 using KLMN.Application.MilitaryClasses.Exceptions;
 using KLMN.Application.MilitaryClassGroups.Exceptions;
 using KLMN.Application.MilitaryClassGroupRelations.Exceptions;
@@ -188,6 +189,12 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             MilitaryClassConflictException =>
                 new ProblemDetails { Status = StatusCodes.Status409Conflict,
                     Title = "Askerî sınıf işlemi gerçekleştirilemedi.", Detail = exception.Message },
+            AdmissionTypeNotFoundException =>
+                new ProblemDetails { Status = StatusCodes.Status404NotFound,
+                    Title = "Başvuru grubu bulunamadı.", Detail = exception.Message },
+            AdmissionTypeConflictException =>
+                new ProblemDetails { Status = StatusCodes.Status409Conflict,
+                    Title = "Başvuru grubu işlemi gerçekleştirilemedi.", Detail = exception.Message },
             MilitaryOfficeNotFoundException =>
                 new ProblemDetails { Status = StatusCodes.Status404NotFound,
                     Title = "Askerlik şubesi bulunamadı.", Detail = exception.Message },
