@@ -2,6 +2,19 @@
   display: block;
   min-height: 100dvh;
   font-family: "Segoe UI", Arial, sans-serif;
+  /* Daha disiplinli iç tema uygulanırken onaylı giriş paleti korunur. */
+  --ui-navy: #163047;
+  --ui-navy-deep: #0d253a;
+  --ui-primary-dark: #075b62;
+  --ui-control-border: #ccd9df;
+  --ui-text: #263a4b;
+  --ui-text-strong: #172d3e;
+  --ui-muted: #718394;
+  --ui-border: #dce6e9;
+  --ui-danger: #bb3948;
+  --p-primary-color: #087f81;
+  --p-primary-hover-color: #066c70;
+  --p-primary-active-color: #075b62;
 }
 
 /* Sol kurumsal alan ve sağ giriş bölümü; göz yormayan düz yüzeyler. */

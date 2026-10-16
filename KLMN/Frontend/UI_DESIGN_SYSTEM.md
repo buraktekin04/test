@@ -20,14 +20,14 @@ iş kurallarını, tablo filtrelerini, sıralamayı, CRUD akışlarını veya ye
 ## Temel tasarım değişkenleri
 | Amaç | CSS token | Varsayılan |
 | --- | --- | --- |
-| Ana işlem rengi | `--ui-primary` | `#087f81` |
-| Ana menü | `--ui-navy-deep` | `#0d253a` |
-| Sayfa zemini | `--ui-canvas` | `#f2f6f8` |
+| Ana işlem rengi | `--ui-primary` | `#405c74` |
+| Sol menü (grafit) | `sidebar.component.scss` | `#29333d` |
+| Sayfa zemini | `--ui-canvas` | `#edf1f4` |
 | Kart zemini | `--ui-surface` | `#ffffff` |
-| Başlık/metin | `--ui-text-strong` | `#172d3e` |
-| İkincil metin | `--ui-muted` | `#718394` |
-| Kenarlık | `--ui-border` | `#dce6e9` |
-| Kart kavisleri | `--ui-radius` | `14px` |
+| Başlık/metin | `--ui-text-strong` | `#1c2833` |
+| İkincil metin | `--ui-muted` | `#647281` |
+| Kenarlık | `--ui-border` | `#d3dae1` |
+| Kart kavisleri | `--ui-radius` | `7px` |
 
 Renk değiştirirken CSS token'ları ile PrimeNG preset'in `primary` paletini
 aynı anda güncelleyin; aksi halde yerel öğeler ve PrimeNG öğeleri farklı renge dönebilir.
@@ -41,6 +41,22 @@ Farklı ekranlarda tekrar `#hex` tanımlamak yerine mevcut token'ları kullanın
 3. Angular/PrimeNG iç yapısına dokunmayı gerektirmedikçe `::ng-deep` kullanmayın.
 4. Tablo, modal, permission ve auth davranışlarının CSS değişikliklerinden
    etkilenmediğini kontrol edin; sadece görsel temayı paylaşın.
+
+## Giriş sonrası nizamlı kurumsal UI standardı (16.10.2026)
+- Askerî disiplin hissi veren sade, düzenli ve resmî görünüm.
+  Gerçek kurum/rütbe amblemi kullanılmaz.
+- Sol menü düz grafit (`#29333d`), açık gri metin, mat çelik
+  aktif öğe ve ince sol çizgi. Gradient veya parıltı yoktur.
+- Üst bar beyaz, ince alt kenarlık; Segoe UI/Tahoma/Arial
+  fontları ve doğal harf aralığı kullanılır.
+- Ana yüzey nötr gri (`#edf1f4`), kartlar beyaz, 7px
+  köşeli ve ince çerçeveli. Ana sayfanın parlak hero gradient'i,
+  pi-sparkles ve dönen büyük kalp dekoru kaldırıldı.
+- Ortak `--ui-*` değişkenleri ve PrimeNG 21 Aura preset aynı
+  mat çelik mavisi değerlerini kullanır.
+- Tanım CRUD, filtre, audit, izin ve sıralama davranışları korunur.
+- Onaylanmış login ekranı ayrı tutularak orijinal görsel renk
+  token'ları `login.component.scss` içinde korunmuştur.
 
 ## Sidebar ve topbar
 - **Masaüstü (genişlik > 992px):** Topbar menü butonu sidebar'ı daraltır/genişletir.

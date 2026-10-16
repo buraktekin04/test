@@ -7,37 +7,37 @@
  */
 :root {
   color-scheme: light;
-  --ui-primary: #087f81;
-  --ui-primary-hover: #066c70;
-  --ui-primary-dark: #075b62;
-  --ui-primary-50: #e8f7f6;
-  --ui-primary-100: #d1efed;
-  --ui-primary-border: #b7e3df;
-  --ui-accent: #0d9cad;
-  --ui-navy: #163047;
-  --ui-navy-deep: #0d253a;
-  --ui-canvas: #f2f6f8;
+  --ui-primary: #405c74;
+  --ui-primary-hover: #344c63;
+  --ui-primary-dark: #2a4054;
+  --ui-primary-50: #eef2f5;
+  --ui-primary-100: #e0e7ed;
+  --ui-primary-border: #c9d5df;
+  --ui-accent: #516e87;
+  --ui-navy: #2c3742;
+  --ui-navy-deep: #202a34;
+  --ui-canvas: #edf1f4;
   --ui-surface: #ffffff;
-  --ui-surface-muted: #f7fafb;
-  --ui-text: #263a4b;
-  --ui-text-strong: #172d3e;
-  --ui-text-soft: #506677;
-  --ui-muted: #718394;
-  --ui-placeholder: #95a5b1;
-  --ui-border: #dce6e9;
-  --ui-border-soft: #e9f0f2;
-  --ui-control-border: #ccd9df;
-  --ui-success: #128467;
-  --ui-danger: #bb3948;
-  --ui-warning: #b36b15;
-  --ui-radius-sm: 9px;
-  --ui-radius: 14px;
-  --ui-radius-lg: 20px;
-  --ui-shadow: 0 6px 24px rgba(17, 53, 71, .045);
-  --ui-shadow-lift: 0 12px 36px rgba(17, 53, 71, .09);
-  --ui-sidebar-width: 272px;
-  --ui-sidebar-collapsed-width: 76px;
-  --ui-topbar-height: 78px;
+  --ui-surface-muted: #f4f6f8;
+  --ui-text: #2d3843;
+  --ui-text-strong: #1c2833;
+  --ui-text-soft: #465462;
+  --ui-muted: #647281;
+  --ui-placeholder: #85909c;
+  --ui-border: #d3dae1;
+  --ui-border-soft: #e1e5ea;
+  --ui-control-border: #c4cdd6;
+  --ui-success: #3b6f5d;
+  --ui-danger: #a53b42;
+  --ui-warning: #976b30;
+  --ui-radius-sm: 5px;
+  --ui-radius: 7px;
+  --ui-radius-lg: 9px;
+  --ui-shadow: 0 1px 4px rgba(27, 40, 52, .045);
+  --ui-shadow-lift: 0 6px 18px rgba(27, 40, 52, .12);
+  --ui-sidebar-width: 266px;
+  --ui-sidebar-collapsed-width: 70px;
+  --ui-topbar-height: 72px;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -46,7 +46,7 @@ body {
   min-height: 100vh;
   color: var(--ui-text);
   background: var(--ui-canvas);
-  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 button, input, select, textarea { font: inherit; }
@@ -66,9 +66,9 @@ a { color: var(--ui-primary); }
 .content .page-header h1 {
   margin: 0;
   color: var(--ui-text-strong);
-  font-size: 1.65rem;
-  font-weight: 750;
-  letter-spacing: -.035em;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: normal;
 }
 .content .page-header p {
   margin: .4rem 0 0;
@@ -79,8 +79,8 @@ a { color: var(--ui-primary); }
 /* Ortak ekran başlıkları, tablolar, filtreler ve formlar. */
 .content :is(.page-header, .welcome, .audit-page .page-header) h1 {
   color: var(--ui-text-strong);
-  letter-spacing: -.035em;
-  font-weight: 750;
+  letter-spacing: normal;
+  font-weight: 700;
 }
 .content :is(.page-header, .welcome) p { color: var(--ui-muted); }
 .content :is(.filter-panel, .audit-filters, .roles-workspace) {
@@ -112,6 +112,16 @@ a { color: var(--ui-primary); }
 .content :is(.form-field label, .column-filter-field label) { color: var(--ui-text-soft); }
 .content :is(.empty-table) { color: var(--ui-muted); }
 
+/* Daha sınırları belirgin, nötr kurumsal form ve tablolardır. */
+.content :is(.filter-panel, .column-filter-panel, .audit-filters) {
+  border-color: var(--ui-border);
+  box-shadow: none;
+}
+.content :is(.p-datatable-thead > tr > th) {
+  font-size: .79rem;
+  font-weight: 650;
+  letter-spacing: normal;
+}
 /* PrimeNG preset renklerini tamamlayan ortak ölçüler. */
 .p-button { border-radius: var(--ui-radius-sm); font-weight: 600; }
 .p-inputtext, .p-select, .p-textarea, .p-password-input, .p-datepicker-input {
@@ -121,7 +131,7 @@ a { color: var(--ui-primary); }
 .p-dialog-header { border-bottom: 1px solid var(--ui-border-soft); }
 .p-dialog-footer { border-top: 1px solid var(--ui-border-soft); }
 .p-card { border-radius: var(--ui-radius); box-shadow: var(--ui-shadow); }
-.p-tag { border-radius: 7px; font-weight: 650; }
+.p-tag { border-radius: 4px; font-weight: 600; }
 .p-menu { border: 1px solid var(--ui-border); box-shadow: var(--ui-shadow-lift); }
 
 p-select { min-width: 0; max-width: 100%; }
@@ -172,8 +182,8 @@ p-select { min-width: 0; max-width: 100%; }
 }
 
 @media (max-width: 768px) {
-  :root { --ui-topbar-height: 70px; }
-  .content :is(.page-header, .welcome) h1 { font-size: 1.45rem; }
+  :root { --ui-topbar-height: 66px; }
+  .content :is(.page-header, .welcome) h1 { font-size: 1.35rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }

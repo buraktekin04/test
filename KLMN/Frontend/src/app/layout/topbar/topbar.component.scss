@@ -1,60 +1,61 @@
 :host { display: block; flex: 0 0 auto; }
 .topbar {
-  height: var(--ui-topbar-height);
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0 clamp(1rem, 2vw, 2rem);
-  background: var(--ui-surface);
-  border-bottom: 1px solid var(--ui-border);
-  box-shadow: 0 3px 20px rgba(17,53,71,.027);
+  display: flex; align-items: center; justify-content: space-between; gap: 18px;
+  height: var(--ui-topbar-height); min-width: 0;
+  padding: 0 clamp(18px, 2vw, 30px);
+  border-bottom: 1px solid var(--ui-border); background: #fff; box-shadow: none;
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
 }
 .topbar-left, .topbar-right { display: flex; align-items: center; min-width: 0; }
-.topbar-left { gap: .9rem; }
+.topbar-left { gap: 16px; }
 :host ::ng-deep .sidebar-toggle-button {
-  color: var(--ui-text-soft);
-  width: 39px;
-  height: 39px;
+  width: 38px; height: 38px; color: var(--ui-text-soft); border-radius: 4px;
   &:hover { background: var(--ui-primary-50); color: var(--ui-primary-dark); }
 }
-.brand { display: flex; align-items: center; gap: .85rem; min-width: 0; }
+.brand {
+  display: flex; align-items: center; gap: 12px; min-width: 0;
+  padding-left: 15px; border-left: 1px solid var(--ui-border);
+}
 .brand-logo {
-  display: block; width: 46px; height: 46px; flex: 0 0 46px;
-  object-fit: contain;
-  border-radius: 12px;
+  display: block; flex: 0 0 42px; width: 42px; height: 42px;
+  object-fit: contain; border-radius: 4px;
 }
-.brand-copy { display: flex; flex-direction: column; gap: .05rem; min-width: 0; }
-.brand-title { font-size: clamp(1.38rem, 2vw, 1.7rem); line-height: 1.2; letter-spacing: -.04em; color: var(--ui-navy-deep); font-weight: 800; }
-.brand-subtitle { font-size: .69rem; line-height: 1.4; color: var(--ui-muted); font-weight: 550; letter-spacing: .008em; }
+.brand-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.brand-title {
+  color: var(--ui-navy-deep); font-size: 23px; font-weight: 700;
+  letter-spacing: normal; line-height: 1.1;
+}
+.brand-subtitle {
+  color: var(--ui-muted); font-size: 11px; font-weight: 500;
+  letter-spacing: normal; line-height: 1.3;
+}
 .user-area {
-  display: flex;
-  align-items: center;
-  gap: .8rem;
-  max-width: 310px;
-  padding: .4rem .6rem;
-  border: 1px solid transparent;
-  border-radius: 12px;
-  background: transparent;
-  color: var(--ui-text);
-  cursor: pointer;
-  text-align: left;
-  &:hover { background: var(--ui-surface-muted); border-color: var(--ui-border-soft); }
+  display: flex; align-items: center; gap: 11px; max-width: 310px;
+  padding: 7px 9px; border: 1px solid transparent; border-radius: 4px;
+  background: transparent; color: var(--ui-text); text-align: left; cursor: pointer;
+  &:hover { background: var(--ui-surface-muted); border-color: var(--ui-border); }
 }
-:host ::ng-deep .user-area .p-avatar { background: var(--ui-primary-50); color: var(--ui-primary-dark); font-weight: 750; }
-.user-info { display: flex; flex-direction: column; min-width: 0; gap: .2rem; }
-.user-info strong { font-size: .82rem; color: var(--ui-text-strong); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.user-info span { font-size: .72rem; color: var(--ui-muted); max-width: 195px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.user-chevron { font-size: .64rem; color: var(--ui-muted); }
+:host ::ng-deep .user-area .p-avatar {
+  background: var(--ui-primary-100); color: var(--ui-primary-dark); font-weight: 700;
+}
+.user-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.user-info strong {
+  overflow: hidden; color: var(--ui-text-strong); font-size: 12.5px;
+  font-weight: 650; text-overflow: ellipsis; white-space: nowrap;
+}
+.user-info span {
+  max-width: 195px; overflow: hidden; color: var(--ui-muted); font-size: 11px;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.user-chevron { color: var(--ui-muted); font-size: 10px; }
 @media (max-width: 768px) {
-  .topbar { gap: .4rem; padding: 0 .65rem; }
-  .topbar-left { gap: .3rem; }
-  .brand { gap: .55rem; }
-  .brand-logo { width: 37px; height: 37px; flex-basis: 37px; }
-  .brand-title { font-size: 1.4rem; }
-  .brand-subtitle { font-size: .56rem; max-width: 190px; }
+  .topbar { gap: 6px; padding: 0 10px; }
+  .topbar-left { gap: 7px; }
+  .brand { gap: 7px; padding-left: 9px; }
+  .brand-logo { width: 35px; height: 35px; flex-basis: 35px; }
+  .brand-title { font-size: 20px; }
+  .brand-subtitle { max-width: 170px; font-size: 10px; }
   .user-info, .user-chevron { display: none; }
-  .user-area { gap: 0; padding: .24rem; }
+  .user-area { gap: 0; padding: 3px; }
 }
 @media (max-width: 390px) { .brand-subtitle { display: none; } }

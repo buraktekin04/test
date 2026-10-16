@@ -423,9 +423,15 @@ olarak varsayma. Kullanıcı yeni modülleri sırayla söyleyecektir.
   src/app/core/theme/klmn.preset.ts altında merkezi tutulur.
   Yeni ekranlara mükerrer ortak CSS yazma. Ekrana özel alan dizilimi,
   karmaşık modal veya işlevsel etkileşim CSS'i kendi SCSS'inde kalır.
-- Ortak palet: lacivert #0d253a / #163047, ana petrol yeşili
-  #087f81, açık arka plan #f2f6f8, kart yüzeyi #ffffff.
-  --ui-* değişkenlerini kullan; PrimeNG preset'iyle tutarlı tut.
+- KULLANICININ 16.10.2026 YENİ KARARI: Giriş sonrasında askerî
+  nizam hissi veren, sade, sert karakterli KURUMSAL tasarım.
+  Gerçek askerî rütbe/kurum amblemi kullanılmaz. Menü düz grafit
+  #29333d, mat çelik mavisi #405c74, nötr gri zemin #edf1f4;
+  beyaz yüzeyler, net çizgiler, 5-9px köşe ve standart
+  Segoe UI/Tahoma/Arial fontu. Parlak turkuaz, gradient,
+  aşırı yuvarlak, dekoratif bileşenler yoktur.
+  --ui-* ve PrimeNG preset birlikte güncellenir. Daha önce
+  onaylanmış LOGIN tasarımı kendi token'larıyla KORUNUR.
 - Responsive sidebar masaüstünde dar/geniş, mobilde drawer/overlay
   olarak çalışır. Topbar'da büyük KLMN adı, geçici PNG logo ve
   "Kurumsal Sağlık Takip ve Raporlama" açıklaması görünür.
@@ -568,6 +574,33 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-16 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-16 (bu commit — giriş sonrası nizamlı kurumsal tema):
+  Kullanıcının yeni tercihiyle iç uygulamanın sol menüsü,
+  üst barı, ana sayfası ve ortak tema sert ve sade kurumsal
+  çizgiye taşındı. Sidebar gradient/lacivert-turkuaz yerine
+  düz grafit #29333d; 12.5-13px Segoe UI/Tahoma yazılar,
+  aktif menüde mat zemin ve ince sol çizgi.
+  Topbar beyaz ve ince sınırla ayrılmış, KLMN başlığı ve
+  kullanıcı alanı daha köşeli ve nizamlı hale getirildi.
+  Ana sayfa gradient, pi-sparkles ve büyük kalp dekoru
+  kaldırılarak açık zemin, beyaz başlık ve oturum bilgi
+  kartlarıyla düzenlendi. styles.scss tasarım token'ları ve
+  core/theme/klmn.preset.ts PrimeNG paleti mat çelik mavisi
+  #405c74 ve nötr gri tonlara getirildi.
+  Login HTML/TS, JWT ve 3 saniye kapanan bildirim işleyişi
+  DEĞİŞMEDİ; login.component.scss yalnız önceki onaylı
+  giriş renklerini koruyan yerel token'lar eklendi.
+  Değişenler: Frontend/src/styles.scss, core/theme/klmn.preset.ts,
+  layout/sidebar (SCSS/HTML), layout/topbar (SCSS),
+  layout/app-layout (SCSS), features/home (SCSS/HTML),
+  features/authentication/login/login.component.scss,
+  Frontend/UI_DESIGN_SYSTEM.md ve KLMN/beni oku.txt.
+  Backend/DB, permission, tanım ekranı CRUD/filtre/Excel,
+  audit ve frontend sıralama işleyişi değişmedi.
+  Migration gerekmez. Statik kod, şablon ve SCSS kontrolleri
+  yapıldı; gerçek Angular build, tarayıcı ve API testleri
+  bu ortamda ÇALIŞTIRILMADI. TEK COMMIT + TEK PUSH.
+
 - 2026-10-16 (bu commit — login solda büyük logo, sağda uygulama adı):
   Kullanıcı talebiyle sol antrasit kurumsal paneldeki logo
   112px'den 176px'e büyütülüp merkezlendi. PNG'nin sağında

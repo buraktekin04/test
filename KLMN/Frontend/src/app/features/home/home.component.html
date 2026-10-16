@@ -1,17 +1,14 @@
 <div class="dashboard">
   <section class="welcome">
     <div class="welcome-copy">
-      <span class="welcome-eyebrow"><i class="pi pi-sparkles" aria-hidden="true"></i> KLMN ÇALIŞMA ALANI</span>
-      <h1>İyi çalışmalar.</h1>
+      <span class="welcome-eyebrow"><i class="pi pi-briefcase" aria-hidden="true"></i> KLMN / ANA SAYFA</span>
+      <h1>Çalışma Alanı</h1>
       @if (user(); as currentUser) {
         <p>Hoş geldiniz, <strong>{{ currentUser.fullName }}</strong>.
           Kurumsal kayıt ve takip işlemlerinize sol menüden devam edebilirsiniz.</p>
       } @else {
         <p>Kurumsal kayıt ve takip işlemlerinize sol menüden devam edebilirsiniz.</p>
       }
-    </div>
-    <div class="welcome-symbol" aria-hidden="true">
-      <i class="pi pi-heart"></i>
     </div>
   </section>
 
