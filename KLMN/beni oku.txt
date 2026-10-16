@@ -566,6 +566,24 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-16 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-16 (bu commit — login bilgilendirme mesajı 3 saniye):
+  LoginComponent içerisindeki informationMessage bildirimleri
+  (başarılı çıkış, parola değişimi ve parola sıfırlama sonrası)
+  gösterildikten 3000 ms sonra otomatik kaldırılır.
+  Mesajların metni, tetiklenme koşulları ve mevcut başarı/hata
+  akışı KORUNDU. Ortak showInformationMessage metodu varsa
+  önceki timer'ı iptal eder ve yeni süreyi başlatır. Angular
+  OnDestroy sırasında zamanlayıcı temizlenir; bileşen
+  yok edildikten sonra signal güncellenmez.
+  Yalnız Frontend/src/app/features/authentication/login/
+  login.component.ts, Frontend/UI_DESIGN_SYSTEM.md ve
+  KLMN/beni oku.txt değişti. Login HTML/SCSS ve backend,
+  veritabanı, migration değişmedi; migration GEREKMİYOR.
+  Statik kod/mesaj/süre kontrolleri yapıldı. Bu ortamda
+  npm/Angular derlemesi, zamanlayıcının tarayıcıda çalışması,
+  gerçek API ve e2e testleri ÇALIŞTIRILMADI.
+  Kullanıcı isteği uyarınca TEK COMMIT ve TEK PUSH yapıldı.
+
 - 2026-10-16 (bu commit — Login iki bölümlü sade antrasit tasarım):
   Kullanıcının yeni isteğiyle sade giriş formu korunarak sayfa
   iki bölüme ayrıldı. Sol %44 alanda düz, aşırı koyu olmayan

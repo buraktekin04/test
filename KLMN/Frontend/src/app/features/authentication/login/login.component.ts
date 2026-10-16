@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -40,7 +40,7 @@ import { APP_BRANDING } from '../../../core/config/app-branding';
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
-export class LoginComponent {
+export class LoginComponent implements OnDestroy {
   /** Uygulama logosu ve adını ortak kurumsal kimlik tanımından alır. */
   public readonly branding = APP_BRANDING;
   /** Reactive Forms alanlarını tip güvenli şekilde oluşturan Angular servisidir. */
@@ -58,6 +58,9 @@ export class LoginComponent {
   public readonly errorMessage = signal<string | null>(null);
   /** Başarılı parola değişimi, sıfırlama veya çıkış mesajını ekrana taşır. */
   public readonly informationMessage = signal<string | null>(null);
+
+  /** Bilgilendirme mesajının üç saniye sonunda kaldırılmasını yöneten zamanlayıcıdır. */
+  private informationMessageTimer: ReturnType<typeof setTimeout> | null = null;
 
   /** Alanları ve validation kurallarını içeren reaktif form grubudur. */
   public readonly form =
@@ -81,14 +84,14 @@ export class LoginComponent {
       this.activatedRoute.snapshot.queryParamMap.get('loggedOut');
 
     if (passwordChanged === 'true') {
-      this.informationMessage.set(
+      this.showInformationMessage(
         'Parolanız başarıyla değiştirildi. Yeni parolanızla giriş yapabilirsiniz.'
       );
       return;
     }
 
     if (passwordReset === 'true') {
-      this.informationMessage.set(
+      this.showInformationMessage(
         'Parolanız başarıyla sıfırlandı. Yeni parolanızla giriş yapabilirsiniz.'
       );
       return;
@@ -99,9 +102,30 @@ export class LoginComponent {
     if (accessWarning) this.errorMessage.set(accessWarning);
 
     if (loggedOut === 'true') {
-      this.informationMessage.set(
+      this.showInformationMessage(
         'Oturumunuz başarıyla kapatıldı.'
       );
+    }
+  }
+
+  /** Bilgilendirme mesajını gösterir; önceki süreyi yenileyip 3 saniye sonra kaldırır. */
+  private showInformationMessage(message: string): void {
+    if (this.informationMessageTimer !== null) {
+      clearTimeout(this.informationMessageTimer);
+    }
+
+    this.informationMessage.set(message);
+    this.informationMessageTimer = setTimeout(() => {
+      this.informationMessage.set(null);
+      this.informationMessageTimer = null;
+    }, 3000);
+  }
+
+  /** Login sayfasından ayrılınca bekleyen zamanlayıcının çalışmasını engeller. */
+  public ngOnDestroy(): void {
+    if (this.informationMessageTimer !== null) {
+      clearTimeout(this.informationMessageTimer);
+      this.informationMessageTimer = null;
     }
   }
 

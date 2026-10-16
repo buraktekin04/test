@@ -64,6 +64,11 @@ Farklı ekranlarda tekrar `#hex` tanımlamak yerine mevcut token'ları kullanın
   sağ bölümün alt köşesinde küçük gösterilir.
 - Kullanıcı adı/e-posta, parola göster/gizle, parola sıfırlama,
   alan doğrulama, yükleniyor ve sunucu hata/bilgi mesajları korunur.
+- Başarılı çıkış, parola değişimi veya parola sıfırlama sonrası girişteki
+  `informationMessage` bildirimi 3 saniye sonra otomatik kapanır.
+  Yeni bilgilendirme önceki zamanlayıcıyı sıfırlar; bileşen
+  kaldırıldığında zamanlayıcı temizlenir. Hata mesajlarının davranışı
+  değişmez.
 
 ## Sürüm ve kontrol
 Uygulama sürümünü güncellerken `package.json` ve
