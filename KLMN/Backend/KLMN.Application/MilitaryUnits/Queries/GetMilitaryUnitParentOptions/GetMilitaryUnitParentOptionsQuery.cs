@@ -3,6 +3,6 @@ using MediatR;
 
 namespace KLMN.Application.MilitaryUnits.Queries.GetMilitaryUnitParentOptions;
 
-/// <summary>Üst birim seçiminde kullanılabilen aktif birlik kayıtlarını ister.</summary>
-public sealed record GetMilitaryUnitParentOptionsQuery()
+/// <summary>Formda aktif üst birlikleri, kolon filtresinde pasif dâhil silinmemiş birlikleri getirir.</summary>
+public sealed record GetMilitaryUnitParentOptionsQuery(bool IncludeInactive = false)
     : IRequest<IReadOnlyList<MilitaryUnitParentOptionResponse>>;

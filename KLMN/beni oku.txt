@@ -514,13 +514,26 @@ Kabul öncesinde:
 
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
-2026-10-15 itibarıyla ana hatlar (sondan eskiye):
+2026-10-16 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-16 (bu commit — Birlik kolon filtre seçenekleri sadeleştirmesi):
+  Önceki commit'te gereksiz eklenen GetMilitaryUnitFilterOptionsQuery/
+  Handler ve /api/military-units/filter-options endpoint'i KALDIRILDI.
+  Birlik ekranındaki kolon filtreleri, mevcut
+  GetForceCommandOptionsQuery ve GetMilitaryUnitParentOptionsQuery
+  handler'larını includeInactive=true parametresiyle yeniden kullanır.
+  Formun varsayılan aktif/geçerli seçenek davranışı KORUNDU.
+  Üst birlik seçeneğine kuvvet adı eklendi; UI ayrı Query yerine
+  aynı iki servis metodunu forkJoin ile kullanır. Kolon filtre
+  dropdown'ları ve liste/Excel backend filtreleri KORUNDU.
+  DB şeması/migration değişmedi. Statik kontrol yapıldı;
+  .NET/Angular build ve gerçek DB/browser testi çalıştırılmadı.
 - 2026-10-15 (bu commit — popup, birlik filtreleri ve sabit işlemler):
   Alım Numarası Yeni/Düzenle popup'ında Kod ve Temin Tanım Adı
   yan yana; uzun Alım Adı alt satırda tam genişlikte.
   Birlik tanımlarına Kuvvet Komutanlığı ve Üst Birlik kolon
-  filtreleri, yeni GetMilitaryUnitFilterOptionsQuery/Handler,
-  liste+Excel backend nullable Guid koşulları, validators,
+  filtreleri, başlangıçta ayrı FilterOptionsQuery/Handler
+  (sonraki düzeltmeyle kaldırıldı), liste+Excel backend nullable
+  Guid koşulları, validators,
   frontend model/servis/form seçenekleri eklendi. Silinmemiş
   pasif/geçmiş kuvvet/üst birlik bağlantıları filtrelenebilir;
   kayıt düzenleme seçenekleri değişmedi.

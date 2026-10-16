@@ -5,7 +5,7 @@ import { API_BASE_URL } from '../../../core/config/api.tokens';
 import { PagedResult } from '../../../core/models/paged-result.model';
 import {
   ChangeMilitaryUnitDefStatusRequest,
-  ForceCommandOption, MilitaryUnitParentOption, MilitaryUnitFilterOptions, MilitaryUnitDefFields,
+  ForceCommandOption, MilitaryUnitParentOption, MilitaryUnitDefFields,
   MilitaryUnitDefItem, MilitaryUnitDefMutationResponse, MilitaryUnitDefQuery,
   UpdateMilitaryUnitDefRequest
 } from '../models/military-unit-def.model';
@@ -43,18 +43,16 @@ export class MilitaryUnitService {
     return this.http.get<MilitaryUnitDefItem>(this.url + '/' + id);
   }
 
-  public forceOptions(): Observable<ForceCommandOption[]> {
-    return this.http.get<ForceCommandOption[]>(this.url + '/force-options');
+  /** Varsayılan form seçimi aktiftir; includeInactive yalnızca liste filtresi içindir. */
+  public forceOptions(includeInactive = false): Observable<ForceCommandOption[]> {
+    const params = includeInactive ? new HttpParams().set('includeInactive', true) : undefined;
+    return this.http.get<ForceCommandOption[]>(this.url + '/force-options', { params });
   }
 
-  /** Yalnızca aktif üst birlik seçeneklerini döndürür. */
-  public parentOptions(): Observable<MilitaryUnitParentOption[]> {
-    return this.http.get<MilitaryUnitParentOption[]>(this.url + '/parent-options');
-  }
-
-  /** Silinmemiş kayıtları liste kolon filtrelerine sunar; edit popup seçenekleri değişmez. */
-  public filterOptions(): Observable<MilitaryUnitFilterOptions> {
-    return this.http.get<MilitaryUnitFilterOptions>(this.url + '/filter-options');
+  /** Üst birlik formu aktifleri, kolon filtresi includeInactive=true ile geçmiş ilişkileri gösterir. */
+  public parentOptions(includeInactive = false): Observable<MilitaryUnitParentOption[]> {
+    const params = includeInactive ? new HttpParams().set('includeInactive', true) : undefined;
+    return this.http.get<MilitaryUnitParentOption[]>(this.url + '/parent-options', { params });
   }
 
   /** Filtreye uygun tüm birlikleri gerçek XLSX olarak indirir. */

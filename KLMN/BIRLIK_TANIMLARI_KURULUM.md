@@ -95,12 +95,14 @@ ve Üst Birlik (ConnectedTopUnity nullable FK). İkisi de mevcut
 Aktiflik/Kök Birlik filtrelerine eklenmiştir. Üst birlik seçimi
 "Yalnızca Kök Birlikler" seçimini temizler.
 
-GET /api/military-units/filter-options, modülün mevcut
-View/Query/Create/Update/Delete izinlerinden biriyle okunur.
-Yeni GetMilitaryUnitFilterOptionsQuery ve Handler, silinmemiş
-kuvvet ve üst birlikleri aktiflikten bağımsız getirir. Bu
-seçenekler, ekleme/düzenleme popup'ında sadece aktif birimleri
-gösteren mevcut seçeneklerden AYRIDIR.
+Ek bir GetMilitaryUnitFilterOptionsQuery veya /filter-options endpoint'i
+kullanılmaz. Mevcut GetForceCommandOptionsQuery ve
+GetMilitaryUnitParentOptionsQuery, varsayılan olarak ekleme/düzenleme
+popup'ına yalnızca aktif/geçerli seçenekleri getirir. Liste kolon
+filtresi ise aynı GET /force-options ve GET /parent-options
+endpoint'lerine includeInactive=true gönderir; silinmemiş
+pasif/geçmiş bağlantılar da filtrelenebilir. Ayrı CQRS Query sınıfı
+gerekmez; yalnızca mevcut sorguların parametresi değişmiştir.
 
 GetMilitaryUnitDefsQuery, Handler ve Validator nullable Guid
 filtreleri uygular. Filtreler PostgreSQL'de Count/Skip/Take

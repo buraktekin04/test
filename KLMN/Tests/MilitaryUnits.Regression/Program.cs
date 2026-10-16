@@ -89,4 +89,18 @@ Check(filterSql.Contains("\"ForcesCommandDef\"") && filterSql.Contains("\"Connec
 
 var projectedSql = db.MilitaryUnitDefs.IgnoreQueryFilters().Select(KLMN.Application.MilitaryUnits.Responses.MilitaryUnitDefResponse.Projection).ToQueryString();
 Check(projectedSql.Contains("ForcesCommandDefs"), "Military list projects force labels in SQL");
+// Ek bir FilterOptionsQuery oluşturmadan mevcut dropdown sorgularını yeniden kullan.
+var defaultForces = new KLMN.Application.MilitaryUnits.Queries.GetForceCommandOptions.GetForceCommandOptionsQuery();
+var allForces = new KLMN.Application.MilitaryUnits.Queries.GetForceCommandOptions.GetForceCommandOptionsQuery(true);
+var defaultParents = new KLMN.Application.MilitaryUnits.Queries.GetMilitaryUnitParentOptions.GetMilitaryUnitParentOptionsQuery();
+var allParents = new KLMN.Application.MilitaryUnits.Queries.GetMilitaryUnitParentOptions.GetMilitaryUnitParentOptionsQuery(true);
+Check(!defaultForces.IncludeInactive && !defaultParents.IncludeInactive,
+    "Existing form dropdown queries default to active records");
+Check(allForces.IncludeInactive && allParents.IncludeInactive,
+    "Same dropdown queries accept inactive records for column filters");
+var parentOption = new KLMN.Application.MilitaryUnits.Responses.MilitaryUnitParentOptionResponse(
+    Guid.NewGuid(), "BIRLIK", "Birlik", null, "Kara Kuvvetleri");
+Check(parentOption.ForceName == "Kara Kuvvetleri",
+    "Existing parent option response can show force name in column filters");
+
 Console.WriteLine("All regression checks passed. No database connection was opened.");

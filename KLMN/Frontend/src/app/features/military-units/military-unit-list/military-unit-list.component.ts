@@ -20,7 +20,7 @@ import { PermissionCodes } from '../../../core/permissions/constants/permission-
 import { PermissionService } from '../../../core/permissions/services/permission.service';
 import { AuditHistoryComponent } from '../../../shared/audit-history/audit-history.component';
 import {
-  ForceCommandOption, MilitaryUnitParentOption, MilitaryUnitFilterOption,
+  ForceCommandOption, MilitaryUnitParentOption,
   MilitaryUnitDefFields,
   MilitaryUnitDefItem,
   MilitaryUnitDefMutationResponse,
@@ -95,8 +95,8 @@ export class MilitaryUnitListComponent implements OnInit {
   public readonly parentLoading = signal(false);
   public readonly parentError = signal<string | null>(null);
   /** Kolon filtre seçimleri düzenleme popup'ının aktif kayıt listesine bağlı değildir. */
-  public readonly columnForceOptions = signal<MilitaryUnitFilterOption[]>([]);
-  public readonly columnParentOptions = signal<MilitaryUnitFilterOption[]>([]);
+  public readonly columnForceOptions = signal<ForceCommandOption[]>([]);
+  public readonly columnParentOptions = signal<MilitaryUnitParentOption[]>([]);
   public readonly columnOptionsLoading = signal(false);
   public readonly columnOptionsError = signal<string | null>(null);
   private columnOptionsRequestId = 0;
@@ -237,7 +237,11 @@ export class MilitaryUnitListComponent implements OnInit {
     const requestId = ++this.columnOptionsRequestId;
     this.columnOptionsLoading.set(true);
     this.columnOptionsError.set(null);
-    this.service.filterOptions().pipe(finalize(() => {
+    // Mevcut iki seçenek sorgusu yeniden kullanılır; yeni bir FilterOptionsQuery yok.
+    forkJoin({
+      forces: this.service.forceOptions(true),
+      parents: this.service.parentOptions(true)
+    }).pipe(finalize(() => {
       if (requestId === this.columnOptionsRequestId) this.columnOptionsLoading.set(false);
     })).subscribe({
       next: options => {

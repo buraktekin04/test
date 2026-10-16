@@ -8,7 +8,6 @@ using KLMN.Application.MilitaryUnits.Commands.DeleteMilitaryUnitDef;
 using KLMN.Application.MilitaryUnits.Queries.GetMilitaryUnitDefs;
 using KLMN.Application.MilitaryUnits.Queries.GetMilitaryUnitDefById;
 using KLMN.Application.MilitaryUnits.Queries.GetMilitaryUnitParentOptions;
-using KLMN.Application.MilitaryUnits.Queries.GetMilitaryUnitFilterOptions;
 using KLMN.Application.MilitaryUnits.Responses;
 using KLMN.Domain.Constants;
 using MediatR;
@@ -78,31 +77,23 @@ public sealed class MilitaryUnitsController(ISender sender, IExcelExportService 
             $"Birlik_Tanimlari_{DateTime.UtcNow:yyyyMMdd_HHmm}.xlsx");
     }
 
-    /// <summary>
-    /// Liste kolon filtresi için silinmemiş kuvvet ve üst birlikleri getirir.
-    /// Formun yalnızca aktif kayıt gösteren seçim listesini değiştirmez.
-    /// </summary>
-    [HttpGet("filter-options")]
-    [HasPermission(PermissionCodes.MilitaryUnits.View,
-        PermissionCodes.MilitaryUnits.Query,
-        PermissionCodes.MilitaryUnits.Create,
-        PermissionCodes.MilitaryUnits.Update,
-        PermissionCodes.MilitaryUnits.Delete)]
-    public async Task<IActionResult> GetFilterOptions(CancellationToken ct) =>
-        Ok(await sender.Send(new GetMilitaryUnitFilterOptionsQuery(), ct));
-
+    /// <summary>Formda aktif/geçerli kuvvetler, liste filtresinde includeInactive=true ile silinmemiş tüm kuvvetler.</summary>
     [HttpGet("force-options")]
     [HasPermission(PermissionCodes.MilitaryUnits.View, PermissionCodes.MilitaryUnits.Query,
-        PermissionCodes.MilitaryUnits.Create, PermissionCodes.MilitaryUnits.Update)]
-    public async Task<IActionResult> GetForceOptions(CancellationToken ct) =>
-        Ok(await sender.Send(new GetForceCommandOptionsQuery(), ct));
+        PermissionCodes.MilitaryUnits.Create, PermissionCodes.MilitaryUnits.Update,
+        PermissionCodes.MilitaryUnits.Delete)]
+    public async Task<IActionResult> GetForceOptions(
+        [FromQuery] bool includeInactive, CancellationToken ct) =>
+        Ok(await sender.Send(new GetForceCommandOptionsQuery(includeInactive), ct));
 
-    /// <summary>Yeni birim oluştururken seçilebilecek aktif üst birimleri getirir.</summary>
+    /// <summary>Üst birlik seçiminde varsayılan aktif, kolon filtresinde isteğe bağlı pasif kayıtları getirir.</summary>
     [HttpGet("parent-options")]
     [HasPermission(PermissionCodes.MilitaryUnits.View, PermissionCodes.MilitaryUnits.Query,
-        PermissionCodes.MilitaryUnits.Create, PermissionCodes.MilitaryUnits.Update)]
-    public async Task<IActionResult> GetParentOptions(CancellationToken ct) =>
-        Ok(await sender.Send(new GetMilitaryUnitParentOptionsQuery(), ct));
+        PermissionCodes.MilitaryUnits.Create, PermissionCodes.MilitaryUnits.Update,
+        PermissionCodes.MilitaryUnits.Delete)]
+    public async Task<IActionResult> GetParentOptions(
+        [FromQuery] bool includeInactive, CancellationToken ct) =>
+        Ok(await sender.Send(new GetMilitaryUnitParentOptionsQuery(includeInactive), ct));
 
     /// <summary>Mevcut pasif kayıtlar dahil kimlik üzerinden güncel birimi getirir.</summary>
     [HttpGet("{id:guid}")]

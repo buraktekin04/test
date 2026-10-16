@@ -25,6 +25,8 @@ export interface MilitaryUnitParentOption {
   code: string;
   name: string;
   connectedTopUnity: string | null;
+  /** Kolon filtresinde isteğe bağlı görüntülenen kuvvet adı. */
+  forceName?: string | null;
 }
 
 /** Liste sorgusu ile Excel aktarımındaki ortak filtre modelidir. */
@@ -72,17 +74,3 @@ export interface MilitaryUnitDefMutationResponse {
 /** Birlik seçimine sunulan aktif/geçerli kuvvet komutanlığı. */
 export interface ForceCommandOption { id: string; code: string; name: string; }
 
-// Liste filtreleri, formun yalnızca aktif birimleri gösteren seçeneklerinden ayrıdır.
-/** Silinmemiş kuvvet veya üst birlik için dropdown öğesi. */
-export interface MilitaryUnitFilterOption {
-  id: string;
-  code: string;
-  name: string;
-  forceName?: string | null;
-}
-
-/** Kuvvet ve üst birlik kolon filtrelerinin ortak sonucu. */
-export interface MilitaryUnitFilterOptions {
-  forces: MilitaryUnitFilterOption[];
-  parents: MilitaryUnitFilterOption[];
-}

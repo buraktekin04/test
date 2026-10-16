@@ -3,4 +3,6 @@ using MediatR;
 
 namespace KLMN.Application.MilitaryUnits.Queries.GetForceCommandOptions;
 
-public sealed record GetForceCommandOptionsQuery : IRequest<IReadOnlyList<ForceCommandOptionResponse>>;
+/// <summary>Birlik formu için varsayılan aktif/geçerli; kolon filtresi için silinmemiş tüm kuvvetler.</summary>
+public sealed record GetForceCommandOptionsQuery(bool IncludeInactive = false)
+    : IRequest<IReadOnlyList<ForceCommandOptionResponse>>;
