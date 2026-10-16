@@ -14,7 +14,7 @@ import {
 import { provideRouter } from '@angular/router';
 
 import { providePrimeNG } from 'primeng/config';
-import Aura from '@primeuix/themes/aura';
+import { KlmnPreset } from './core/theme/klmn.preset';
 import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../environments/environment';
@@ -44,7 +44,7 @@ export const appConfig: ApplicationConfig = {
 
     providePrimeNG({
       theme: {
-        preset: Aura
+        preset: KlmnPreset
       }
     }),
 

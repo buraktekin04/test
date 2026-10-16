@@ -1,26 +1,26 @@
-<div
-  class="app-shell"
-  [class.sidebar-open]="sidebarOpen()">
-
-  <div class="sidebar-container">
+<div class="app-shell"
+     [class.sidebar-open]="sidebarOpen()"
+     [class.sidebar-collapsed]="sidebarCollapsed()">
+  <div class="sidebar-container" id="primary-navigation">
     <app-sidebar
+      [collapsed]="sidebarCollapsed()"
+      (expandRequested)="expandSidebar()"
       (navigationSelected)="closeSidebar()">
     </app-sidebar>
   </div>
 
   @if (sidebarOpen()) {
-    <div
-      class="sidebar-overlay"
-      (click)="closeSidebar()">
-    </div>
+    <button type="button" class="sidebar-overlay"
+            aria-label="Gezinme menüsünü kapat"
+            (click)="closeSidebar()"></button>
   }
 
   <div class="app-main">
     <app-topbar
+      [sidebarCollapsed]="sidebarCollapsed()"
       (sidebarToggle)="toggleSidebar()">
     </app-topbar>
-
-    <main class="content">
+    <main class="content" id="main-content">
       <router-outlet />
     </main>
   </div>
