@@ -1,0 +1,76 @@
+# ============================================================
+# KLMN Frontend — Angular 21 / PrimeNG 21 / TypeScript
+# Azure DevOps ve GitHub icin; Frontend repo kokune koyulabilir.
+# ============================================================
+
+# Node.js bagimliliklari
+node_modules/
+
+# Angular CLI / TypeScript uretim ve onbellek dosyalari
+dist/
+.angular/
+out-tsc/
+.cache/
+.tmp/
+temp/
+tmp/
+.sass-cache/
+.parcel-cache/
+.turbo/
+.eslintcache
+*.tsbuildinfo
+
+# Test, coverage, E2E ve Storybook ciktilari
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+blob-report/
+storybook-static/
+cypress/screenshots/
+cypress/videos/
+
+# npm / yarn / pnpm / Node loglari
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+
+# Editör ve IDE dosyalari
+.vscode/
+.idea/
+*.code-workspace
+*.iml
+*.swp
+*.swo
+*~
+
+# Yerel ortam degiskenleri ve kisisel ayarlar
+.env
+.env.*
+!.env.example
+src/environments/environment.local.ts
+src/environments/environment.*.local.ts
+
+# Yerel SSL sertifikalari / ozel anahtarlar
+*.pem
+*.key
+*.pfx
+*.p12
+
+# Gecici dosyalar ve isletim sistemi artifaktlari
+*.tmp
+*.temp
+*.bak
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# NOT:
+# - package.json, package-lock.json, angular.json, tsconfig*.json,
+#   src/, src/assets/ ve kaynak environment.ts dosyalari repoda kalir.
+# - Angular environment dosyalari tarayiciya derlenir: bunlara
+#   sifre, JWT secret, SMTP ya da veritabani bilgisi KOYMAYIN.
+# - .gitignore daha once commitlenmis dosyalari takip disina CIKARMAZ.

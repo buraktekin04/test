@@ -563,6 +563,28 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-16 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-16 (bu commit — Backend ve Frontend icin AYRI .gitignore):
+  Azure DevOps'a kaynak kod aktarimi amaciyla KLMN/Backend/.gitignore
+  ve KLMN/Frontend/.gitignore olusturuldu. Ikisi ayri repository
+  kokune de kopyalanabilir; monorepo icinde bulunduklari dizine
+  ve alt dizinlere uygulanir. Mevcut KLMN/.gitignore KORUNDU.
+  Backend .NET 10 / Visual Studio / Rider derleme ciktilari,
+  NuGet paketleri, loglar, test raporlari, yerel konfigürasyon,
+  gizli anahtar ve gelistirme DB yedeklerini dislar.
+  Frontend Angular 21 / Node.js node_modules, dist, .angular,
+  cache, test/coverage ciktisi, IDE ve yerel .env/sertifikalari
+  dislar. Proje kaynaklari, EF migrationlari, *.csproj, slnx,
+  angular.json, src/assets, kaynak environment.ts,
+  package.json ve varsa package-lock.json DISLANMAZ.
+  Azure'da gercek secret'lar Key Vault / secret variable /
+  ortam degiskeni yoluyla yonetilmeli; .gitignore onceki
+  commit'lerde izlenen dosyalari kendiliginden takip disi yapmaz.
+  Degisiklik kapsami YALNIZCA iki yeni .gitignore ve bu TXT'dir.
+  Backend/frontend uygulama kodu, DB semasi ve migration
+  DEGISTIRILMEDI. Derleme ve canli ortam testi gerektiren
+  bir kod degisikligi yapilmadi; statik yol/icerik kontrolleri
+  uygulandi. Bu is TEK COMMIT / TEK PUSH ile teslim edildi.
+
 - 2026-10-16 (son güncelleme — TEK COMMIT kuralı ve son işlerin kaydı):
   Bu dosyanın EN ÜSTÜNE "bir geliştirme = bütün dosyalar dahil
   tek commit / tek push" talimatı kondu. Önceden yapılmış işleri
@@ -899,6 +921,8 @@ devam etmek istediğini yeni mesajında söyleyecek.
 
 13. AYRINTILI REFERANSLAR
 ------------------------
+  KLMN/Backend/.gitignore
+  KLMN/Frontend/.gitignore
   KLMN/Backend/README.md
   KLMN/Frontend/README.md
   KLMN/Frontend/UI_DESIGN_SYSTEM.md

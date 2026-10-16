@@ -1,0 +1,96 @@
+# ============================================================
+# KLMN Backend — .NET 10 / ASP.NET Core / EF Core
+# Azure DevOps ve GitHub icin; Backend repo kokune koyulabilir.
+# ============================================================
+
+# Derleme, restore ve yayin ciktilari
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+publish/
+[Bb]uild/
+x64/
+x86/
+packages/
+*.nupkg
+*.snupkg
+
+# Visual Studio / Rider / VS Code kullanici dosyalari
+.vs/
+.vscode/
+.idea/
+_ReSharper*/
+*.DotSettings.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+*.sln.iml
+*.pidb
+*.svd
+*.opensdf
+*.sdf
+*.cache
+
+# Test, code coverage ve analiz raporlari
+TestResults/
+coverage/
+coverage-*/
+.coverage
+.coverage.*
+*.coverage
+*.coveragexml
+*.trx
+*.testlog
+*.sarif
+
+# Calisma zamani loglari ve gecici dosyalar
+logs/
+*.log
+*.log.*
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Yalnizca yerel / kisisel konfigürasyon ve gizli bilgiler
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+appsettings.*.Local.json
+appsettings.*.local.json
+appsettings.Secrets.json
+appsettings.*.Secrets.json
+secrets.json
+*.publishsettings
+*.pubxml.user
+
+# Sertifika ve ozel anahtarlar (kaynak kodu ile commitlenmez)
+*.pfx
+*.p12
+*.p8
+*.key
+*.pem
+
+# Yerel gelistirme veritabanlari / yedekleri
+*.db
+*.sqlite
+*.sqlite3
+*.mdf
+*.ldf
+
+# NOT:
+# - appsettings.json / appsettings.Development.json (ornek ayarlar),
+#   *.cs, *.csproj, KLMN.slnx ve EF Core Migrations repoda kalir.
+# - Gercek JWT, SMTP ve DB sifrelerini Azure Key Vault veya
+#   Azure DevOps secret variables / ortam degiskenleriyle yonetin.
+# - .gitignore daha once commitlenmis dosyalari takip disina CIKARMAZ.
