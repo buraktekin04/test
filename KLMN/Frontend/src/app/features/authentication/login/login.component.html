@@ -1,100 +1,77 @@
 <div class="login-page">
-  <div class="login-shell">
-    <section class="login-story" aria-label="KLMN uygulaması">
-      <div class="story-brand">
-        <img src="assets/brand/klmn-logo.png" alt="" width="56" height="56">
-        <div><strong>KLMN</strong><span>Kurumsal Sağlık Takip ve Raporlama</span></div>
+  <main class="login-container">
+    <div class="login-brand">
+      <img [src]="branding.logoUrl" alt="" width="42" height="42">
+      <div class="login-brand-text">
+        <strong>{{ branding.name }}</strong>
+        <span>{{ branding.subtitle }}</span>
       </div>
+    </div>
 
-      <div class="story-body">
-        <div class="story-overline"><span class="story-overline-dot"></span> KURUMSAL SAĞLIK YÖNETİMİ</div>
-        <h2>Sağlık süreçlerinde<br><span>güvenilir takip.</span></h2>
-        <p>Kayıt, kontrol ve raporlama çalışmalarınız için
-           düzenli, sade ve güvenli bir çalışma alanı.</p>
-        <div class="story-features">
-          <div class="story-feature">
-            <span class="feature-icon"><i class="pi pi-folder-open" aria-hidden="true"></i></span>
-            <span><strong>Düzenli kayıt yönetimi</strong><small>Tanımlamalar ve temel bilgiler bir arada.</small></span>
-          </div>
-          <div class="story-feature">
-            <span class="feature-icon"><i class="pi pi-history" aria-hidden="true"></i></span>
-            <span><strong>İzlenebilir süreçler</strong><small>Değişiklik ve işlem geçmişine erişim.</small></span>
-          </div>
-          <div class="story-feature">
-            <span class="feature-icon"><i class="pi pi-shield" aria-hidden="true"></i></span>
-            <span><strong>Yetkili erişim</strong><small>Kurum hesabınızla güvenli oturum açma.</small></span>
-          </div>
+    <section class="login-card" aria-labelledby="login-title">
+      <h1 id="login-title">Giriş Yap</h1>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="login-form">
+        @if (informationMessage()) {
+          <p-message
+            severity="success"
+            [text]="informationMessage()!">
+          </p-message>
+        }
+
+        <div class="form-field">
+          <label for="identifier">Kullanıcı Adı veya E-posta</label>
+          <input
+            id="identifier"
+            type="text"
+            pInputText
+            formControlName="identifier"
+            autocomplete="username"
+            placeholder="Kullanıcı adı veya e-posta"
+            [attr.aria-invalid]="form.controls.identifier.touched && form.controls.identifier.invalid" />
+
+          @if (form.controls.identifier.touched && form.controls.identifier.invalid) {
+            <small class="validation-error">Kullanıcı adı veya e-posta zorunludur.</small>
+          }
         </div>
-      </div>
 
-      <div class="story-footer">KLMN <span aria-hidden="true">·</span> Kurumsal Bilgi Sistemi</div>
+        <div class="form-field">
+          <label for="password">Parola</label>
+          <p-password
+            inputId="password"
+            formControlName="password"
+            [feedback]="false"
+            [toggleMask]="true"
+            autocomplete="current-password"
+            placeholder="Parola"
+            styleClass="login-password"
+            inputStyleClass="login-password-input">
+          </p-password>
+
+          @if (form.controls.password.touched && form.controls.password.invalid) {
+            <small class="validation-error">Parola zorunludur.</small>
+          }
+        </div>
+
+        <div class="forgot-password">
+          <a routerLink="/forgot-password">Parolamı unuttum</a>
+        </div>
+
+        @if (errorMessage()) {
+          <p-message
+            severity="error"
+            [text]="errorMessage()!">
+          </p-message>
+        }
+
+        <p-button
+          type="submit"
+          label="Giriş Yap"
+          [loading]="loading()"
+          [disabled]="loading()"
+          styleClass="login-submit">
+        </p-button>
+      </form>
     </section>
-
-    <main class="login-panel">
-      <div class="login-mobile-brand">
-        <img src="assets/brand/klmn-logo.png" alt="" width="42" height="42">
-        <span>KLMN</span>
-      </div>
-      <div class="login-card">
-        <div class="login-heading">
-          <span class="login-eyebrow">GÜVENLİ OTURUM</span>
-          <h1>Tekrar hoş geldiniz.</h1>
-          <p>Devam etmek için kurumsal kullanıcı bilgilerinizle giriş yapın.</p>
-        </div>
-
-        <form [formGroup]="form" (ngSubmit)="submit()" class="login-form">
-          @if (informationMessage()) {
-            <p-message severity="success" [text]="informationMessage()!"></p-message>
-          }
-
-          <div class="form-field">
-            <label for="identifier">Kullanıcı adı veya e-posta</label>
-            <div class="identifier-control">
-              <i class="pi pi-user" aria-hidden="true"></i>
-              <input id="identifier" type="text" pInputText
-                     formControlName="identifier" autocomplete="username"
-                     placeholder="Kullanıcı adınızı veya e-postanızı girin"
-                     [attr.aria-invalid]="form.controls.identifier.touched && form.controls.identifier.invalid"/>
-            </div>
-            @if (form.controls.identifier.touched && form.controls.identifier.invalid) {
-              <small class="validation-error">Kullanıcı adı veya e-posta zorunludur.</small>
-            }
-          </div>
-
-          <div class="form-field">
-            <div class="password-label-row">
-              <label for="password">Parola</label>
-              <a routerLink="/forgot-password">Parolamı unuttum</a>
-            </div>
-            <p-password inputId="password" formControlName="password"
-                        [feedback]="false" [toggleMask]="true"
-                        autocomplete="current-password"
-                        placeholder="Parolanızı girin"
-                        styleClass="password-field"
-                        inputStyleClass="password-input">
-            </p-password>
-            @if (form.controls.password.touched && form.controls.password.invalid) {
-              <small class="validation-error">Parola zorunludur.</small>
-            }
-          </div>
-
-          @if (errorMessage()) {
-            <p-message severity="error" [text]="errorMessage()!"></p-message>
-          }
-
-          <p-button type="submit" label="Güvenli Giriş Yap"
-                    icon="pi pi-arrow-right" iconPos="right"
-                    [loading]="loading()" [disabled]="loading()"
-                    styleClass="login-button">
-          </p-button>
-        </form>
-
-        <div class="login-security"><i class="pi pi-lock" aria-hidden="true"></i>
-          Bu alan yalnızca yetkili kurum kullanıcıları içindir.
-        </div>
-      </div>
-
-      <div class="login-panel-footer">© KLMN · Kurumsal Sağlık Takip ve Raporlama</div>
-    </main>
-  </div>
+  </main>
 </div>

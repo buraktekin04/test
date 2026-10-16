@@ -563,6 +563,32 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-16 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-16 (bu commit — Login ekranı sade kurumsal tasarım):
+  Kullanıcının önceki iki kolonlu, slogan ve dekoratif renk ağırlıklı
+  login tasarımını beğenmemesi üzerine yalnız GİRİŞ ekranı yenilendi.
+  Önceki tanıtım paneli, üç özellik/slogan, yapay renk efektleri,
+  büyük dekoratif öğeler ve tekrar eden güvenlik/alt bilgi metinleri
+  KALDIRILDI. Yerine ortalanmış tek kolonlu, beyaz ve ince kenarlıklı
+  sade form, küçük KLMN logosu, doğal Segoe UI/Arial fontları ve
+  tek koyu lacivert Giriş Yap butonu getirildi. Mobilde form
+  tam genişliğe uyarlanır; görsel karmaşa veya iki kolon yoktur.
+  Logo/ad bilgisi src/app/core/config/app-branding.ts'ten alınır.
+  Angular Reactive Forms, identifier/password doğrulama,
+  PrimeNG parola göster/gizle, loading, forgot-password linki,
+  login/refresh davranışı, erişim uyarıları, başarı/hata mesajları
+  ve güvenli returnUrl yönlendirmesi KORUNDU.
+  Etkilenen kaynaklar:
+    Frontend/src/app/features/authentication/login/
+      login.component.html, login.component.scss, login.component.ts
+    Frontend/UI_DESIGN_SYSTEM.md
+    KLMN/beni oku.txt
+  Backend, DB şeması, migration, sidebar, topbar, diğer ekranlar
+  ve ortak styles.scss DEĞİŞMEDİ; migration gerekmiyor.
+  Statik HTML/TS bağlantı ve tasarım kontrolleri yapıldı.
+  Angular build, tarayıcı/görsel, gerçek API giriş ve
+  e2e testleri bu ortamda çalıştırılmadı.
+  Kullanıcı talimatına uygun TEK COMMIT ve TEK PUSH.
+
 - 2026-10-16 (bu commit — Backend ve Frontend icin AYRI .gitignore):
   Azure DevOps'a kaynak kod aktarimi amaciyla KLMN/Backend/.gitignore
   ve KLMN/Frontend/.gitignore olusturuldu. Ikisi ayri repository

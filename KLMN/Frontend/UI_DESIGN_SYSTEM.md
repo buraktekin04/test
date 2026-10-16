@@ -50,6 +50,18 @@ Farklı ekranlarda tekrar `#hex` tanımlamak yerine mevcut token'ları kullanın
 - Uygulama adı ve PNG logo yalnızca topbar'da büyük gösterilir.
   Sidebar altında sürüm bilgisi yer alır.
 
+## Giriş ekranı
+- Tek kolonlu, ortalanmış form; gösterişli tanıtım paneli, slogan,
+  dekoratif grafik veya gereksiz güvenlik/metin tekrarları kullanılmaz.
+- Nötr açık gri sayfa, ince kenarlıklı beyaz form, ölçülü
+  KLMN logosu ve tek koyu lacivert giriş butonu kullanılır.
+- Giriş ekranında işletim sisteminin standart Segoe UI / Arial
+  yazı tipleri kullanılır; harici font veya gösterişli başlık yoktur.
+- Kullanıcı adı/e-posta, parola, parolayı göster/gizle,
+  parola sıfırlama, doğrulama ve sunucu hata mesajları korunur.
+- Kısa, resmi Türkçe metinler kullanılır. Küçük ekranda kart
+  kenarlığı kalkar; form alanları tam genişlikte kalır.
+
 ## Sürüm ve kontrol
 Uygulama sürümünü güncellerken `package.json` ve
 `src/app/core/config/app-branding.ts` değerlerini birlikte değiştirin.

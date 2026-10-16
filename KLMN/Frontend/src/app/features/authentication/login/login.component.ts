@@ -20,6 +20,7 @@ import { PasswordModule } from 'primeng/password';
 
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { ProblemDetails } from '../../../core/models/problem-details.model';
+import { APP_BRANDING } from '../../../core/config/app-branding';
 
 /**
  * KLMN kullanıcı giriş ekranıdır.
@@ -40,6 +41,8 @@ import { ProblemDetails } from '../../../core/models/problem-details.model';
   styleUrl: './login.component.scss'
 })
 export class LoginComponent {
+  /** Uygulama logosu ve adını ortak kurumsal kimlik tanımından alır. */
+  public readonly branding = APP_BRANDING;
   /** Reactive Forms alanlarını tip güvenli şekilde oluşturan Angular servisidir. */
   private readonly formBuilder = inject(FormBuilder);
   /** Giriş, parola sıfırlama ve mevcut oturum işlemlerini yöneten auth servisidir. */
@@ -63,7 +66,7 @@ export class LoginComponent {
       password: ['', [Validators.required]]
     });
 
-  /** function Object() { [native code] } */
+  /** Giriş sonrası bilgilendirme ve erişim uyarılarını URL/oturum durumundan hazırlar. */
   public constructor() {
     // Giriş ekranında parola değişikliği sonrası gösterilecek bilginin URL bayrağıdır.
     const passwordChanged =
