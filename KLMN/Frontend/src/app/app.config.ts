@@ -44,7 +44,8 @@ export const appConfig: ApplicationConfig = {
 
     providePrimeNG({
       theme: {
-        preset: KlmnPreset
+        preset: KlmnPreset,
+        options: { darkModeSelector: false }
       }
     }),
 

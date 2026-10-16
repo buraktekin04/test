@@ -14,7 +14,6 @@ import {
 import { finalize } from 'rxjs';
 
 import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { PasswordModule } from 'primeng/password';
@@ -35,7 +34,6 @@ import { ProblemDetails } from '../../../core/models/problem-details.model';
     InputTextModule,
     PasswordModule,
     ButtonModule,
-    CardModule,
     MessageModule
   ],
   templateUrl: './login.component.html',
