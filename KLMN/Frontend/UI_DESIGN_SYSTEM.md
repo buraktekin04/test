@@ -51,19 +51,19 @@ Farklı ekranlarda tekrar `#hex` tanımlamak yerine mevcut token'ları kullanın
   Sidebar altında sürüm bilgisi yer alır.
 
 ## Giriş ekranı
-- Tek kolonlu, ortalanmış form; gösterişli tanıtım paneli, slogan,
-  dekoratif grafik veya gereksiz güvenlik/metin tekrarları kullanılmaz.
-- Nötr açık gri sayfa, ince kenarlıklı beyaz form ve tek koyu lacivert
-  giriş butonu kullanılır. Büyük ama sade KLMN logosu formun ÜZERİNDE
-  ortalanır; uygulama adı logonun ALTINDADIR.
-- Sürüm numarası APP_BRANDING.version'dan okunur ve sayfanın sağ alt
-  köşesinde küçük, ikincil metin olarak gösterilir.
-- Giriş ekranında işletim sisteminin standart Segoe UI / Arial
-  yazı tipleri kullanılır; harici font veya gösterişli başlık yoktur.
-- Kullanıcı adı/e-posta, parola, parolayı göster/gizle,
-  parola sıfırlama, doğrulama ve sunucu hata mesajları korunur.
-- Kısa, resmi Türkçe metinler kullanılır. Küçük ekranda kart
-  kenarlığı kalkar; form alanları tam genişlikte kalır.
+- Masaüstünde iki net bölge bulunur: solda düz, yumuşak antrasit-gri
+  (`#434c55`) kurumsal zemin, ortalanmış büyük logo ve altında
+  KLMN uygulama adı; sağda çok açık gri zemin üzerine sade giriş formu.
+- Gösterişli gradient, görsel efekt, gereksiz slogan veya tanıtım
+  maddeleri kullanılmaz. Solda sadece kısa uygulama alt başlığı bulunur.
+- Sağ giriş kartı beyaz, ince kenarlıklı ve az gölgelidir.
+  Segoe UI / Arial fontu ve tek koyu lacivert "Giriş Yap" butonu korunur.
+- Dar ekranlarda sol logo alanı üstte daha kısa bir başlık bölümüne
+  dönüşür; form alta iner ve yatay taşma olmamalıdır.
+- Sürüm numarası `APP_BRANDING.version` üzerinden alınır,
+  sağ bölümün alt köşesinde küçük gösterilir.
+- Kullanıcı adı/e-posta, parola göster/gizle, parola sıfırlama,
+  alan doğrulama, yükleniyor ve sunucu hata/bilgi mesajları korunur.
 
 ## Sürüm ve kontrol
 Uygulama sürümünü güncellerken `package.json` ve

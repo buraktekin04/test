@@ -4,46 +4,69 @@
   font-family: "Segoe UI", Arial, sans-serif;
 }
 
+/* Sol kurumsal alan ve sağ giriş bölümü; göz yormayan düz yüzeyler. */
 .login-page {
+  display: grid;
+  grid-template-columns: minmax(300px, 44%) minmax(0, 1fr);
+  min-height: 100dvh;
+}
+
+.login-brand-panel {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100dvh;
-  position: relative;
-  padding: 48px 20px 76px;
-  background: #f4f6f7;
-}
-
-.login-container {
-  width: min(100%, 424px);
+  min-width: 0;
+  padding: 44px;
+  background: #434c55;
+  color: #f5f7f8;
 }
 
 .login-brand {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  margin: 0 0 28px;
+  width: 100%;
   text-align: center;
 }
 
 .login-brand img {
   display: block;
-  width: 88px;
-  height: 88px;
+  width: 112px;
+  height: 112px;
   object-fit: contain;
+  margin-bottom: 24px;
 }
 
 .login-brand strong {
-  color: var(--ui-navy-deep);
-  font-size: 25px;
-  font-weight: 700;
+  color: #ffffff;
+  font-size: 33px;
+  font-weight: 650;
   line-height: 1.2;
   letter-spacing: normal;
 }
 
+.login-brand span {
+  margin-top: 10px;
+  color: #d5dce1;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.login-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  min-height: 100dvh;
+  padding: 56px clamp(24px, 5vw, 72px) 24px;
+  background: #f5f6f7;
+}
+
 .login-card {
-  padding: 34px 36px 36px;
+  width: min(100%, 430px);
+  margin: auto 0;
+  padding: 36px 38px 38px;
   border: 1px solid var(--ui-border);
   border-radius: 10px;
   background: var(--ui-surface);
@@ -154,39 +177,56 @@
 }
 
 .login-footer {
-  position: absolute;
-  right: 24px;
-  bottom: 18px;
+  align-self: flex-end;
+  padding-top: 14px;
   color: var(--ui-muted);
   font-size: 12px;
   line-height: 1.5;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 850px) {
   .login-page {
-    padding: 32px 18px 70px;
-    background: var(--ui-surface);
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .login-brand {
-    margin-bottom: 24px;
+  .login-brand-panel {
+    min-height: 202px;
+    padding: 28px 20px;
   }
 
   .login-brand img {
-    width: 76px;
-    height: 76px;
+    width: 72px;
+    height: 72px;
+    margin-bottom: 10px;
+  }
+
+  .login-brand strong {
+    font-size: 25px;
+  }
+
+  .login-brand span {
+    margin-top: 5px;
+    font-size: 12px;
+  }
+
+  .login-content {
+    min-height: calc(100dvh - 202px);
+    padding: 36px 24px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-brand-panel {
+    min-height: 184px;
+    padding: 24px 18px;
+  }
+
+  .login-content {
+    min-height: calc(100dvh - 184px);
+    padding: 24px 18px 16px;
   }
 
   .login-card {
-    padding: 24px 0 0;
-    border: 0;
-    border-top: 1px solid var(--ui-border);
-    border-radius: 0;
-    box-shadow: none;
-  }
-
-  .login-footer {
-    right: 18px;
-    bottom: 14px;
+    padding: 28px 24px;
   }
 }

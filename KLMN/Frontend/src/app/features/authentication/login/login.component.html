@@ -1,10 +1,14 @@
 <div class="login-page">
-  <main class="login-container">
+  <!-- Kurumsal kimlik alanı; gereksiz görsel veya tanıtım metni içermez. -->
+  <aside class="login-brand-panel" aria-label="KLMN kurumsal kimlik">
     <div class="login-brand">
-      <img [src]="branding.logoUrl" alt="" width="88" height="88">
+      <img [src]="branding.logoUrl" alt="" width="112" height="112">
       <strong>{{ branding.name }}</strong>
+      <span>{{ branding.subtitle }}</span>
     </div>
+  </aside>
 
+  <main class="login-content">
     <section class="login-card" aria-labelledby="login-title">
       <h1 id="login-title">Giriş Yap</h1>
 
@@ -70,9 +74,9 @@
         </p-button>
       </form>
     </section>
-  </main>
 
-  <footer class="login-footer">
-    Sürüm v{{ branding.version }}
-  </footer>
+    <footer class="login-footer">
+      Sürüm v{{ branding.version }}
+    </footer>
+  </main>
 </div>

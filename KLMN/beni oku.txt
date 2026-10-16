@@ -431,7 +431,10 @@ olarak varsayma. Kullanıcı yeni modülleri sırayla söyleyecektir.
   "Kurumsal Sağlık Takip ve Raporlama" açıklaması görünür.
   Sidebar üstünde tekrarlayan uygulama adı yoktur; ALTINDA sürüm
   bulunur. Logo kalıcı resmî kurum logosu değil, geçici görseldir.
-- Login kurumsal sağlık takibi vurgulayan iki bölümlü tasarımdır;
+- Login iki bölümlü SADE kurumsal tasarımdır: solda yumuşak
+  antrasit-gri (#434c55) fon ve logo/KLMN; sağda açık zemin ve
+  giriş formu. Renkli gradient, slogan ve gereksiz tanıtım yok.
+  Mobilde sol marka alanı üst bölüme dönüşür.
   Reactive Forms, auth/login yönlendirmesi, parola unuttum,
   hata ve bilgi mesajları korunur.
 - Sürüm şu anda package.json ile app-branding.ts'de v1.0.0
@@ -563,6 +566,30 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-16 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-16 (bu commit — Login iki bölümlü sade antrasit tasarım):
+  Kullanıcının yeni isteğiyle sade giriş formu korunarak sayfa
+  iki bölüme ayrıldı. Sol %44 alanda düz, aşırı koyu olmayan
+  antrasit-gri (#434c55) fon; ortada büyük PNG logo,
+  altında KLMN adı ve kısa kurumsal alt başlık bulunuyor.
+  Sağda açık gri (#f5f6f7) alan, ince kenarlı beyaz login
+  kartı, standart Segoe UI/Arial fontu ve koyu lacivert
+  Giriş Yap butonu var. Slogan, gradient ve süslü tanıtım
+  bölümleri geri getirilmedi. Sürüm bilgisi APP_BRANDING
+  üzerinden sağ alt bölümde kalıyor.
+  850px altında sol bölge kısa üst marka paneline dönüşüyor,
+  form altta tam genişliğe uyarlanıyor. Login HTML/SCSS
+  değiştirildi; LoginComponent TypeScript, auth servisi,
+  Reactive Forms, hata/başarı mesajları, parola sıfırlama,
+  yükleniyor durumu ve güvenli returnUrl KORUNDU.
+  Dosyalar: Frontend/src/app/features/authentication/login/
+  login.component.html ve login.component.scss;
+  Frontend/UI_DESIGN_SYSTEM.md ve KLMN/beni oku.txt.
+  Backend, ortak styles.scss, diğer ekranlar, DB şeması
+  değişmedi; migration gerekmiyor. Statik şablon/biçim
+  kontrolleri yapıldı. Angular build, gerçek tarayıcı ve
+  API giriş testi burada çalıştırılmadı.
+  Bu geliştirme TEK COMMIT / TEK PUSH olarak yayınlandı.
+
 - 2026-10-16 (bu commit — Giriş logosu ve sürüm yerleşimi):
   Kullanıcının sade kurumsal login tasarımı korunarak logo giriş
   kartının ÜZERİNDE, yatay ortada 88x88 px (mobilde 76x76 px)
