@@ -1,40 +1,40 @@
 :host { display: block; min-width: 0; }
 .audit-page { display: flex; flex-direction: column; gap: 1.15rem; min-width: 0; }
 .page-header h1 { margin: 0; color: #101828; font-size: 1.6rem; }
-.page-header p { margin: .35rem 0 0; font-size: .85rem; color: #667085; }
-.audit-filters,.audit-list { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; min-width: 0; }
+.page-header p { margin: .35rem 0 0; font-size: .85rem; color: var(--ui-muted); }
+.audit-filters,.audit-list { background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: 12px; min-width: 0; }
 .audit-filters { padding: 1rem; }
 .audit-filters form { display: flex; align-items: flex-end; flex-wrap: wrap; gap: .8rem; }
 .audit-filters label { display: flex; flex-direction: column; gap: .35rem; flex: 1 1 155px; min-width: 0; }
-.audit-filters label span { font-size: .75rem; font-weight: 600; color: #475467; }
+.audit-filters label span { font-size: .75rem; font-weight: 600; color: var(--ui-text-soft); }
 .audit-filters select,.audit-filters input {
   height: 39px; min-width: 0; width: 100%; box-sizing: border-box;
-  padding: .3rem .6rem; border: 1px solid #d0d5dd; border-radius: 7px;
-  font-family: inherit; font-size: .8rem; color: #344054; background: #fff;
+  padding: .3rem .6rem; border: 1px solid var(--ui-control-border); border-radius: 7px;
+  font-family: inherit; font-size: .8rem; color: var(--ui-text); background: var(--ui-surface);
 }
 .audit-filters label.id-filter { flex-grow: 1.5; }
 .filter-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
 .audit-list-heading,.audit-pagination {
   display: flex; justify-content: space-between; gap: 1rem;
-  align-items: center; padding: .85rem 1rem; color: #475467; font-size: .81rem;
+  align-items: center; padding: .85rem 1rem; color: var(--ui-text-soft); font-size: .81rem;
 }
-.audit-list-heading strong { color: #344054; font-size: .88rem; }
-.audit-table-scroll { max-width: 100%; overflow-x: auto; border-top: 1px solid #edf0f3; }
+.audit-list-heading strong { color: var(--ui-text); font-size: .88rem; }
+.audit-table-scroll { max-width: 100%; overflow-x: auto; border-top: 1px solid var(--ui-border-soft); }
 :host ::ng-deep .audit-table-scroll {
-  th { background: #f8fafc; color: #344054; font-size: .8rem; padding: .8rem; }
-  td { font-size: .8rem; padding: .7rem .8rem; border-bottom: 1px solid #f2f4f7; }
+  th { background: var(--ui-surface-muted); color: var(--ui-text); font-size: .8rem; padding: .8rem; }
+  td { font-size: .8rem; padding: .7rem .8rem; border-bottom: 1px solid var(--ui-surface-muted); }
 }
-.audit-pagination { border-top: 1px solid #edf0f3; }
+.audit-pagination { border-top: 1px solid var(--ui-border-soft); }
 .audit-pagination > div { display: flex; gap: .45rem; }
-.audit-error,.empty-table { padding: 1.2rem; color: #b42318; text-align: center; }
+.audit-error,.empty-table { padding: 1.2rem; color: var(--ui-danger); text-align: center; }
 .change-details { display: flex; flex-direction: column; gap: .85rem; max-height: 65vh; overflow-y: auto; }
 .change-summary { display: flex; flex-direction: column; gap: .3rem; font-size: .86rem; }
-.change-summary span { font-size: .76rem; color: #667085; }
-.change-entry { border-top: 1px solid #edf0f3; padding-top: .65rem; }
-.change-entry > strong { font-size: .78rem; color: #475467; }
+.change-summary span { font-size: .76rem; color: var(--ui-muted); }
+.change-entry { border-top: 1px solid var(--ui-border-soft); padding-top: .65rem; }
+.change-entry > strong { font-size: .78rem; color: var(--ui-text-soft); }
 .change-values { display: grid; grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr); gap: .5rem; align-items: start; margin-top: .4rem; }
-.change-values span { padding: .5rem; background: #f8fafc; border-radius: 6px; overflow-wrap: anywhere; white-space: pre-wrap; font-size: .77rem; }
-.change-values i { color: #98a2b3; font-size: .72rem; margin-top: .55rem; }
+.change-values span { padding: .5rem; background: var(--ui-surface-muted); border-radius: 6px; overflow-wrap: anywhere; white-space: pre-wrap; font-size: .77rem; }
+.change-values i { color: var(--ui-placeholder); font-size: .72rem; margin-top: .55rem; }
 
 /* Eski ve yeni değeri aynı olan ilişki kimlikleri tek etiket olarak sunulur. */
 .change-context {
@@ -44,8 +44,8 @@
   min-width: 0;
   padding: .55rem .7rem;
   border-radius: 7px;
-  color: #1d4ed8;
-  background: #eff6ff;
+  color: var(--ui-primary-hover);
+  background: var(--ui-primary-50);
   line-height: 1.4;
   font-size: .79rem;
 }
