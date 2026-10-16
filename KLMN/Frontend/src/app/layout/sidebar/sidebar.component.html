@@ -1,43 +1,44 @@
-<aside class="sidebar">
-  <div class="sidebar-brand">
-    <div class="brand-icon">K</div>
-    <div class="brand-text">
-      <strong>KLMN</strong>
-      <span>Yönetim Sistemi</span>
-    </div>
+<aside class="sidebar" [class.collapsed]="collapsed">
+  <div class="sidebar-heading">
+    <span class="sidebar-heading-text">GEZİNME</span>
+    <i class="pi pi-th-large sidebar-heading-icon" aria-hidden="true"></i>
   </div>
 
-  <!--
-    Tek bir şablon hem Tanımlamalar grubunu hem de ileride eklenecek
-    çok seviyeli alt menüleri gösterir. Yeni tanımlar için sidebar HTML
-    kopyalamak gerekmez; NavigationService'e öğe eklemek yeterlidir.
-  -->
+  <!-- Menü hiyerarşisi tek kaynaktan gelir; yeni ekran için HTML kopyalanmaz. -->
   <nav class="sidebar-navigation" aria-label="Ana menü">
     <ng-container
       *ngTemplateOutlet="menuTemplate; context: { $implicit: menuItems(), depth: 0 }">
     </ng-container>
   </nav>
+
+  <footer class="sidebar-footer">
+    <div class="sidebar-status" title="Kurumsal sağlık takip uygulaması">
+      <span class="sidebar-status-dot" aria-hidden="true"></span>
+      <span class="sidebar-status-text">Kurumsal Uygulama</span>
+    </div>
+    <span class="sidebar-version" [title]="'Sürüm ' + branding.version">
+      <span class="version-label">Sürüm </span>v{{ branding.version }}
+    </span>
+  </footer>
 </aside>
 
 <ng-template #menuTemplate let-items let-depth="depth">
   @for (item of items; track item.label) {
     @if (item.children?.length) {
-      <button
-        type="button"
-        class="menu-item menu-parent"
-        [class.menu-sub-item]="depth > 0"
-        [attr.aria-expanded]="isExpanded(item.label)"
-        (click)="toggleGroup(item.label)">
+      <button type="button" class="menu-item menu-parent"
+              [class.menu-sub-item]="depth > 0"
+              [attr.title]="collapsed ? item.label : null"
+              [attr.aria-label]="item.label"
+              [attr.aria-expanded]="isExpanded(item.label)"
+              (click)="toggleGroup(item.label)">
         @if (item.icon) {
           <i class="menu-icon" [class]="item.icon" aria-hidden="true"></i>
         }
         <span class="menu-label">{{ item.label }}</span>
-        <i
-          class="pi menu-chevron"
-          [class.pi-chevron-down]="isExpanded(item.label)"
-          [class.pi-chevron-right]="!isExpanded(item.label)"
-          aria-hidden="true">
-        </i>
+        <i class="pi menu-chevron"
+           [class.pi-chevron-down]="isExpanded(item.label)"
+           [class.pi-chevron-right]="!isExpanded(item.label)"
+           aria-hidden="true"></i>
       </button>
       @if (isExpanded(item.label)) {
         <div class="menu-children">
@@ -47,26 +48,27 @@
         </div>
       }
     } @else if (item.route) {
-      <a
-        class="menu-item"
-        [class.menu-sub-item]="depth > 0"
-        [routerLink]="item.route"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: item.route === '/app' }"
-        (click)="onNavigationSelected()">
+      <a class="menu-item"
+         [class.menu-sub-item]="depth > 0"
+         [attr.title]="collapsed ? item.label : null"
+         [routerLink]="item.route"
+         routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: item.route === '/app' }"
+         (click)="onNavigationSelected()">
         @if (item.icon) {
           <i class="menu-icon" [class]="item.icon" aria-hidden="true"></i>
         }
         <span class="menu-label">{{ item.label }}</span>
       </a>
     } @else {
-      <!-- Ekranı henüz tamamlanmamış rol/birlik başlıkları pasiftir. -->
-      <span class="menu-item menu-item-disabled" [class.menu-sub-item]="depth > 0">
+      <span class="menu-item menu-item-disabled"
+            [class.menu-sub-item]="depth > 0"
+            [title]="item.label">
         @if (item.icon) {
           <i class="menu-icon" [class]="item.icon" aria-hidden="true"></i>
         }
         <span class="menu-label">{{ item.label }}</span>
-        <i class="pi pi-lock" aria-hidden="true"></i>
+        <i class="pi pi-lock menu-chevron" aria-hidden="true"></i>
       </span>
     }
   }

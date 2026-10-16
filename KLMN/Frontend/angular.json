@@ -23,6 +23,13 @@
             "inlineStyleLanguage": "scss",
             "styles": [
               "src/styles.scss"
+            ],
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "src/assets",
+                "output": "/assets"
+              }
             ]
           },
           "configurations": {

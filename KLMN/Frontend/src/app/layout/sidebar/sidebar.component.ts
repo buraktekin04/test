@@ -1,12 +1,10 @@
-import { Component, EventEmitter, inject, Output, signal } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { APP_BRANDING } from '../../core/config/app-branding';
 import { NavigationService } from '../services/navigation.service';
 
-/**
- * İç içe tanım ekranlarını açılıp kapanan menü gruplarında gösterir.
- * Mobil ekranda route seçilince layout'a kapatma olayı gönderir.
- */
+/** Menünün içeriği permission bazlıdır, genişliği üst layout tarafından yönetilir. */
 @Component({
   selector: 'app-sidebar',
   standalone: true,
@@ -15,38 +13,29 @@ import { NavigationService } from '../services/navigation.service';
   styleUrl: './sidebar.component.scss'
 })
 export class SidebarComponent {
-  /** Yetkilendirilmiş menü ağacını sağlayan merkezi servistir. */
   private readonly navigationService = inject(NavigationService);
 
-  /** Ekrana basılan kullanıcının yetkili olduğu menü öğeleridir. */
+  @Input() public collapsed = false;
+  @Output() public readonly navigationSelected = new EventEmitter<void>();
+  @Output() public readonly expandRequested = new EventEmitter<void>();
+
+  public readonly branding = APP_BRANDING;
   public readonly menuItems = this.navigationService.visibleItems;
+  private readonly expandedMenus = signal<ReadonlySet<string>>(new Set(['Tanımlamalar']));
 
-  /** Varsayılan açık ana menülerin isimlerini içeren reaktif kümedir. */
-  private readonly expandedMenus = signal<ReadonlySet<string>>(
-    new Set(['Tanımlamalar'])
-  );
-
-  /** Mobil sidebar'a menü seçildiğinin bilgisini iletir. */
-  @Output()
-  public readonly navigationSelected = new EventEmitter<void>();
-
-  /** Kullanıcının ana menüyü açıp kapatmasını sağlar. */
   public toggleGroup(label: string): void {
+    if (this.collapsed) {
+      this.expandRequested.emit();
+      if (this.isExpanded(label)) return;
+    }
     this.expandedMenus.update(current => {
-      const updated = new Set(current);
-      if (updated.has(label)) updated.delete(label);
-      else updated.add(label);
-      return updated;
+      const next = new Set(current);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return next;
     });
   }
 
-  /** İç içe menünün açık olup olmadığını belirtir. */
-  public isExpanded(label: string): boolean {
-    return this.expandedMenus().has(label);
-  }
-
-  /** Bağlantı seçildiğinde mobil menüyü kapatır. */
-  public onNavigationSelected(): void {
-    this.navigationSelected.emit();
-  }
+  public isExpanded(label: string): boolean { return this.expandedMenus().has(label); }
+  public onNavigationSelected(): void { this.navigationSelected.emit(); }
 }

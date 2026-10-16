@@ -1,38 +1,32 @@
 <header class="topbar">
   <div class="topbar-left">
-    <p-button
-      icon="pi pi-bars"
-      [text]="true"
-      severity="secondary"
-      ariaLabel="Menüyü aç veya kapat"
-      (onClick)="toggleSidebar()">
+    <p-button icon="pi pi-bars" [text]="true" severity="secondary"
+              styleClass="sidebar-toggle-button"
+              ariaLabel="Sol menüyü aç veya kapat"
+              (onClick)="toggleSidebar()">
     </p-button>
 
-    <div class="page-title">KLMN</div>
+    <div class="brand">
+      <img class="brand-logo" [src]="branding.logoUrl" alt="KLMN logosu" width="46" height="46">
+      <div class="brand-copy">
+        <strong class="brand-title">{{ branding.name }}</strong>
+        <span class="brand-subtitle">{{ branding.subtitle }}</span>
+      </div>
+    </div>
   </div>
 
   <div class="topbar-right">
     @if (user(); as currentUser) {
-      <div class="user-area" (click)="userMenu.toggle($event)">
-        <p-avatar
-          [label]="userInitials()"
-          shape="circle"
-          size="normal">
-        </p-avatar>
-
-        <div class="user-info">
+      <button type="button" class="user-area" aria-label="Kullanıcı hesabı menüsü"
+              aria-haspopup="menu" (click)="userMenu.toggle($event)">
+        <p-avatar [label]="userInitials()" shape="circle" size="normal"></p-avatar>
+        <span class="user-info">
           <strong>{{ currentUser.fullName }}</strong>
           <span>{{ currentUser.email }}</span>
-        </div>
-
-        <i class="pi pi-chevron-down"></i>
-      </div>
+        </span>
+        <i class="pi pi-chevron-down user-chevron" aria-hidden="true"></i>
+      </button>
     }
-
-    <p-menu
-      #userMenu
-      [model]="userMenuItems"
-      [popup]="true">
-    </p-menu>
+    <p-menu #userMenu [model]="userMenuItems" [popup]="true" appendTo="body"></p-menu>
   </div>
 </header>
