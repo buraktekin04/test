@@ -1,18 +1,31 @@
 <div class="dashboard">
-  <div class="welcome">
-    <div>
-      <h1>Hoş geldiniz</h1>
-
+  <section class="welcome">
+    <div class="welcome-copy">
+      <span class="welcome-eyebrow"><i class="pi pi-sparkles" aria-hidden="true"></i> KLMN ÇALIŞMA ALANI</span>
+      <h1>İyi çalışmalar.</h1>
       @if (user(); as currentUser) {
-        <p>{{ currentUser.fullName }}</p>
+        <p>Hoş geldiniz, <strong>{{ currentUser.fullName }}</strong>.
+          Kurumsal kayıt ve takip işlemlerinize sol menüden devam edebilirsiniz.</p>
+      } @else {
+        <p>Kurumsal kayıt ve takip işlemlerinize sol menüden devam edebilirsiniz.</p>
       }
+    </div>
+    <div class="welcome-symbol" aria-hidden="true">
+      <i class="pi pi-heart"></i>
+    </div>
+  </section>
+
+  <div class="dashboard-section-heading">
+    <div>
+      <h2>Oturum özeti</h2>
+      <p>Aktif kullanıcı hesabınızın bilgileri</p>
     </div>
   </div>
 
   <div class="dashboard-grid">
-    <p-card>
+    <p-card styleClass="summary-card">
       <div class="dashboard-card">
-        <i class="pi pi-user"></i>
+        <span class="dashboard-icon"><i class="pi pi-user" aria-hidden="true"></i></span>
         <div>
           <span>Kullanıcı</span>
           @if (user(); as currentUser) {
@@ -22,21 +35,21 @@
       </div>
     </p-card>
 
-    <p-card>
+    <p-card styleClass="summary-card">
       <div class="dashboard-card">
-        <i class="pi pi-shield"></i>
+        <span class="dashboard-icon"><i class="pi pi-shield" aria-hidden="true"></i></span>
         <div>
           <span>Roller</span>
           @if (user(); as currentUser) {
-            <strong>{{ currentUser.roles.join(', ') }}</strong>
+            <strong>{{ currentUser.roles.join(', ') || '—' }}</strong>
           }
         </div>
       </div>
     </p-card>
 
-    <p-card>
+    <p-card styleClass="summary-card">
       <div class="dashboard-card">
-        <i class="pi pi-key"></i>
+        <span class="dashboard-icon"><i class="pi pi-key" aria-hidden="true"></i></span>
         <div>
           <span>Yetki Sayısı</span>
           @if (user(); as currentUser) {
