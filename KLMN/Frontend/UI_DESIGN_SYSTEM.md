@@ -52,14 +52,18 @@ Farklı ekranlarda tekrar `#hex` tanımlamak yerine mevcut token'ları kullanın
 
 ## Giriş ekranı
 - Masaüstünde iki net bölge bulunur: solda düz, yumuşak antrasit-gri
-  (`#434c55`) kurumsal zemin, ortalanmış büyük logo ve altında
-  KLMN uygulama adı; sağda çok açık gri zemin üzerine sade giriş formu.
-- Gösterişli gradient, görsel efekt, gereksiz slogan veya tanıtım
-  maddeleri kullanılmaz. Solda sadece kısa uygulama alt başlığı bulunur.
+  (`#434c55`) zemin üzerinde yalnızca ortalanmış büyük (176px)
+  PNG logo ve iki yanında ince yatay çizgiler yer alır. Sol alanda
+  uygulama adı veya açıklama metni bulunmaz.
+- `KLMN` uygulama adı ve kısa `APP_BRANDING.subtitle` metni sağdaki
+  beyaz giriş kartının ÜZERİNDE, kartla aynı hizada görünür.
+- Gösterişli gradient, yoğun efekt, slogan veya tanıtım
+  maddeleri kullanılmaz. Süsleme yalnızca iki zarif çizgidir.
 - Sağ giriş kartı beyaz, ince kenarlıklı ve az gölgelidir.
   Segoe UI / Arial fontu ve tek koyu lacivert "Giriş Yap" butonu korunur.
-- Dar ekranlarda sol logo alanı üstte daha kısa bir başlık bölümüne
-  dönüşür; form alta iner ve yatay taşma olmamalıdır.
+- Dar ekranlarda sol logo alanı, çizgilerle birlikte daha kısa bir
+  üst bölüme dönüşür (104px / küçük mobilde 94px logo).
+  KLMN adı sağ form alanının üzerinde kalır; yatay taşma olmamalıdır.
 - Sürüm numarası `APP_BRANDING.version` üzerinden alınır,
   sağ bölümün alt köşesinde küçük gösterilir.
 - Kullanıcı adı/e-posta, parola göster/gizle, parola sıfırlama,

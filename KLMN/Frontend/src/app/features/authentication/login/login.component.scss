@@ -21,36 +21,30 @@
   color: #f5f7f8;
 }
 
-.login-brand {
+/* İnce yatay çizgiler yalnız logoyu çerçeveler; metin bu tarafta yer almaz. */
+.login-logo-ornament {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  width: 100%;
-  text-align: center;
+  justify-content: center;
+  gap: clamp(16px, 3vw, 32px);
+  width: min(100%, 470px);
 }
 
-.login-brand img {
+.login-logo-ornament::before,
+.login-logo-ornament::after {
+  content: '';
+  height: 1px;
+  flex: 1 1 0;
+  min-width: 14px;
+  background: rgba(255, 255, 255, .26);
+}
+
+.login-logo-ornament img {
   display: block;
-  width: 112px;
-  height: 112px;
+  flex: 0 0 auto;
+  width: 176px;
+  height: 176px;
   object-fit: contain;
-  margin-bottom: 24px;
-}
-
-.login-brand strong {
-  color: #ffffff;
-  font-size: 33px;
-  font-weight: 650;
-  line-height: 1.2;
-  letter-spacing: normal;
-}
-
-.login-brand span {
-  margin-top: 10px;
-  color: #d5dce1;
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1.55;
 }
 
 .login-content {
@@ -63,9 +57,35 @@
   background: #f5f6f7;
 }
 
-.login-card {
+.login-workspace {
   width: min(100%, 430px);
   margin: auto 0;
+}
+
+.login-product-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 22px;
+  padding-left: 3px;
+}
+
+.login-product-header strong {
+  color: var(--ui-navy-deep);
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: normal;
+}
+
+.login-product-header span {
+  color: var(--ui-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.login-card {
+  width: 100%;
   padding: 36px 38px 38px;
   border: 1px solid var(--ui-border);
   border-radius: 10px;
@@ -190,40 +210,52 @@
   }
 
   .login-brand-panel {
-    min-height: 202px;
-    padding: 28px 20px;
+    min-height: 172px;
+    padding: 24px 28px;
   }
 
-  .login-brand img {
-    width: 72px;
-    height: 72px;
-    margin-bottom: 10px;
+  .login-logo-ornament {
+    width: min(100%, 380px);
+    gap: 22px;
   }
 
-  .login-brand strong {
-    font-size: 25px;
-  }
-
-  .login-brand span {
-    margin-top: 5px;
-    font-size: 12px;
+  .login-logo-ornament img {
+    width: 104px;
+    height: 104px;
   }
 
   .login-content {
-    min-height: calc(100dvh - 202px);
+    min-height: calc(100dvh - 172px);
     padding: 36px 24px 20px;
   }
 }
 
 @media (max-width: 480px) {
   .login-brand-panel {
-    min-height: 184px;
-    padding: 24px 18px;
+    min-height: 148px;
+    padding: 18px;
+  }
+
+  .login-logo-ornament {
+    gap: 18px;
+  }
+
+  .login-logo-ornament img {
+    width: 94px;
+    height: 94px;
   }
 
   .login-content {
-    min-height: calc(100dvh - 184px);
-    padding: 24px 18px 16px;
+    min-height: calc(100dvh - 148px);
+    padding: 30px 18px 16px;
+  }
+
+  .login-product-header {
+    margin-bottom: 18px;
+  }
+
+  .login-product-header strong {
+    font-size: 24px;
   }
 
   .login-card {

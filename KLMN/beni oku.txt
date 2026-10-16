@@ -432,9 +432,11 @@ olarak varsayma. Kullanıcı yeni modülleri sırayla söyleyecektir.
   Sidebar üstünde tekrarlayan uygulama adı yoktur; ALTINDA sürüm
   bulunur. Logo kalıcı resmî kurum logosu değil, geçici görseldir.
 - Login iki bölümlü SADE kurumsal tasarımdır: solda yumuşak
-  antrasit-gri (#434c55) fon ve logo/KLMN; sağda açık zemin ve
-  giriş formu. Renkli gradient, slogan ve gereksiz tanıtım yok.
-  Mobilde sol marka alanı üst bölüme dönüşür.
+  antrasit-gri (#434c55) fon, ortada büyük PNG logo ve iki yanında
+  ince yatay çizgi; sol panelde uygulama adı/metin YOKTUR.
+  KLMN adı ve kısa alt başlığı SAĞDA giriş kartının üstündedir.
+  Renkli gradient, slogan ve gereksiz tanıtım yok.
+  Mobilde sol logo alanı üst bölüme dönüşür.
   Reactive Forms, auth/login yönlendirmesi, parola unuttum,
   hata ve bilgi mesajları korunur.
 - Sürüm şu anda package.json ile app-branding.ts'de v1.0.0
@@ -566,6 +568,24 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-16 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-16 (bu commit — login solda büyük logo, sağda uygulama adı):
+  Kullanıcı talebiyle sol antrasit kurumsal paneldeki logo
+  112px'den 176px'e büyütülüp merkezlendi. PNG'nin sağında
+  ve solunda ince, yarı saydam yatay çizgilerle ölçülü süsleme
+  yapıldı; sol panelden KLMN yazısı ve alt başlık kaldırıldı.
+  KLMN uygulama adı ve kısa alt başlık SAĞDA beyaz giriş
+  kartının üstüne, form genişliğiyle aynı hizaya taşındı.
+  Mobilde logo 104px / küçük ekranlarda 94px ve üst panel
+  daralarak yerleşim korunur. Sağa hizalı sürüm bilgisi devam eder.
+  Login HTML/SCSS ve Frontend/UI_DESIGN_SYSTEM.md güncellendi;
+  beni oku.txt aynı commit'tedir. Login TypeScript, 3 saniyelik
+  informationMessage akışı, API, JWT, form alanları, validasyon,
+  parola sıfırlama, permission ve backend DEĞİŞMEDİ.
+  Yeni migration YOKTUR. Statik şablon, sınıf, form bağlama ve
+  SCSS denetimleri yapıldı; bu ortamda Angular build, gerçek
+  tarayıcı/ekran boyutları testi ve API testi çalıştırılmadı.
+  Tek commit / tek push kuralı uygulandı.
+
 - 2026-10-16 (bu commit — login bilgilendirme mesajı 3 saniye):
   LoginComponent içerisindeki informationMessage bildirimleri
   (başarılı çıkış, parola değişimi ve parola sıfırlama sonrası)

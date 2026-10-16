@@ -1,15 +1,19 @@
 <div class="login-page">
-  <!-- Kurumsal kimlik alanı; gereksiz görsel veya tanıtım metni içermez. -->
-  <aside class="login-brand-panel" aria-label="KLMN kurumsal kimlik">
-    <div class="login-brand">
-      <img [src]="branding.logoUrl" alt="" width="112" height="112">
-      <strong>{{ branding.name }}</strong>
-      <span>{{ branding.subtitle }}</span>
+  <!-- Logo sol tarafta ortalanır; yanındaki ince çizgiler yalnızca dekoratiftir. -->
+  <aside class="login-brand-panel" aria-label="Kurumsal logo alanı">
+    <div class="login-logo-ornament">
+      <img [src]="branding.logoUrl" alt="KLMN logosu" width="176" height="176">
     </div>
   </aside>
 
   <main class="login-content">
-    <section class="login-card" aria-labelledby="login-title">
+    <div class="login-workspace">
+      <header class="login-product-header">
+        <strong>{{ branding.name }}</strong>
+        <span>{{ branding.subtitle }}</span>
+      </header>
+
+      <section class="login-card" aria-labelledby="login-title">
       <h1 id="login-title">Giriş Yap</h1>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="login-form">
@@ -73,7 +77,8 @@
           styleClass="login-submit">
         </p-button>
       </form>
-    </section>
+      </section>
+    </div>
 
     <footer class="login-footer">
       Sürüm v{{ branding.version }}
