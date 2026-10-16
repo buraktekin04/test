@@ -1,6 +1,20 @@
+ZORUNLU KURAL — HER GELİŞTİRMEDE TEK COMMIT / TEK PUSH
+====================================================
+KLMN projesinde kullanıcı farklı bir talimat vermedikçe yapılan HER İŞİN
+TÜM DEĞİŞİKLİKLERİ (backend + frontend + testler + dokümantasyon +
+KLMN/beni oku.txt) tamamlandıktan sonra TEK BİR GIT COMMIT içinde
+toplanıp main dalına TEK SEFERDE pushlanacaktır.
+PARÇA PARÇA COMMIT/PUSH YAPMA. Ara adımları main'e gönderme.
+Önce değişiklikleri eksiksiz hazırla, gözden geçir, mümkünse derle/test
+et, en son bu dosyayı güncelle; ardından TÜM DOSYALARI TEK COMMIT ile
+pushla. Commit SHA'sını kullanıcıya bildir. Yapılamayan testleri açıkça
+belirt; test edilmemiş kodu test edilmiş gibi gösterme.
+Önceki parçalı commit'leri geçmişi yeniden yazmak amacıyla force-push
+ile birleştirme; bu kural bundan sonraki işlerde doğrudan uygulanacaktır.
+
 KLMN PROJESİ — BENİ OKU / DEVİR DOSYASI
 ====================================
-Güncelleme tarihi: 15.10.2026
+Güncelleme tarihi: 16.10.2026
 Repo: https://github.com/buraktekin04/test
 Proje kökü: KLMN/
 Varsayılan dal: main
@@ -93,6 +107,11 @@ signals, RxJS, ayrı services/models, permissionGuard, authGuard.
 Proje: KLMN/Frontend/
 Önemli dosyalar:
   src/app/app.routes.ts
+  src/styles.scss (ortak tasarım değişkenleri ve paylaşılan UI kuralları)
+  src/app/core/theme/klmn.preset.ts (PrimeNG 21 kurumsal tema)
+  src/app/core/config/app-branding.ts (ad, alt başlık, sürüm, PNG logo yolu)
+  src/assets/brand/klmn-logo.png (GEÇİCİ görsel kimlik)
+  src/app/layout/app-layout/, sidebar/, topbar/ (responsive uygulama kabuğu)
   src/app/layout/services/navigation.service.ts
   src/app/core/permissions/services/permission.service.ts
   src/app/core/permissions/constants/permission-codes.ts
@@ -394,6 +413,33 @@ olarak varsayma. Kullanıcı yeni modülleri sırayla söyleyecektir.
   hata, ilk sorunlu inputa odak ve kaydetme bölgesinde genel hata.
 - UX sade, okunaklı, tutarlı olmalı; gereksiz büyük paneller ekleme.
 
+2026-10-16 TASARIM YENİLEME KARARI (KULLANICININ AÇIK TALEBİ):
+- Önceden kabul edilmiş tanım ekranı işlev şablonu devam ediyor,
+  ancak GÖRSEL TEMA artık merkezi sağlık/kurumsal paletten yönetiliyor.
+  Bu, kullanıcının açıkça istediği ortak tema değişikliğidir; önceki
+  "görsel modeli kullanıcı istemeden değiştirme" kuralıyla çelişmez.
+- Renk, temel yüzey, tipografi, sayfa başlığı, ortak filtre/tablo
+  görünümü ve PrimeNG token'ları sırasıyla src/styles.scss ve
+  src/app/core/theme/klmn.preset.ts altında merkezi tutulur.
+  Yeni ekranlara mükerrer ortak CSS yazma. Ekrana özel alan dizilimi,
+  karmaşık modal veya işlevsel etkileşim CSS'i kendi SCSS'inde kalır.
+- Ortak palet: lacivert #0d253a / #163047, ana petrol yeşili
+  #087f81, açık arka plan #f2f6f8, kart yüzeyi #ffffff.
+  --ui-* değişkenlerini kullan; PrimeNG preset'iyle tutarlı tut.
+- Responsive sidebar masaüstünde dar/geniş, mobilde drawer/overlay
+  olarak çalışır. Topbar'da büyük KLMN adı, geçici PNG logo ve
+  "Kurumsal Sağlık Takip ve Raporlama" açıklaması görünür.
+  Sidebar üstünde tekrarlayan uygulama adı yoktur; ALTINDA sürüm
+  bulunur. Logo kalıcı resmî kurum logosu değil, geçici görseldir.
+- Login kurumsal sağlık takibi vurgulayan iki bölümlü tasarımdır;
+  Reactive Forms, auth/login yönlendirmesi, parola unuttum,
+  hata ve bilgi mesajları korunur.
+- Sürüm şu anda package.json ile app-branding.ts'de v1.0.0
+  bilgisine karşılık gelir. Yeni sürümde iki dosyayı birlikte değiştir.
+- Detaylı tasarım rehberi: KLMN/Frontend/UI_DESIGN_SYSTEM.md.
+- UI refactor, eski liste filtre/sıralama/CRUD, yetkilendirme,
+  audit ve BaseEntity/EF mantığını değiştirmek için bahane değildir.
+
 KALICI VE ZORUNLU TANIM EKRANI TASARIM ŞABLONU — DEĞİŞTİRME:
 - Kullanıcı kararı: Bundan sonra geliştirilecek TÜM tanım ekranları
   mevcut onaylanmış tanım ekranlarıyla AYNI UI/UX MODELİNİ kullanacak.
@@ -497,6 +543,8 @@ Mevcut test projeleri:
   KLMN/Tests/MilitaryClassGroups.Regression
 
 Son geliştirmeler GitHub üzerinden statik kontrol edilerek gönderildi.
+Son 2026-10-16 tema ve audit düzeltmeleri sonrasında da dotnet build,
+Angular build veya gerçek browser testleri çalıştırılmadı.
 Bu dosyanın güncellemesi sırasında dotnet build, Angular build,
 gerçek PostgreSQL migration, otomatik regresyon ve tarayıcı testleri
 yeniden çalıştırılmadı. Önceki dokümanlarda farklı tarihlerdeki
@@ -515,6 +563,81 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-16 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-16 (son güncelleme — TEK COMMIT kuralı ve son işlerin kaydı):
+  Bu dosyanın EN ÜSTÜNE "bir geliştirme = bütün dosyalar dahil
+  tek commit / tek push" talimatı kondu. Önceden yapılmış işleri
+  geriye dönük silme, squash veya force-push YAPILMADI.
+  Bu güncelleme yalnızca KLMN/beni oku.txt dosyasını içerir;
+  yeni kod veya migration YOKTUR. Derleme/test gerekmez.
+
+- 2026-10-16 (önceki çalışma — KURUMSAL SAĞLIK TEMALI UI YENİLEME):
+  Kullanıcı isteğiyle uygulamanın görsel altyapısı yenilendi.
+  src/styles.scss üzerinden --ui-* tasarım değişkenleri,
+  ortak sayfa başlığı, kart, filtre, form ve tablo yüzeyleri;
+  src/app/core/theme/klmn.preset.ts üzerinden PrimeNG 21
+  Aura tabanlı petrol yeşili primary paleti tanımlandı.
+  app.config.ts yeni preset'i kullanır ve tasarımda yalnız
+  açık renk şeması seçilmiştir.
+  Layout: app-layout.component.html/scss/ts'de mobil drawer/overlay,
+  Escape ile kapatma ve masaüstü daraltılabilir sidebar.
+  Sidebar component'te izin bazlı NavigationService menüsü
+  KORUNDU; sidebar'da büyük uygulama adı kaldırıldı,
+  en altına v1.0.0 sürümü eklendi. Topbar component'inde
+  büyük KLMN başlığı, geçici sağlık artısı PNG logosu,
+  kurumsal alt başlık, hesap menüsü ve sidebar toggle var.
+  Geçici logo src/assets/brand/klmn-logo.png içine eklendi;
+  angular.json assets yolu ve index.html favicon/başlığı güncellendi.
+  src/app/core/config/app-branding.ts marka/sürüm bilgisinin
+  ortak kaynağıdır.
+  Login component HTML/SCSS, mobil/masaüstüne uyarlanan iki kolonlu
+  kurumsal giriş tasarımıyla yenilendi; Angular form, API sözleşmesi,
+  JWT oturum, dönüş URL güvenliği, parola sıfırlama ve hata bildirim
+  işlevleri değişmedi. Ana sayfa home.component.html/scss
+  karşılaması ve oturum özeti kartları yenilendi; örnek sağlık
+  istatistikleri uydurulmadı.
+  18 ekranın mevcut SCSS renkleri uygun --ui-* ortak token'lara
+  bağlandı. Tekrarlanan .page-header görünümü ortak styles.scss'e
+  taşındı. Ekrana özel filtre, modal ve tablo iş kuralları
+  korunmaya çalışıldı; uygulamayı canlı tarayıcıda test etmeden
+  tüm görünümlerin kusursuz olduğu varsayılmamalı.
+  Tasarım kararları ve yeni ekran kuralları
+  KLMN/Frontend/UI_DESIGN_SYSTEM.md içinde belgelendi.
+  Etkilenen başlıca klasörler:
+    Frontend/src/app/layout/{app-layout,sidebar,topbar}/
+    Frontend/src/app/features/authentication/login/
+    Frontend/src/app/features/home/
+    Frontend/src/app/features/{users,roles,countries,cities,towns,
+      forces-commands,military-units,military-schools,military-classes,
+      military-class-groups,military-class-group-relations,
+      purchase-numbers,audit-logs}/ ve shared/audit-history/.
+  Değişiklikler o çalışmada geçmişe birden fazla commit olarak
+  pushlandı; bu kullanıcı tarafından istenmeyen uygulamaydı.
+  BUNDAN SONRA AYNI İŞ TEK COMMIT İLE PUSHLANACAK.
+  UI için veritabanı şeması değişmedi, migration gerekmez.
+  Kod/şablon/referans düzeyinde statik kontrol yapıldı;
+  npm/Angular build, tarayıcıda responsive görsel test,
+  .NET build, gerçek API ve DB entegrasyon testi yapılmadı.
+  Yerel kontrol: cd KLMN/Frontend; npm ci; npm run build:dev
+  ve npm run build. Login, sidebar, filtreler, modal ve
+  rol/permission kombinasyonları tarayıcıda doğrulanmalı.
+
+- 2026-10-16 (önceki çalışma — Audit varlık türü doğrulaması):
+  GetAuditLogsQueryValidator yalnızca eski 9 türü kabul ederken
+  yeni tanım ekranlarının entityType değerlerini reddederek
+  "Geçersiz audit varlık türü" hatası üretmekteydi.
+  Validator'a MilitarySchoolDef, MilitaryClassDef,
+  MilitaryClassGroupDef, MilitaryClassGroupRelation, CountryDef,
+  CityDef, TownDef, PurchaseNumberDef eklendi.
+  Frontend/src/app/features/audit-logs/audit-log-list/
+  audit-log-list.component.html içindeki Kayıt Türü filtresi
+  aynı 8 türle tamamlandı. Audit interceptor,
+  validator ve genel dropdown listesinde 17 türün eşleştiği
+  statik olarak doğrulandı. Kayıt geçmişi sayfası ve
+  tanım ekranlarının audit geçmişi bağlantıları değişmedi.
+  Migration yoktur; gerçek .NET/Angular/API/browser testleri
+  yapılmadı. Önceki çalışmada düzeltme iki ayrı commit'e
+  bölünmüştü; yeni işlerde tek commit kuralı geçerlidir.
+
 - 2026-10-16 (bu commit — Birlik kolon filtre seçenekleri sadeleştirmesi):
   Önceki commit'te gereksiz eklenen GetMilitaryUnitFilterOptionsQuery/
   Handler ve /api/military-units/filter-options endpoint'i KALDIRILDI.
@@ -731,6 +854,12 @@ devam etmek istediğini yeni mesajında söyleyecek.
   CityDefs -> TownDefs nullable Restrict FK doğrulanmalı.
 - Yeni alım numarası, kuvvet, birlik, kullanıcı ve rol modüllerinde
   backend/frontend build ve gerçek entegrasyon/kabul testleri.
+- Yeni kurumsal tema sonrası Angular development/production derlemesi,
+  responsive sidebar (mobil/masaüstü), login, PNG/Favicon varlığı,
+  PrimeNG bileşenleri, role/permission menüsü, tanım liste/filter/sort
+  ve dialogların görsel/işlevsel tarayıcı kabul testleri.
+  Geçici marka PNG'si kurumsal olarak onaylanmış resmî logo değildir;
+  nihai logo sağlandığında tek merkezden değiştirilmelidir.
 - Permission davranışlarının farklı rollerle incelenmesi; özellikle
   yalnızca View veya yalnızca Create alan hesaplar.
 - Legacy MSKBS veri/iş kuralı eşleşmesi ve alan kullanıcılarıyla
@@ -772,6 +901,7 @@ devam etmek istediğini yeni mesajında söyleyecek.
 ------------------------
   KLMN/Backend/README.md
   KLMN/Frontend/README.md
+  KLMN/Frontend/UI_DESIGN_SYSTEM.md
   KLMN/CODE_DOCUMENTATION.md
   KLMN/ROL_TANIMLARI_KURULUM.md
   KLMN/BIRLIK_TANIMLARI_KURULUM.md
