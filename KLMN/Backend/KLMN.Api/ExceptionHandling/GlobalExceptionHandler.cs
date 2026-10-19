@@ -6,6 +6,7 @@ using KLMN.Application.MilitarySchools.Exceptions;
 using KLMN.Application.MilitaryOffices.Exceptions;
 using KLMN.Application.AdmissionTypes.Exceptions;
 using KLMN.Application.ConnectedDecisions.Exceptions;
+using KLMN.Application.Branches.Exceptions;
 using KLMN.Application.MilitaryClasses.Exceptions;
 using KLMN.Application.MilitaryClassGroups.Exceptions;
 using KLMN.Application.MilitaryClassGroupRelations.Exceptions;
@@ -190,6 +191,12 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             MilitaryClassConflictException =>
                 new ProblemDetails { Status = StatusCodes.Status409Conflict,
                     Title = "Askerî sınıf işlemi gerçekleştirilemedi.", Detail = exception.Message },
+            BranchNotFoundException =>
+                new ProblemDetails { Status = StatusCodes.Status404NotFound,
+                    Title = "Branş bulunamadı.", Detail = exception.Message },
+            BranchConflictException =>
+                new ProblemDetails { Status = StatusCodes.Status409Conflict,
+                    Title = "Branş işlemi gerçekleştirilemedi.", Detail = exception.Message },
             ConnectedDecisionNotFoundException =>
                 new ProblemDetails { Status = StatusCodes.Status404NotFound,
                     Title = "Bağlı kurul kararı bulunamadı.", Detail = exception.Message },

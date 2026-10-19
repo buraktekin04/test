@@ -64,6 +64,9 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     /// </summary>
     public DbSet<ForcesCommandDef> ForcesCommandDefs => Set<ForcesCommandDef>();
 
+    /// <summary>Branş tanımlarının sorgu ve değişiklik kümesi.</summary>
+    public DbSet<BranchDef> BranchDefs => Set<BranchDef>();
+
     /// <summary>Bağlı kurul kararlarının sorgu ve komut DbSet kümesidir.</summary>
     public DbSet<HcConnectedDecisionDef> HcConnectedDecisionDefs => Set<HcConnectedDecisionDef>();
 

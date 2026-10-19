@@ -58,6 +58,20 @@ Farklı ekranlarda tekrar `#hex` tanımlamak yerine mevcut token'ları kullanın
 - Onaylanmış login ekranı ayrı tutularak orijinal görsel renk
   token'ları `login.component.scss` içinde korunmuştur.
 
+## Zorunlu PrimeNG p-table kolon standardı (19.10.2026)
+
+Bundan sonra tüm listeleme p-table bileşenlerinde
+`[resizableColumns]="true"` ve `columnResizeMode="expand"`
+kullanılır; sabit `sticky-actions-col` hariç tüm
+`th` başlıkları `pResizableColumn` alır.
+Dikey ayırıcılar, görünür sürükleme çizgileri ve yatay tablo
+kaydırması `src/styles.scss` dosyasından yönetilir.
+Bu karar eski tüm listelere de uygulanmıştır. İşlemler kolonu
+sticky kalır; sütun sıralaması yalnız frontend'tedir.
+
+Bağlı Kurul Karar Tanımları'nda uzun Karar Adı satır
+kaydırılarak eksiksiz gösterilir; ellipsis yapılmaz.
+
 ## Sidebar ve topbar
 - **Masaüstü (genişlik > 992px):** Topbar menü butonu sidebar'ı daraltır/genişletir.
   Dar menüde ikonlar ve tooltip'ler kalır; grup ikonuna basınca menü açılır.

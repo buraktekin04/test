@@ -91,19 +91,19 @@
       </form>
     }
     <div class="table-scroll" role="region" tabindex="0" aria-label="Şehir kayıtları">
-      <p-table [value]="records()" [loading]="loading()"
+      <p-table [resizableColumns]="true" columnResizeMode="expand" [value]="records()" [loading]="loading()"
                [tableStyle]="{ 'min-width': '1320px', 'width': '100%' }">
         <ng-template pTemplate="header">
           <tr>
-            <th pSortableColumn="name">Şehir Adı <p-sortIcon field="name" /></th>
-            <th pSortableColumn="code">Kod <p-sortIcon field="code" /></th>
-            <th pSortableColumn="externalCode">Harici Kod <p-sortIcon field="externalCode" /></th>
-            <th pSortableColumn="countryName">Ülke <p-sortIcon field="countryName" /></th>
-            <th pSortableColumn="mernisCode">MERNİS Kodu <p-sortIcon field="mernisCode" /></th>
-            <th pSortableColumn="validFrom">Geçerli Başlangıç <p-sortIcon field="validFrom" /></th>
-            <th pSortableColumn="validTo">Geçerli Bitiş <p-sortIcon field="validTo" /></th>
-            <th pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
-            <th pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
+            <th pResizableColumn pSortableColumn="name">Şehir Adı <p-sortIcon field="name" /></th>
+            <th pResizableColumn pSortableColumn="code">Kod <p-sortIcon field="code" /></th>
+            <th pResizableColumn pSortableColumn="externalCode">Harici Kod <p-sortIcon field="externalCode" /></th>
+            <th pResizableColumn pSortableColumn="countryName">Ülke <p-sortIcon field="countryName" /></th>
+            <th pResizableColumn pSortableColumn="mernisCode">MERNİS Kodu <p-sortIcon field="mernisCode" /></th>
+            <th pResizableColumn pSortableColumn="validFrom">Geçerli Başlangıç <p-sortIcon field="validFrom" /></th>
+            <th pResizableColumn pSortableColumn="validTo">Geçerli Bitiş <p-sortIcon field="validTo" /></th>
+            <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
+            <th pResizableColumn pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
             @if (canUpdate() || canDelete() || canAudit()) { <th class="sticky-actions-col">İşlemler</th> }
           </tr>
         </ng-template>

@@ -108,6 +108,14 @@ export const routes: Routes = [
             .then(component => component.MilitaryClassListComponent)
       },
       {
+        path: 'branches',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'Branches' },
+        loadComponent: () =>
+          import('./features/branches/branch-list/branch-list.component')
+            .then(component => component.BranchListComponent)
+      },
+      {
         path: 'connected-decisions',
         canActivate: [permissionGuard],
         data: { permissionModule: 'ConnectedDecisions' },
@@ -163,6 +171,9 @@ export const routes: Routes = [
       },
       {
         path: 'definitions/towns', pathMatch: 'full', redirectTo: 'towns'
+      },
+      {
+        path: 'definitions/branches', pathMatch: 'full', redirectTo: 'branches'
       },
       {
         path: 'definitions/connected-decisions', pathMatch: 'full', redirectTo: 'connected-decisions'

@@ -28,6 +28,7 @@ public sealed class AuditableEntitySaveChangesInterceptor(
                 "IsActive", "ValidFrom", "ValidTo"),
             ["Role"] = Fields("Name", "Code", "Description", "IsActive"),
             ["ForcesCommandDef"] = Fields("Name", "Code", "IsActive", "ValidFrom", "ValidTo"),
+            ["BranchDef"] = Fields("Code", "Name", "ValidFrom", "ValidTo", "IsActive"),
             ["HcConnectedDecisionDef"] = Fields("Code", "Name", "ValidFrom", "ValidTo", "IsActive"),
             ["HcAdmissionTypeDef"] = Fields("Code", "Name",
                 "ForcesCommandRequired",

@@ -30,6 +30,9 @@ public interface IKLMNDbContext
     DbSet<PasswordResetToken> PasswordResetTokens { get; }
     DbSet<ForcesCommandDef> ForcesCommandDefs { get; }
 
+    /// <summary>Branş tanımlarının DbSet kümesi.</summary>
+    DbSet<BranchDef> BranchDefs { get; }
+
     /// <summary>Bağlı kurul kararlarının DbSet kümesi.</summary>
     DbSet<HcConnectedDecisionDef> HcConnectedDecisionDefs { get; }
 

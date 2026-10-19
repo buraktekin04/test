@@ -86,16 +86,16 @@
       </form>
     }
         <div class="table-scroll" role="region" tabindex="0" aria-label="Askerî Sınıf Grubu Tanımları tablosu">
-      <p-table [value]="records()" [loading]="loading()"
+      <p-table [resizableColumns]="true" columnResizeMode="expand" [value]="records()" [loading]="loading()"
                [tableStyle]="{ 'min-width': '1120px', 'width': '100%' }">
         <ng-template pTemplate="header"><tr>
-            <th pSortableColumn="name">Grup Adı <p-sortIcon field="name" /></th>
-            <th pSortableColumn="code">Kod <p-sortIcon field="code" /></th>
-            <th pSortableColumn="shortName">Kısa Ad <p-sortIcon field="shortName" /></th>
-            <th pSortableColumn="forcesCommandName">Kuvvet Komutanlığı <p-sortIcon field="forcesCommandName" /></th>
-            <th pSortableColumn="validFrom">Başlangıç <p-sortIcon field="validFrom" /></th>
-            <th pSortableColumn="validTo">Bitiş <p-sortIcon field="validTo" /></th>
-            <th pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
+            <th pResizableColumn pSortableColumn="name">Grup Adı <p-sortIcon field="name" /></th>
+            <th pResizableColumn pSortableColumn="code">Kod <p-sortIcon field="code" /></th>
+            <th pResizableColumn pSortableColumn="shortName">Kısa Ad <p-sortIcon field="shortName" /></th>
+            <th pResizableColumn pSortableColumn="forcesCommandName">Kuvvet Komutanlığı <p-sortIcon field="forcesCommandName" /></th>
+            <th pResizableColumn pSortableColumn="validFrom">Başlangıç <p-sortIcon field="validFrom" /></th>
+            <th pResizableColumn pSortableColumn="validTo">Bitiş <p-sortIcon field="validTo" /></th>
+            <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
           @if (canUpdate() || canDelete() || canAudit()) { <th class="sticky-actions-col">İşlemler</th> }
         </tr></ng-template>
         <ng-template pTemplate="body" let-item><tr>

@@ -122,6 +122,16 @@ public static class PermissionCodes
     /// <summary>Askerlik şubesi tanımlarının işlem yetkileri.</summary>
     /// <summary>Başvuru Grubu Tanımları izin kodları.</summary>
     /// <summary>Bağlı Kurul Karar Tanımları eylem bazlı yetkileri.</summary>
+    /// <summary>Branş Tanımları yetki kodları.</summary>
+    public static class Branches
+    {
+        public const string View = "Branches.View";
+        public const string Query = "Branches.Query";
+        public const string Create = "Branches.Create";
+        public const string Update = "Branches.Update";
+        public const string Delete = "Branches.Delete";
+    }
+
     public static class ConnectedDecisions
     {
         public const string View = "ConnectedDecisions.View";

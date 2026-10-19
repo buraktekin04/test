@@ -20,6 +20,7 @@
           <option value="MilitaryOfficeDef">Askerlik Şubesi</option>
           <option value="HcAdmissionTypeDef">Başvuru Grubu</option>
           <option value="HcConnectedDecisionDef">Bağlı Kurul Kararı</option>
+          <option value="BranchDef">Branş</option>
           <option value="MilitaryClassDef">Askeri Sınıf</option>
           <option value="MilitaryClassGroupDef">Askeri Sınıf Grubu</option>
           <option value="MilitaryClassGroupRelation">Sınıf - Grup Eşleştirme</option>
@@ -76,16 +77,16 @@
       <span>{{ total() }} kayıt</span>
     </div>
     <div class="audit-table-scroll">
-      <p-table [value]="rows()" [loading]="loading()"
+      <p-table [resizableColumns]="true" columnResizeMode="expand" [value]="rows()" [loading]="loading()"
                [tableStyle]="{ 'min-width': '930px', width: '100%' }">
         <ng-template pTemplate="header">
           <tr>
-            <th>Tarih</th>
-            <th>İşlemi Yapan</th>
-            <th>Tür</th>
-            <th>İşlem</th>
-            <th>Kayıt Kimliği</th>
-            <th>Detay</th>
+            <th pResizableColumn>Tarih</th>
+            <th pResizableColumn>İşlemi Yapan</th>
+            <th pResizableColumn>Tür</th>
+            <th pResizableColumn>İşlem</th>
+            <th pResizableColumn>Kayıt Kimliği</th>
+            <th pResizableColumn>Detay</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-entry>

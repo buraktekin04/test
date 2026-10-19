@@ -102,18 +102,18 @@
     }
 
     <div class="table-scroll" role="region" aria-label="Alım numaraları tablosu" tabindex="0">
-      <p-table [value]="records()" [loading]="loading()"
+      <p-table [resizableColumns]="true" columnResizeMode="expand" [value]="records()" [loading]="loading()"
                [tableStyle]="{ 'min-width': '1320px', 'width': '100%' }">
         <ng-template pTemplate="header">
           <tr>
-            <th pSortableColumn="name">Alım Adı <p-sortIcon field="name" /></th>
-            <th pSortableColumn="code">Kod <p-sortIcon field="code" /></th>
-            <th pSortableColumn="supplyDescriptionName">Temin Tanım Adı <p-sortIcon field="supplyDescriptionName" /></th>
-            <th pSortableColumn="validFrom">Başlangıç <p-sortIcon field="validFrom" /></th>
-            <th pSortableColumn="validTo">Bitiş <p-sortIcon field="validTo" /></th>
-            <th pSortableColumn="healthReportEndDate">Sağlık Raporu Bitişi <p-sortIcon field="healthReportEndDate" /></th>
-            <th pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
-            <th pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
+            <th pResizableColumn pSortableColumn="name">Alım Adı <p-sortIcon field="name" /></th>
+            <th pResizableColumn pSortableColumn="code">Kod <p-sortIcon field="code" /></th>
+            <th pResizableColumn pSortableColumn="supplyDescriptionName">Temin Tanım Adı <p-sortIcon field="supplyDescriptionName" /></th>
+            <th pResizableColumn pSortableColumn="validFrom">Başlangıç <p-sortIcon field="validFrom" /></th>
+            <th pResizableColumn pSortableColumn="validTo">Bitiş <p-sortIcon field="validTo" /></th>
+            <th pResizableColumn pSortableColumn="healthReportEndDate">Sağlık Raporu Bitişi <p-sortIcon field="healthReportEndDate" /></th>
+            <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
+            <th pResizableColumn pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
             @if (canUpdate() || canDelete() || canViewAudit()) { <th class="sticky-actions-col">İşlemler</th> }
           </tr>
         </ng-template>

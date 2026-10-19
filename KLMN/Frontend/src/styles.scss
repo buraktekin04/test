@@ -136,6 +136,46 @@ a { color: var(--ui-primary); }
 
 p-select { min-width: 0; max-width: 100%; }
 
+
+/* Ortak PrimeNG tablo standardı: resizableColumns + expand ile yatay kaydırma.
+   Sticky İşlemler sütunu sabit genişlikte kaldığından pResizableColumn almaz. */
+.content .p-datatable .p-datatable-thead > tr > th,
+.content .p-datatable .p-datatable-tbody > tr > td {
+  border-right: 1px solid var(--ui-border-soft);
+}
+.content .p-datatable .p-datatable-thead > tr > th:last-child,
+.content .p-datatable .p-datatable-tbody > tr > td:last-child {
+  border-right: 0;
+}
+.content .p-datatable .p-datatable-thead > tr > th { position: relative; }
+.content .p-datatable .p-column-resizer {
+  z-index: 2;
+  width: 10px;
+  cursor: col-resize;
+  opacity: 1;
+}
+.content .p-datatable .p-column-resizer::after {
+  content: '';
+  position: absolute;
+  top: 20%;
+  bottom: 20%;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  border-radius: 1px;
+  background: var(--ui-control-border);
+}
+.content .p-datatable .p-datatable-thead > tr > th:hover .p-column-resizer::after,
+.content .p-datatable .p-column-resizer:hover::after {
+  background: var(--ui-primary);
+}
+.content :is(.table-scroll, .users-table-scroll, .roles-table-scroll, .audit-table-scroll) {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+}
+
 /* Ekranların tamamında yatay kaydırmada İşlemler sütununu sabit tut. */
 :where(.table-scroll, .users-table-scroll, .roles-table-scroll) .p-datatable-table {
   border-collapse: separate;

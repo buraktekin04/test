@@ -421,3 +421,28 @@
   background: var(--ui-surface); color: var(--ui-text);
 }
 .connected-decision-form .text-retry { background: none; border: 0; color: var(--ui-primary); cursor: pointer; text-align: left; }
+
+/* Uzun bağlı kurul karar adları çok satırda eksiksiz görünür. */
+:host ::ng-deep .table-scroll .p-datatable-tbody > tr > td:first-child {
+  white-space: normal;
+  vertical-align: top;
+  min-width: 240px;
+  overflow-wrap: anywhere;
+}
+.record-name-cell {
+  max-width: none;
+  width: 100%;
+  align-items: flex-start;
+  white-space: normal;
+
+  strong {
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    text-overflow: clip;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    word-break: normal;
+    line-height: 1.55;
+  }
+}

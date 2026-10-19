@@ -12,6 +12,15 @@ belirt; test edilmemiş kodu test edilmiş gibi gösterme.
 Önceki parçalı commit'leri geçmişi yeniden yazmak amacıyla force-push
 ile birleştirme; bu kural bundan sonraki işlerde doğrudan uygulanacaktır.
 
+ZORUNLU KURAL — TÜM PRIME TABLE KOLONLARI YENİDEN BOYUTLANDIRILIR
+===================================================================
+Her p-table listesinde [resizableColumns]="true",
+columnResizeMode="expand" ve sticky İşlemler başlığı hariç bütün
+th'lerde pResizableColumn kullan. Ortak src/styles.scss çizgileri
+ile kullanıcı kolon sınırını sürükleyip genişliği değiştirebilir;
+gerekirse tablo kapsayıcısında yatay kaydırma olur.
+Bu kural mevcut ve BUNDAN SONRA EKLENECEK TÜM EKRANLARDA GEÇERLİDİR.
+
 KLMN PROJESİ — BENİ OKU / DEVİR DOSYASI
 ====================================
 Güncelleme tarihi: 19.10.2026
@@ -575,6 +584,28 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-19 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-19 (bu commit — Branş Tanımları ve p-table resize):
+  MSKBS BranchDef -> KLMN BranchDef. Yalnız Code/Name;
+  kimlik/audit/IsActive/xmin BaseEntity ve ValidFrom/ValidTo
+  EffectiveDatedEntity ortak katmanlarıyla karşılandı.
+  BranchDefs EF config/DbSet, filtered unique Code, bağımsız
+  CQRS Create/Update/Delete/ChangeStatus + liste/detay
+  handler/validator, REST controller/Excel/permission/audit/409.
+  Angular Branş Tanımları aynı onaylı CRUD/liste/filtre tasarımı.
+  GENEL KARAR: Mevcut 16 p-table'ın tümüne resizableColumns +
+  columnResizeMode=expand + th pResizableColumn; ortak dikey
+  sütun çizgileri/handle/yatay kaydırma src/styles.scss'te.
+  Sticky İşlemler sabit kaldı. Gelecek tüm tablolar da böyle.
+  Bağlı Kurul Karar Tanımları Karar Adı uzun metni alt satıra
+  sarılır, kesilmez; ilk kolon varsayılan 370px'tir.
+  Frontend/UI_DESIGN_SYSTEM.md güncellendi,
+  KLMN/Tests/Branches.Regression, KLMN/BRANS_TANIMLARI_VE_PTABLE_KURULUM.md
+  ve beni oku.txt aynı commit'e eklendi.
+  BranchDefs EF migration gerekir; DB/snapshot yok, yapılmadı.
+  Statik kontroller yapıldı; dotnet/Angular build ve gerçek
+  DB/tarayıcı testleri çalıştırılmadı.
+  Bütün kaynaklar TEK COMMIT/TEK PUSH gönderildi.
+
 - 2026-10-19 (bu commit — Bağlı Kurul Karar Tanımları):
   Eski MSKBSModel.HcConnectedDecisionDef fotoğrafındaki iş
   alanları Code(string), Name(string) olarak korundu.
@@ -637,6 +668,7 @@ Kabul öncesinde:
   Frontend/features/admission-types, app.routes, navigation,
   permission codes, seed, audit, GlobalExceptionHandler,
   KLMN/Tests/AdmissionTypes.Regression,
+  KLMN/BRANS_TANIMLARI_VE_PTABLE_KURULUM.md
   KLMN/BAGLI_KURUL_KARAR_TANIMLARI_KURULUM.md
   KLMN/BASVURU_GRUBU_TANIMLARI_KURULUM.md ve beni oku.txt.
   Mevcut migration snapshot GitHub'da yok; migration/dotnet ef

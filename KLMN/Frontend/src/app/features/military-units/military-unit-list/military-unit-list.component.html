@@ -133,21 +133,21 @@
     }
 
     <div class="table-scroll" role="region" aria-label="Birlik tablosu" tabindex="0">
-      <p-table [value]="units()" [loading]="loading()"
+      <p-table [resizableColumns]="true" columnResizeMode="expand" [value]="units()" [loading]="loading()"
                [tableStyle]="{ 'min-width': '980px', 'width': '100%' }">
         <ng-template pTemplate="header">
           <tr>
-            <th pSortableColumn="name">Birlik Adı <p-sortIcon field="name" /></th>
-            <th pSortableColumn="code">Birlik Kodu <p-sortIcon field="code" /></th>
-            <th pSortableColumn="externalCode">Harici Kod <p-sortIcon field="externalCode" /></th>
-            <th pSortableColumn="forcesCommandName">Kuvvet Komutanlığı <p-sortIcon field="forcesCommandName" /></th>
-            <th pSortableColumn="connectedTopUnitName">Üst Birlik <p-sortIcon field="connectedTopUnitName" /></th>
-            <th pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
-            <th pSortableColumn="userCount">Kullanıcı <p-sortIcon field="userCount" /></th>
-            <th pSortableColumn="childCount">Alt Birlik <p-sortIcon field="childCount" /></th>
-            <th pSortableColumn="validFrom">Başlangıç <p-sortIcon field="validFrom" /></th>
-            <th pSortableColumn="validTo">Bitiş <p-sortIcon field="validTo" /></th>
-            <th pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
+            <th pResizableColumn pSortableColumn="name">Birlik Adı <p-sortIcon field="name" /></th>
+            <th pResizableColumn pSortableColumn="code">Birlik Kodu <p-sortIcon field="code" /></th>
+            <th pResizableColumn pSortableColumn="externalCode">Harici Kod <p-sortIcon field="externalCode" /></th>
+            <th pResizableColumn pSortableColumn="forcesCommandName">Kuvvet Komutanlığı <p-sortIcon field="forcesCommandName" /></th>
+            <th pResizableColumn pSortableColumn="connectedTopUnitName">Üst Birlik <p-sortIcon field="connectedTopUnitName" /></th>
+            <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
+            <th pResizableColumn pSortableColumn="userCount">Kullanıcı <p-sortIcon field="userCount" /></th>
+            <th pResizableColumn pSortableColumn="childCount">Alt Birlik <p-sortIcon field="childCount" /></th>
+            <th pResizableColumn pSortableColumn="validFrom">Başlangıç <p-sortIcon field="validFrom" /></th>
+            <th pResizableColumn pSortableColumn="validTo">Bitiş <p-sortIcon field="validTo" /></th>
+            <th pResizableColumn pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
             @if (canUpdate() || canDelete() || canViewAudit()) {
               <th class="sticky-actions-col">İşlemler</th>
             }

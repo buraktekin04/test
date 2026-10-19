@@ -115,18 +115,18 @@
 
       <div class="roles-table-scroll" tabindex="0" role="region"
            aria-label="Rol tablosu, yatay kaydırılabilir">
-        <p-table [value]="roles()" [loading]="loading()"
+        <p-table [resizableColumns]="true" columnResizeMode="expand" [value]="roles()" [loading]="loading()"
                  [tableStyle]="{ 'min-width': '1000px', 'width': '100%' }">
           <ng-template pTemplate="header">
             <tr>
-              <th pSortableColumn="name">Rol Adı <p-sortIcon field="name" /></th>
-              <th pSortableColumn="code">Rol Kodu <p-sortIcon field="code" /></th>
-              <th pSortableColumn="description">Açıklama <p-sortIcon field="description" /></th>
-              <th pSortableColumn="isSystemRole">Tip <p-sortIcon field="isSystemRole" /></th>
-              <th pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
-              <th pSortableColumn="userCount">Kullanıcı <p-sortIcon field="userCount" /></th>
-              <th pSortableColumn="permissionCodes.length">Yetki <p-sortIcon field="permissionCodes.length" /></th>
-              <th pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
+              <th pResizableColumn pSortableColumn="name">Rol Adı <p-sortIcon field="name" /></th>
+              <th pResizableColumn pSortableColumn="code">Rol Kodu <p-sortIcon field="code" /></th>
+              <th pResizableColumn pSortableColumn="description">Açıklama <p-sortIcon field="description" /></th>
+              <th pResizableColumn pSortableColumn="isSystemRole">Tip <p-sortIcon field="isSystemRole" /></th>
+              <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
+              <th pResizableColumn pSortableColumn="userCount">Kullanıcı <p-sortIcon field="userCount" /></th>
+              <th pResizableColumn pSortableColumn="permissionCodes.length">Yetki <p-sortIcon field="permissionCodes.length" /></th>
+              <th pResizableColumn pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
               @if (canUpdate() || canDelete() || canManagePermissions() || canViewAudit()) {
                 <th class="sticky-actions-col">İşlemler</th>
               }

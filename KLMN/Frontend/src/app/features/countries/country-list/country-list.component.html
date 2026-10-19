@@ -95,18 +95,18 @@
       </form>
     }
     <div class="table-scroll" role="region" tabindex="0" aria-label="Ülke kayıtları">
-      <p-table [value]="records()" [loading]="loading()"
+      <p-table [resizableColumns]="true" columnResizeMode="expand" [value]="records()" [loading]="loading()"
                [tableStyle]="{ 'min-width': '1110px', 'width': '100%' }">
         <ng-template pTemplate="header">
           <tr>
-            <th pSortableColumn="name">Ülke Adı <p-sortIcon field="name" /></th>
-            <th pSortableColumn="code">Kod <p-sortIcon field="code" /></th>
-            <th pSortableColumn="shortCode">Ülke Kısa Kodu <p-sortIcon field="shortCode" /></th>
-            <th pSortableColumn="externalCode">Harici Kod <p-sortIcon field="externalCode" /></th>
-            <th pSortableColumn="isTownRequired">Doğum Yeri Gerekir <p-sortIcon field="isTownRequired" /></th>
-            <th pSortableColumn="cityCount">Şehir Sayısı <p-sortIcon field="cityCount" /></th>
-            <th pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
-            <th pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
+            <th pResizableColumn pSortableColumn="name">Ülke Adı <p-sortIcon field="name" /></th>
+            <th pResizableColumn pSortableColumn="code">Kod <p-sortIcon field="code" /></th>
+            <th pResizableColumn pSortableColumn="shortCode">Ülke Kısa Kodu <p-sortIcon field="shortCode" /></th>
+            <th pResizableColumn pSortableColumn="externalCode">Harici Kod <p-sortIcon field="externalCode" /></th>
+            <th pResizableColumn pSortableColumn="isTownRequired">Doğum Yeri Gerekir <p-sortIcon field="isTownRequired" /></th>
+            <th pResizableColumn pSortableColumn="cityCount">Şehir Sayısı <p-sortIcon field="cityCount" /></th>
+            <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
+            <th pResizableColumn pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
             @if (canUpdate() || canDelete() || canAudit()) { <th class="sticky-actions-col">İşlemler</th> }
           </tr>
         </ng-template>
