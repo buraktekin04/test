@@ -60,6 +60,12 @@ export class NavigationService {
           permissionModule: 'Towns'
         },
         {
+          label: 'Bağlı Kurul Karar Tanımları',
+          icon: 'pi pi-file',
+          route: '/app/connected-decisions',
+          permissionModule: 'ConnectedDecisions'
+        },
+        {
           label: 'Başvuru Grubu Tanımları',
           icon: 'pi pi-list-check',
           route: '/app/admission-types',

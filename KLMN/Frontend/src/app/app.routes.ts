@@ -108,6 +108,14 @@ export const routes: Routes = [
             .then(component => component.MilitaryClassListComponent)
       },
       {
+        path: 'connected-decisions',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'ConnectedDecisions' },
+        loadComponent: () =>
+          import('./features/connected-decisions/connected-decision-list/connected-decision-list.component')
+            .then(component => component.ConnectedDecisionListComponent)
+      },
+      {
         path: 'admission-types',
         canActivate: [permissionGuard],
         data: { permissionModule: 'AdmissionTypes' },
@@ -155,6 +163,9 @@ export const routes: Routes = [
       },
       {
         path: 'definitions/towns', pathMatch: 'full', redirectTo: 'towns'
+      },
+      {
+        path: 'definitions/connected-decisions', pathMatch: 'full', redirectTo: 'connected-decisions'
       },
       {
         path: 'definitions/admission-types', pathMatch: 'full', redirectTo: 'admission-types'

@@ -56,6 +56,12 @@ export const PermissionCodes = {
   },
   /** Askerlik Şubesi Tanımları için eylem bazlı izin kodları. */
   /** Başvuru Grubu Tanımları eylem bazlı izin kodları. */
+  /** Bağlı kurul kararı tanımlarının yetki kodları. */
+  ConnectedDecisions: {
+    View: 'ConnectedDecisions.View', Query: 'ConnectedDecisions.Query',
+    Create: 'ConnectedDecisions.Create', Update: 'ConnectedDecisions.Update',
+    Delete: 'ConnectedDecisions.Delete'
+  },
   AdmissionTypes: {
     View: 'AdmissionTypes.View', Query: 'AdmissionTypes.Query',
     Create: 'AdmissionTypes.Create', Update: 'AdmissionTypes.Update',

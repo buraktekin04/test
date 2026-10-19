@@ -14,7 +14,7 @@ ile birleştirme; bu kural bundan sonraki işlerde doğrudan uygulanacaktır.
 
 KLMN PROJESİ — BENİ OKU / DEVİR DOSYASI
 ====================================
-Güncelleme tarihi: 16.10.2026
+Güncelleme tarihi: 19.10.2026
 Repo: https://github.com/buraktekin04/test
 Proje kökü: KLMN/
 Varsayılan dal: main
@@ -574,7 +574,35 @@ Kabul öncesinde:
 
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
-2026-10-16 itibarıyla ana hatlar (sondan eskiye):
+2026-10-19 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-19 (bu commit — Bağlı Kurul Karar Tanımları):
+  Eski MSKBSModel.HcConnectedDecisionDef fotoğrafındaki iş
+  alanları Code(string), Name(string) olarak korundu.
+  ObjectId/Created*/Updated*/IsActive/ConcurrencyToken ortak
+  BaseEntity; StartDate/EndDate ortak EffectiveDatedEntity
+  ValidFrom/ValidTo alanlarıyla karşılandı. Fazladan Active,
+  Harici Kod, ShortName veya başka bir ilişki EKLENMEDİ.
+  Yeni HcConnectedDecisionDef entity ve EF configuration,
+  filtered Code unique index, DbContext/IKLMNDbContext ve
+  ayrı CQRS Create/Update/Delete/ChangeStatus Command,
+  Handler, Validator; GetList/GetById Query/Handler/Validator,
+  ProblemDetails 404/409 ve optimistic xmin eklendi.
+  ConnectedDecisions.View/Query/Create/Update/Delete permission
+  frontend/backend/seed, audit whitelist/tür filtresi, REST
+  controller ve 5000 satır limitli Excel birlikte kuruldu.
+  Angular Tanımlamalar → Bağlı Kurul Karar Tanımları ekranı,
+  mevcut şablondaki arama, kolon Durum filtresi, PrimeNG
+  frontend sıralama, sayfalama, yetkili CRUD/status popup,
+  Excel ve audit ekranını kullanır; yalnız Kod, Karar Adı,
+  Geçerli Başlangıç/Bitiş kullanıcı formundadır.
+  KLMN/Tests/ConnectedDecisions.Regression/ test kaynakları
+  ve KLMN/BAGLI_KURUL_KARAR_TANIMLARI_KURULUM.md eklendi.
+  Mevcut migration snapshot/gerçek DB burada erişilebilir
+  olmadığından EF migration oluşturulmadı ve uygulanmadı.
+  Kod/şablon statik kontrolleri yapıldı; gerçek dotnet/npm
+  build, DB, API ve tarayıcı kabul testleri çalıştırılmadı.
+  Tüm değişiklikler bu beni oku ile TEK COMMIT/TEK PUSH.
+
 - 2026-10-16 (bu commit — Başvuru Grubu Tanımları):
   Fotoğraftaki HcAdmissionTypeDef esas alındı: Code int, Name,
   14 adet bool (ForcesCommandRequired, RankRequired,
@@ -609,6 +637,7 @@ Kabul öncesinde:
   Frontend/features/admission-types, app.routes, navigation,
   permission codes, seed, audit, GlobalExceptionHandler,
   KLMN/Tests/AdmissionTypes.Regression,
+  KLMN/BAGLI_KURUL_KARAR_TANIMLARI_KURULUM.md
   KLMN/BASVURU_GRUBU_TANIMLARI_KURULUM.md ve beni oku.txt.
   Mevcut migration snapshot GitHub'da yok; migration/dotnet ef
   database update üretim ortamında UYGULANMADI.

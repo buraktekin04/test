@@ -121,6 +121,16 @@ public static class PermissionCodes
 
     /// <summary>Askerlik şubesi tanımlarının işlem yetkileri.</summary>
     /// <summary>Başvuru Grubu Tanımları izin kodları.</summary>
+    /// <summary>Bağlı Kurul Karar Tanımları eylem bazlı yetkileri.</summary>
+    public static class ConnectedDecisions
+    {
+        public const string View = "ConnectedDecisions.View";
+        public const string Query = "ConnectedDecisions.Query";
+        public const string Create = "ConnectedDecisions.Create";
+        public const string Update = "ConnectedDecisions.Update";
+        public const string Delete = "ConnectedDecisions.Delete";
+    }
+
     public static class AdmissionTypes
     {
         public const string View = "AdmissionTypes.View";
