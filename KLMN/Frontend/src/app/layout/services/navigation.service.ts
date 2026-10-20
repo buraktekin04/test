@@ -60,6 +60,18 @@ export class NavigationService {
           permissionModule: 'Towns'
         },
         {
+          label: 'Sağlık Tesisi Tanımları',
+          icon: 'pi pi-building',
+          route: '/app/hospitals',
+          permissionModule: 'Hospitals'
+        },
+        {
+          label: 'Sağlık Tesisi Rapor Türleri',
+          icon: 'pi pi-building',
+          route: '/app/hospital-report-types',
+          permissionModule: 'HospitalReportTypes'
+        },
+        {
           label: 'Rapor Türü Tanımları',
           icon: 'pi pi-list',
           route: '/app/report-types',

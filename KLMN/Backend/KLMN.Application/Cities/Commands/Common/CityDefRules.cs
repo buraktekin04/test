@@ -81,4 +81,15 @@ internal static class CityDefRules
                 ? "Aktif ilçesi bulunan şehir pasifleştirilemez."
                 : "Bağlı ilçesi bulunan şehir silinemez.");
     }
+    /// <summary>Şehirde sağlık tesisi varken silme/pasifleştirmeyi önler.</summary>
+    public static async Task EnsureNoHospitalsAsync(IKLMNDbContext db, Guid cityId,
+        bool deactivate, CancellationToken ct)
+    {
+        if (await db.HospitalDefs.IgnoreQueryFilters().AnyAsync(x =>
+            x.CityId == cityId && !x.IsDeleted && (!deactivate || x.IsActive), ct))
+            throw new CityConflictException(deactivate
+                ? "Aktif sağlık tesisi bağlı şehir pasifleştirilemez."
+                : "Sağlık tesisi bağlı şehir silinemez.");
+    }
 }
+

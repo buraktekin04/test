@@ -10,4 +10,7 @@ public sealed class ReportTypeDef : EffectiveDatedEntity
 
     /// <summary>Rapor türünün adı.</summary>
     public string Name { get; set; } = string.Empty;
+
+    /// <summary>Bu rapor türünü verebilen sağlık tesisleri.</summary>
+    public ICollection<HospitalReportType> Hospitals { get; set; } = new List<HospitalReportType>();
 }

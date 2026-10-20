@@ -64,6 +64,12 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     /// </summary>
     public DbSet<ForcesCommandDef> ForcesCommandDefs => Set<ForcesCommandDef>();
 
+    /// <summary>Sağlık tesisi tanımları.</summary>
+    public DbSet<HospitalDef> HospitalDefs => Set<HospitalDef>();
+
+    /// <summary>Tesislerin verebildiği rapor türleri eşleştirmesi.</summary>
+    public DbSet<HospitalReportType> HospitalReportTypes => Set<HospitalReportType>();
+
     /// <summary>Rapor Türü Tanımları DbSet.</summary>
     public DbSet<ReportTypeDef> ReportTypeDefs => Set<ReportTypeDef>();
 

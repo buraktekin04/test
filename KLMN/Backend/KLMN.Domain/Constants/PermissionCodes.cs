@@ -124,6 +124,25 @@ public static class PermissionCodes
     /// <summary>Bağlı Kurul Karar Tanımları eylem bazlı yetkileri.</summary>
     /// <summary>Branş Tanımları yetki kodları.</summary>
     /// <summary>Rapor Türü modülü için işlem bazlı yetkiler.</summary>
+    /// <summary>Sağlık Tesisi tanımlama ekranı yetkileri.</summary>
+    public static class Hospitals
+    {
+        public const string View = "Hospitals.View";
+        public const string Query = "Hospitals.Query";
+        public const string Create = "Hospitals.Create";
+        public const string Update = "Hospitals.Update";
+        public const string Delete = "Hospitals.Delete";
+    }
+
+    /// <summary>Sağlık Tesisi Rapor Türleri tanımlama ekranı yetkileri.</summary>
+    public static class HospitalReportTypes
+    {
+        public const string View = "HospitalReportTypes.View";
+        public const string Query = "HospitalReportTypes.Query";
+        public const string Create = "HospitalReportTypes.Create";
+        public const string Update = "HospitalReportTypes.Update";
+        public const string Delete = "HospitalReportTypes.Delete";
+    }
     public static class ReportTypes
     {
         public const string View = "ReportTypes.View";

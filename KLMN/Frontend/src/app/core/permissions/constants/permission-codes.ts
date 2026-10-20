@@ -59,6 +59,16 @@ export const PermissionCodes = {
   /** Bağlı kurul kararı tanımlarının yetki kodları. */
   /** Branş Tanımları eylem bazlı izinleri. */
   /** Rapor Türü yetki kodları. */
+  /** Sağlık Tesisi tanım izinleri. */
+  Hospitals: {
+    View: 'Hospitals.View', Query: 'Hospitals.Query',
+    Create: 'Hospitals.Create', Update: 'Hospitals.Update', Delete: 'Hospitals.Delete'
+  },
+  /** Sağlık Tesisi Rapor Türleri tanım izinleri. */
+  HospitalReportTypes: {
+    View: 'HospitalReportTypes.View', Query: 'HospitalReportTypes.Query',
+    Create: 'HospitalReportTypes.Create', Update: 'HospitalReportTypes.Update', Delete: 'HospitalReportTypes.Delete'
+  },
   ReportTypes: {
     View: 'ReportTypes.View', Query: 'ReportTypes.Query',
     Create: 'ReportTypes.Create', Update: 'ReportTypes.Update',

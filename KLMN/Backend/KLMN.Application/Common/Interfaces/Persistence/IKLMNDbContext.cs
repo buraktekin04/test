@@ -30,6 +30,12 @@ public interface IKLMNDbContext
     DbSet<PasswordResetToken> PasswordResetTokens { get; }
     DbSet<ForcesCommandDef> ForcesCommandDefs { get; }
 
+    /// <summary>Sağlık tesisi tanımları.</summary>
+    DbSet<HospitalDef> HospitalDefs { get; }
+
+    /// <summary>Sağlık tesisi–rapor türü eşleştirmeleri.</summary>
+    DbSet<HospitalReportType> HospitalReportTypes { get; }
+
     /// <summary>Rapor Türü Tanımları veri kümesi.</summary>
     DbSet<ReportTypeDef> ReportTypeDefs { get; }
 

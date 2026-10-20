@@ -19,6 +19,7 @@ public sealed class ChangeStatusCityDefCommandHandler(IKLMNDbContext db)
             await CityDefRules.EnsureNoTownsAsync(db, item.Id, deactivate: true, ct);
             await CityDefRules.EnsureNoMilitarySchoolsAsync(db, item.Id, deactivate: true, ct);
             await CityDefRules.EnsureNoMilitaryOfficesAsync(db, item.Id, deactivate: true, ct);
+            await CityDefRules.EnsureNoHospitalsAsync(db, item.Id, true, ct);
         }
         item.IsActive = request.IsActive;
         await db.SaveChangesAsync(ct);

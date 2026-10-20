@@ -584,6 +584,31 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-20 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-20 (bu commit — Sağlık Tesisi ve Sağlık Tesisi Rapor Türleri):
+  Eski HospitalDef: Code/Name, CityDef(Guid?) → CityId,
+  RefereeHospital(Guid?) → RefereeHospitalId (self FK).
+  Eski HospitalReportType: HospitalDef(Guid), ReportType(Guid)
+  → HospitalDefId/ReportTypeDefId zorunlu ilişki tablosu.
+  HospitalDef, EffectiveDatedEntity; HospitalReportType, BaseEntity.
+  İki ayrı EF configuration/DbSet ve Restrict FK tanımlandı;
+  soft-delete filtered unique eşleştirme çifti eklendi.
+  İki modülde CQRS CRUD/Status/Queries/DTO/Controller/Excel,
+  permission backend/frontend/seed, audit whitelist/validator,
+  GUID ad/kod çözümlemesi tamamlandı. CityDef ve ReportTypeDef
+  bağlı tesis/eşleştirme silme-pasifleştirme koruması; hakem tesis
+  döngü kontrolü ve eski pasif seçim koruması eklendi.
+  Angular Tanımlamalar menüsünde iki ekran, ilişkili dropdown,
+  onay popup, liste/filtre/sort, Excel, audit ve ortak p-table
+  resizableColumns/kolon çizgileri/yatay scroll standardı.
+  KLMN/Tests/Hospitals.Regression ve
+  KLMN/Tests/HospitalReportTypes.Regression, ayrıca
+  KLMN/SAGLIK_TESISI_RAPOR_TURU_KURULUM.md eklendi.
+  Mevcut migration snapshot GitHub'da bulunmadığından iki tablo
+  için migration ÜRETİLMEDİ, DB'ye uygulanmadı.
+  Kaynak statik kontrolleri yapıldı; gerçek .NET/Angular
+  build ve tarayıcı testleri henüz yapılmadı.
+  Bütün dosyalar aynı TEK COMMIT/TEK PUSH kapsamında.
+
 - 2026-10-20 (bu commit — Rütbe Tanımları Tür alanını ekrandan çıkarma):
   Rütbe listesinde Type/Tür kolonu, ekleme-düzenleme formundaki
   sayısal Tür kontrolü ve ilgili alan doğrulama mesajları kaldırıldı.
@@ -636,6 +661,7 @@ Kabul öncesinde:
   Create, Update, Delete) backend/frontend/IdentitySeedData.
   Audit whitelist, audit sorgu validator ve rütbe grubu GUID
   çözücü eklendi. 3 Regression .NET test projesinin kaynakları,
+  KLMN/SAGLIK_TESISI_RAPOR_TURU_KURULUM.md
   KLMN/RAPOR_TURU_RUTBE_GRUBU_RUTBE_TANIMLARI_KURULUM.md
   aynı paket kapsamındadır.
   EF Core Migrations/ModelSnapshot repo'da olmadığı için

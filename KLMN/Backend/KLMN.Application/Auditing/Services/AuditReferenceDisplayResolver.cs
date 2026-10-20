@@ -28,7 +28,11 @@ internal static class AuditReferenceDisplayResolver
             ["ParentOrganizationUnitId"] = "MilitaryUnitDef",
             ["ParentId"] = "MilitaryUnitDef",
             ["ConnectedTopUnity"] = "MilitaryUnitDef",
-            ["RankGroupId"] = "RankGroupDef"
+            ["RankGroupId"] = "RankGroupDef",
+            ["CityId"] = "CityDef",
+            ["RefereeHospitalId"] = "HospitalDef",
+            ["HospitalDefId"] = "HospitalDef",
+            ["ReportTypeDefId"] = "ReportTypeDef"
         };
 
     /// <summary>
@@ -75,6 +79,9 @@ internal static class AuditReferenceDisplayResolver
         var userIds = references["User"];
         var militaryUnitIds = references["MilitaryUnitDef"];
         var rankGroupIds = references["RankGroupDef"];
+        var cityIds = references["CityDef"];
+        var hospitalIds = references["HospitalDef"];
+        var reportTypeIds = references["ReportTypeDef"];
 
         var roleLabels = roleIds.Count == 0
             ? new Dictionary<Guid, string>()
@@ -124,6 +131,27 @@ internal static class AuditReferenceDisplayResolver
                 .Select(x => new { x.Id, x.Name, x.Code })
                 .ToDictionaryAsync(x => x.Id, x => x.Name + " (" + x.Code + ")", cancellationToken);
 
+        var cityLabels = cityIds.Count == 0
+            ? new Dictionary<Guid, string>()
+            : await dbContext.CityDefs.IgnoreQueryFilters().AsNoTracking()
+                .Where(x => cityIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.Name, x.Code })
+                .ToDictionaryAsync(x => x.Id, x => x.Name + " (" + x.Code + ")", cancellationToken);
+
+        var hospitalLabels = hospitalIds.Count == 0
+            ? new Dictionary<Guid, string>()
+            : await dbContext.HospitalDefs.IgnoreQueryFilters().AsNoTracking()
+                .Where(x => hospitalIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.Name, x.Code })
+                .ToDictionaryAsync(x => x.Id, x => x.Name + " (" + x.Code + ")", cancellationToken);
+
+        var reportTypeLabels = reportTypeIds.Count == 0
+            ? new Dictionary<Guid, string>()
+            : await dbContext.ReportTypeDefs.IgnoreQueryFilters().AsNoTracking()
+                .Where(x => reportTypeIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.Name, x.Code })
+                .ToDictionaryAsync(x => x.Id, x => x.Name + " (" + x.Code + ")", cancellationToken);
+
         var labels = new Dictionary<string, Dictionary<Guid, string>>(StringComparer.Ordinal)
         {
             ["Role"] = roleLabels,
@@ -131,7 +159,10 @@ internal static class AuditReferenceDisplayResolver
             ["User"] = userLabels,
             ["ForcesCommandDef"] = forceLabels,
             ["MilitaryUnitDef"] = militaryUnitLabels,
-            ["RankGroupDef"] = rankGroupLabels
+            ["RankGroupDef"] = rankGroupLabels,
+            ["CityDef"] = cityLabels,
+            ["HospitalDef"] = hospitalLabels,
+            ["ReportTypeDef"] = reportTypeLabels
         };
 
         var results = new List<AuditLogResponse>(entries.Count);
@@ -211,6 +242,9 @@ internal static class AuditReferenceDisplayResolver
             "ForcesCommandDef" => "Kuvvet komutanlığı kaydı bulunamadı",
             "MilitaryUnitDef" => "Birlik kaydı bulunamadı",
             "RankGroupDef" => "Rütbe grubu kaydı bulunamadı",
+            "CityDef" => "Şehir kaydı bulunamadı",
+            "HospitalDef" => "Sağlık tesisi kaydı bulunamadı",
+            "ReportTypeDef" => "Rapor türü kaydı bulunamadı",
             _ => "İlişkili kayıt bulunamadı"
         };
     }

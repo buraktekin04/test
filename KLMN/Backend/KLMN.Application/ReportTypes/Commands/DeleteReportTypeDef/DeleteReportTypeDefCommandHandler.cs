@@ -1,6 +1,8 @@
 using KLMN.Application.Common.Interfaces.Persistence;
 using KLMN.Application.ReportTypes.Commands.Common;
 using MediatR;
+using KLMN.Application.ReportTypes.Exceptions;
+using Microsoft.EntityFrameworkCore;
 
 namespace KLMN.Application.ReportTypes.Commands.DeleteReportTypeDef;
 
@@ -12,6 +14,9 @@ public sealed class DeleteReportTypeDefCommandHandler(IKLMNDbContext db)
     public async Task Handle(DeleteReportTypeDefCommand request, CancellationToken ct)
     {
         var item = await ReportTypeDefRules.LoadForChangeAsync(db, request.Id, request.Version, ct);
+        if (await db.HospitalReportTypes.IgnoreQueryFilters().AnyAsync(x =>
+            !x.IsDeleted && x.ReportTypeDefId == item.Id, ct))
+            throw new ReportTypeConflictException("Bu rapor türü sağlık tesisine bağlı olduğundan silinemez.");
         db.ReportTypeDefs.Remove(item);
         await db.SaveChangesAsync(ct);
     }

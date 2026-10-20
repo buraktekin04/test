@@ -108,6 +108,22 @@ export const routes: Routes = [
             .then(component => component.MilitaryClassListComponent)
       },
       {
+        path: 'hospitals',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'Hospitals' },
+        loadComponent: () =>
+          import('./features/hospitals/hospital-list/hospital-list.component')
+            .then(c => c.HospitalListComponent)
+      },
+      {
+        path: 'hospital-report-types',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'HospitalReportTypes' },
+        loadComponent: () =>
+          import('./features/hospital-report-types/hospital-report-type-list/hospital-report-type-list.component')
+            .then(c => c.HospitalReportTypeListComponent)
+      },
+      {
         path: 'report-types',
         canActivate: [permissionGuard],
         data: { permissionModule: 'ReportTypes' },
@@ -195,6 +211,12 @@ export const routes: Routes = [
       },
       {
         path: 'definitions/towns', pathMatch: 'full', redirectTo: 'towns'
+      },
+      {
+        path: 'definitions/hospitals', pathMatch: 'full', redirectTo: 'hospitals'
+      },
+      {
+        path: 'definitions/hospital-report-types', pathMatch: 'full', redirectTo: 'hospital-report-types'
       },
       {
         path: 'definitions/report-types', pathMatch: 'full', redirectTo: 'report-types'

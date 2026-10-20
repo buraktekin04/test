@@ -14,6 +14,7 @@ public sealed class DeleteCityDefCommandHandler(IKLMNDbContext db) : IRequestHan
         await CityDefRules.EnsureNoTownsAsync(db, item.Id, deactivate: false, ct);
         await CityDefRules.EnsureNoMilitarySchoolsAsync(db, item.Id, deactivate: false, ct);
         await CityDefRules.EnsureNoMilitaryOfficesAsync(db, item.Id, deactivate: false, ct);
+        await CityDefRules.EnsureNoHospitalsAsync(db, item.Id, false, ct);
         db.CityDefs.Remove(item);
         await db.SaveChangesAsync(ct);
 

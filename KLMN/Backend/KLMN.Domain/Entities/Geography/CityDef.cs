@@ -13,6 +13,10 @@ public sealed class CityDef : EffectiveDatedEntity
     public CountryDef? Country { get; set; }
     public int? MernisCode { get; set; }
 
+    /// <summary>Şehre bağlı sağlık tesisleri.</summary>
+    public ICollection<KLMN.Domain.Entities.Admissions.HospitalDef> Hospitals { get; set; }
+        = new List<KLMN.Domain.Entities.Admissions.HospitalDef>();
+
     /// <summary>Şehre bağlı ilçeler; ilişkiyi bozmamak için silmede FK Restrict uygulanır.</summary>
     public ICollection<TownDef> Towns { get; set; } = new List<TownDef>();
 
