@@ -179,6 +179,21 @@ BaseEntity zaten şunları taşır:
 
 4. ŞU AN KODU BULUNAN MODÜLLER / EKRANLAR
 ---------------------------------------
+Muayene Sebebi derleme düzeltmesi (20.10.2026)
+- GetReasonForExaminationDefByIdQueryHandler ve GetReasonForExaminationDefsQueryHandler
+  içindeki EF Core AsSplitQuery() derleme CS1061 hatası için
+  KLMN.Application.csproj dosyasına Microsoft.EntityFrameworkCore.Relational
+  10.0.0 doğrudan PackageReference olarak eklendi. Application daha önce
+  yalnız Microsoft.EntityFrameworkCore 10.0.0 referanslıydı; split query
+  extension'ı relational assembly içindedir. SQL sorgusu/iş kuralı değişmedi.
+- Test: GitHub'da statik csproj ve iki handler kaynak kontrolü yapıldı.
+  Bu çalışma ortamında .NET SDK olmadığı için dotnet restore/build ve
+  tarayıcı testleri ÇALIŞTIRILAMADI. Yerelde Restore NuGet Packages,
+  Rebuild Solution ardından hata listesi tekrar kontrol edilmelidir.
+- Bu düzeltme yalnız AsSplitQuery CS1061 derleme kök nedenini hedefler;
+  Visual Studio'daki toplam 7 hatanın tamamı görülmediği için
+  hepsinin giderildiği iddia edilemez.
+
 Muayene Sebebi modül ailesi (20.10.2026)
 - Kaynak class yorumları UI başlıkları için ESASTIR:
   ReasonForExaminationDef: "Muayene Sebebi" (ANA EKRAN);

@@ -49,3 +49,11 @@ KLMN/Tests/ReasonsForExamination.Regression/ kaynak testleri eklendi fakat koşu
 4. Pasif referans mevcut güncellemede korunmalı; yeni seçimde reddedilmeli.
 5. xmin eski version → 409; üst kayıt bağları ve soft-delete silme engelleri.
 6. Cinsiyet kodları ve eski ProcedureDef iş alanları gerçek kullanıcılarla teyit edilmeli.
+
+## 20.10.2026 — AsSplitQuery CS1061 düzeltmesi
+Muayene Sebebi detay ve liste Handler'larında `AsSplitQuery()` çağrıları vardır.
+`KLMN.Application` daha önce sadece `Microsoft.EntityFrameworkCore` 10.0.0 referansını taşıyordu.
+`AsSplitQuery` metodu ise `Microsoft.EntityFrameworkCore.Relational` içerisindedir.
+Bu nedenle `KLMN.Application.csproj` dosyasına Relational 10.0.0 doğrudan eklendi.
+Dört koleksiyonu split query olarak getiren davranış korunmuştur.
+GitHub kaynak kontrolü dışında dotnet restore/build yapılamadı; yerelde paketleri geri yükleyip derleyin.
