@@ -15,7 +15,7 @@ import { PermissionCodes } from '../../../core/permissions/constants/permission-
 import { PermissionService } from '../../../core/permissions/services/permission.service';
 import { AuditHistoryComponent } from '../../../shared/audit-history/audit-history.component';
 import {
- HospitalReportTypeItem, HospitalReportTypeFields, HospitalReportTypeQuery, HospitalReportTypeMutationResponse, HospitalReportTypeOptions
+ HospitalReportTypeItem, HospitalReportTypeFields, HospitalReportTypeQuery, HospitalReportTypeMutationResponse, HospitalReportTypeOptions, HospitalReportTypeGroup
 } from '../models/hospital-report-types.model';
 import { HospitalReportTypeService } from '../services/hospital-report-types.service';
 
@@ -41,7 +41,7 @@ export class HospitalReportTypeListComponent implements OnInit {
   public readonly canDelete = computed(() => this.permissions.has(PermissionCodes.HospitalReportTypes.Delete));
   public readonly canExport = computed(() => this.permissions.has(PermissionCodes.HospitalReportTypes.Query));
   public readonly canAudit = computed(() => this.permissions.has(PermissionCodes.AuditLogs.View));
-  public readonly records = signal<HospitalReportTypeItem[]>([]);
+  public readonly records = signal<HospitalReportTypeGroup[]>([]);
   public readonly optionsData = signal<HospitalReportTypeOptions>({hospitals:[],reportTypes:[]});
   public readonly optionsLoading = signal(false);
   public readonly totalCount = signal(0);
@@ -111,7 +111,7 @@ export class HospitalReportTypeListComponent implements OnInit {
     const requestId = ++this.listRequestId;
     this.loading.set(true);
     this.errorMessage.set(null);
-    this.service.list(this.query()).pipe(finalize(() => {
+    this.service.groups(this.query()).pipe(finalize(() => {
       if (requestId === this.listRequestId) this.loading.set(false);
     })).subscribe({
       next: result => {
@@ -165,12 +165,12 @@ export class HospitalReportTypeListComponent implements OnInit {
     });
   }
   /** Formu yeni kayıt için temizler; geçmiş kaydın alan hataları kalmaz. */
-  public openCreateDialog(): void {
+  public openCreateDialog(hospitalDefId: string = ''): void {
     if (!this.canCreate() || this.saving()) return;
     ++this.dialogRequestId;
     this.editing.set(null);
-    this.itemForm.reset({ hospitalDefId:'', reportTypeDefId:'' });
-    this.loadOptions();
+    this.itemForm.reset({ hospitalDefId, reportTypeDefId:'' });
+    this.loadOptions(hospitalDefId || null);
     this.attemptedSave.set(false);
     this.fieldServerErrors.set({});
     this.formError.set(null);

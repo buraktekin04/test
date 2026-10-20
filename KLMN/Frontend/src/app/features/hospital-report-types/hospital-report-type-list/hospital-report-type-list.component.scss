@@ -242,7 +242,7 @@
 }
 
 /* Form başlıklarında ikon kutuları yerine minimalist çizgi kullanılır. */
-.military-record-form {
+.hospital-report-type-form {
   display: flex;
   flex-direction: column;
   gap: .95rem;
@@ -421,3 +421,28 @@
   background: var(--ui-surface); color: var(--ui-text);
 }
 .hospital-report-type-form .text-retry { background: none; border: 0; color: var(--ui-primary); cursor: pointer; text-align: left; }
+
+/* Bir tesis = bir satır; verebildiği raporlar bir hücrede çok satırlıdır. */
+:host ::ng-deep .table-scroll .p-datatable-tbody > tr > td.hospital-group-cell,
+:host ::ng-deep .table-scroll .p-datatable-tbody > tr > td.hospital-reports-cell {
+  vertical-align: top;
+  white-space: normal;
+}
+.hospital-group-cell .record-name-cell { margin-bottom: .6rem; }
+.hospital-group-cell .record-code { display: inline-block; margin-right: .5rem; }
+.report-count { display: inline-block; font-size: .78rem; color: var(--ui-text-soft); }
+.report-type-stack { display: flex; flex-direction: column; min-width: 0; }
+.report-type-entry {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+  gap: .45rem .75rem;
+  padding: .4rem .15rem;
+  border-bottom: 1px solid var(--ui-border-soft);
+}
+.report-type-entry:first-child { padding-top: 0; }
+.report-type-entry:last-child { padding-bottom: 0; border-bottom: 0; }
+.report-type-label { flex: 1 1 190px; min-width: 0; overflow-wrap: anywhere; line-height: 1.45; color: var(--ui-text); }
+.report-entry-actions { margin-left: auto; flex: 0 0 auto; justify-content: flex-end; }
+.hospital-create-action { vertical-align: top !important; }

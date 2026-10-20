@@ -9,6 +9,7 @@ public sealed class HospitalReportTypeResponse
     public Guid Id { get; init; }
     public Guid HospitalDefId { get; init; }
     public string HospitalName { get; init; } = string.Empty;
+    public string HospitalCode { get; init; } = string.Empty;
     public Guid ReportTypeDefId { get; init; }
     public string ReportTypeName { get; init; } = string.Empty;
     public bool IsActive { get; init; }
@@ -24,6 +25,7 @@ public sealed class HospitalReportTypeResponse
         {
             Id = x.Id,
             HospitalDefId = x.HospitalDefId, HospitalName = x.Hospital.Name,
+            HospitalCode = x.Hospital.Code,
             ReportTypeDefId = x.ReportTypeDefId, ReportTypeName = x.ReportType.Name,
             IsActive = x.IsActive,
             CreatedDate = x.CreatedDate, CreatedBy = x.CreatedBy,

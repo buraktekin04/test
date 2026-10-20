@@ -5,6 +5,7 @@ using KLMN.Application.HospitalReportTypes.Commands.UpdateHospitalReportType;
 using KLMN.Application.HospitalReportTypes.Commands.ChangeStatusHospitalReportType;
 using KLMN.Application.HospitalReportTypes.Commands.DeleteHospitalReportType;
 using KLMN.Application.HospitalReportTypes.Queries.GetHospitalReportTypes;
+using KLMN.Application.HospitalReportTypes.Queries.GetHospitalReportTypeGroups;
 using KLMN.Application.HospitalReportTypes.Queries.GetHospitalReportTypeById;
 using KLMN.Application.HospitalReportTypes.Responses;
 using KLMN.Application.HospitalReportTypes.Queries.GetHospitalReportTypeOptions;
@@ -25,6 +26,15 @@ public sealed class HospitalReportTypesController(ISender sender, IExcelExportSe
         PermissionCodes.HospitalReportTypes.Create, PermissionCodes.HospitalReportTypes.Update,
         PermissionCodes.HospitalReportTypes.Delete)]
     public async Task<IActionResult> List([FromQuery] GetHospitalReportTypesQuery query, CancellationToken ct) =>
+        Ok(await sender.Send(query, ct));
+
+    /// <summary>Tesis başına bir kayıt ve alt alta rapor türleri döndürür.</summary>
+    [HttpGet("groups")]
+    [HasPermission(PermissionCodes.HospitalReportTypes.View, PermissionCodes.HospitalReportTypes.Query,
+        PermissionCodes.HospitalReportTypes.Create, PermissionCodes.HospitalReportTypes.Update,
+        PermissionCodes.HospitalReportTypes.Delete)]
+    public async Task<IActionResult> Groups(
+        [FromQuery] GetHospitalReportTypeGroupsQuery query, CancellationToken ct) =>
         Ok(await sender.Send(query, ct));
 
     /// <summary>En çok 5000 adet sonucu sorgu yetkisi ile Excel'e dönüştürür.</summary>

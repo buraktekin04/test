@@ -3,7 +3,7 @@ using KLMN.Domain.Entities.Admissions;
 
 namespace KLMN.Application.Hospitals.Responses;
 
-/// <summary>Sağlık tesisi liste/detay yanıtı; şehir ve hakem tesis adlarını içerir.</summary>
+/// <summary>Sağlık tesisi liste/detay yanıtı: şehir ve hakem sağlık tesisi ilişkileriyle birlikte.</summary>
 public sealed class HospitalDefResponse
 {
     public Guid Id { get; init; }

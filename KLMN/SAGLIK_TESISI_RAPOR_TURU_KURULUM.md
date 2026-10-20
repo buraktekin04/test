@@ -29,7 +29,23 @@
 Her modül bağımsız Create/Update/Delete/ChangeStatus CQRS Command/Handler/Validator; GetList/GetById Query/Handler/Validator ve DTO içerir. Seçimler için, başka ekranın izni gerekmemesi amacıyla modülün kendi permission koduna tabi `GET /api/hospitals/options` ve `GET /api/hospital-report-types/options` uçları bulunur.
 
 - **Tanımlamalar → Sağlık Tesisi Tanımları:** `/app/hospitals`, Code, Name, şehir dropdown, hakem sağlık tesisi dropdown, geçerlilik başlangıç/bitiş. Excel, p-table filtre/sort/resize, audit, CRUD, aktif/pasif, silme.
-- **Tanımlamalar → Sağlık Tesisi Rapor Türleri:** `/app/hospital-report-types`. Sağlık Tesisi seç, Rapor Türü seç; mevcut eşleştirmeleri tabloda görüntüle. Aynı standarda sahip liste, Excel, CRUD, status ve işlem geçmişi.
+- **Tanımlamalar → Sağlık Tesisi Rapor Türleri:** `/app/hospital-report-types`.
+  Tesis başına **bir tablo satırı**; `Verebildiği Rapor Türleri` hücresinde tüm
+  eşleştirmeler **alt alta**, her biri kendi aktif/pasif bilgisiyle görünür.
+  Her rapor satırının yanında düzenle, durum değiştir, geçmiş ve sil butonları
+  çalışmaya devam eder. Tesis satırındaki **Rapor Ekle** butonu yeni formu o
+  tesis önceden seçili açar. p-table sütun sürükleme/çizgi ve yatay kaydırma korunur.
+
+  `GET /api/hospital-report-types/groups` sorgusu önce SQL üzerinden benzersiz
+  `HospitalDefId` sayfalaması yapar; ardından sayfadaki tesislerin eşleştirmelerini
+  çeker. **Aynı tesisin raporları farklı sayfalara bölünmez.** `TotalCount`
+  eşleştirme değil, filtreye uyan **tesis sayısıdır**. Arama tesis adı/kodu ya da
+  rapor türü adı/koduna göre çalışır. Durum ve Pasifleri Dahil Et filtreleri
+  eşleştirmeleri süzer; arama/filtreye uymayan raporlar listede yer almaz.
+  Henüz hiçbir rapor eşleştirmesi olmayan tesis bu eşleştirme listesinde bulunmaz;
+  üstteki `Yeni` butonuyla ilk eşleştirmesi oluşturulabilir. Liste gruplu olsa da
+  Excel mevcut sözleşmeyle eşleştirme başına ayrı satır dışarı aktarır.
+  Mevcut `GET /api/hospital-report-types` eski düz liste endpoint'i korunur.
 
 Backend izinler: `Hospitals.View/Query/Create/Update/Delete`, `HospitalReportTypes.View/Query/Create/Update/Delete`. Angular route/menu, IdentitySeedData ve API permission karşılıkları eklendi. Audit whitelisti, sorgu tür filtresi ve şehir/tesis/rapor türü GUID adlandırması güncellendi.
 
@@ -56,4 +72,9 @@ dotnet run --project KLMN/Tests/HospitalReportTypes.Regression/HospitalReportTyp
 npm --prefix KLMN/Frontend run build
 ```
 
-Manuel kabul: tesis/hakem/şehir FK, self-ref döngü, seçili pasif dropdown, unique eşleştirme (409), CRUD/xmin, 403/404/409, şehir ve rapor türü silme/pasifleştirme, audit adları, Excel, mobil dropdown, p-table resize ve yatay kaydırma. Gerçek build, DB migration ve uçtan uca tarayıcı testleri **bu ortamda yürütülmedi**.
+Manuel kabul: tesis/hakem/şehir FK, self-ref döngü, seçili pasif dropdown,
+unique eşleştirme (409), CRUD/xmin, 403/404/409, şehir ve rapor türü
+silme/pasifleştirme, audit adları, Excel, mobil dropdown, p-table resize,
+bir tesise 1/2/20 rapor türü verildiğinde tek satır/çok satırlı hücre,
+tesis bazlı sayfa geçişi, rapor bazlı her aksiyon, ön seçimli Rapor Ekle,
+arama ve aktif/pasif eşleştirme filtreleri. Gerçek build, DB migration ve uçtan uca tarayıcı testleri **bu ortamda yürütülmedi**.

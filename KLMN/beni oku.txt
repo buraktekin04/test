@@ -584,6 +584,25 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-20 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-20 (aynı commit — Tesis bazlı çok satırlı rapor görünümü):
+  Sağlık Tesisi Rapor Türleri tablosunda her sağlık tesisi TEK
+  tablolu satırdır. "Verebildiği Rapor Türleri" hücresinde o
+  tesise ait eşleştirmeler alt alta, ayrı aktif/pasif göstergeleri
+  ve her eşleştirmenin kendi CRUD/status/audit kontrolleriyle görünür.
+  Sağda sabit İşlemler kolonundan Rapor Ekle tıklandığında
+  sağlık tesisi formda önceden seçili gelir.
+  /api/hospital-report-types/groups API ve
+  GetHospitalReportTypeGroups CQRS/validator + response eklendi.
+  SQL DISTINCT HospitalDefId üzerinden tesis bazlı sayfalama
+  sayesinde rapor türleri sayfa sınırında parçalanmaz; filtreler
+  ve frontend kolon resize standardı korundu.
+  HospitalService ve HospitalReportTypeService options() metodları
+  önceki RankService ile aynı yanlış import içine yazılma
+  hatasından kurtarıldı; metodlar servis class içine alındı.
+  Regresyon senaryoları ve kurulum dokümanı güncellendi.
+  Kod statik kontrolleri yapıldı; gerçek Angular/.NET build
+  bu ortamda yapılmadı.
+
 - 2026-10-20 (bu commit — Sağlık Tesisi ve Sağlık Tesisi Rapor Türleri):
   Eski HospitalDef: Code/Name, CityDef(Guid?) → CityId,
   RefereeHospital(Guid?) → RefereeHospitalId (self FK).

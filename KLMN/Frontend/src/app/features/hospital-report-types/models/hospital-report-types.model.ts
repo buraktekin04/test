@@ -1,5 +1,6 @@
 /** Sağlık Tesisi Rapor Türü DTO'su. Audit, aktiflik ve xmin BaseEntity üzerinden gelir. */
 export interface HospitalReportTypeItem {
+  hospitalCode: string;
   id: string;
   hospitalDefId: string;
   hospitalName: string;
@@ -34,3 +35,11 @@ export interface HospitalReportTypeMutationResponse { id: string; version: numbe
 /** Dropdown option ve seçenek grupları. */
 export interface DefinitionOption { id: string; code: string; name: string; }
 export interface HospitalReportTypeOptions { hospitals: DefinitionOption[]; reportTypes: DefinitionOption[]; }
+
+/** Sayfalama tesis sayısına göre; rapor türleri tesise bağlı tüm eşleştirmeleri taşır. */
+export interface HospitalReportTypeGroup {
+  hospitalDefId: string;
+  hospitalCode: string;
+  hospitalName: string;
+  reportTypes: HospitalReportTypeItem[];
+}

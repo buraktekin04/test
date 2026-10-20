@@ -6,7 +6,7 @@ import { PagedResult } from '../../../core/models/paged-result.model';
 import {
   HospitalReportTypeItem, HospitalReportTypeFields, HospitalReportTypeQuery,
   UpdateHospitalReportTypeRequest, ChangeHospitalReportTypeStatusRequest,
-  HospitalReportTypeMutationResponse, HospitalReportTypeOptions
+  HospitalReportTypeMutationResponse, HospitalReportTypeOptions, HospitalReportTypeGroup
 } from '../models/hospital-report-types.model';
 
 /** Sağlık Tesisi Rapor Türü Tanımları için CRUD, listeleme ve Excel endpoint istemcisidir. */
@@ -26,6 +26,11 @@ export class HospitalReportTypeService {
   }
   public list(query: HospitalReportTypeQuery): Observable<PagedResult<HospitalReportTypeItem>> {
     return this.http.get<PagedResult<HospitalReportTypeItem>>(this.url, { params: this.params(query) });
+  }
+  /** Sağlık tesislerini tekilleştiren ve raporları birlikte döndüren liste. */
+  public groups(query: HospitalReportTypeQuery): Observable<PagedResult<HospitalReportTypeGroup>> {
+    return this.http.get<PagedResult<HospitalReportTypeGroup>>(this.url + '/groups',
+      { params: this.params(query) });
   }
   public getById(id: string): Observable<HospitalReportTypeItem> {
     return this.http.get<HospitalReportTypeItem>(this.url + '/' + id);
@@ -47,7 +52,7 @@ export class HospitalReportTypeService {
     return this.http.get(this.url + '/export', { params: this.params(query), responseType: 'blob' });
   }
 
-  /** Eşleştirme ekranı yetkisiyle tesis/rapor türü seçeneklerini yükler. */
+  /** Aktif seçimleri ve eski pasif seçimleri ekranın kendi yetkisiyle getirir. */
   public options(hospitalId?: string | null, reportId?: string | null): Observable<HospitalReportTypeOptions> {
     let params = new HttpParams();
     if (hospitalId) params = params.set('selectedHospitalDefId', hospitalId);

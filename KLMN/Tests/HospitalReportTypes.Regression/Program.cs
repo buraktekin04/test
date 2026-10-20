@@ -2,6 +2,7 @@ using KLMN.Application.HospitalReportTypes.Commands.CreateHospitalReportType;
 using KLMN.Application.HospitalReportTypes.Commands.UpdateHospitalReportType;
 using KLMN.Application.HospitalReportTypes.Commands.ChangeStatusHospitalReportType;
 using KLMN.Application.HospitalReportTypes.Queries.GetHospitalReportTypes;
+using KLMN.Application.HospitalReportTypes.Queries.GetHospitalReportTypeGroups;
 using KLMN.Application.HospitalReportTypes.Responses;
 using KLMN.Domain.Entities.Admissions;
 
@@ -32,4 +33,11 @@ var relation = new HospitalReportType {
 var dto = HospitalReportTypeResponse.Projection.Compile()(relation);
 AssertCheck(dto.HospitalDefId == hospitalId && dto.ReportTypeDefId == reportId
     && dto.HospitalName == "Tesis" && dto.ReportTypeName == "Rapor", "Eşleştirme projection");
+AssertCheck(!new GetHospitalReportTypeGroupsQueryValidator().Validate(
+    new GetHospitalReportTypeGroupsQuery(PageSize:101)).IsValid,
+    "Gruplu listede aynı sayfa boyutu sınırı");
+var group = new HospitalReportTypeGroupResponse(hospitalId, "ST-01", "Tesis", [dto]);
+AssertCheck(group.HospitalDefId == hospitalId && group.ReportTypes.Count == 1 &&
+    group.ReportTypes[0].ReportTypeName == "Rapor",
+    "Tesis başına bir satır / çoklu rapor response sözleşmesi");
 Console.WriteLine("Sağlık tesisi–rapor türü regresyon kaynakları hazır.");

@@ -47,7 +47,7 @@ export class HospitalService {
     return this.http.get(this.url + '/export', { params: this.params(query), responseType: 'blob' });
   }
 
-  /** Yetkisi yalnızca Hastaneler modülü olan kullanıcı için seçimleri getirir. */
+  /** Aktif seçimleri ve eski pasif seçimleri ekranın kendi yetkisiyle getirir. */
   public options(cityId?: string | null, refereeHospitalId?: string | null): Observable<HospitalOptions> {
     let params = new HttpParams();
     if (cityId) params = params.set('selectedCityId', cityId);
