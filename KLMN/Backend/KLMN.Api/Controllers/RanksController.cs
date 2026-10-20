@@ -52,7 +52,6 @@ public sealed class RanksController(ISender sender, IExcelExportService excel) :
             new("Kod", x => x.Code, Width: 22),
             new("Rütbe Adı", x => x.Name, Width: 38),
             new("Kısa Ad", x => x.ShortName, Width: 20),
-            new("Tür (Sayısal)", x => x.Type, Width: 18),
             new("Rütbe Grubu", x => x.RankGroupName, Width: 26),
             new("Geçerli Başlangıç", x => x.ValidFrom, NumberFormat: "dd.MM.yyyy HH:mm", Width: 25),
             new("Geçerli Bitiş", x => x.ValidTo, NumberFormat: "dd.MM.yyyy HH:mm", Width: 25),

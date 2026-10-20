@@ -20,7 +20,7 @@ import {
 } from '../models/ranks.model';
 import { RankService } from '../services/ranks.service';
 
-type FormField = 'code' | 'name' | 'shortName' | 'type' | 'rankGroupId' | 'validFrom' | 'validTo';
+type FormField = 'code' | 'name' | 'shortName' | 'rankGroupId' | 'validFrom' | 'validTo';
 
 /** Rütbe Tanımları: backend filtreleri, ayrı işlem yetkileri ve sade form. */
 @Component({
@@ -72,7 +72,6 @@ export class RankListComponent implements OnInit {
     code: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/^[A-Za-z0-9_-]+$/)]],
     name: ['', [Validators.required, Validators.maxLength(250)]],
     shortName: ['', Validators.maxLength(100)],
-    type: [0, [Validators.required, Validators.min(-2147483648), Validators.max(2147483647), Validators.pattern(/^-?[0-9]+$/)]],
     rankGroupId: [''],
     validFrom: [''],
     validTo: ['']
@@ -177,7 +176,7 @@ export class RankListComponent implements OnInit {
     if (!this.canCreate() || this.saving()) return;
     ++this.dialogRequestId;
     this.editing.set(null);
-    this.itemForm.reset({ code:'', name:'', shortName:'', type:0, rankGroupId:'', validFrom:'', validTo:'' });
+    this.itemForm.reset({ code:'', name:'', shortName:'', rankGroupId:'', validFrom:'', validTo:'' });
     this.loadGroupOptions();
     this.attemptedSave.set(false);
     this.fieldServerErrors.set({});
@@ -198,7 +197,6 @@ export class RankListComponent implements OnInit {
         this.loadGroupOptions(detail.rankGroupId);
         this.itemForm.reset({ code: detail.code, name: detail.name,
           shortName: detail.shortName ?? '',
-          type: detail.type,
           rankGroupId: detail.rankGroupId ?? '',
           validFrom: ValidityPeriodUtils.toLocalInput(detail.validFrom),
           validTo: ValidityPeriodUtils.toLocalInput(detail.validTo) });
@@ -223,7 +221,7 @@ export class RankListComponent implements OnInit {
     if (!this.attemptedSave() && !control.touched) return null;
     if (control.hasError('required')) return 'Bu alan zorunludur.';
     if (control.hasError('maxlength')) return 'Karakter sınırı aşıldı.';
-    if (control.hasError('pattern') || control.hasError('min') || control.hasError('max')) return 'Tür için geçerli bir 32-bit tam sayı giriniz.';
+    if (control.hasError('pattern')) return 'Girdiğiniz kod uygun biçimde değil.';
     if (field === 'validTo') {
       const v=this.itemForm.getRawValue();
       if (!ValidityPeriodUtils.hasValidRange(v.validFrom, v.validTo))
@@ -257,15 +255,16 @@ export class RankListComponent implements OnInit {
       this.focusField('validTo');
       return;
     }
+    const edited = this.editing();
     const fields: RankFields = {
       code: values.code.trim().toUpperCase(),
       name: values.name.trim(),
       shortName: values.shortName.trim() || null,
-      type: Number(values.type),
+      // Backend'in mevcut sözleşmesini koru; güncellemede eski Type değeri değiştirilmez.
+      type: edited?.type ?? 0,
       rankGroupId: values.rankGroupId || null,
       ...ValidityPeriodUtils.fromLocalInputs(values.validFrom, values.validTo)
     };
-    const edited = this.editing();
     const request: Observable<RankDefMutationResponse> = edited
       ? this.service.update({ ...fields, id: edited.id, version: edited.version })
       : this.service.create(fields);

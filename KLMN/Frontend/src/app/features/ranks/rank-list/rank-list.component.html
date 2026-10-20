@@ -83,13 +83,12 @@
     }
     <div class="table-scroll" role="region" tabindex="0" aria-label="Rütbe kayıtları">
       <p-table [resizableColumns]="true" columnResizeMode="expand" [value]="records()" [loading]="loading()"
-               [tableStyle]="{ 'min-width': '1240px', 'width': '100%' }">
+               [tableStyle]="{ 'min-width': '1120px', 'width': '100%' }">
         <ng-template pTemplate="header">
           <tr>
             <th pResizableColumn pSortableColumn="name">Rütbe Adı <p-sortIcon field="name" /></th>
             <th pResizableColumn pSortableColumn="code">Kod <p-sortIcon field="code" /></th>
             <th pResizableColumn pSortableColumn="shortName">Kısa Ad <p-sortIcon field="shortName" /></th>
-            <th pResizableColumn pSortableColumn="type">Tür <p-sortIcon field="type" /></th>
             <th pResizableColumn pSortableColumn="rankGroupName">Rütbe Grubu <p-sortIcon field="rankGroupName" /></th>
             <th pResizableColumn pSortableColumn="validFrom">Geçerli Başlangıç <p-sortIcon field="validFrom" /></th>
             <th pResizableColumn pSortableColumn="validTo">Geçerli Bitiş <p-sortIcon field="validTo" /></th>
@@ -104,7 +103,6 @@
               <strong [title]="item.name">{{ item.name }}</strong></div></td>
             <td><code class="record-code">{{ item.code }}</code></td>
             <td>{{ item.shortName || '—' }}</td>
-            <td>{{ item.type }}</td>
             <td>{{ item.rankGroupName || '—' }}</td>
             <td>{{ item.validFrom ? (item.validFrom | date:'dd.MM.yyyy HH:mm') : '—' }}</td>
             <td>{{ item.validTo ? (item.validTo | date:'dd.MM.yyyy HH:mm') : 'Süresiz' }}</td>
@@ -140,7 +138,7 @@
           </tr>
         </ng-template>
         <ng-template pTemplate="emptymessage">
-          <tr><td [attr.colspan]="canUpdate() || canDelete() || canAudit() ? 10 : 9"
+          <tr><td [attr.colspan]="canUpdate() || canDelete() || canAudit() ? 9 : 8"
                   class="empty-table">Arama koşullarına uygun kayıt bulunamadı.</td></tr>
         </ng-template>
       </p-table>
@@ -193,13 +191,6 @@
         <input pInputText id="ranks-shortName" formControlName="shortName" autocomplete="off"
                placeholder="Kısa ad" />
         @if (fieldError('shortName'); as message) { <small class="field-error">{{ message }}</small> }
-      </div>
-      <div class="form-field">
-        <label for="ranks-type">Tür (Sayısal) <span class="required">*</span></label>
-        <input pInputText id="ranks-type" type="number" step="1"
-               min="-2147483648" max="2147483647" formControlName="type" />
-        <small>Eski sistemdeki Type alanıdır; anlamı doğrulanana kadar sayısal tutulur.</small>
-        @if (fieldError('type'); as message) { <small class="field-error">{{ message }}</small> }
       </div>
       <div class="form-field">
         <label for="ranks-rankGroupId">Rütbe Grubu</label>

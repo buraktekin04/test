@@ -584,6 +584,21 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-20 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-20 (bu commit — Rütbe Tanımları Tür alanını ekrandan çıkarma):
+  Rütbe listesinde Type/Tür kolonu, ekleme-düzenleme formundaki
+  sayısal Tür kontrolü ve ilgili alan doğrulama mesajları kaldırıldı.
+  Excel dışa aktarma kolonlarından da Tür çıkarıldı. İlgili
+  p-table boş liste colspan değeri 9/8 olarak düzeltildi.
+  Backend CQRS/EF ve RankDef.Type(int) korundu; migration gerekmez.
+  Create işleminde mevcut backend sözleşmesi için Type=0 gönderilir,
+  Update işleminde mevcut detaydan gelen Type değiştirilmeden
+  geri gönderilir. Böylece geçmiş veri yanlışlıkla sıfırlanmaz.
+  Rütbe Grubu dropdown, audit, yetki, CRUD/Excel, kolon
+  resize/sort standartları korundu. Kurulum notları güncellendi.
+  Statik kaynak kontrolleri yapıldı; Angular/.NET gerçek build
+  ve tarayıcı testleri bu ortamda çalıştırılmadı.
+  Kural gereği bu işin bütün dosyaları TEK COMMIT/TEK PUSH.
+
 - 2026-10-20 (bu commit — Ranks servis import/sözdizimi düzeltmesi):
   Frontend/features/ranks/services/ranks.service.ts içindeki
   options(selectedRankGroupId) metodu yanlışlıkla model import

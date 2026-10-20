@@ -13,8 +13,7 @@ Fotoğraflarda görünen iş alanları yeni tablolarda yalnızca aşağıdaki gi
 ObjectId, CreationDate/CreatedBy, LastUpdate/UpdatedBy, IsActive,
 ConcurrencyToken gibi ortak alanlar `BaseEntity` üzerinden;
 StartDate/EndDate, `EffectiveDatedEntity.ValidFrom/ValidTo` üzerinden
-gelir. **Type için uydurma enum veya dropdown seçenekleri oluşturulmadı.**
-Rütbe düzenleme formunda doğrudan int sayı alanıdır.
+gelir. **Type (int) kullanılmıyor:** Rütbe listesi, ekleme/düzenleme formu ve Excel çıktısında gizlidir. Mevcut backend/DB sözleşmesi korunur; yeni kayıtta Type=0 gönderilir, düzenlemede eski değer değiştirilmeden gönderilir. Rütbe modeli, API ve audit alanlarının kaldırılması bu değişikliğin kapsamında değildir.
 
 ## İlişki ve kurallar
 
@@ -57,8 +56,9 @@ yatay scroll, sabit İşlemler, Excel, popup, durum değişikliği,
 soft-delete ve işlem geçmişi. Backend'de fazladan filtreleme mekanizması
 veya FilterOptionsQuery oluşturulmadı.
 
-Rütbe formunda Code/Name/ShortName/Type/RankGroupId ve geçerlilik
+Rütbe formunda Code/Name/ShortName/RankGroupId ve geçerlilik
 tarihleri bulunur. Grubu dropdown ile seçilir ve nullable olabilir.
+Type alanı listede, formda veya Excel'de gösterilmez.
 
 ## Migration: henüz oluşturulmadı/uygulanmadı
 
