@@ -60,6 +60,24 @@ export class NavigationService {
           permissionModule: 'Towns'
         },
         {
+          label: 'Rapor Türü Tanımları',
+          icon: 'pi pi-list',
+          route: '/app/report-types',
+          permissionModule: 'ReportTypes'
+        },
+        {
+          label: 'Rütbe Grubu Tanımları',
+          icon: 'pi pi-list',
+          route: '/app/rank-groups',
+          permissionModule: 'RankGroups'
+        },
+        {
+          label: 'Rütbe Tanımları',
+          icon: 'pi pi-list',
+          route: '/app/ranks',
+          permissionModule: 'Ranks'
+        },
+        {
           label: 'Branş Tanımları',
           icon: 'pi pi-list',
           route: '/app/branches',

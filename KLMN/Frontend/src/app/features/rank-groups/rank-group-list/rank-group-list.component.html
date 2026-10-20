@@ -1,0 +1,232 @@
+<div class="rank-groups-page">
+  <div class="page-header">
+    <div>
+      <h1>Rütbe Grubu Tanımları</h1>
+      <p>Rütbe Grubu Tanımları kayıtlarını ve geçerlilik dönemlerini yönetin.</p>
+    </div>
+    @if (canCreate()) {
+      <p-button type="button" label="Yeni Rütbe Grubu" icon="pi pi-plus"
+                (onClick)="openCreateDialog()"></p-button>
+    }
+  </div>
+
+  <div class="military-record-notices" aria-live="polite">
+    @if (successMessage()) {
+      <div class="notice notice-success" role="status">
+        <i class="pi pi-check-circle" aria-hidden="true"></i>
+        <span>{{ successMessage() }}</span>
+        <button type="button" class="notice-close" aria-label="Bildirimi kapat"
+                (click)="successMessage.set(null)"><i class="pi pi-times"></i></button>
+      </div>
+    }
+    @if (errorMessage()) {
+      <div class="notice notice-error" role="alert">
+        <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+        <span>{{ errorMessage() }}</span>
+        <button type="button" class="notice-close" aria-label="Hatayı kapat"
+                (click)="errorMessage.set(null)"><i class="pi pi-times"></i></button>
+      </div>
+    }
+  </div>
+
+  <section class="filter-panel" aria-label="Rütbe Grubu arama">
+    <form [formGroup]="filterForm" (ngSubmit)="search()">
+      <div class="search-field">
+        <i class="pi pi-search" aria-hidden="true"></i>
+        <input pInputText formControlName="search" placeholder="Kod veya rütbe grubu adı ara..."
+               aria-label="Rütbe Grubu ara" />
+      </div>
+      <div class="inactive-filter">
+        <p-checkbox inputId="rank-groups-includeInactive" formControlName="includeInactive"
+                    [binary]="true"></p-checkbox>
+        <label for="rank-groups-includeInactive">Pasifleri dahil et</label>
+      </div>
+      <div class="filter-actions">
+        <p-button type="submit" label="Ara" icon="pi pi-search" [loading]="loading()"></p-button>
+        <p-button type="button" label="Temizle" icon="pi pi-times" severity="secondary"
+                  [outlined]="true" (onClick)="clearFilters()"></p-button>
+      </div>
+    </form>
+  </section>
+
+  <section class="rank-groups-table-card">
+    <div class="table-toolbar">
+      <p-button type="button" [label]="filtersVisible() ? 'Filtreleri Gizle' : 'Kolon Filtreleri'"
+                icon="pi pi-filter" severity="secondary" [outlined]="!filtersVisible()"
+                (onClick)="filtersVisible.update(value => !value)"></p-button>
+      @if (canExport()) {
+        <p-button type="button" label="Excel'e Aktar" icon="pi pi-list-excel" severity="success"
+                  [outlined]="true" [loading]="exporting()" [disabled]="loading() || !totalCount()"
+                  (onClick)="exportExcel()"></p-button>
+      }
+    </div>
+    @if (filtersVisible()) {
+      <form class="column-filter-panel" [formGroup]="columnFilterForm" (ngSubmit)="applyFilters()">
+        <div class="filter-panel-heading"><strong>Kolon Filtreleri</strong></div>
+        <div class="column-filter-grid">
+          <div class="column-filter-field">
+            <label for="rank-groups-active-filter">Durum</label>
+            <select id="rank-groups-active-filter" formControlName="isActive">
+              <option [ngValue]="null">Tümü</option>
+              <option [ngValue]="true">Aktif</option>
+              <option [ngValue]="false">Pasif</option>
+            </select>
+          </div>
+        </div>
+        <div class="column-filter-actions">
+          <p-button type="button" label="Tümünü Temizle" icon="pi pi-filter-slash"
+                    severity="secondary" [outlined]="true" (onClick)="clearFilters()"></p-button>
+          <p-button type="submit" label="Filtreleri Uygula" icon="pi pi-check"
+                    [loading]="loading()"></p-button>
+        </div>
+      </form>
+    }
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Rütbe Grubu kayıtları">
+      <p-table [resizableColumns]="true" columnResizeMode="expand" [value]="records()" [loading]="loading()"
+               [tableStyle]="{ 'min-width': '900px', 'width': '100%' }">
+        <ng-template pTemplate="header">
+          <tr>
+            <th pResizableColumn pSortableColumn="name">Rütbe Grubu Adı <p-sortIcon field="name" /></th>
+            <th pResizableColumn pSortableColumn="code">Kod <p-sortIcon field="code" /></th>
+            <th pResizableColumn pSortableColumn="shortName">Kısa Ad <p-sortIcon field="shortName" /></th>
+            <th pResizableColumn pSortableColumn="validFrom">Geçerli Başlangıç <p-sortIcon field="validFrom" /></th>
+            <th pResizableColumn pSortableColumn="validTo">Geçerli Bitiş <p-sortIcon field="validTo" /></th>
+            <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
+            <th pResizableColumn pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
+            @if (canUpdate() || canDelete() || canAudit()) { <th class="sticky-actions-col">İşlemler</th> }
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+          <tr>
+            <td><div class="record-name-cell"><i class="pi pi-list" aria-hidden="true"></i>
+              <strong [title]="item.name">{{ item.name }}</strong></div></td>
+            <td><code class="record-code">{{ item.code }}</code></td>
+            <td>{{ item.shortName || '—' }}</td>
+            <td>{{ item.validFrom ? (item.validFrom | date:'dd.MM.yyyy HH:mm') : '—' }}</td>
+            <td>{{ item.validTo ? (item.validTo | date:'dd.MM.yyyy HH:mm') : 'Süresiz' }}</td>
+            <td><p-tag [value]="item.isActive ? 'Aktif' : 'Pasif'"
+                       [severity]="item.isActive ? 'success' : 'secondary'"></p-tag></td>
+            <td>{{ item.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
+            @if (canUpdate() || canDelete() || canAudit()) {
+              <td class="sticky-actions-col"><div class="row-actions">
+                @if (canUpdate()) {
+                  <p-button type="button" icon="pi pi-pencil" size="small" severity="secondary"
+                            [text]="true" ariaLabel="Düzenle"
+                            [disabled]="actionLoadingId() === item.id"
+                            (onClick)="openEditDialog(item)"></p-button>
+                  <p-button type="button" [icon]="item.isActive ? 'pi pi-ban' : 'pi pi-check-circle'"
+                            size="small" severity="secondary" [text]="true"
+                            [ariaLabel]="item.isActive ? 'Pasifleştir' : 'Aktifleştir'"
+                            [disabled]="actionLoadingId() === item.id"
+                            (onClick)="confirmStatusChange(item)"></p-button>
+                }
+                @if (canAudit()) {
+                  <p-button type="button" icon="pi pi-history" size="small" severity="secondary"
+                            [text]="true" ariaLabel="İşlem geçmişi"
+                            (onClick)="openAudit(item)"></p-button>
+                }
+                @if (canDelete()) {
+                  <p-button type="button" icon="pi pi-trash" size="small" severity="danger"
+                            [text]="true" ariaLabel="Sil"
+                            [disabled]="actionLoadingId() === item.id"
+                            (onClick)="confirmDelete(item)"></p-button>
+                }
+              </div></td>
+            }
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr><td [attr.colspan]="canUpdate() || canDelete() || canAudit() ? 8 : 7"
+                  class="empty-table">Arama koşullarına uygun kayıt bulunamadı.</td></tr>
+        </ng-template>
+      </p-table>
+    </div>
+    <div class="pagination">
+      <span>{{ rangeStart() }}–{{ rangeEnd() }} / {{ totalCount() }} kayıt</span>
+      <div class="pagination-controls">
+        <button type="button" class="page-nav" aria-label="İlk sayfa" [disabled]="loading() || pageNumber() <= 1"
+                (click)="goToPage(1)"><i class="pi pi-angle-double-left"></i></button>
+        <button type="button" class="page-nav" aria-label="Önceki sayfa" [disabled]="loading() || pageNumber() <= 1"
+                (click)="goToPage(pageNumber()-1)"><i class="pi pi-angle-left"></i></button>
+        <span>{{ pageNumber() }} / {{ totalPages() }}</span>
+        <button type="button" class="page-nav" aria-label="Sonraki sayfa" [disabled]="loading() || pageNumber() >= totalPages()"
+                (click)="goToPage(pageNumber()+1)"><i class="pi pi-angle-right"></i></button>
+        <button type="button" class="page-nav" aria-label="Son sayfa" [disabled]="loading() || pageNumber() >= totalPages()"
+                (click)="goToPage(totalPages())"><i class="pi pi-angle-double-right"></i></button>
+      </div>
+      <label class="page-size">Sayfa başına
+        <select [value]="pageSize()" [disabled]="loading()" (change)="onPageSizeChange($event)">
+          <option [value]="10">10</option><option [value]="20">20</option>
+          <option [value]="50">50</option><option [value]="100">100</option>
+        </select>
+      </label>
+    </div>
+  </section>
+</div>
+
+<p-dialog [header]="editing() ? 'Rütbe Grubu Düzenle' : 'Yeni Rütbe Grubu'"
+          [visible]="dialogVisible()" (visibleChange)="onDialogVisibleChange($event)"
+          [modal]="true" [draggable]="false" [resizable]="false"
+          [style]="{ width: 'min(690px, 96vw)' }">
+  <form class="rank-group-form" [formGroup]="itemForm" (ngSubmit)="save()">
+    <div class="form-divider"><span>Rütbe Grubu Bilgileri</span></div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="rank-groups-code">Kod <span class="required">*</span></label>
+        <input pInputText id="rank-groups-code" formControlName="code" autocomplete="off"
+               placeholder="Rütbe Grubu kodu" />
+        @if (fieldError('code'); as message) { <small class="field-error">{{ message }}</small> }
+      </div>
+      <div class="form-field">
+        <label for="rank-groups-name">Rütbe Grubu Adı <span class="required">*</span></label>
+        <input pInputText id="rank-groups-name" formControlName="name" autocomplete="off"
+               placeholder="Rütbe Grubu adı" />
+        @if (fieldError('name'); as message) { <small class="field-error">{{ message }}</small> }
+      </div>
+
+      <div class="form-field">
+        <label for="rank-groups-shortName">Kısa Ad</label>
+        <input pInputText id="rank-groups-shortName" formControlName="shortName" autocomplete="off"
+               placeholder="Kısa ad" />
+        @if (fieldError('shortName'); as message) { <small class="field-error">{{ message }}</small> }
+      </div>
+    </div>
+    <div class="form-divider"><span>Geçerlilik Tarihleri</span></div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="rank-groups-validFrom">Geçerli Başlangıç</label>
+        <input pInputText type="datetime-local" id="rank-groups-validFrom" formControlName="validFrom" />
+        <small>Boşsa başlangıç sınırı yoktur.</small>
+      </div>
+      <div class="form-field">
+        <label for="rank-groups-validTo">Geçerli Bitiş</label>
+        <input pInputText type="datetime-local" id="rank-groups-validTo" formControlName="validTo" />
+        <small>Boşsa süresizdir.</small>
+        @if (fieldError('validTo'); as message) { <small class="field-error">{{ message }}</small> }
+      </div>
+    </div>
+    <div class="form-footer">
+      @if (formError()) {
+        <div class="form-save-error" role="alert">
+          <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+          <span>{{ formError() }}</span>
+        </div>
+      }
+      <div class="dialog-actions">
+        <p-button type="button" label="Vazgeç" severity="secondary" [outlined]="true"
+                  [disabled]="saving()" (onClick)="onDialogVisibleChange(false)"></p-button>
+        <p-button type="submit" label="Kaydet" icon="pi pi-check"
+                  [loading]="saving()"></p-button>
+      </div>
+    </div>
+  </form>
+</p-dialog>
+<p-confirmdialog></p-confirmdialog>
+<p-dialog header="Rütbe Grubu İşlem Geçmişi" [visible]="!!auditRecord()"
+          (visibleChange)="!$event && auditRecord.set(null)"
+          [modal]="true" [draggable]="false" [resizable]="false"
+          [style]="{ width: 'min(760px, 96vw)' }">
+  @if (auditRecord(); as item) {
+    <app-audit-history entityType="RankGroupDef" [entityId]="item.id"></app-audit-history>
+  }
+</p-dialog>

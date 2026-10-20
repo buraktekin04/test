@@ -58,6 +58,24 @@ export const PermissionCodes = {
   /** Başvuru Grubu Tanımları eylem bazlı izin kodları. */
   /** Bağlı kurul kararı tanımlarının yetki kodları. */
   /** Branş Tanımları eylem bazlı izinleri. */
+  /** Rapor Türü yetki kodları. */
+  ReportTypes: {
+    View: 'ReportTypes.View', Query: 'ReportTypes.Query',
+    Create: 'ReportTypes.Create', Update: 'ReportTypes.Update',
+    Delete: 'ReportTypes.Delete'
+  },
+  /** Rütbe Grubu yetki kodları. */
+  RankGroups: {
+    View: 'RankGroups.View', Query: 'RankGroups.Query',
+    Create: 'RankGroups.Create', Update: 'RankGroups.Update',
+    Delete: 'RankGroups.Delete'
+  },
+  /** Rütbe yetki kodları. */
+  Ranks: {
+    View: 'Ranks.View', Query: 'Ranks.Query',
+    Create: 'Ranks.Create', Update: 'Ranks.Update',
+    Delete: 'Ranks.Delete'
+  },
   Branches: {
     View: 'Branches.View', Query: 'Branches.Query',
     Create: 'Branches.Create', Update: 'Branches.Update',

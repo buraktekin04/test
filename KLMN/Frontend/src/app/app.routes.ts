@@ -108,6 +108,30 @@ export const routes: Routes = [
             .then(component => component.MilitaryClassListComponent)
       },
       {
+        path: 'report-types',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'ReportTypes' },
+        loadComponent: () =>
+          import('./features/report-types/report-type-list/report-type-list.component')
+            .then(component => component.ReportTypeListComponent)
+      },
+      {
+        path: 'rank-groups',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'RankGroups' },
+        loadComponent: () =>
+          import('./features/rank-groups/rank-group-list/rank-group-list.component')
+            .then(component => component.RankGroupListComponent)
+      },
+      {
+        path: 'ranks',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'Ranks' },
+        loadComponent: () =>
+          import('./features/ranks/rank-list/rank-list.component')
+            .then(component => component.RankListComponent)
+      },
+      {
         path: 'branches',
         canActivate: [permissionGuard],
         data: { permissionModule: 'Branches' },
@@ -171,6 +195,15 @@ export const routes: Routes = [
       },
       {
         path: 'definitions/towns', pathMatch: 'full', redirectTo: 'towns'
+      },
+      {
+        path: 'definitions/report-types', pathMatch: 'full', redirectTo: 'report-types'
+      },
+      {
+        path: 'definitions/rank-groups', pathMatch: 'full', redirectTo: 'rank-groups'
+      },
+      {
+        path: 'definitions/ranks', pathMatch: 'full', redirectTo: 'ranks'
       },
       {
         path: 'definitions/branches', pathMatch: 'full', redirectTo: 'branches'

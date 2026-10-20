@@ -7,7 +7,7 @@ public sealed class GetAuditLogsQueryValidator : AbstractValidator<GetAuditLogsQ
 {
     private static readonly string[] Types =
         ["User", "Role", "MilitaryUnitDef", "ForcesCommandDef",
-         "MilitarySchoolDef", "MilitaryOfficeDef", "HcAdmissionTypeDef", "HcConnectedDecisionDef", "BranchDef", "MilitaryClassDef", "MilitaryClassGroupDef",
+         "MilitarySchoolDef", "MilitaryOfficeDef", "HcAdmissionTypeDef", "HcConnectedDecisionDef", "BranchDef", "ReportTypeDef", "RankGroupDef", "RankDef", "MilitaryClassDef", "MilitaryClassGroupDef",
          "MilitaryClassGroupRelation", "CountryDef", "CityDef", "TownDef",
          "PurchaseNumberDef", "Permission", "UserRole", "RolePermission",
          "UserPermission", "UserAgreementPdf"];

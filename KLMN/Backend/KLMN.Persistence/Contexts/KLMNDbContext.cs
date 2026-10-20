@@ -64,6 +64,15 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     /// </summary>
     public DbSet<ForcesCommandDef> ForcesCommandDefs => Set<ForcesCommandDef>();
 
+    /// <summary>Rapor Türü Tanımları DbSet.</summary>
+    public DbSet<ReportTypeDef> ReportTypeDefs => Set<ReportTypeDef>();
+
+    /// <summary>Rütbe Grubu Tanımları DbSet.</summary>
+    public DbSet<RankGroupDef> RankGroupDefs => Set<RankGroupDef>();
+
+    /// <summary>Rütbe Tanımları DbSet.</summary>
+    public DbSet<RankDef> RankDefs => Set<RankDef>();
+
     /// <summary>Branş tanımlarının sorgu ve değişiklik kümesi.</summary>
     public DbSet<BranchDef> BranchDefs => Set<BranchDef>();
 

@@ -7,6 +7,9 @@ using KLMN.Application.MilitaryOffices.Exceptions;
 using KLMN.Application.AdmissionTypes.Exceptions;
 using KLMN.Application.ConnectedDecisions.Exceptions;
 using KLMN.Application.Branches.Exceptions;
+using KLMN.Application.ReportTypes.Exceptions;
+using KLMN.Application.RankGroups.Exceptions;
+using KLMN.Application.Ranks.Exceptions;
 using KLMN.Application.MilitaryClasses.Exceptions;
 using KLMN.Application.MilitaryClassGroups.Exceptions;
 using KLMN.Application.MilitaryClassGroupRelations.Exceptions;
@@ -191,6 +194,24 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             MilitaryClassConflictException =>
                 new ProblemDetails { Status = StatusCodes.Status409Conflict,
                     Title = "Askerî sınıf işlemi gerçekleştirilemedi.", Detail = exception.Message },
+            ReportTypeNotFoundException =>
+                new ProblemDetails { Status = StatusCodes.Status404NotFound,
+                    Title = "Rapor Türü bulunamadı.", Detail = exception.Message },
+            ReportTypeConflictException =>
+                new ProblemDetails { Status = StatusCodes.Status409Conflict,
+                    Title = "Rapor Türü işlemi gerçekleştirilemedi.", Detail = exception.Message },
+            RankGroupNotFoundException =>
+                new ProblemDetails { Status = StatusCodes.Status404NotFound,
+                    Title = "Rütbe Grubu bulunamadı.", Detail = exception.Message },
+            RankGroupConflictException =>
+                new ProblemDetails { Status = StatusCodes.Status409Conflict,
+                    Title = "Rütbe Grubu işlemi gerçekleştirilemedi.", Detail = exception.Message },
+            RankNotFoundException =>
+                new ProblemDetails { Status = StatusCodes.Status404NotFound,
+                    Title = "Rütbe bulunamadı.", Detail = exception.Message },
+            RankConflictException =>
+                new ProblemDetails { Status = StatusCodes.Status409Conflict,
+                    Title = "Rütbe işlemi gerçekleştirilemedi.", Detail = exception.Message },
             BranchNotFoundException =>
                 new ProblemDetails { Status = StatusCodes.Status404NotFound,
                     Title = "Branş bulunamadı.", Detail = exception.Message },

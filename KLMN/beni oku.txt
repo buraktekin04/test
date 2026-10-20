@@ -23,7 +23,7 @@ Bu kural mevcut ve BUNDAN SONRA EKLENECEK TÜM EKRANLARDA GEÇERLİDİR.
 
 KLMN PROJESİ — BENİ OKU / DEVİR DOSYASI
 ====================================
-Güncelleme tarihi: 19.10.2026
+Güncelleme tarihi: 20.10.2026
 Repo: https://github.com/buraktekin04/test
 Proje kökü: KLMN/
 Varsayılan dal: main
@@ -583,6 +583,42 @@ Kabul öncesinde:
 
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
+2026-10-20 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-20 (bu commit — Rapor Türü / Rütbe Grubu / Rütbe Tanımları):
+  Fotoğraflardaki MSKBS modelleri birebir baz alındı:
+  ReportTypeDef Code/Name; RankGroupDef Code/Name/ShortName;
+  RankDef Code/Name/ShortName/Type(int)/RankGroup(Guid?).
+  BaseEntity ve EffectiveDatedEntity üzerindeki Id/audit/xmin/
+  IsActive/ValidFrom/ValidTo alanları tekrar eklenmedi.
+  3 yeni domain entity, EF Core config, filtered unique code
+  index, KLMNDbContext/IKLMNDbContext DbSet tanımlandı.
+  Her modüle bağımsız CQRS Create/Update/Delete/ChangeStatus
+  Commands/Handlers/Validators + GetList/GetById queries;
+  Controllers CRUD, Excel, 404/409 ve yetki kontrolü eklendi.
+  Rütbe RankGroupId nullable Restrict FK'dir. Yeni seçimde
+  aktif rütbe grubu gerekir; geçmişte seçili pasif grup
+  düzenlemede korunur. Silinmemiş rütbe bağlıyken grup silinmez,
+  aktif rütbe bağlıyken grup pasifleştirilemez. Rütbe yeniden
+  aktifleştirilirken grubu kontrol edilir. Rütbe seçenekleri
+  kendi Ranks modülü permission'ı ile /api/ranks/options
+  üzerinden sağlanır. Type'ın anlamı bilinmediği için enum
+  veya uydurma dropdown eklenmedi; int olarak korundu.
+  Angular 21 + PrimeNG: 3 yeni tanım listesi/formu, arama,
+  Pasifleri dahil et, Durum kolon filtresi, frontend p-table
+  sort, her th için pResizableColumn, resizableColumns=expand,
+  kaydırma, Excel, CRUD/status/silme, işlem geçmişi.
+  Yetkiler ReportTypes.*, RankGroups.*, Ranks.* (View, Query,
+  Create, Update, Delete) backend/frontend/IdentitySeedData.
+  Audit whitelist, audit sorgu validator ve rütbe grubu GUID
+  çözücü eklendi. 3 Regression .NET test projesinin kaynakları,
+  KLMN/RAPOR_TURU_RUTBE_GRUBU_RUTBE_TANIMLARI_KURULUM.md
+  aynı paket kapsamındadır.
+  EF Core Migrations/ModelSnapshot repo'da olmadığı için
+  migration oluşturulmadı/uygulanmadı; veri taşınmadı.
+  Statik kod/şablon kontrolleri yapıldı; gerçek .NET/Angular
+  derlemesi, PostgreSQL ve tarayıcı testleri yapılmadı.
+  TÜM DEĞİŞİKLİKLER TEK COMMIT/TEK PUSH olarak gönderilir.
+
 2026-10-19 itibarıyla ana hatlar (sondan eskiye):
 - 2026-10-19 (bu commit — Branş Tanımları ve p-table resize):
   MSKBS BranchDef -> KLMN BranchDef. Yalnız Code/Name;
@@ -668,6 +704,7 @@ Kabul öncesinde:
   Frontend/features/admission-types, app.routes, navigation,
   permission codes, seed, audit, GlobalExceptionHandler,
   KLMN/Tests/AdmissionTypes.Regression,
+  KLMN/RAPOR_TURU_RUTBE_GRUBU_RUTBE_TANIMLARI_KURULUM.md
   KLMN/BRANS_TANIMLARI_VE_PTABLE_KURULUM.md
   KLMN/BAGLI_KURUL_KARAR_TANIMLARI_KURULUM.md
   KLMN/BASVURU_GRUBU_TANIMLARI_KURULUM.md ve beni oku.txt.

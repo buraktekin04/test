@@ -27,7 +27,8 @@ internal static class AuditReferenceDisplayResolver
             ["OrganizationUnitId"] = "MilitaryUnitDef",
             ["ParentOrganizationUnitId"] = "MilitaryUnitDef",
             ["ParentId"] = "MilitaryUnitDef",
-            ["ConnectedTopUnity"] = "MilitaryUnitDef"
+            ["ConnectedTopUnity"] = "MilitaryUnitDef",
+            ["RankGroupId"] = "RankGroupDef"
         };
 
     /// <summary>
@@ -73,6 +74,7 @@ internal static class AuditReferenceDisplayResolver
         var permissionIds = references["Permission"];
         var userIds = references["User"];
         var militaryUnitIds = references["MilitaryUnitDef"];
+        var rankGroupIds = references["RankGroupDef"];
 
         var roleLabels = roleIds.Count == 0
             ? new Dictionary<Guid, string>()
@@ -115,13 +117,21 @@ internal static class AuditReferenceDisplayResolver
                 .ToDictionaryAsync(x => x.Id,
                     x => x.Name + " (" + x.Code + ")", cancellationToken);
 
+        var rankGroupLabels = rankGroupIds.Count == 0
+            ? new Dictionary<Guid, string>()
+            : await dbContext.RankGroupDefs.IgnoreQueryFilters().AsNoTracking()
+                .Where(x => rankGroupIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.Name, x.Code })
+                .ToDictionaryAsync(x => x.Id, x => x.Name + " (" + x.Code + ")", cancellationToken);
+
         var labels = new Dictionary<string, Dictionary<Guid, string>>(StringComparer.Ordinal)
         {
             ["Role"] = roleLabels,
             ["Permission"] = permissionLabels,
             ["User"] = userLabels,
             ["ForcesCommandDef"] = forceLabels,
-            ["MilitaryUnitDef"] = militaryUnitLabels
+            ["MilitaryUnitDef"] = militaryUnitLabels,
+            ["RankGroupDef"] = rankGroupLabels
         };
 
         var results = new List<AuditLogResponse>(entries.Count);
@@ -200,6 +210,7 @@ internal static class AuditReferenceDisplayResolver
             "User" => "Kullanıcı kaydı bulunamadı",
             "ForcesCommandDef" => "Kuvvet komutanlığı kaydı bulunamadı",
             "MilitaryUnitDef" => "Birlik kaydı bulunamadı",
+            "RankGroupDef" => "Rütbe grubu kaydı bulunamadı",
             _ => "İlişkili kayıt bulunamadı"
         };
     }

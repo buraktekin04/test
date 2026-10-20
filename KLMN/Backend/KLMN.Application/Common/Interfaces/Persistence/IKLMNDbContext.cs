@@ -30,6 +30,15 @@ public interface IKLMNDbContext
     DbSet<PasswordResetToken> PasswordResetTokens { get; }
     DbSet<ForcesCommandDef> ForcesCommandDefs { get; }
 
+    /// <summary>Rapor Türü Tanımları veri kümesi.</summary>
+    DbSet<ReportTypeDef> ReportTypeDefs { get; }
+
+    /// <summary>Rütbe Grubu Tanımları veri kümesi.</summary>
+    DbSet<RankGroupDef> RankGroupDefs { get; }
+
+    /// <summary>Rütbe Tanımları veri kümesi.</summary>
+    DbSet<RankDef> RankDefs { get; }
+
     /// <summary>Branş tanımlarının DbSet kümesi.</summary>
     DbSet<BranchDef> BranchDefs { get; }
 

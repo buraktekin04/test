@@ -123,6 +123,36 @@ public static class PermissionCodes
     /// <summary>Başvuru Grubu Tanımları izin kodları.</summary>
     /// <summary>Bağlı Kurul Karar Tanımları eylem bazlı yetkileri.</summary>
     /// <summary>Branş Tanımları yetki kodları.</summary>
+    /// <summary>Rapor Türü modülü için işlem bazlı yetkiler.</summary>
+    public static class ReportTypes
+    {
+        public const string View = "ReportTypes.View";
+        public const string Query = "ReportTypes.Query";
+        public const string Create = "ReportTypes.Create";
+        public const string Update = "ReportTypes.Update";
+        public const string Delete = "ReportTypes.Delete";
+    }
+
+    /// <summary>Rütbe Grubu modülü için işlem bazlı yetkiler.</summary>
+    public static class RankGroups
+    {
+        public const string View = "RankGroups.View";
+        public const string Query = "RankGroups.Query";
+        public const string Create = "RankGroups.Create";
+        public const string Update = "RankGroups.Update";
+        public const string Delete = "RankGroups.Delete";
+    }
+
+    /// <summary>Rütbe modülü için işlem bazlı yetkiler.</summary>
+    public static class Ranks
+    {
+        public const string View = "Ranks.View";
+        public const string Query = "Ranks.Query";
+        public const string Create = "Ranks.Create";
+        public const string Update = "Ranks.Update";
+        public const string Delete = "Ranks.Delete";
+    }
+
     public static class Branches
     {
         public const string View = "Branches.View";
