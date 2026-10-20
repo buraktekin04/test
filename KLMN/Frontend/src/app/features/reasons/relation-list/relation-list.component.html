@@ -1,0 +1,144 @@
+<div class="reason-relations-page">
+ <div class="page-header">
+  <div><h1>{{config.label}}</h1><p>Muayene sebepleriyle ilgili tanımları ilişkilendirin.</p>
+   <a routerLink="/app/reasons-for-examination" class="back-link">‹ Muayene Sebebi ekranına dön</a>
+  </div>
+  @if(canCreate()){<p-button [label]="'Yeni '+config.shortLabel+' Eşleştirmesi'" icon="pi pi-plus"
+   (onClick)="openCreate()"></p-button>}
+ </div>
+ <p-toast position="top-right"></p-toast>
+ <section class="filter-panel"><form [formGroup]="filterForm" (ngSubmit)="search()">
+  <div class="search-field"><i class="pi pi-search"></i><input pInputText formControlName="search"
+     placeholder="Muayene sebebi veya ilgili tanım ara..."/></div>
+  <div class="inactive-filter"><p-checkbox formControlName="includeInactive" [binary]="true" inputId="relation-inactive"/>
+  <label for="relation-inactive">Pasifleri dahil et</label></div>
+  <div class="filter-actions"><p-button type="submit" label="Ara" icon="pi pi-search" [loading]="loading()"/>
+   <p-button type="button" label="Temizle" severity="secondary" [outlined]="true" (onClick)="clear()"/></div>
+ </form></section>
+ <section class="relations-table-card">
+  <div class="table-toolbar">
+   <p-button [label]="filtersVisible()?'Filtreleri Gizle':'Kolon Filtreleri'" icon="pi pi-filter" severity="secondary"
+     [outlined]="true" (onClick)="filtersVisible.set(!filtersVisible())"/>
+   @if(canExport()){<p-button label="Excel'e Aktar" icon="pi pi-file-excel" severity="success"
+    [outlined]="true" [loading]="exporting()" (onClick)="exportExcel()"/>}
+  </div>
+  @if(filtersVisible()){
+  <form class="column-filter-panel" [formGroup]="columnFilterForm" (ngSubmit)="search()">
+   <div class="filter-panel-heading"><strong>Kolon Filtreleri</strong></div>
+   <div class="column-filter-grid">
+    <div class="form-field"><label for="relation-reason-filter">Muayene Sebebi</label>
+     <select formControlName="reasonForExaminationDefId" id="relation-reason-filter">
+       <option [ngValue]="null">Tümü</option>
+       @for(option of optionsData().reasons;track option.id){<option [ngValue]="option.id">{{option.label}}</option>}
+     </select>
+    </div>
+    <div class="form-field"><label for="relation-status">Durum</label>
+     <select formControlName="isActive" id="relation-status">
+       <option [ngValue]="null">Tümü</option><option [ngValue]="true">Aktif</option>
+       <option [ngValue]="false">Pasif</option>
+     </select></div>
+   </div>
+   <div class="column-filter-actions"><p-button type="button" label="Tümünü Temizle"
+    severity="secondary" [outlined]="true" (onClick)="clear()"/>
+    <p-button type="submit" label="Filtreleri Uygula" icon="pi pi-check"/></div>
+  </form>}
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Eşleştirme listesi">
+   <p-table [value]="records()" [loading]="loading()" [resizableColumns]="true" columnResizeMode="expand"
+     [tableStyle]="{'min-width':config.extra?'1150px':'820px','width':'100%'}">
+    <ng-template pTemplate="header"><tr>
+     <th pResizableColumn pSortableColumn="reasonDescription">Muayene Sebebi <p-sortIcon field="reasonDescription"/></th>
+     <th pResizableColumn pSortableColumn="referenceName">{{config.shortLabel}} <p-sortIcon field="referenceName"/></th>
+     @if(config.extra){
+       <th pResizableColumn pSortableColumn="startingAge">Başlangıç Yaşı <p-sortIcon field="startingAge"/></th>
+       <th pResizableColumn pSortableColumn="endingAge">Bitiş Yaşı <p-sortIcon field="endingAge"/></th>
+       <th pResizableColumn pSortableColumn="gender">Cinsiyet Kodu <p-sortIcon field="gender"/></th>
+     }
+     <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive"/></th>
+     <th class="sticky-actions-col">İşlemler</th>
+    </tr></ng-template>
+    <ng-template pTemplate="body" let-item><tr>
+     <td><div class="wrap-cell"><strong>{{item.reasonDescription}}</strong><code>{{item.reasonCode}}</code></div></td>
+     <td class="wrap-cell">{{item.referenceName}}</td>
+     @if(config.extra){<td>{{item.startingAge}}</td><td>{{item.endingAge}}</td><td>{{item.gender}}</td>}
+     <td><p-tag [value]="item.isActive?'Aktif':'Pasif'"
+        [severity]="item.isActive?'success':'secondary'"/></td>
+     <td class="sticky-actions-col"><div class="row-actions">
+      @if(canUpdate()){
+       <p-button icon="pi pi-pencil" size="small" severity="secondary" [text]="true" ariaLabel="Düzenle"
+        (onClick)="openEdit(item)"/>
+       <p-button [icon]="item.isActive?'pi pi-ban':'pi pi-check-circle'" size="small"
+        severity="secondary" [text]="true" [ariaLabel]="item.isActive?'Pasifleştir':'Aktifleştir'"
+        (onClick)="changeStatus(item)"/>
+      }
+      @if(canAudit()){<p-button icon="pi pi-history" size="small" severity="secondary" [text]="true"
+        ariaLabel="İşlem geçmişi" (onClick)="auditRecord.set(item)"/>}
+      @if(canDelete()){<p-button icon="pi pi-trash" size="small" severity="danger" [text]="true"
+         ariaLabel="Sil" (onClick)="delete(item)"/>}
+     </div></td>
+    </tr></ng-template>
+    <ng-template pTemplate="emptymessage"><tr><td [attr.colspan]="config.extra?7:4" class="empty-table">Kayıt bulunamadı.</td></tr></ng-template>
+   </p-table>
+  </div>
+  <div class="pagination">
+   <span>{{rangeStart()}}–{{rangeEnd()}} / {{totalCount()}} kayıt</span>
+   <div class="pagination-controls">
+    <button class="page-nav" (click)="page(1)" [disabled]="pageNumber()<=1">«</button>
+    <button class="page-nav" (click)="page(pageNumber()-1)" [disabled]="pageNumber()<=1">‹</button>
+    <span>{{pageNumber()}} / {{totalPages()}}</span>
+    <button class="page-nav" (click)="page(pageNumber()+1)" [disabled]="pageNumber()>=totalPages()">›</button>
+    <button class="page-nav" (click)="page(totalPages())" [disabled]="pageNumber()>=totalPages()">»</button>
+   </div>
+   <label class="page-size">Sayfa başına <select [value]="pageSize()" (change)="size($event)">
+    <option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option>
+   </select></label>
+  </div>
+ </section>
+</div>
+<p-dialog [header]="editing()?config.label+' Düzenle':'Yeni '+config.label" [visible]="dialogVisible()"
+ (visibleChange)="dialogVisible.set($event)" [modal]="true" [draggable]="false"
+ [resizable]="false" [style]="{'width':'min(700px,96vw)'}">
+ <form class="relation-form" [formGroup]="itemForm" (ngSubmit)="save()">
+  <div class="form-divider"><span>Eşleştirme Bilgileri</span></div>
+  <div class="form-grid">
+   <div class="form-field"><label for="relation-reason">Muayene Sebebi *</label>
+    <select id="relation-reason" formControlName="reasonForExaminationDefId">
+     <option value="">Seçiniz</option>
+     @for(option of optionsData().reasons;track option.id){
+      <option [value]="option.id">{{option.label}}{{option.isActive?'':' (Pasif)'}}</option>}
+    </select>
+   </div>
+   <div class="form-field"><label for="relation-reference">{{config.shortLabel}} *</label>
+    <select id="relation-reference" formControlName="referenceId">
+     <option value="">Seçiniz</option>
+     @for(option of optionsData().references;track option.id){
+      <option [value]="option.id">{{option.label}}{{option.isActive?'':' (Pasif)'}}</option>}
+    </select>
+   </div>
+  </div>
+  @if(config.extra){
+   <div class="form-divider"><span>Yaş ve Cinsiyet Koşulları</span></div>
+   <div class="form-grid">
+    <div class="form-field"><label for="relation-start-age">Başlangıç Yaşı</label>
+     <input pInputText type="number" id="relation-start-age" formControlName="startingAge" min="0" max="130"/></div>
+    <div class="form-field"><label for="relation-end-age">Bitiş Yaşı</label>
+     <input pInputText type="number" id="relation-end-age" formControlName="endingAge" min="0" max="130"/></div>
+    <div class="form-field"><label for="relation-gender">Cinsiyet Kodu</label>
+     <input pInputText type="number" id="relation-gender" formControlName="gender" min="0" max="20"/>
+     <small>Eski sistemin sayısal kodu korunur. Kod anlamı doğrulanmalıdır.</small>
+    </div>
+   </div>
+  }
+  <div class="form-footer">
+   @if(formError()){<div class="form-save-error" role="alert">{{formError()}}</div>}
+   <div class="dialog-actions"><p-button type="button" label="Vazgeç" severity="secondary"
+    [outlined]="true" (onClick)="dialogVisible.set(false)"/>
+    <p-button type="submit" label="Kaydet" icon="pi pi-check" [loading]="saving()"/></div>
+  </div>
+ </form>
+</p-dialog>
+<p-confirmdialog></p-confirmdialog>
+<p-dialog [header]="config.label+' İşlem Geçmişi'" [visible]="!!auditRecord()"
+ (visibleChange)="!$event&&auditRecord.set(null)" [modal]="true"
+ [style]="{'width':'min(760px,96vw)'}">
+ @if(auditRecord();as item){<app-audit-history [entityType]="config.entity" [entityId]="item.id"/>}
+</p-dialog>

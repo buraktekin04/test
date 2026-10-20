@@ -14,6 +14,9 @@ public sealed class HcAdmissionTypeDef : EffectiveDatedEntity
 
     /// <summary>Başvuru grubunun adıdır.</summary>
     public string Name { get; set; } = string.Empty;
+    /// <summary>Bu hasta grubunun kullanılmadığı muayene sebepleri.</summary>
+    public ICollection<ReasonForExamUnusedHcAdmissionType> UnusedExaminationReasons { get; set; } = new List<ReasonForExamUnusedHcAdmissionType>();
+
 
     /// <summary>Başvuruda Kuvvet Komutanlığı alanının zorunlu olup olmayacağını belirler.</summary>
     public bool ForcesCommandRequired { get; set; }

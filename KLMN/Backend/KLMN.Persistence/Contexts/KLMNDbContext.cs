@@ -68,6 +68,24 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     public DbSet<HospitalDef> HospitalDefs => Set<HospitalDef>();
 
     /// <summary>Tesislerin verebildiği rapor türleri eşleştirmesi.</summary>
+    /// <summary>Muayene sebepleri DbSet.</summary>
+    public DbSet<ReasonForExaminationDef> ReasonForExaminationDefs => Set<ReasonForExaminationDef>();
+
+    /// <summary>Tetkik tanımları DbSet.</summary>
+    public DbSet<ProcedureDef> ProcedureDefs => Set<ProcedureDef>();
+
+    /// <summary>Muayene rapor türü eşleştirmeleri DbSet.</summary>
+    public DbSet<ReasonForExamReportType> ReasonForExamReportTypes => Set<ReasonForExamReportType>();
+
+    /// <summary>Kullanılmayacak hasta grupları DbSet.</summary>
+    public DbSet<ReasonForExamUnusedHcAdmissionType> ReasonForExamUnusedHcAdmissionTypes => Set<ReasonForExamUnusedHcAdmissionType>();
+
+    /// <summary>Gereken tetkikler DbSet.</summary>
+    public DbSet<ReasonForExamProcedureDef> ReasonForExamProcedureDefs => Set<ReasonForExamProcedureDef>();
+
+    /// <summary>Muayene branşları DbSet.</summary>
+    public DbSet<ReasonForExamBranchDef> ReasonForExamBranchDefs => Set<ReasonForExamBranchDef>();
+
     public DbSet<HospitalReportType> HospitalReportTypes => Set<HospitalReportType>();
 
     /// <summary>Rapor Türü Tanımları DbSet.</summary>

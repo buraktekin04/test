@@ -1,3 +1,5 @@
+using KLMN.Application.AdmissionTypes.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using KLMN.Application.Common.Interfaces.Persistence;
 using KLMN.Application.AdmissionTypes.Commands.Common;
 using MediatR;
@@ -13,6 +15,9 @@ public sealed class DeleteHcAdmissionTypeDefCommandHandler(IKLMNDbContext db)
         DeleteHcAdmissionTypeDefCommand request, CancellationToken ct)
     {
         var item = await HcAdmissionTypeDefRules.LoadForChangeAsync(db, request.Id, request.Version, ct);
+        if (await db.ReasonForExamUnusedHcAdmissionTypes.IgnoreQueryFilters().AnyAsync(x =>
+            !x.IsDeleted && x.HcAdmissionTypeDefId == item.Id, ct))
+            throw new AdmissionTypeConflictException("Silinmemiş muayene sebebi eşleştirmesi bulunan tanım silinemez.");
         db.HcAdmissionTypeDefs.Remove(item);
         await db.SaveChangesAsync(ct);
     }

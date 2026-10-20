@@ -60,6 +60,36 @@ export const PermissionCodes = {
   /** Branş Tanımları eylem bazlı izinleri. */
   /** Rapor Türü yetki kodları. */
   /** Sağlık Tesisi tanım izinleri. */
+  /** ReasonsForExaminations işlemleri backend ile aynı yetki kodlarını kullanır. */
+  ReasonsForExaminations: {
+    View: 'ReasonsForExaminations.View', Query: 'ReasonsForExaminations.Query',
+    Create: 'ReasonsForExaminations.Create', Update: 'ReasonsForExaminations.Update', Delete: 'ReasonsForExaminations.Delete'
+  },
+  /** ReasonForExamReportTypes işlemleri backend ile aynı yetki kodlarını kullanır. */
+  ReasonForExamReportTypes: {
+    View: 'ReasonForExamReportTypes.View', Query: 'ReasonForExamReportTypes.Query',
+    Create: 'ReasonForExamReportTypes.Create', Update: 'ReasonForExamReportTypes.Update', Delete: 'ReasonForExamReportTypes.Delete'
+  },
+  /** ReasonForExamUnusedHcAdmissionTypes işlemleri backend ile aynı yetki kodlarını kullanır. */
+  ReasonForExamUnusedHcAdmissionTypes: {
+    View: 'ReasonForExamUnusedHcAdmissionTypes.View', Query: 'ReasonForExamUnusedHcAdmissionTypes.Query',
+    Create: 'ReasonForExamUnusedHcAdmissionTypes.Create', Update: 'ReasonForExamUnusedHcAdmissionTypes.Update', Delete: 'ReasonForExamUnusedHcAdmissionTypes.Delete'
+  },
+  /** ReasonForExamProcedureDefs işlemleri backend ile aynı yetki kodlarını kullanır. */
+  ReasonForExamProcedureDefs: {
+    View: 'ReasonForExamProcedureDefs.View', Query: 'ReasonForExamProcedureDefs.Query',
+    Create: 'ReasonForExamProcedureDefs.Create', Update: 'ReasonForExamProcedureDefs.Update', Delete: 'ReasonForExamProcedureDefs.Delete'
+  },
+  /** ReasonForExamBranchDefs işlemleri backend ile aynı yetki kodlarını kullanır. */
+  ReasonForExamBranchDefs: {
+    View: 'ReasonForExamBranchDefs.View', Query: 'ReasonForExamBranchDefs.Query',
+    Create: 'ReasonForExamBranchDefs.Create', Update: 'ReasonForExamBranchDefs.Update', Delete: 'ReasonForExamBranchDefs.Delete'
+  },
+  /** Procedures işlemleri backend ile aynı yetki kodlarını kullanır. */
+  Procedures: {
+    View: 'Procedures.View', Query: 'Procedures.Query',
+    Create: 'Procedures.Create', Update: 'Procedures.Update', Delete: 'Procedures.Delete'
+  },
   Hospitals: {
     View: 'Hospitals.View', Query: 'Hospitals.Query',
     Create: 'Hospitals.Create', Update: 'Hospitals.Update', Delete: 'Hospitals.Delete'

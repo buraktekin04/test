@@ -17,6 +17,9 @@ public sealed class DeleteReportTypeDefCommandHandler(IKLMNDbContext db)
         if (await db.HospitalReportTypes.IgnoreQueryFilters().AnyAsync(x =>
             !x.IsDeleted && x.ReportTypeDefId == item.Id, ct))
             throw new ReportTypeConflictException("Bu rapor türü sağlık tesisine bağlı olduğundan silinemez.");
+        if (await db.ReasonForExamReportTypes.IgnoreQueryFilters().AnyAsync(x =>
+            !x.IsDeleted && x.ReportTypeDefId == item.Id, ct))
+            throw new ReportTypeConflictException("Silinmemiş muayene sebebi eşleştirmesi bulunan tanım silinemez.");
         db.ReportTypeDefs.Remove(item);
         await db.SaveChangesAsync(ct);
     }

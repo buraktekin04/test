@@ -60,6 +60,30 @@ export class NavigationService {
           permissionModule: 'Towns'
         },
         {
+          label: 'Muayene Sebebi', icon: 'pi pi-file-edit',
+          route: '/app/reasons-for-examination', permissionModule: 'ReasonsForExaminations'
+        },
+        {
+          label: 'Muayene Sebebi Rapor Türleri', icon: 'pi pi-list',
+          route: '/app/reason-exam-report-types', permissionModule: 'ReasonForExamReportTypes'
+        },
+        {
+          label: 'Kullanılmayacak Hasta Grupları', icon: 'pi pi-users',
+          route: '/app/reason-exam-unused-admission-types', permissionModule: 'ReasonForExamUnusedHcAdmissionTypes'
+        },
+        {
+          label: 'Gereken Tetkikler', icon: 'pi pi-heart',
+          route: '/app/reason-exam-procedures', permissionModule: 'ReasonForExamProcedureDefs'
+        },
+        {
+          label: 'Muayene Gereken Branşlar', icon: 'pi pi-sitemap',
+          route: '/app/reason-exam-branches', permissionModule: 'ReasonForExamBranchDefs'
+        },
+        {
+          label: 'Tetkik Tanımları', icon: 'pi pi-list-check',
+          route: '/app/procedures', permissionModule: 'Procedures'
+        },
+        {
           label: 'Sağlık Tesisi Tanımları',
           icon: 'pi pi-building',
           route: '/app/hospitals',

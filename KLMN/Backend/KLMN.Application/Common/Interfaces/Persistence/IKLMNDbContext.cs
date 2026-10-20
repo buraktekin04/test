@@ -34,6 +34,24 @@ public interface IKLMNDbContext
     DbSet<HospitalDef> HospitalDefs { get; }
 
     /// <summary>Sağlık tesisi–rapor türü eşleştirmeleri.</summary>
+    /// <summary>Muayene sebepleri DbSet.</summary>
+    DbSet<ReasonForExaminationDef> ReasonForExaminationDefs { get; }
+
+    /// <summary>Tetkik tanımları DbSet.</summary>
+    DbSet<ProcedureDef> ProcedureDefs { get; }
+
+    /// <summary>Muayene rapor türü eşleştirmeleri DbSet.</summary>
+    DbSet<ReasonForExamReportType> ReasonForExamReportTypes { get; }
+
+    /// <summary>Kullanılmayacak hasta grupları DbSet.</summary>
+    DbSet<ReasonForExamUnusedHcAdmissionType> ReasonForExamUnusedHcAdmissionTypes { get; }
+
+    /// <summary>Gereken tetkikler DbSet.</summary>
+    DbSet<ReasonForExamProcedureDef> ReasonForExamProcedureDefs { get; }
+
+    /// <summary>Muayene branşları DbSet.</summary>
+    DbSet<ReasonForExamBranchDef> ReasonForExamBranchDefs { get; }
+
     DbSet<HospitalReportType> HospitalReportTypes { get; }
 
     /// <summary>Rapor Türü Tanımları veri kümesi.</summary>

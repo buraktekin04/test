@@ -179,6 +179,42 @@ BaseEntity zaten şunları taşır:
 
 4. ŞU AN KODU BULUNAN MODÜLLER / EKRANLAR
 ---------------------------------------
+Muayene Sebebi modül ailesi (20.10.2026)
+- Kaynak class yorumları UI başlıkları için ESASTIR:
+  ReasonForExaminationDef: "Muayene Sebebi" (ANA EKRAN);
+  ReasonForExamReportType: "Muayene Sebebi Rapor Türleri";
+  ReasonForExamUnusedHcAdmissionType: "Kullanılmayacak Hasta Grupları";
+  ReasonForExamProcedureDef: "Gereken Tetkikler";
+  ReasonForExamBranchDef: "Muayene Gereken Branşlar".
+- Ana ekranda dört eşleştirme türünün aktif adları sütunlarda topluca
+  listelenir; boşsa "Yok". Eşleştirme ekranına reasonId ile geçilir.
+- Alt ekranlar başka tanım izinlerine bağımlı olmadan kendi
+  permission kapsamındaki options API'leriyle seçim yapar.
+- Rapor/başvuru grubu/branş mevcut KLMN referans tablolarına bağlanır.
+  ProcedureDef mevcut KLMN'de olmadığı için Code/Name üzerinden ASGARİ
+  referans tablo ve ayrı Tetkik Tanımları ekranı eklendi. Eski
+  ProcedureDef'in gerçek alanları ve cinsiyet INT kodları henüz
+  doğrulanmadı; bunlar iş kullanıcıları/legacy model ile teyit edilmeli.
+- Backend'de ReasonForExaminationDef : EffectiveDatedEntity, dört
+  alt eşleştirme : BaseEntity; ProcedureDef : EffectiveDatedEntity.
+  Dört ayrı FK tablosu, soft-delete partial unique index,
+  DeleteBehavior.Restrict, xmin concurrency, audit, CRUD + Query,
+  Excel, permission seed ve exception mappings eklendi.
+- Eski modelin StartingAge/EndingAge/Gender INT alanları gereken
+  tetkikler ve muayene gereken branşlara taşındı. Yaş aralığı
+  doğrulanıyor; Gender kod anlamı varsayılmıyor.
+- Angular 21 + PrimeNG standart filtreleme/sayfalama,
+  sadece frontend p-table sorting, pResizableColumn, durum işlemleri,
+  confirm dialog, toast hataları ve audit korunur.
+- Referans: KLMN/MUAYENE_SEBEBI_VE_ILISKILI_TANIMLAR_KURULUM.md
+- KLMN/Tests/ReasonsForExamination.Regression/ kaynakları eklendi.
+- ŞU AN BİLDİĞİMİZ TEST DURUMU: GitHub statik kaynak kontrolü yapıldı;
+  gerçek dotnet build, npm Angular build, PostgreSQL migration ve
+  browser/entegrasyon testleri ÇALIŞTIRILMADI.
+- Mevcut EF ModelSnapshot / migration zinciri repo'da yok:
+  yeni tablolar için migration ÜRETİLMEDİ/UYGULANMADI; kullanıcı
+  ortamındaki gerçek migration geçmişiyle eşleştirilmelidir.
+
 Kullanıcı Tanımları:
   UI: /app/users
   Backend: Users CQRS + API.
@@ -584,6 +620,19 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-20 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-20 (Muayene Sebebi ve dört alt eşleştirme; asgari Tetkik Tanımları):
+  Fotoğraflardaki 5 class yorumu UI başlığına dönüştürüldü.
+  6 yeni entity/EF configuration, ayrı CQRS Create/Update/Delete/Status,
+  arama/sayfalama/seçim sorguları, CRUD/Excel controller'ları,
+  role permission seed, audit ve ilişki güvenliği, Angular menü/route,
+  ana ekranda alt tanımların adlarını gösteren sütunlar,
+  dört bağımsız alt tanım ekranı ve gereken tetkik referans ekranı.
+  Yaş/cinsiyet INT korunur; gerçek cinsiyet kodlarının ve
+  ProcedureDef eski alanlarının doğrulaması bekleniyor.
+  Test kaynakları ve kurulum notu eklendi; GERÇEK BUILD, MIGRATION,
+  DB VE TARAYICI TESTLERİ YAPILMADI. Bu değişiklik tek commit
+  olarak ana dala gönderilecek.
+
 - 2026-10-20 (aynı commit — Tesis bazlı çok satırlı rapor görünümü):
   Sağlık Tesisi Rapor Türleri tablosunda her sağlık tesisi TEK
   tablolu satırdır. "Verebildiği Rapor Türleri" hücresinde o
@@ -1220,6 +1269,11 @@ geliştirme özeti mutlaka güncellenmelidir.
 --------------------------------------------
 Bu liste otomatik görev emri değildir; kullanıcı hangi geliştirmeyle
 devam etmek istediğini yeni mesajında söyleyecek.
+- Muayene Sebebi, Tetkik Tanımları ve dört eşleştirme tablosunun
+  migration zinciri güvenli biçimde hazırlanıp test DB'ye uygulanmalı.
+  ProcedureDef eski kaynak alanları ve Gender sayısal kodları teyit edilmeli.
+  Yeni ekranlarda API/DB/browser CRUD, permission, audit, 409 ve durum
+  testleri tamamlanmalı.
 - En yakın teknik kurulum konusu: PurchaseNumberDefs, CountryDefs,
   CityDefs, TownDefs, MilitarySchoolDefs, MilitaryClassDefs, MilitaryClassGroupDefs ve MilitaryClassGroupRelations için mevcut migration zinciriyle
   migration, SQL script inceleme ve test veritabanına uygulama.
@@ -1286,6 +1340,7 @@ devam etmek istediğini yeni mesajında söyleyecek.
   KLMN/ASKERI_OKUL_TANIMLARI_KURULUM.md
   KLMN/ASKERI_SINIF_TANIMLARI_KURULUM.md
   KLMN/ASKERI_SINIF_GRUBU_VE_ESLESTIRME_KURULUM.md
+  KLMN/MUAYENE_SEBEBI_VE_ILISKILI_TANIMLAR_KURULUM.md
   KLMN/ADMIN_ROLU_KORUMA.md
   KLMN/AUDIT_LOG_KURULUM.md
   KLMN/EXCEL_EXPORT_KURULUM.md

@@ -1,3 +1,9 @@
+using KLMN.Application.ReasonForExamBranchDefs.Exceptions;
+using KLMN.Application.ReasonForExamProcedureDefs.Exceptions;
+using KLMN.Application.ReasonForExamUnusedHcAdmissionTypes.Exceptions;
+using KLMN.Application.ReasonForExamReportTypes.Exceptions;
+using KLMN.Application.Procedures.Exceptions;
+using KLMN.Application.ReasonForExaminations.Exceptions;
 using KLMN.Application.ForcesCommands.Exceptions;
 using KLMN.Application.PurchaseNumbers.Exceptions;
 using KLMN.Application.Countries.Exceptions;
@@ -196,6 +202,18 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             MilitaryClassConflictException =>
                 new ProblemDetails { Status = StatusCodes.Status409Conflict,
                     Title = "Askerî sınıf işlemi gerçekleştirilemedi.", Detail = exception.Message },
+            ReasonForExaminationNotFoundException => new ProblemDetails { Status=404, Title="Kayıt bulunamadı.", Detail=exception.Message },
+            ReasonForExaminationConflictException => new ProblemDetails { Status=409, Title="Eşleştirme işlemi gerçekleştirilemedi.", Detail=exception.Message },
+            ProcedureNotFoundException => new ProblemDetails { Status=404, Title="Kayıt bulunamadı.", Detail=exception.Message },
+            ProcedureConflictException => new ProblemDetails { Status=409, Title="Eşleştirme işlemi gerçekleştirilemedi.", Detail=exception.Message },
+            ReasonForExamReportTypeNotFoundException => new ProblemDetails { Status=404, Title="Kayıt bulunamadı.", Detail=exception.Message },
+            ReasonForExamReportTypeConflictException => new ProblemDetails { Status=409, Title="Eşleştirme işlemi gerçekleştirilemedi.", Detail=exception.Message },
+            ReasonForExamUnusedHcAdmissionTypeNotFoundException => new ProblemDetails { Status=404, Title="Kayıt bulunamadı.", Detail=exception.Message },
+            ReasonForExamUnusedHcAdmissionTypeConflictException => new ProblemDetails { Status=409, Title="Eşleştirme işlemi gerçekleştirilemedi.", Detail=exception.Message },
+            ReasonForExamProcedureDefNotFoundException => new ProblemDetails { Status=404, Title="Kayıt bulunamadı.", Detail=exception.Message },
+            ReasonForExamProcedureDefConflictException => new ProblemDetails { Status=409, Title="Eşleştirme işlemi gerçekleştirilemedi.", Detail=exception.Message },
+            ReasonForExamBranchDefNotFoundException => new ProblemDetails { Status=404, Title="Kayıt bulunamadı.", Detail=exception.Message },
+            ReasonForExamBranchDefConflictException => new ProblemDetails { Status=409, Title="Eşleştirme işlemi gerçekleştirilemedi.", Detail=exception.Message },
             HospitalNotFoundException =>
                 new ProblemDetails { Status = StatusCodes.Status404NotFound,
                     Title = "Sağlık tesisi bulunamadı.", Detail = exception.Message },

@@ -9,7 +9,9 @@ public sealed class GetAuditLogsQueryValidator : AbstractValidator<GetAuditLogsQ
         ["User", "Role", "MilitaryUnitDef", "ForcesCommandDef",
          "MilitarySchoolDef", "MilitaryOfficeDef", "HcAdmissionTypeDef", "HcConnectedDecisionDef", "BranchDef", "HospitalDef", "HospitalReportType", "ReportTypeDef", "RankGroupDef", "RankDef", "MilitaryClassDef", "MilitaryClassGroupDef",
          "MilitaryClassGroupRelation", "CountryDef", "CityDef", "TownDef",
-         "PurchaseNumberDef", "Permission", "UserRole", "RolePermission",
+         "ReasonForExaminationDef", "ProcedureDef", "ReasonForExamReportType",
+         "ReasonForExamUnusedHcAdmissionType", "ReasonForExamProcedureDef",
+         "ReasonForExamBranchDef",         "PurchaseNumberDef", "Permission", "UserRole", "RolePermission",
          "UserPermission", "UserAgreementPdf"];
 
     private static readonly string[] Actions =

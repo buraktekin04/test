@@ -283,4 +283,64 @@ public static class PermissionCodes
         /// <summary>Kayıtların yazıcıya aktarılabilmesi için gereken yetki kodudur.</summary>
         public const string Print = "Investigations.Print";
     }
+    /// <summary>Muayene Sebebi ekranının işlem yetkileri.</summary>
+    public static class ReasonsForExaminations
+    {
+        public const string View = "ReasonsForExaminations.View";
+        public const string Query = "ReasonsForExaminations.Query";
+        public const string Create = "ReasonsForExaminations.Create";
+        public const string Update = "ReasonsForExaminations.Update";
+        public const string Delete = "ReasonsForExaminations.Delete";
+    }
+
+    /// <summary>Tetkik Tanımları ekranının işlem yetkileri.</summary>
+    public static class Procedures
+    {
+        public const string View = "Procedures.View";
+        public const string Query = "Procedures.Query";
+        public const string Create = "Procedures.Create";
+        public const string Update = "Procedures.Update";
+        public const string Delete = "Procedures.Delete";
+    }
+
+    /// <summary>Muayene Sebebi Rapor Türleri ekranının işlem yetkileri.</summary>
+    public static class ReasonForExamReportTypes
+    {
+        public const string View = "ReasonForExamReportTypes.View";
+        public const string Query = "ReasonForExamReportTypes.Query";
+        public const string Create = "ReasonForExamReportTypes.Create";
+        public const string Update = "ReasonForExamReportTypes.Update";
+        public const string Delete = "ReasonForExamReportTypes.Delete";
+    }
+
+    /// <summary>Kullanılmayacak Hasta Grupları ekranının işlem yetkileri.</summary>
+    public static class ReasonForExamUnusedHcAdmissionTypes
+    {
+        public const string View = "ReasonForExamUnusedHcAdmissionTypes.View";
+        public const string Query = "ReasonForExamUnusedHcAdmissionTypes.Query";
+        public const string Create = "ReasonForExamUnusedHcAdmissionTypes.Create";
+        public const string Update = "ReasonForExamUnusedHcAdmissionTypes.Update";
+        public const string Delete = "ReasonForExamUnusedHcAdmissionTypes.Delete";
+    }
+
+    /// <summary>Gereken Tetkikler ekranının işlem yetkileri.</summary>
+    public static class ReasonForExamProcedureDefs
+    {
+        public const string View = "ReasonForExamProcedureDefs.View";
+        public const string Query = "ReasonForExamProcedureDefs.Query";
+        public const string Create = "ReasonForExamProcedureDefs.Create";
+        public const string Update = "ReasonForExamProcedureDefs.Update";
+        public const string Delete = "ReasonForExamProcedureDefs.Delete";
+    }
+
+    /// <summary>Muayene Gereken Branşlar ekranının işlem yetkileri.</summary>
+    public static class ReasonForExamBranchDefs
+    {
+        public const string View = "ReasonForExamBranchDefs.View";
+        public const string Query = "ReasonForExamBranchDefs.Query";
+        public const string Create = "ReasonForExamBranchDefs.Create";
+        public const string Update = "ReasonForExamBranchDefs.Update";
+        public const string Delete = "ReasonForExamBranchDefs.Delete";
+    }
+
 }

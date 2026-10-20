@@ -1,3 +1,5 @@
+using KLMN.Application.Branches.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using KLMN.Application.Common.Interfaces.Persistence;
 using KLMN.Application.Branches.Commands.Common;
 using MediatR;
@@ -12,6 +14,9 @@ public sealed class DeleteBranchDefCommandHandler(IKLMNDbContext db)
     public async Task Handle(DeleteBranchDefCommand request, CancellationToken ct)
     {
         var item = await BranchDefRules.LoadForChangeAsync(db, request.Id, request.Version, ct);
+        if (await db.ReasonForExamBranchDefs.IgnoreQueryFilters().AnyAsync(x =>
+            !x.IsDeleted && x.BranchDefId == item.Id, ct))
+            throw new BranchConflictException("Silinmemiş muayene sebebi eşleştirmesi bulunan tanım silinemez.");
         db.BranchDefs.Remove(item);
         await db.SaveChangesAsync(ct);
     }

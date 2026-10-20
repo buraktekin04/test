@@ -32,6 +32,10 @@ internal static class AuditReferenceDisplayResolver
             ["CityId"] = "CityDef",
             ["RefereeHospitalId"] = "HospitalDef",
             ["HospitalDefId"] = "HospitalDef",
+            ["ReasonForExaminationDefId"] = "ReasonForExaminationDef",
+            ["HcAdmissionTypeDefId"] = "HcAdmissionTypeDef",
+            ["ProcedureDefId"] = "ProcedureDef",
+            ["BranchDefId"] = "BranchDef",
             ["ReportTypeDefId"] = "ReportTypeDef"
         };
 
@@ -152,6 +156,34 @@ internal static class AuditReferenceDisplayResolver
                 .Select(x => new { x.Id, x.Name, x.Code })
                 .ToDictionaryAsync(x => x.Id, x => x.Name + " (" + x.Code + ")", cancellationToken);
 
+        var ReasonForExaminationDefIds = references["ReasonForExaminationDef"];
+        var ReasonForExaminationDefLabels = ReasonForExaminationDefIds.Count == 0 ? new Dictionary<Guid,string>() :
+            await dbContext.ReasonForExaminationDefs.IgnoreQueryFilters().AsNoTracking()
+                .Where(x => ReasonForExaminationDefIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.Description, x.Code })
+                .ToDictionaryAsync(x => x.Id, x => x.Description + " (" + x.Code + ")", cancellationToken);
+
+        var HcAdmissionTypeDefIds = references["HcAdmissionTypeDef"];
+        var HcAdmissionTypeDefLabels = HcAdmissionTypeDefIds.Count == 0 ? new Dictionary<Guid,string>() :
+            await dbContext.HcAdmissionTypeDefs.IgnoreQueryFilters().AsNoTracking()
+                .Where(x => HcAdmissionTypeDefIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.Name, x.Code })
+                .ToDictionaryAsync(x => x.Id, x => x.Name + " (" + x.Code + ")", cancellationToken);
+
+        var ProcedureDefIds = references["ProcedureDef"];
+        var ProcedureDefLabels = ProcedureDefIds.Count == 0 ? new Dictionary<Guid,string>() :
+            await dbContext.ProcedureDefs.IgnoreQueryFilters().AsNoTracking()
+                .Where(x => ProcedureDefIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.Name, x.Code })
+                .ToDictionaryAsync(x => x.Id, x => x.Name + " (" + x.Code + ")", cancellationToken);
+
+        var BranchDefIds = references["BranchDef"];
+        var BranchDefLabels = BranchDefIds.Count == 0 ? new Dictionary<Guid,string>() :
+            await dbContext.BranchDefs.IgnoreQueryFilters().AsNoTracking()
+                .Where(x => BranchDefIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.Name, x.Code })
+                .ToDictionaryAsync(x => x.Id, x => x.Name + " (" + x.Code + ")", cancellationToken);
+
         var labels = new Dictionary<string, Dictionary<Guid, string>>(StringComparer.Ordinal)
         {
             ["Role"] = roleLabels,
@@ -162,7 +194,11 @@ internal static class AuditReferenceDisplayResolver
             ["RankGroupDef"] = rankGroupLabels,
             ["CityDef"] = cityLabels,
             ["HospitalDef"] = hospitalLabels,
-            ["ReportTypeDef"] = reportTypeLabels
+            ["ReportTypeDef"] = reportTypeLabels,
+            ["ReasonForExaminationDef"] = ReasonForExaminationDefLabels,
+            ["HcAdmissionTypeDef"] = HcAdmissionTypeDefLabels,
+            ["ProcedureDef"] = ProcedureDefLabels,
+            ["BranchDef"] = BranchDefLabels
         };
 
         var results = new List<AuditLogResponse>(entries.Count);

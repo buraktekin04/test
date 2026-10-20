@@ -18,6 +18,9 @@ public sealed class ChangeStatusReportTypeDefCommandHandler(IKLMNDbContext db)
         if (!request.IsActive && await db.HospitalReportTypes.IgnoreQueryFilters().AnyAsync(x =>
             !x.IsDeleted && x.IsActive && x.ReportTypeDefId == item.Id, ct))
             throw new ReportTypeConflictException("Aktif tesis eşleştirmesi bulunan rapor türü pasifleştirilemez.");
+        if (!request.IsActive && await db.ReasonForExamReportTypes.IgnoreQueryFilters().AnyAsync(x =>
+            !x.IsDeleted && x.IsActive && x.ReportTypeDefId == item.Id, ct))
+            throw new ReportTypeConflictException("Aktif muayene sebebi eşleştirmesi bulunan tanım pasifleştirilemez.");
         item.IsActive = request.IsActive;
         await db.SaveChangesAsync(ct);
         return new ReportTypeDefMutationResponse(item.Id, item.Version);

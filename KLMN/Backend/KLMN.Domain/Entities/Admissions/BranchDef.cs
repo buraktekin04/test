@@ -14,4 +14,7 @@ public sealed class BranchDef : EffectiveDatedEntity
 
     /// <summary>Branşnın adı.</summary>
     public string Name { get; set; } = string.Empty;
+    /// <summary>Bu branşı gerektiren muayene sebepleri.</summary>
+    public ICollection<ReasonForExamBranchDef> ExaminationReasons { get; set; } = new List<ReasonForExamBranchDef>();
+
 }

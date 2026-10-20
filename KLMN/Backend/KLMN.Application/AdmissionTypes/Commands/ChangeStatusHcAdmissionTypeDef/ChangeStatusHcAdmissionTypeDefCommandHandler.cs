@@ -1,3 +1,5 @@
+using KLMN.Application.AdmissionTypes.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using KLMN.Application.Common.Interfaces.Persistence;
 using KLMN.Application.AdmissionTypes.Commands.Common;
 using KLMN.Application.AdmissionTypes.Responses;
@@ -14,6 +16,9 @@ public sealed class ChangeStatusHcAdmissionTypeDefCommandHandler(IKLMNDbContext 
         ChangeStatusHcAdmissionTypeDefCommand request, CancellationToken ct)
     {
         var item = await HcAdmissionTypeDefRules.LoadForChangeAsync(db, request.Id, request.Version, ct);
+        if (!request.IsActive && await db.ReasonForExamUnusedHcAdmissionTypes.IgnoreQueryFilters().AnyAsync(x =>
+            !x.IsDeleted && x.IsActive && x.HcAdmissionTypeDefId == item.Id, ct))
+            throw new AdmissionTypeConflictException("Aktif muayene sebebi eşleştirmesi bulunan tanım pasifleştirilemez.");
         item.IsActive = request.IsActive;
         await db.SaveChangesAsync(ct);
         return new HcAdmissionTypeDefMutationResponse(item.Id, item.Version);

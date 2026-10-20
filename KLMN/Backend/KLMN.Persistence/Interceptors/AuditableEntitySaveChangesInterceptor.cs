@@ -30,6 +30,15 @@ public sealed class AuditableEntitySaveChangesInterceptor(
             ["ForcesCommandDef"] = Fields("Name", "Code", "IsActive", "ValidFrom", "ValidTo"),
             ["HospitalDef"] = Fields("Code", "Name", "CityId", "RefereeHospitalId",
                 "ValidFrom", "ValidTo", "IsActive"),
+            ["ReasonForExaminationDef"] = Fields("Code", "Description", "DispatchRequired",
+                "ClassificationExamination", "Objectionable", "ValidFrom", "ValidTo", "IsActive"),
+            ["ProcedureDef"] = Fields("Code", "Name", "ValidFrom", "ValidTo", "IsActive"),
+            ["ReasonForExamReportType"] = Fields("ReasonForExaminationDefId", "ReportTypeDefId", "IsActive"),
+            ["ReasonForExamUnusedHcAdmissionType"] = Fields("ReasonForExaminationDefId", "HcAdmissionTypeDefId", "IsActive"),
+            ["ReasonForExamProcedureDef"] = Fields("ReasonForExaminationDefId", "ProcedureDefId", "StartingAge",
+                "EndingAge", "Gender", "IsActive"),
+            ["ReasonForExamBranchDef"] = Fields("ReasonForExaminationDefId", "BranchDefId", "StartingAge",
+                "EndingAge", "Gender", "IsActive"),
             ["HospitalReportType"] = Fields("HospitalDefId", "ReportTypeDefId", "IsActive"),
             ["ReportTypeDef"] = Fields("Code", "Name", "ValidFrom", "ValidTo", "IsActive"),
             ["RankGroupDef"] = Fields("Code", "Name", "ShortName", "ValidFrom", "ValidTo", "IsActive"),
@@ -219,6 +228,9 @@ public sealed class AuditableEntitySaveChangesInterceptor(
     {
         "UserRole" or "UserPermission" or "UserAgreementPdf" =>
             ("User", (Guid?)entry.Property("UserId").CurrentValue),
+        "ReasonForExamReportType" or "ReasonForExamUnusedHcAdmissionType"
+        or "ReasonForExamProcedureDef" or "ReasonForExamBranchDef" =>
+            ("ReasonForExaminationDef", (Guid?)entry.Property("ReasonForExaminationDefId").CurrentValue),
         "RolePermission" =>
             ("Role", (Guid?)entry.Property("RoleId").CurrentValue),
         _ => (null, null)

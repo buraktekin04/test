@@ -108,6 +108,54 @@ export const routes: Routes = [
             .then(component => component.MilitaryClassListComponent)
       },
       {
+        path: 'reasons-for-examination',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'ReasonsForExaminations' },
+        loadComponent: () =>
+          import('./features/reasons/reason-list/reason-list.component')
+            .then(c => c.ReasonListComponent)
+      },
+      {
+        path: 'procedures',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'Procedures' },
+        loadComponent: () =>
+          import('./features/procedures/procedure-list/procedure-list.component')
+            .then(c => c.ProcedureListComponent)
+      },
+      {
+        path: 'reason-exam-report-types',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'ReasonForExamReportTypes', relationKind: 'reportTypes' },
+        loadComponent: () =>
+          import('./features/reasons/relation-list/relation-list.component')
+            .then(c => c.ReasonRelationListComponent)
+      },
+      {
+        path: 'reason-exam-unused-admission-types',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'ReasonForExamUnusedHcAdmissionTypes', relationKind: 'unusedAdmissionTypes' },
+        loadComponent: () =>
+          import('./features/reasons/relation-list/relation-list.component')
+            .then(c => c.ReasonRelationListComponent)
+      },
+      {
+        path: 'reason-exam-procedures',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'ReasonForExamProcedureDefs', relationKind: 'procedures' },
+        loadComponent: () =>
+          import('./features/reasons/relation-list/relation-list.component')
+            .then(c => c.ReasonRelationListComponent)
+      },
+      {
+        path: 'reason-exam-branches',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'ReasonForExamBranchDefs', relationKind: 'branches' },
+        loadComponent: () =>
+          import('./features/reasons/relation-list/relation-list.component')
+            .then(c => c.ReasonRelationListComponent)
+      },
+      {
         path: 'hospitals',
         canActivate: [permissionGuard],
         data: { permissionModule: 'Hospitals' },
