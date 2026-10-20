@@ -70,6 +70,11 @@ internal static class IdentitySeedData
         new("Muayene Sebebi - Güncelleme", PermissionCodes.ReasonsForExaminations.Update, "ReasonsForExaminations", 40),
         new("Muayene Sebebi - Silme", PermissionCodes.ReasonsForExaminations.Delete, "ReasonsForExaminations", 50),
 
+        new("Tetkik Türü Tanımları - Görüntüleme", PermissionCodes.ProcedureTypes.View, "ProcedureTypes", 10),
+        new("Tetkik Türü Tanımları - Sorgulama", PermissionCodes.ProcedureTypes.Query, "ProcedureTypes", 20),
+        new("Tetkik Türü Tanımları - Oluşturma", PermissionCodes.ProcedureTypes.Create, "ProcedureTypes", 30),
+        new("Tetkik Türü Tanımları - Güncelleme", PermissionCodes.ProcedureTypes.Update, "ProcedureTypes", 40),
+        new("Tetkik Türü Tanımları - Silme", PermissionCodes.ProcedureTypes.Delete, "ProcedureTypes", 50),
         new("Tetkik Tanımları - Görüntüleme", PermissionCodes.Procedures.View, "Procedures", 10),
         new("Tetkik Tanımları - Sorgulama", PermissionCodes.Procedures.Query, "Procedures", 20),
         new("Tetkik Tanımları - Oluşturma", PermissionCodes.Procedures.Create, "Procedures", 30),

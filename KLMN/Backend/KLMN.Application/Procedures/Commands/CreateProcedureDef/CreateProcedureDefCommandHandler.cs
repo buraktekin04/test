@@ -13,13 +13,18 @@ public sealed class CreateProcedureDefCommandHandler(IKLMNDbContext db)
     /// <summary>Validasyonu yapılan isteği concurrency korumasıyla kaydeder.</summary>
     public async Task<ProcedureDefMutationResponse> Handle(CreateProcedureDefCommand request, CancellationToken ct)
     {
-        await ProcedureDefRules.EnsureUniqueCodeAsync(db, request.Code, null, ct);
+        await ProcedureDefRules.EnsureUniqueCodeAsync(db, request.ProcedureCode, null, ct);
+        await ProcedureDefRules.EnsureTypeAsync(db,request.ProcedureType,ct);
         var item = new ProcedureDef
         {
-            Code = request.Code.Trim().ToUpperInvariant(),
+            ProcedureCode = request.ProcedureCode.Trim().ToUpperInvariant(),
             Name = request.Name.Trim(),
-            ValidFrom = request.ValidFrom,
-            ValidTo = request.ValidTo
+            StartDate = request.StartDate,
+            EndDate = request.EndDate,
+            RequiresNumericResult = request.RequiresNumericResult,
+            RequiresReferenceRange = request.RequiresReferenceRange,
+            RequiresDeviationInfo = request.RequiresDeviationInfo,
+            ProcedureType = request.ProcedureType
         };
         await db.ProcedureDefs.AddAsync(item, ct);
         await db.SaveChangesAsync(ct);

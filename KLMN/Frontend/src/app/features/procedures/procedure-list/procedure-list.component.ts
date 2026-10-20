@@ -16,11 +16,11 @@ import { PermissionCodes } from '../../../core/permissions/constants/permission-
 import { PermissionService } from '../../../core/permissions/services/permission.service';
 import { AuditHistoryComponent } from '../../../shared/audit-history/audit-history.component';
 import {
- ProcedureDefItem, ProcedureFields, ProcedureQuery, ProcedureDefMutationResponse
+ ProcedureDefItem, ProcedureFields, ProcedureQuery, ProcedureDefMutationResponse, ProcedureTypeOption
 } from '../models/procedures.model';
 import { ProcedureService } from '../services/procedures.service';
 
-type FormField = 'code' | 'name' | 'validFrom' | 'validTo';
+type FormField = 'procedureCode' | 'name' | 'startDate' | 'endDate' | 'procedureType';
 
 /** Tetkik Tanımları: backend filtreleri, ayrı işlem yetkileri ve sade form. */
 @Component({
@@ -37,11 +37,12 @@ export class ProcedureListComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly permissions = inject(PermissionService);
   private readonly confirmation = inject(ConfirmationService);
-  public readonly canCreate = computed(() => this.permissions.has(PermissionCodes.Branches.Create));
-  public readonly canUpdate = computed(() => this.permissions.has(PermissionCodes.Branches.Update));
-  public readonly canDelete = computed(() => this.permissions.has(PermissionCodes.Branches.Delete));
-  public readonly canExport = computed(() => this.permissions.has(PermissionCodes.Branches.Query));
+  public readonly canCreate = computed(() => this.permissions.has(PermissionCodes.Procedures.Create));
+  public readonly canUpdate = computed(() => this.permissions.has(PermissionCodes.Procedures.Update));
+  public readonly canDelete = computed(() => this.permissions.has(PermissionCodes.Procedures.Delete));
+  public readonly canExport = computed(() => this.permissions.has(PermissionCodes.Procedures.Query));
   public readonly canAudit = computed(() => this.permissions.has(PermissionCodes.AuditLogs.View));
+  public readonly typeOptions = signal<ProcedureTypeOption[]>([]);
   public readonly records = signal<ProcedureDefItem[]>([]);
   public readonly totalCount = signal(0);
   public readonly pageNumber = signal(1);
@@ -67,10 +68,14 @@ export class ProcedureListComponent implements OnInit {
     isActive: this.fb.control<boolean | null>(null),
   });
   public readonly itemForm = this.fb.nonNullable.group({
-    code: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/^[A-Za-z0-9_-]+$/)]],
+    procedureCode: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/^[A-Za-z0-9_-]+$/)]],
     name: ['', [Validators.required, Validators.maxLength(250)]],
-    validFrom: [''],
-    validTo: ['']
+    startDate: [''],
+    endDate: [''],
+    requiresNumericResult:false,
+    requiresReferenceRange:false,
+    requiresDeviationInfo:false,
+    procedureType: this.fb.control<number|null>(null,Validators.required)
   });
   public readonly totalPages = computed(() => Math.max(1, Math.ceil(this.totalCount() / this.pageSize())));
   public readonly rangeStart = computed(() => this.totalCount() ? (this.pageNumber()-1)*this.pageSize()+1 : 0);
@@ -85,6 +90,15 @@ export class ProcedureListComponent implements OnInit {
   }
   public ngOnInit(): void {
     this.loadRecords();
+    this.loadTypeOptions();
+  }
+
+  /** Diğer modülün permission'ına ihtiyaç duymadan dinamik türleri getirir. */
+  private loadTypeOptions(selectedCode?:number|null):void {
+    this.service.typeOptions(selectedCode).subscribe({
+      next:types=>this.typeOptions.set(types),
+      error:(e:HttpErrorResponse)=>this.errorMessage.set(this.errorText(e))
+    });
   }
 
   private query(): ProcedureQuery {
@@ -159,7 +173,9 @@ export class ProcedureListComponent implements OnInit {
     if (!this.canCreate() || this.saving()) return;
     ++this.dialogRequestId;
     this.editing.set(null);
-    this.itemForm.reset({ code:'', name:'', validFrom:'', validTo:'' });
+    this.itemForm.reset({procedureCode:'',name:'',startDate:'',endDate:'',
+      requiresNumericResult:false,requiresReferenceRange:false,requiresDeviationInfo:false,procedureType:null});
+    this.loadTypeOptions();
     this.attemptedSave.set(false);
     this.fieldServerErrors.set({});
     this.formError.set(null);
@@ -176,9 +192,14 @@ export class ProcedureListComponent implements OnInit {
       next: detail => {
         if (requestId !== this.dialogRequestId) return;
         this.editing.set(detail);
-        this.itemForm.reset({ code: detail.code, name: detail.name,
-          validFrom: ValidityPeriodUtils.toLocalInput(detail.validFrom),
-          validTo: ValidityPeriodUtils.toLocalInput(detail.validTo) });
+        this.itemForm.reset({ procedureCode: detail.procedureCode, name: detail.name,
+          startDate: ValidityPeriodUtils.toLocalInput(detail.startDate),
+          endDate: ValidityPeriodUtils.toLocalInput(detail.endDate),
+          requiresNumericResult:detail.requiresNumericResult,
+          requiresReferenceRange:detail.requiresReferenceRange,
+          requiresDeviationInfo:detail.requiresDeviationInfo,
+          procedureType:detail.procedureType });
+        this.loadTypeOptions(detail.procedureType);
         this.attemptedSave.set(false);
         this.fieldServerErrors.set({});
         this.formError.set(null);
@@ -201,9 +222,9 @@ export class ProcedureListComponent implements OnInit {
     if (control.hasError('required')) return 'Bu alan zorunludur.';
     if (control.hasError('maxlength')) return 'Karakter sınırı aşıldı.';
     if (control.hasError('pattern')) return 'Girdiğiniz değer uygun biçimde değil.';
-    if (field === 'validTo') {
+    if (field === 'endDate') {
       const v=this.itemForm.getRawValue();
-      if (!ValidityPeriodUtils.hasValidRange(v.validFrom, v.validTo))
+      if (!ValidityPeriodUtils.hasValidRange(v.startDate, v.endDate))
         return 'Bitiş tarihi başlangıç tarihinden sonra olmalıdır.';
     }
     return null;
@@ -224,20 +245,25 @@ export class ProcedureListComponent implements OnInit {
     this.fieldServerErrors.set({});
     if (this.itemForm.invalid) {
       this.itemForm.markAllAsTouched();
-      const first = (['code','name'] as FormField[])
+      const first = (['procedureCode','name','procedureType'] as FormField[])
         .find(f => this.itemForm.controls[f].invalid);
       if (first) this.focusField(first);
       return;
     }
     const values = this.itemForm.getRawValue();
-    if (!ValidityPeriodUtils.hasValidRange(values.validFrom, values.validTo)) {
-      this.focusField('validTo');
+    if (!ValidityPeriodUtils.hasValidRange(values.startDate, values.endDate)) {
+      this.focusField('endDate');
       return;
     }
     const fields: ProcedureFields = {
-      code: values.code.trim().toUpperCase(),
+      procedureCode: values.procedureCode.trim().toUpperCase(),
       name: values.name.trim(),
-      ...ValidityPeriodUtils.fromLocalInputs(values.validFrom, values.validTo)
+      requiresNumericResult:values.requiresNumericResult,
+      requiresReferenceRange:values.requiresReferenceRange,
+      requiresDeviationInfo:values.requiresDeviationInfo,
+      startDate: ValidityPeriodUtils.toUtcIso(values.startDate),
+      endDate: ValidityPeriodUtils.toUtcIso(values.endDate),
+      procedureType: values.procedureType!
     };
     const edited = this.editing();
     const request: Observable<ProcedureDefMutationResponse> = edited

@@ -1,0 +1,26 @@
+:host{display:block;min-width:0}
+.procedure-types-page{display:flex;flex-direction:column;gap:1.2rem;min-width:0}
+.filter-panel,.procedure-types-table-card{background:var(--ui-surface);border:1px solid var(--ui-border);border-radius:var(--ui-radius);min-width:0}
+.filter-panel{padding:1rem}.filter-panel form{display:flex;gap:.7rem;align-items:center;flex-wrap:wrap}
+.filter-panel input{flex:1 1 200px}
+.inline-check{display:flex;align-items:center;gap:.5rem;font-size:.85rem}
+.procedure-types-table-card{overflow:hidden}
+.table-toolbar{padding:.8rem;display:flex;justify-content:flex-end;gap:.7rem}
+.column-filter-panel{padding:.9rem;display:flex;gap:.7rem;align-items:center}
+.column-filter-panel select,.page-size select{border:1px solid var(--ui-control-border);border-radius:7px;padding:.55rem;background:var(--ui-surface);color:var(--ui-text)}
+.table-scroll{max-width:100%;overflow-x:auto}
+:host ::ng-deep .p-datatable-thead>tr>th{padding:.8rem;font-size:.82rem;background:var(--ui-surface-muted)}
+:host ::ng-deep .p-datatable-tbody>tr>td{padding:.75rem;border-bottom:1px solid var(--ui-border-soft)}
+.row-actions{display:flex;align-items:center;gap:.2rem}
+.empty-table{text-align:center;padding:2rem!important;color:var(--ui-muted)}
+.pagination{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;border-top:1px solid var(--ui-border);padding:.85rem}
+.pagination-controls{display:flex;gap:.7rem;align-items:center}
+.page-nav{border:0;background:transparent;cursor:pointer;padding:.5rem}
+.page-nav:disabled{opacity:.35;cursor:default}
+.type-form{display:flex;flex-direction:column;gap:.9rem}
+.form-field{display:flex;flex-direction:column;gap:.35rem}
+.form-field label{font-size:.82rem;font-weight:650}
+.form-field input{height:39px}
+.form-field small{font-size:.74rem;color:var(--ui-muted)}
+.field-error,.form-save-error{color:var(--ui-danger);font-size:.8rem}
+.dialog-actions{display:flex;justify-content:flex-end;gap:.6rem;border-top:1px solid var(--ui-border);padding-top:.85rem}

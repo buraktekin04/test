@@ -72,6 +72,7 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     public DbSet<ReasonForExaminationDef> ReasonForExaminationDefs => Set<ReasonForExaminationDef>();
 
     /// <summary>Tetkik tanımları DbSet.</summary>
+    public DbSet<ProcedureTypeDef> ProcedureTypeDefs => Set<ProcedureTypeDef>();
     public DbSet<ProcedureDef> ProcedureDefs => Set<ProcedureDef>();
 
     /// <summary>Muayene rapor türü eşleştirmeleri DbSet.</summary>

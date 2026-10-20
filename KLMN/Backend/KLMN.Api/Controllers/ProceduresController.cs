@@ -48,10 +48,14 @@ public sealed class ProceduresController(ISender sender, IExcelExportService exc
         }
         var columns = new ExcelColumn<ProcedureDefResponse>[]
         {
-            new("Kod", x => x.Code, Width: 22),
+            new("Kod", x => x.ProcedureCode, Width: 22),
             new("Tetkik Adı", x => x.Name, Width: 38),
-            new("Geçerli Başlangıç", x => x.ValidFrom, NumberFormat: "dd.MM.yyyy HH:mm", Width: 25),
-            new("Geçerli Bitiş", x => x.ValidTo, NumberFormat: "dd.MM.yyyy HH:mm", Width: 25),
+            new("Tetkik Türü",x=>x.ProcedureTypeName,Width:28),
+            new("Numerik Sonuç Gerektirir",x=>x.RequiresNumericResult?"Evet":"Hayır",Width:25),
+            new("Referans Aralığı Gerektirir",x=>x.RequiresReferenceRange?"Evet":"Hayır",Width:27),
+            new("Sapma Bilgisi Gerektirir",x=>x.RequiresDeviationInfo?"Evet":"Hayır",Width:26),
+            new("Başlangıç Tarihi", x => x.StartDate, NumberFormat: "dd.MM.yyyy HH:mm", Width: 25),
+            new("Bitiş Tarihi", x => x.EndDate, NumberFormat: "dd.MM.yyyy HH:mm", Width: 25),
             new("Durum", x => x.IsActive ? "Aktif" : "Pasif", Width: 18),
             new("Oluşturulma", x => x.CreatedDate, NumberFormat: "dd.MM.yyyy HH:mm", Width: 24)
         };

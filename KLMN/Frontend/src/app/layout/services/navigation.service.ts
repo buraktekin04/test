@@ -80,6 +80,10 @@ export class NavigationService {
           route: '/app/reason-exam-branches', permissionModule: 'ReasonForExamBranchDefs'
         },
         {
+          label: 'Tetkik Türü Tanımları', icon: 'pi pi-tags',
+          route: '/app/procedure-types', permissionModule: 'ProcedureTypes'
+        },
+        {
           label: 'Tetkik Tanımları', icon: 'pi pi-list-check',
           route: '/app/procedures', permissionModule: 'Procedures'
         },

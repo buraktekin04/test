@@ -19,13 +19,13 @@ public sealed class GetProcedureDefsQueryHandler(IKLMNDbContext db)
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
             var search = request.Search.Trim().ToUpperInvariant();
-            query = query.Where(x => x.Code.ToUpper().Contains(search) ||
+            query = query.Where(x => x.ProcedureCode.ToUpper().Contains(search) ||
                 x.Name.ToUpper().Contains(search));
         }
         if (request.IsActive.HasValue)
             query = query.Where(x => x.IsActive == request.IsActive.Value);
         var total = await query.CountAsync(ct);
-        var items = await query.OrderBy(x => x.Name).ThenBy(x => x.Code)
+        var items = await query.OrderBy(x => x.Name).ThenBy(x => x.ProcedureCode)
             .Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize)
             .Select(ProcedureDefResponse.Projection).ToListAsync(ct);
         return new PagedResult<ProcedureDefResponse>

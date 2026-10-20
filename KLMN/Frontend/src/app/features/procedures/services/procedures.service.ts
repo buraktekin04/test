@@ -6,15 +6,22 @@ import { PagedResult } from '../../../core/models/paged-result.model';
 import {
   ProcedureDefItem, ProcedureFields, ProcedureQuery,
   UpdateProcedureDefRequest, ChangeProcedureDefStatusRequest,
-  ProcedureDefMutationResponse
+  ProcedureDefMutationResponse, ProcedureTypeOption
 } from '../models/procedures.model';
 
 /** Tetkik Tanımları için CRUD, listeleme ve Excel endpoint istemcisidir. */
 @Injectable({ providedIn: 'root' })
 export class ProcedureService {
   private readonly http = inject(HttpClient);
-  private readonly url = inject(API_BASE_URL) + '/procedures';
+  private readonly baseUrl = inject(API_BASE_URL);
+  private readonly url = this.baseUrl + '/procedures';
 
+  /** Bağımsız Tetkik Türü Tanımları üzerinden aktif seçenekleri yükler. */
+  public typeOptions(selectedCode?:number|null):Observable<ProcedureTypeOption[]> {
+    let params=new HttpParams();
+    if(selectedCode!==null && selectedCode!==undefined) params=params.set('selectedCode',selectedCode);
+    return this.http.get<ProcedureTypeOption[]>(this.baseUrl+'/procedure-types/options',{params});
+  }
   /** BaseEntity.IsActive filtresini API sorgusuna ekler. */
   private params(query: ProcedureQuery): HttpParams {
     let params = new HttpParams()

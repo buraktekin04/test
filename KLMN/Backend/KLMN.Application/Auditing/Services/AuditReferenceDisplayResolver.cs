@@ -174,8 +174,8 @@ internal static class AuditReferenceDisplayResolver
         var ProcedureDefLabels = ProcedureDefIds.Count == 0 ? new Dictionary<Guid,string>() :
             await dbContext.ProcedureDefs.IgnoreQueryFilters().AsNoTracking()
                 .Where(x => ProcedureDefIds.Contains(x.Id))
-                .Select(x => new { x.Id, x.Name, x.Code })
-                .ToDictionaryAsync(x => x.Id, x => x.Name + " (" + x.Code + ")", cancellationToken);
+                .Select(x => new { x.Id, x.Name, x.ProcedureCode })
+                .ToDictionaryAsync(x => x.Id, x => x.Name + " (" + x.ProcedureCode + ")", cancellationToken);
 
         var BranchDefIds = references["BranchDef"];
         var BranchDefLabels = BranchDefIds.Count == 0 ? new Dictionary<Guid,string>() :

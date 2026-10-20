@@ -194,6 +194,41 @@ Muayene Sebebi derleme düzeltmesi (20.10.2026)
   Visual Studio'daki toplam 7 hatanın tamamı görülmediği için
   hepsinin giderildiği iddia edilemez.
 
+TETKİK TANIMLARI VE DİNAMİK TETKİK TÜRÜ (20.10.2026)
+-------------------------------------------------------
+- Legacy ProcedureDef screenshot doğrultusunda GEÇİCİ Code/ValidFrom/ValidTo
+  yerine ProcedureCode/StartDate/EndDate kullanılır; fiziksel kolon adları
+  ProcedureCode, Name, RequiresNumericResult, RequiresReferenceRange,
+  RequiresDeviationInfo, StartDate, EndDate, ProcedureType olarak korunur.
+- Numerik Sonuç Gerektirir, Referans Aralığı Gerektirir ve Sapma Bilgisi
+  Gerektirir üç ayrı bool olup Angular formunda checkbox, listede sütun,
+  Excel, CRUD DTO ve audit kayıtlarında bulunur.
+- Eski ProcedureType enum ilişkisi dinamik ProcedureTypeDefs referans
+  tablosuna dönüştürüldü. Eski sayısal enum değeri ProcedureDefs.ProcedureType
+  INT kolonunda korunur; FK ProcedureTypeDefs.Code alternate key'ine gider.
+- Yeni ekran "Tetkik Türü Tanımları": /app/procedure-types.
+  Tür kodu oluştururken belirlenir ve değiştirilmez. Tür adı değişebilir.
+  Aktif tetkikleri bağlı tür pasif, herhangi bir tetkikle ilişkili tür silinmiş
+  hale getirilemez; pasif tür önceki kayıtta seçiliyse görüntülenir.
+- Tetkik ekranı /app/procedures, türleri /api/procedure-types/options
+  API'sinden kendi Procedures izniyle çeker. Tetkik CRUD'da seçimin
+  aktif referans olmasına bakılır. Menü/route ve ProcedureTypes
+  View/Query/Create/Update/Delete yetkileri eklendi.
+- EF BaseEntity ortak IsActive/audit/xmin kullanılır; tekrar eklenmedi.
+- Enumun özgün sayısal üyeleri/sabit isimleri güvenilir şekilde
+  okunamadığından ProcedureTypeDefs tablosuna henüz seed DATA EKLENMEDİ.
+  Eski enum kodları birebir edinilince ID değil Code/Name olarak aktarılmalı.
+  Tip tablosu dinamik CRUD ekranından doldurulabilir.
+- Yeni test kaynakları: KLMN/Tests/ProcedureTypes.Regression; yeni rehber:
+  KLMN/PROCEDURE_DEF_TETKIK_TURU_GUNCELLEME.md.
+- PROJEDE MIGRATIONS/MODELSNAPSHOT YOK: yeni tablo/alan değişimi için
+  migration hazırlanıp uygulanmadı. Var olan yerel veritabanındaki
+  migration zinciri ve eski ProcedureDefs şeması incelenmeden veri
+  silinmemeli veya otomatik zorunlu FK eklenmemeli.
+- Bu ortamda dotnet SDK yok: gerçek C#/Angular build, PostgreSQL migration
+  ve browser/DB testleri ÇALIŞTIRILAMADI; yalnızca GitHub kaynak ve alan
+  uyuşmazlığı statik kontrolleri yapıldı.
+
 Muayene Sebebi modül ailesi (20.10.2026)
 - Kaynak class yorumları UI başlıkları için ESASTIR:
   ReasonForExaminationDef: "Muayene Sebebi" (ANA EKRAN);
@@ -635,6 +670,14 @@ Kabul öncesinde:
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
 2026-10-20 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-20 (ProcedureDef legacy alanları ve Dinamik Tetkik Türü):
+  ProcedureCode, RequiresNumericResult, RequiresReferenceRange,
+  RequiresDeviationInfo, StartDate, EndDate, ProcedureType fiziksel
+  alanları korundu. ProcedureTypeDefs dinamik CRUD ekranı, eski enum
+  koduna alternatif key FK, yetki/menü/audit/Excel/test kaynakları eklendi.
+  Başlangıç enum data seed'i ve migration yok; gerçek build/test yapılmadı.
+  KLMN/PROCEDURE_DEF_TETKIK_TURU_GUNCELLEME.md açıklamasına bakın.
+
 - 2026-10-20 (Muayene Sebebi ve dört alt eşleştirme; asgari Tetkik Tanımları):
   Fotoğraflardaki 5 class yorumu UI başlığına dönüştürüldü.
   6 yeni entity/EF configuration, ayrı CQRS Create/Update/Delete/Status,
@@ -1355,6 +1398,7 @@ devam etmek istediğini yeni mesajında söyleyecek.
   KLMN/ASKERI_OKUL_TANIMLARI_KURULUM.md
   KLMN/ASKERI_SINIF_TANIMLARI_KURULUM.md
   KLMN/ASKERI_SINIF_GRUBU_VE_ESLESTIRME_KURULUM.md
+  KLMN/PROCEDURE_DEF_TETKIK_TURU_GUNCELLEME.md
   KLMN/MUAYENE_SEBEBI_VE_ILISKILI_TANIMLAR_KURULUM.md
   KLMN/ADMIN_ROLU_KORUMA.md
   KLMN/AUDIT_LOG_KURULUM.md

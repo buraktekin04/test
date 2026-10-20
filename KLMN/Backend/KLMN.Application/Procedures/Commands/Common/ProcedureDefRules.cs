@@ -15,8 +15,15 @@ internal static class ProcedureDefRules
         var normalized = code.Trim().ToUpperInvariant();
         if (await db.ProcedureDefs.IgnoreQueryFilters().AnyAsync(x =>
             !x.IsDeleted && (!existingId.HasValue || x.Id != existingId.Value) &&
-            x.Code.ToUpper() == normalized, ct))
+            x.ProcedureCode.ToUpper() == normalized, ct))
             throw new ProcedureConflictException("Bu tetkik kodu zaten kullanılıyor.");
+    }
+
+    /// <summary>Yeni seçimde mevcut ve aktif tetkik türünü doğrular.</summary>
+    public static async Task EnsureTypeAsync(IKLMNDbContext db,int code,CancellationToken ct)
+    {
+        if(!await db.ProcedureTypeDefs.IgnoreQueryFilters().AnyAsync(x=>x.Code==code&&!x.IsDeleted&&x.IsActive,ct))
+            throw new ProcedureConflictException("Aktif bir Tetkik Türü seçilmelidir.");
     }
 
     /// <summary>Güncel xmin'i doğrular; eski kayıt sürümüyle değişikliği engeller.</summary>

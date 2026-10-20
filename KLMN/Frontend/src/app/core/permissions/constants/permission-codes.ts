@@ -86,6 +86,11 @@ export const PermissionCodes = {
     Create: 'ReasonForExamBranchDefs.Create', Update: 'ReasonForExamBranchDefs.Update', Delete: 'ReasonForExamBranchDefs.Delete'
   },
   /** Procedures işlemleri backend ile aynı yetki kodlarını kullanır. */
+  /** Dinamik Tetkik Türü Tanımları ekranının yetkileri. */
+  ProcedureTypes: {
+    View: 'ProcedureTypes.View', Query: 'ProcedureTypes.Query',
+    Create: 'ProcedureTypes.Create', Update: 'ProcedureTypes.Update', Delete: 'ProcedureTypes.Delete'
+  },
   Procedures: {
     View: 'Procedures.View', Query: 'Procedures.Query',
     Create: 'Procedures.Create', Update: 'Procedures.Update', Delete: 'Procedures.Delete'

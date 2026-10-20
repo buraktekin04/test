@@ -57,3 +57,11 @@ Muayene Sebebi detay ve liste Handler'larında `AsSplitQuery()` çağrıları va
 Bu nedenle `KLMN.Application.csproj` dosyasına Relational 10.0.0 doğrudan eklendi.
 Dört koleksiyonu split query olarak getiren davranış korunmuştur.
 GitHub kaynak kontrolü dışında dotnet restore/build yapılamadı; yerelde paketleri geri yükleyip derleyin.
+
+## 20.10.2026 — Önceki asgari ProcedureDef modelinin kesinleştirilmesi
+Üstteki ProcedureDef Code/Name ve EffectiveDatedEntity açıklaması ARTIK GÜNCEL DEĞİLDİR.
+Yeni legacy fotoğraflarına göre fiziksel kolonlar ProcedureCode, Name,
+RequiresNumericResult, RequiresReferenceRange, RequiresDeviationInfo,
+StartDate, EndDate, ProcedureType olarak düzenlendi. ProcedureType artık
+ayrı dinamik ProcedureTypeDefs.Code değerine FK'dir. Ayrıntı:
+KLMN/PROCEDURE_DEF_TETKIK_TURU_GUNCELLEME.md.

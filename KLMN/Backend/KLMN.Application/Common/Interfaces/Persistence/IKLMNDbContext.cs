@@ -38,6 +38,7 @@ public interface IKLMNDbContext
     DbSet<ReasonForExaminationDef> ReasonForExaminationDefs { get; }
 
     /// <summary>Tetkik tanımları DbSet.</summary>
+    DbSet<ProcedureTypeDef> ProcedureTypeDefs { get; }
     DbSet<ProcedureDef> ProcedureDefs { get; }
 
     /// <summary>Muayene rapor türü eşleştirmeleri DbSet.</summary>

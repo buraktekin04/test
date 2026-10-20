@@ -116,6 +116,14 @@ export const routes: Routes = [
             .then(c => c.ReasonListComponent)
       },
       {
+        path: 'procedure-types',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'ProcedureTypes' },
+        loadComponent: () =>
+          import('./features/procedure-types/type-list/type-list.component')
+            .then(c => c.ProcedureTypeListComponent)
+      },
+      {
         path: 'procedures',
         canActivate: [permissionGuard],
         data: { permissionModule: 'Procedures' },

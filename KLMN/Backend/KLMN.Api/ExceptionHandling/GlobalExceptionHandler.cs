@@ -1,3 +1,4 @@
+using KLMN.Application.ProcedureTypes.Exceptions;
 using KLMN.Application.ReasonForExamBranchDefs.Exceptions;
 using KLMN.Application.ReasonForExamProcedureDefs.Exceptions;
 using KLMN.Application.ReasonForExamUnusedHcAdmissionTypes.Exceptions;
@@ -204,6 +205,8 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
                     Title = "Askerî sınıf işlemi gerçekleştirilemedi.", Detail = exception.Message },
             ReasonForExaminationNotFoundException => new ProblemDetails { Status=404, Title="Kayıt bulunamadı.", Detail=exception.Message },
             ReasonForExaminationConflictException => new ProblemDetails { Status=409, Title="Eşleştirme işlemi gerçekleştirilemedi.", Detail=exception.Message },
+            ProcedureTypeNotFoundException => new ProblemDetails { Status=404, Title="Tetkik Türü bulunamadı.", Detail=exception.Message },
+            ProcedureTypeConflictException => new ProblemDetails { Status=409, Title="Tetkik Türü işlemi gerçekleştirilemedi.", Detail=exception.Message },
             ProcedureNotFoundException => new ProblemDetails { Status=404, Title="Kayıt bulunamadı.", Detail=exception.Message },
             ProcedureConflictException => new ProblemDetails { Status=409, Title="Eşleştirme işlemi gerçekleştirilemedi.", Detail=exception.Message },
             ReasonForExamReportTypeNotFoundException => new ProblemDetails { Status=404, Title="Kayıt bulunamadı.", Detail=exception.Message },

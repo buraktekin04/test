@@ -13,11 +13,18 @@ public sealed class UpdateProcedureDefCommandHandler(IKLMNDbContext db)
     public async Task<ProcedureDefMutationResponse> Handle(UpdateProcedureDefCommand request, CancellationToken ct)
     {
         var item = await ProcedureDefRules.LoadForChangeAsync(db, request.Id, request.Version, ct);
-        await ProcedureDefRules.EnsureUniqueCodeAsync(db, request.Code, item.Id, ct);
-        item.Code = request.Code.Trim().ToUpperInvariant();
+        await ProcedureDefRules.EnsureUniqueCodeAsync(db, request.ProcedureCode, item.Id, ct);
+        // Değişen tür seçimi, aktif dinamik tür tablosunda doğrulanır.
+        if(item.ProcedureType!=request.ProcedureType)
+            await ProcedureDefRules.EnsureTypeAsync(db,request.ProcedureType,ct);
+        item.ProcedureCode = request.ProcedureCode.Trim().ToUpperInvariant();
         item.Name = request.Name.Trim();
-        item.ValidFrom = request.ValidFrom;
-        item.ValidTo = request.ValidTo;
+        item.StartDate = request.StartDate;
+        item.EndDate = request.EndDate;
+        item.RequiresNumericResult = request.RequiresNumericResult;
+        item.RequiresReferenceRange = request.RequiresReferenceRange;
+        item.RequiresDeviationInfo = request.RequiresDeviationInfo;
+        item.ProcedureType = request.ProcedureType;
         await db.SaveChangesAsync(ct);
         return new ProcedureDefMutationResponse(item.Id, item.Version);
     }

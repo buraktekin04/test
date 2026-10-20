@@ -293,6 +293,16 @@ public static class PermissionCodes
         public const string Delete = "ReasonsForExaminations.Delete";
     }
 
+    /// <summary>Tetkik Türü Tanımları ekranının işlem yetkileri.</summary>
+    public static class ProcedureTypes
+    {
+        public const string View = "ProcedureTypes.View";
+        public const string Query = "ProcedureTypes.Query";
+        public const string Create = "ProcedureTypes.Create";
+        public const string Update = "ProcedureTypes.Update";
+        public const string Delete = "ProcedureTypes.Delete";
+    }
+
     /// <summary>Tetkik Tanımları ekranının işlem yetkileri.</summary>
     public static class Procedures
     {

@@ -1,0 +1,95 @@
+<div class="procedure-types-page">
+ <div class="page-header">
+  <div><h1>Tetkik Türü Tanımları</h1><p>Tetkiklerde kullanılan tür kodlarını ve adlarını yönetin.</p></div>
+  @if(canCreate()){<p-button label="Yeni Tetkik Türü" icon="pi pi-plus" (onClick)="create()"/>}
+ </div>
+ <p-toast position="top-right"/>
+ <section class="filter-panel">
+ <form [formGroup]="filterForm" (ngSubmit)="search()">
+  <input pInputText formControlName="search" placeholder="Tür kodu veya adı ara..."/>
+  <label class="inline-check"><p-checkbox formControlName="includeInactive" [binary]="true"/>Pasifleri dahil et</label>
+  <p-button type="submit" label="Ara" icon="pi pi-search" [loading]="loading()"/>
+  <p-button type="button" label="Temizle" severity="secondary" [outlined]="true" (onClick)="clear()"/>
+ </form>
+ </section>
+ <section class="procedure-types-table-card">
+ <div class="table-toolbar">
+  <p-button [label]="filtersVisible()?'Filtreleri Gizle':'Kolon Filtreleri'" icon="pi pi-filter"
+   severity="secondary" [outlined]="true" (onClick)="filtersVisible.set(!filtersVisible())"/>
+  @if(canExport()){<p-button label="Excel'e Aktar" icon="pi pi-file-excel"
+     severity="success" [outlined]="true" [loading]="exporting()" (onClick)="exportExcel()"/>}
+ </div>
+ @if(filtersVisible()){
+  <form class="column-filter-panel" [formGroup]="columnForm" (ngSubmit)="search()">
+   <label for="type-status">Durum</label>
+   <select id="type-status" formControlName="isActive">
+    <option [ngValue]="null">Tümü</option><option [ngValue]="true">Aktif</option>
+    <option [ngValue]="false">Pasif</option>
+   </select>
+   <p-button type="submit" label="Uygula" icon="pi pi-check"/>
+  </form>
+ }
+ <div class="table-scroll" tabindex="0" role="region" aria-label="Tetkik türleri">
+ <p-table [value]="rows()" [loading]="loading()" [resizableColumns]="true"
+  columnResizeMode="expand" [tableStyle]="{'min-width':'680px','width':'100%'}">
+ <ng-template pTemplate="header"><tr>
+  <th pResizableColumn pSortableColumn="code">Kod <p-sortIcon field="code"/></th>
+  <th pResizableColumn pSortableColumn="name">Tetkik Türü <p-sortIcon field="name"/></th>
+  <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive"/></th>
+  <th class="sticky-actions-col">İşlemler</th>
+ </tr></ng-template>
+ <ng-template pTemplate="body" let-item><tr>
+   <td><code>{{item.code}}</code></td><td>{{item.name}}</td>
+   <td><p-tag [value]="item.isActive?'Aktif':'Pasif'" [severity]="item.isActive?'success':'secondary'"/></td>
+   <td class="sticky-actions-col"><div class="row-actions">
+   @if(canUpdate()){
+     <p-button icon="pi pi-pencil" [text]="true" severity="secondary" ariaLabel="Düzenle" (onClick)="edit(item)"/>
+     <p-button [icon]="item.isActive?'pi pi-ban':'pi pi-check-circle'" [text]="true" severity="secondary"
+       [ariaLabel]="item.isActive?'Pasifleştir':'Aktifleştir'" (onClick)="status(item)"/>
+   }
+   @if(canAudit()){<p-button icon="pi pi-history" [text]="true" severity="secondary"
+      ariaLabel="İşlem geçmişi" (onClick)="audit.set(item)"/>}
+   @if(canDelete()){<p-button icon="pi pi-trash" [text]="true" severity="danger"
+      ariaLabel="Sil" (onClick)="delete(item)"/>}
+   </div></td>
+ </tr></ng-template>
+ <ng-template pTemplate="emptymessage"><tr><td colspan="4" class="empty-table">Kayıt bulunamadı.</td></tr></ng-template>
+ </p-table>
+ </div>
+ <div class="pagination">
+ <span>{{total()}} kayıt</span><div class="pagination-controls">
+  <button type="button" class="page-nav" [disabled]="page()<=1" (click)="setPage(page()-1)">‹</button>
+  <span>{{page()}} / {{maxPage()}}</span>
+  <button type="button" class="page-nav" [disabled]="page()>=maxPage()" (click)="setPage(page()+1)">›</button>
+ </div>
+ <label class="page-size">Sayfa başına <select [value]="size()" (change)="setSize($event)">
+  <option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option>
+ </select></label>
+ </div>
+ </section>
+</div>
+<p-dialog [header]="editing()?'Tetkik Türü Düzenle':'Yeni Tetkik Türü'" [visible]="dialogVisible()"
+  (visibleChange)="dialogVisible.set($event)" [modal]="true" [draggable]="false" [resizable]="false"
+  [style]="{'width':'min(560px,96vw)'}">
+ <form [formGroup]="form" (ngSubmit)="save()" class="type-form">
+  <div class="form-field"><label for="type-code">Tetkik Türü Kodu *</label>
+   <input pInputText id="type-code" type="number" min="0" formControlName="code"/>
+   @if(editing()){<small>Mevcut tetkiklerle eşleşme bozulmasın diye kod değiştirilemez.</small>}
+   @if(attempted()&&form.controls.code.invalid){<small class="field-error">0 veya daha büyük geçerli bir kod giriniz.</small>}
+  </div>
+  <div class="form-field"><label for="type-name">Tetkik Türü *</label>
+   <input pInputText id="type-name" formControlName="name"/>
+   @if(attempted()&&form.controls.name.invalid){<small class="field-error">Tür adı zorunlu (en fazla 200 karakter).</small>}
+  </div>
+  @if(error()){<div class="form-save-error" role="alert">{{error()}}</div>}
+  <div class="dialog-actions">
+   <p-button type="button" label="Vazgeç" severity="secondary" [outlined]="true" (onClick)="dialogVisible.set(false)"/>
+   <p-button type="submit" label="Kaydet" icon="pi pi-check" [loading]="saving()"/>
+  </div>
+ </form>
+</p-dialog>
+<p-confirmdialog/>
+<p-dialog header="Tetkik Türü İşlem Geçmişi" [visible]="!!audit()" (visibleChange)="!$event&&audit.set(null)"
+ [modal]="true" [style]="{'width':'min(760px,96vw)'}">
+ @if(audit();as item){<app-audit-history entityType="ProcedureTypeDef" [entityId]="item.id"/>}
+</p-dialog>

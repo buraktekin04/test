@@ -421,3 +421,10 @@
   background: var(--ui-surface); color: var(--ui-text);
 }
 .procedure-form .text-retry { background: none; border: 0; color: var(--ui-primary); cursor: pointer; text-align: left; }
+
+/* Eski ProcedureDef modelinin üç boolean ayarını sade bir checkbox satırında sunar. */
+.procedure-flags { display:flex; flex-wrap:wrap; gap:.75rem 1.25rem; }
+.procedure-flags label { display:flex; align-items:center; gap:.5rem; font-size:.83rem; cursor:pointer; }
+.form-field select { width:100%;min-width:0;height:39px;padding:.45rem .65rem;
+ border:1px solid var(--ui-control-border);border-radius:7px;
+ background:var(--ui-surface);color:var(--ui-text);font:inherit; }

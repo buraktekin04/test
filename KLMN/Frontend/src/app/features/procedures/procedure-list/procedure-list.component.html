@@ -2,7 +2,7 @@
   <div class="page-header">
     <div>
       <h1>Tetkik Tanımları</h1>
-      <p>Bağlı kurul tetkikları ve geçerlilik dönemlerini yönetin.</p>
+      <p>Tetkikleri, sonuç gerekliliklerini ve dinamik tetkik türlerini yönetin.</p>
     </div>
     @if (canCreate()) {
       <p-button type="button" label="Yeni Tetkik" icon="pi pi-plus"
@@ -83,13 +83,17 @@
     }
     <div class="table-scroll" role="region" tabindex="0" aria-label="Tetkik kayıtları">
       <p-table [resizableColumns]="true" columnResizeMode="expand" [value]="records()" [loading]="loading()"
-               [tableStyle]="{ 'min-width': '900px', 'width': '100%' }">
+               [tableStyle]="{ 'min-width': '1540px', 'width': '100%' }">
         <ng-template pTemplate="header">
           <tr>
             <th pResizableColumn pSortableColumn="name">Tetkik Adı <p-sortIcon field="name" /></th>
-            <th pResizableColumn pSortableColumn="code">Kod <p-sortIcon field="code" /></th>
-            <th pResizableColumn pSortableColumn="validFrom">Geçerli Başlangıç <p-sortIcon field="validFrom" /></th>
-            <th pResizableColumn pSortableColumn="validTo">Geçerli Bitiş <p-sortIcon field="validTo" /></th>
+            <th pResizableColumn pSortableColumn="procedureCode">Kod <p-sortIcon field="procedureCode" /></th>
+            <th pResizableColumn pSortableColumn="procedureTypeName">Tetkik Türü <p-sortIcon field="procedureTypeName" /></th>
+            <th pResizableColumn pSortableColumn="requiresNumericResult">Numerik Sonuç Gerektirir <p-sortIcon field="requiresNumericResult" /></th>
+            <th pResizableColumn pSortableColumn="requiresReferenceRange">Referans Aralığı Gerektirir <p-sortIcon field="requiresReferenceRange" /></th>
+            <th pResizableColumn pSortableColumn="requiresDeviationInfo">Sapma Bilgisi Gerektirir <p-sortIcon field="requiresDeviationInfo" /></th>
+            <th pResizableColumn pSortableColumn="startDate">Başlangıç Tarihi <p-sortIcon field="startDate" /></th>
+            <th pResizableColumn pSortableColumn="endDate">Bitiş Tarihi <p-sortIcon field="endDate" /></th>
             <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
             <th pResizableColumn pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
             @if (canUpdate() || canDelete() || canAudit()) { <th class="sticky-actions-col">İşlemler</th> }
@@ -99,9 +103,13 @@
           <tr>
             <td><div class="record-name-cell"><i class="pi pi-file" aria-hidden="true"></i>
               <strong [title]="item.name">{{ item.name }}</strong></div></td>
-            <td><code class="record-code">{{ item.code }}</code></td>
-            <td>{{ item.validFrom ? (item.validFrom | date:'dd.MM.yyyy HH:mm') : '—' }}</td>
-            <td>{{ item.validTo ? (item.validTo | date:'dd.MM.yyyy HH:mm') : 'Süresiz' }}</td>
+            <td><code class="record-code">{{ item.procedureCode }}</code></td>
+            <td>{{ item.procedureTypeName }}</td>
+            <td><p-tag [value]="item.requiresNumericResult ? 'Evet' : 'Hayır'" [severity]="item.requiresNumericResult?'success':'secondary'" /></td>
+            <td><p-tag [value]="item.requiresReferenceRange ? 'Evet' : 'Hayır'" [severity]="item.requiresReferenceRange?'success':'secondary'" /></td>
+            <td><p-tag [value]="item.requiresDeviationInfo ? 'Evet' : 'Hayır'" [severity]="item.requiresDeviationInfo?'success':'secondary'" /></td>
+            <td>{{ item.startDate ? (item.startDate | date:'dd.MM.yyyy HH:mm') : '—' }}</td>
+            <td>{{ item.endDate ? (item.endDate | date:'dd.MM.yyyy HH:mm') : 'Süresiz' }}</td>
             <td><p-tag [value]="item.isActive ? 'Aktif' : 'Pasif'"
                        [severity]="item.isActive ? 'success' : 'secondary'"></p-tag></td>
             <td>{{ item.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
@@ -134,7 +142,7 @@
           </tr>
         </ng-template>
         <ng-template pTemplate="emptymessage">
-          <tr><td [attr.colspan]="canUpdate() || canDelete() || canAudit() ? 7 : 6"
+          <tr><td [attr.colspan]="canUpdate() || canDelete() || canAudit() ? 11 : 10"
                   class="empty-table">Arama koşullarına uygun kayıt bulunamadı.</td></tr>
         </ng-template>
       </p-table>
@@ -170,10 +178,10 @@
     <div class="form-divider"><span>Tetkik Bilgileri</span></div>
     <div class="form-grid">
       <div class="form-field">
-        <label for="procedures-code">Kod <span class="required">*</span></label>
-        <input pInputText id="procedures-code" formControlName="code" autocomplete="off"
+        <label for="procedures-procedureCode">Kod <span class="required">*</span></label>
+        <input pInputText id="procedures-procedureCode" formControlName="procedureCode" autocomplete="off"
                placeholder="Tetkik kodu" />
-        @if (fieldError('code'); as message) { <small class="field-error">{{ message }}</small> }
+        @if (fieldError('procedureCode'); as message) { <small class="field-error">{{ message }}</small> }
       </div>
       <div class="form-field">
         <label for="procedures-name">Tetkik Adı <span class="required">*</span></label>
@@ -182,19 +190,35 @@
         @if (fieldError('name'); as message) { <small class="field-error">{{ message }}</small> }
       </div>
 
+      <div class="form-field">
+        <label for="procedures-procedureType">Tetkik Türü <span class="required">*</span></label>
+        <select id="procedures-procedureType" formControlName="procedureType">
+          <option [ngValue]="null">Tetkik türü seçiniz</option>
+          @for (type of typeOptions(); track type.code) {
+            <option [ngValue]="type.code">{{type.name}} ({{type.code}}){{type.isActive?'':' — Pasif'}}</option>
+          }
+        </select>
+        @if (fieldError('procedureType'); as message) {<small class="field-error">{{message}}</small>}
+      </div>
     </div>
-    <div class="form-divider"><span>Geçerlilik Tarihleri</span></div>
+    <div class="form-divider"><span>Sonuç Bilgisi Gereklilikleri</span></div>
+    <div class="procedure-flags">
+      <label for="procedures-numeric"><p-checkbox inputId="procedures-numeric" formControlName="requiresNumericResult" [binary]="true"></p-checkbox>Numerik Sonuç Gerektirir</label>
+      <label for="procedures-range"><p-checkbox inputId="procedures-range" formControlName="requiresReferenceRange" [binary]="true"></p-checkbox>Referans Aralığı Gerektirir</label>
+      <label for="procedures-deviation"><p-checkbox inputId="procedures-deviation" formControlName="requiresDeviationInfo" [binary]="true"></p-checkbox>Sapma Bilgisi Gerektirir</label>
+    </div>
+    <div class="form-divider"><span>Başlangıç / Bitiş Tarihleri</span></div>
     <div class="form-grid">
       <div class="form-field">
-        <label for="procedures-validFrom">Geçerli Başlangıç</label>
-        <input pInputText type="datetime-local" id="procedures-validFrom" formControlName="validFrom" />
+        <label for="procedures-startDate">Başlangıç Tarihi</label>
+        <input pInputText type="datetime-local" id="procedures-startDate" formControlName="startDate" />
         <small>Boşsa başlangıç sınırı yoktur.</small>
       </div>
       <div class="form-field">
-        <label for="procedures-validTo">Geçerli Bitiş</label>
-        <input pInputText type="datetime-local" id="procedures-validTo" formControlName="validTo" />
+        <label for="procedures-endDate">Bitiş Tarihi</label>
+        <input pInputText type="datetime-local" id="procedures-endDate" formControlName="endDate" />
         <small>Boşsa süresizdir.</small>
-        @if (fieldError('validTo'); as message) { <small class="field-error">{{ message }}</small> }
+        @if (fieldError('endDate'); as message) { <small class="field-error">{{ message }}</small> }
       </div>
     </div>
     <div class="form-footer">

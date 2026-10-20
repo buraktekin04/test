@@ -3,14 +3,23 @@ using KLMN.Persistence.Configurations.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace KLMN.Persistence.Configurations.Admissions;
-/// <summary>Asgari tetkik referans tablosu; eski ProcedureDef modeli sonradan doğrulanacaktır.</summary>
-public sealed class ProcedureDefConfiguration : EffectiveDatedEntityConfiguration<ProcedureDef>
+/// <summary>ProcedureDef kolon adlarını eski modelle aynı tutan PostgreSQL mapping'i.</summary>
+public sealed class ProcedureDefConfiguration : BaseEntityConfiguration<ProcedureDef>
 {
     protected override void ConfigureEntity(EntityTypeBuilder<ProcedureDef> b)
     {
         b.ToTable("ProcedureDefs");
-        b.Property(x => x.Code).IsRequired().HasMaxLength(100);
-        b.Property(x => x.Name).IsRequired().HasMaxLength(250);
-        b.HasIndex(x => x.Code).IsUnique().HasFilter(PostgreSqlIndexFilters.NotDeleted);
+        b.Property(x=>x.ProcedureCode).IsRequired().HasMaxLength(100);
+        b.Property(x=>x.Name).IsRequired().HasMaxLength(250);
+        b.Property(x=>x.RequiresNumericResult).IsRequired();
+        b.Property(x=>x.RequiresReferenceRange).IsRequired();
+        b.Property(x=>x.RequiresDeviationInfo).IsRequired();
+        b.Property(x=>x.StartDate).HasColumnType("timestamp with time zone");
+        b.Property(x=>x.EndDate).HasColumnType("timestamp with time zone");
+        b.Property(x=>x.ProcedureType).IsRequired();
+        b.HasIndex(x=>x.ProcedureCode).IsUnique().HasFilter(PostgreSqlIndexFilters.NotDeleted);
+        b.HasOne(x=>x.TypeDefinition).WithMany(x=>x.Procedures)
+          .HasForeignKey(x=>x.ProcedureType).HasPrincipalKey(x=>x.Code)
+          .OnDelete(DeleteBehavior.Restrict);
     }
 }
