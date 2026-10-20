@@ -7,12 +7,6 @@ import {
   RankDefItem, RankFields, RankQuery,
   UpdateRankDefRequest, ChangeRankDefStatusRequest,
   RankDefMutationResponse, RankOption
-  /** Rütbe ekranı yetkisiyle aktif grupları yükler; eski pasif seçim düzenlemede korunur. */
-  public options(selectedRankGroupId?: string | null): Observable<RankOption[]> {
-    let params = new HttpParams();
-    if (selectedRankGroupId) params = params.set('selectedRankGroupId', selectedRankGroupId);
-    return this.http.get<RankOption[]>(this.url + '/options', {params});
-  }
 } from '../models/ranks.model';
 
 /** Rütbe Tanımları için CRUD, listeleme ve Excel endpoint istemcisidir. */
@@ -51,5 +45,15 @@ export class RankService {
   /** Export yalnızca Query izniyle sunucuda yetkilendirilir. */
   public export(query: RankQuery): Observable<Blob> {
     return this.http.get(this.url + '/export', { params: this.params(query), responseType: 'blob' });
+  }
+
+  /** Rütbe grubunu Ranks modülünün kendi yetkisiyle listeler.
+   * Düzenlemede önceden seçilmiş pasif grup da dönebilir. */
+  public options(selectedRankGroupId?: string | null): Observable<RankOption[]> {
+    let params = new HttpParams();
+    if (selectedRankGroupId) {
+      params = params.set('selectedRankGroupId', selectedRankGroupId);
+    }
+    return this.http.get<RankOption[]>(this.url + '/options', { params });
   }
 }
