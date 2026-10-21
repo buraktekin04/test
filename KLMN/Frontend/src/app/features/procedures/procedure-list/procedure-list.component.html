@@ -92,8 +92,8 @@
             <th pResizableColumn pSortableColumn="requiresNumericResult">Numerik Sonuç Gerektirir <p-sortIcon field="requiresNumericResult" /></th>
             <th pResizableColumn pSortableColumn="requiresReferenceRange">Referans Aralığı Gerektirir <p-sortIcon field="requiresReferenceRange" /></th>
             <th pResizableColumn pSortableColumn="requiresDeviationInfo">Sapma Bilgisi Gerektirir <p-sortIcon field="requiresDeviationInfo" /></th>
-            <th pResizableColumn pSortableColumn="startDate">Başlangıç Tarihi <p-sortIcon field="startDate" /></th>
-            <th pResizableColumn pSortableColumn="endDate">Bitiş Tarihi <p-sortIcon field="endDate" /></th>
+            <th pResizableColumn pSortableColumn="validFrom">Başlangıç Tarihi <p-sortIcon field="validFrom" /></th>
+            <th pResizableColumn pSortableColumn="validTo">Bitiş Tarihi <p-sortIcon field="validTo" /></th>
             <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
             <th pResizableColumn pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
             @if (canUpdate() || canDelete() || canAudit()) { <th class="sticky-actions-col">İşlemler</th> }
@@ -108,8 +108,8 @@
             <td><p-tag [value]="item.requiresNumericResult ? 'Evet' : 'Hayır'" [severity]="item.requiresNumericResult?'success':'secondary'" /></td>
             <td><p-tag [value]="item.requiresReferenceRange ? 'Evet' : 'Hayır'" [severity]="item.requiresReferenceRange?'success':'secondary'" /></td>
             <td><p-tag [value]="item.requiresDeviationInfo ? 'Evet' : 'Hayır'" [severity]="item.requiresDeviationInfo?'success':'secondary'" /></td>
-            <td>{{ item.startDate ? (item.startDate | date:'dd.MM.yyyy HH:mm') : '—' }}</td>
-            <td>{{ item.endDate ? (item.endDate | date:'dd.MM.yyyy HH:mm') : 'Süresiz' }}</td>
+            <td>{{ item.validFrom ? (item.validFrom | date:'dd.MM.yyyy HH:mm') : '—' }}</td>
+            <td>{{ item.validTo ? (item.validTo | date:'dd.MM.yyyy HH:mm') : 'Süresiz' }}</td>
             <td><p-tag [value]="item.isActive ? 'Aktif' : 'Pasif'"
                        [severity]="item.isActive ? 'success' : 'secondary'"></p-tag></td>
             <td>{{ item.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
@@ -210,15 +210,15 @@
     <div class="form-divider"><span>Başlangıç / Bitiş Tarihleri</span></div>
     <div class="form-grid">
       <div class="form-field">
-        <label for="procedures-startDate">Başlangıç Tarihi</label>
-        <input pInputText type="datetime-local" id="procedures-startDate" formControlName="startDate" />
+        <label for="procedures-validFrom">Başlangıç Tarihi</label>
+        <input pInputText type="datetime-local" id="procedures-validFrom" formControlName="validFrom" />
         <small>Boşsa başlangıç sınırı yoktur.</small>
       </div>
       <div class="form-field">
-        <label for="procedures-endDate">Bitiş Tarihi</label>
-        <input pInputText type="datetime-local" id="procedures-endDate" formControlName="endDate" />
+        <label for="procedures-validTo">Bitiş Tarihi</label>
+        <input pInputText type="datetime-local" id="procedures-validTo" formControlName="validTo" />
         <small>Boşsa süresizdir.</small>
-        @if (fieldError('endDate'); as message) { <small class="field-error">{{ message }}</small> }
+        @if (fieldError('validTo'); as message) { <small class="field-error">{{ message }}</small> }
       </div>
     </div>
     <div class="form-footer">

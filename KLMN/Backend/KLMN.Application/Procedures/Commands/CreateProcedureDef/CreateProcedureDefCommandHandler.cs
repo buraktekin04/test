@@ -19,8 +19,8 @@ public sealed class CreateProcedureDefCommandHandler(IKLMNDbContext db)
         {
             ProcedureCode = request.ProcedureCode.Trim().ToUpperInvariant(),
             Name = request.Name.Trim(),
-            StartDate = request.StartDate,
-            EndDate = request.EndDate,
+            ValidFrom = request.ValidFrom,
+            ValidTo = request.ValidTo,
             RequiresNumericResult = request.RequiresNumericResult,
             RequiresReferenceRange = request.RequiresReferenceRange,
             RequiresDeviationInfo = request.RequiresDeviationInfo,

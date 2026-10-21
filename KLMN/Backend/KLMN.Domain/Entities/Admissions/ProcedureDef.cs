@@ -1,7 +1,7 @@
 using KLMN.Domain.Common;
 namespace KLMN.Domain.Entities.Admissions;
-/// <summary>Tetkik Tanımları. Eski ProcedureDef alan adları ve tipleri korunur; audit ve aktiflik BaseEntity'dedir.</summary>
-public sealed class ProcedureDef : BaseEntity
+/// <summary>Tetkik Tanımları: geçerlilik tarihleri EffectiveDatedEntity, kimlik/audit/aktiflik/xmin BaseEntity üzerinden kalıtımla gelir.</summary>
+public sealed class ProcedureDef : EffectiveDatedEntity
 {
     /// <summary>Eski sistemdeki ProcedureCode alanı.</summary>
     public string ProcedureCode { get; set; } = string.Empty;
@@ -13,10 +13,7 @@ public sealed class ProcedureDef : BaseEntity
     public bool RequiresReferenceRange { get; set; }
     /// <summary>Sapma Bilgisi Gerektirir.</summary>
     public bool RequiresDeviationInfo { get; set; }
-    /// <summary>Eski modelin isteğe bağlı başlangıç tarihi (UTC).</summary>
-    public DateTime? StartDate { get; set; }
-    /// <summary>Eski modelin isteğe bağlı bitiş tarihi (UTC).</summary>
-    public DateTime? EndDate { get; set; }
+    // ValidFrom ve ValidTo, EffectiveDatedEntity üzerinden miras alınır.
     /// <summary>Eski enumun sayısal kodu; ProcedureTypeDefs.Code alanını referanslar.</summary>
     public int ProcedureType { get; set; }
     /// <summary>Dinamik tetkik türü kaydı.</summary>

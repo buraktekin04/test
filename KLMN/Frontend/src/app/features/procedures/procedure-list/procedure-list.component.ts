@@ -20,7 +20,7 @@ import {
 } from '../models/procedures.model';
 import { ProcedureService } from '../services/procedures.service';
 
-type FormField = 'procedureCode' | 'name' | 'startDate' | 'endDate' | 'procedureType';
+type FormField = 'procedureCode' | 'name' | 'validFrom' | 'validTo' | 'procedureType';
 
 /** Tetkik Tanımları: backend filtreleri, ayrı işlem yetkileri ve sade form. */
 @Component({
@@ -70,8 +70,8 @@ export class ProcedureListComponent implements OnInit {
   public readonly itemForm = this.fb.nonNullable.group({
     procedureCode: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/^[A-Za-z0-9_-]+$/)]],
     name: ['', [Validators.required, Validators.maxLength(250)]],
-    startDate: [''],
-    endDate: [''],
+    validFrom: [''],
+    validTo: [''],
     requiresNumericResult:false,
     requiresReferenceRange:false,
     requiresDeviationInfo:false,
@@ -173,7 +173,7 @@ export class ProcedureListComponent implements OnInit {
     if (!this.canCreate() || this.saving()) return;
     ++this.dialogRequestId;
     this.editing.set(null);
-    this.itemForm.reset({procedureCode:'',name:'',startDate:'',endDate:'',
+    this.itemForm.reset({procedureCode:'',name:'',validFrom:'',validTo:'',
       requiresNumericResult:false,requiresReferenceRange:false,requiresDeviationInfo:false,procedureType:null});
     this.loadTypeOptions();
     this.attemptedSave.set(false);
@@ -193,8 +193,8 @@ export class ProcedureListComponent implements OnInit {
         if (requestId !== this.dialogRequestId) return;
         this.editing.set(detail);
         this.itemForm.reset({ procedureCode: detail.procedureCode, name: detail.name,
-          startDate: ValidityPeriodUtils.toLocalInput(detail.startDate),
-          endDate: ValidityPeriodUtils.toLocalInput(detail.endDate),
+          validFrom: ValidityPeriodUtils.toLocalInput(detail.validFrom),
+          validTo: ValidityPeriodUtils.toLocalInput(detail.validTo),
           requiresNumericResult:detail.requiresNumericResult,
           requiresReferenceRange:detail.requiresReferenceRange,
           requiresDeviationInfo:detail.requiresDeviationInfo,
@@ -222,9 +222,9 @@ export class ProcedureListComponent implements OnInit {
     if (control.hasError('required')) return 'Bu alan zorunludur.';
     if (control.hasError('maxlength')) return 'Karakter sınırı aşıldı.';
     if (control.hasError('pattern')) return 'Girdiğiniz değer uygun biçimde değil.';
-    if (field === 'endDate') {
+    if (field === 'validTo') {
       const v=this.itemForm.getRawValue();
-      if (!ValidityPeriodUtils.hasValidRange(v.startDate, v.endDate))
+      if (!ValidityPeriodUtils.hasValidRange(v.validFrom, v.validTo))
         return 'Bitiş tarihi başlangıç tarihinden sonra olmalıdır.';
     }
     return null;
@@ -251,8 +251,8 @@ export class ProcedureListComponent implements OnInit {
       return;
     }
     const values = this.itemForm.getRawValue();
-    if (!ValidityPeriodUtils.hasValidRange(values.startDate, values.endDate)) {
-      this.focusField('endDate');
+    if (!ValidityPeriodUtils.hasValidRange(values.validFrom, values.validTo)) {
+      this.focusField('validTo');
       return;
     }
     const fields: ProcedureFields = {
@@ -261,8 +261,8 @@ export class ProcedureListComponent implements OnInit {
       requiresNumericResult:values.requiresNumericResult,
       requiresReferenceRange:values.requiresReferenceRange,
       requiresDeviationInfo:values.requiresDeviationInfo,
-      startDate: ValidityPeriodUtils.toUtcIso(values.startDate),
-      endDate: ValidityPeriodUtils.toUtcIso(values.endDate),
+      validFrom: ValidityPeriodUtils.toUtcIso(values.validFrom),
+      validTo: ValidityPeriodUtils.toUtcIso(values.validTo),
       procedureType: values.procedureType!
     };
     const edited = this.editing();

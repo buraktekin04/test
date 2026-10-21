@@ -2,7 +2,7 @@
 export interface ProcedureDefItem {
  id:string;procedureCode:string;name:string;
  requiresNumericResult:boolean;requiresReferenceRange:boolean;requiresDeviationInfo:boolean;
- startDate:string|null;endDate:string|null;
+ validFrom:string|null;validTo:string|null;
  procedureType:number;procedureTypeName:string;
  isActive:boolean;createdDate:string;createdBy:string|null;
  updatedDate:string|null;updatedBy:string|null;version:number;
@@ -11,7 +11,7 @@ export interface ProcedureDefItem {
 export interface ProcedureFields {
  procedureCode:string;name:string;
  requiresNumericResult:boolean;requiresReferenceRange:boolean;requiresDeviationInfo:boolean;
- startDate:string|null;endDate:string|null;procedureType:number;
+ validFrom:string|null;validTo:string|null;procedureType:number;
 }
 /** Tetkik Türü Tanımları ekranının dinamik seçeneği. */
 export interface ProcedureTypeOption {code:number;name:string;isActive:boolean;}

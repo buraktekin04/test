@@ -19,8 +19,8 @@ public sealed class UpdateProcedureDefCommandHandler(IKLMNDbContext db)
             await ProcedureDefRules.EnsureTypeAsync(db,request.ProcedureType,ct);
         item.ProcedureCode = request.ProcedureCode.Trim().ToUpperInvariant();
         item.Name = request.Name.Trim();
-        item.StartDate = request.StartDate;
-        item.EndDate = request.EndDate;
+        item.ValidFrom = request.ValidFrom;
+        item.ValidTo = request.ValidTo;
         item.RequiresNumericResult = request.RequiresNumericResult;
         item.RequiresReferenceRange = request.RequiresReferenceRange;
         item.RequiresDeviationInfo = request.RequiresDeviationInfo;

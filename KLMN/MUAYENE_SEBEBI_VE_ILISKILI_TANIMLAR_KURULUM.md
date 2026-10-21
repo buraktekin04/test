@@ -12,8 +12,8 @@ Ana entity: ReasonForExaminationDef : EffectiveDatedEntity.
 Code, Description, DispatchRequired, ClassificationExamination, Objectionable; ValidFrom/ValidTo mirastır.
 Dört ilişki BaseEntity türevidir, (ReasonForExaminationDefId, ilgili FK) ile bağlanır.
 Rapor türü ReportTypeDefs, hasta grubu HcAdmissionTypeDefs, branş BranchDefs ile eşleşir.
-Tetkik ProcedureDefs referansına ihtiyaç duyduğu için asgari Code/Name tablosu ve Tetkik Tanımları ekranı oluşturuldu.
-**DİKKAT:** Eski ProcedureDef ekran görüntüsü sağlanmadığından bu modelin alanları kesinleştirilmedi; veri göçünden önce asıl ProcedureDef incelenmelidir.
+Tetkik ilişkisi artık güncellenmiş ProcedureDef (ProcedureCode, Name, üç sonuç bool'u, ProcedureType) üzerinden çalışır.
+ProcedureDef ortak EffectiveDatedEntity'den ValidFrom/ValidTo miras alır.
 
 Branş ve tetkik ilişkisinde fotoğraftaki StartingAge, EndingAge, Gender **int** olarak saklanır.
 Cinsiyet kodunun eski sistem anlamı bilinmediği için numeric değer ve label "Cinsiyet Kodu" kullanıldı.
@@ -62,6 +62,12 @@ GitHub kaynak kontrolü dışında dotnet restore/build yapılamadı; yerelde pa
 Üstteki ProcedureDef Code/Name ve EffectiveDatedEntity açıklaması ARTIK GÜNCEL DEĞİLDİR.
 Yeni legacy fotoğraflarına göre fiziksel kolonlar ProcedureCode, Name,
 RequiresNumericResult, RequiresReferenceRange, RequiresDeviationInfo,
-StartDate, EndDate, ProcedureType olarak düzenlendi. ProcedureType artık
+ValidFrom, ValidTo, ProcedureType olarak düzenlendi. ProcedureType artık
 ayrı dinamik ProcedureTypeDefs.Code değerine FK'dir. Ayrıntı:
 KLMN/PROCEDURE_DEF_TETKIK_TURU_GUNCELLEME.md.
+
+## 21.10.2026 — Son karar: KLMN tarih alanları
+Eski MSKBS'deki StartDate/EndDate yeni KLMN'de kullanılmaz. ProcedureDef,
+EffectiveDatedEntity'den ValidFrom/ValidTo kalıtımı alır. API, UI, audit,
+Excel ve PostgreSQL kolonları ValidFrom/ValidTo adlandırmasıyla aynıdır.
+Migrasyon tarihi bilinmediği için mevcut DB'de otomatik kolon değişikliği yapılmadı.

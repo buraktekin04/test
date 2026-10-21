@@ -1,19 +1,22 @@
-# ProcedureDef ve dinamik Tetkik Türü Tanımları — 20.10.2026
+# Tetkik Tanımları — KLMN geçerlilik tarihi standardı (21.10.2026)
 
-## Legacy alan adları korunur
-Ekran adı Tetkik Tanımları, entity **ProcedureDef**, DB tablosu **ProcedureDefs**.
-Eski modelde alanlar: `ProcedureCode` (string), `Name` (string),
-`RequiresNumericResult` (bool), `RequiresReferenceRange` (bool),
-`RequiresDeviationInfo` (bool), `StartDate` (nullable UTC datetime),
-`EndDate` (nullable UTC datetime), `ProcedureType` (eski enumun int kodu).
+**KESİN MİMARİ KARAR:** Eski MSKBS sistemindeki `ProcedureDef.StartDate/EndDate`
+modern KLMN'de kullanılmaz. `ProcedureDef : EffectiveDatedEntity` olur ve
+`ValidFrom/ValidTo` hem entity, PostgreSQL fiziksel kolonları, CQRS API/DTO,
+Angular form/modeli, Excel hem de audit için tek kaynak isimleridir.
+`BaseEntity`'deki Id, IsActive, IsDeleted, CreatedBy/UpdatedBy ve
+PostgreSQL xmin/Version tekrar entity'ye yazılmaz.
 
-UI checkbox başlıkları **Numerik Sonuç Gerektirir**, **Referans Aralığı Gerektirir**,
-**Sapma Bilgisi Gerektirir** olarak aynen gösterilir. Liste, form, Excel, API, audit
-ve sorgu DTO'ları bu alanları kullanır.
+İş alanları eski modelle aynı kalır: `ProcedureCode`, `Name`,
+`RequiresNumericResult`, `RequiresReferenceRange`,
+`RequiresDeviationInfo`, `ProcedureType`.
+Üç boolean alan kullanıcıya "Numerik Sonuç Gerektirir",
+"Referans Aralığı Gerektirir", "Sapma Bilgisi Gerektirir" diye gösterilir.
 
-KLMN.BaseEntity'deki audit/IsActive/IsDeleted/xmin alanları yeniden eklenmedi.
-Önceden geçici uygulanan `Code`, `ValidFrom`, `ValidTo` alanları bu entity'de
-kaldırılarak eski modelin `ProcedureCode`, `StartDate`, `EndDate` yapısına geçildi.
+Eski veritabanında StartDate/EndDate mevcutsa silmeden önce iki kolonu
+sırasıyla yeni ValidFrom/ValidTo kolonlarına taşımak gerekir. Repo'da EF
+migration geçmişi olmadığı için göç SQL'i çalıştırılmadı; yerel migration
+zinciri bilinmeden rename/drop yapılmaz.
 
 ## Dinamik Tetkik Türü
 Yeni DB tablosu `ProcedureTypeDefs` (BaseEntity Id + `Code` int, `Name` string).
@@ -41,7 +44,7 @@ Eski verinin taşınmasından önce enumun her sayısal değeri ve Türkçe etik
 ## Migration — uygulanmadı
 Repo'da EF Migrations/ModelSnapshot yok. Kod DB'ye kendiliğinden şema uygulamaz.
 Yerel migration zinciri doğrulandıktan sonra **mevcut veriyi silmeden**
-`ProcedureDefs` alan değişimi ve `ProcedureTypeDefs` tablo/FK migration'ı hazırlanmalı.
+`ProcedureDefs` için kalıtımla gelen `ValidFrom/ValidTo` kolonları ve `ProcedureTypeDefs` tablo/FK migration'ı hazırlanmalı. Eski `StartDate/EndDate` verisi varsa açık veri taşıma planı yapılmalı.
 Önceden oluşturulmuş `ProcedureDefs` kayıtlarının yeni tür FK'sine uygun kodları
 olduğu doğrulanmadan NOT NULL/FOREIGN KEY kısıtı uygulanmamalıdır.
 Eski canlı DB'yi sıfırlamayın, `EnsureCreated` veya `DropDatabase` kullanmayın.

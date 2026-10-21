@@ -34,7 +34,7 @@ public sealed class AuditableEntitySaveChangesInterceptor(
                 "ClassificationExamination", "Objectionable", "ValidFrom", "ValidTo", "IsActive"),
             ["ProcedureTypeDef"] = Fields("Code", "Name", "IsActive"),
             ["ProcedureDef"] = Fields("ProcedureCode", "Name", "RequiresNumericResult",
-                "RequiresReferenceRange", "RequiresDeviationInfo", "StartDate", "EndDate",
+                "RequiresReferenceRange", "RequiresDeviationInfo", "ValidFrom", "ValidTo",
                 "ProcedureType", "IsActive"),
             ["ReasonForExamReportType"] = Fields("ReasonForExaminationDefId", "ReportTypeDefId", "IsActive"),
             ["ReasonForExamUnusedHcAdmissionType"] = Fields("ReasonForExaminationDefId", "HcAdmissionTypeDefId", "IsActive"),

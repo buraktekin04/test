@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using KLMN.Domain.Entities.Admissions;
 namespace KLMN.Application.Procedures.Responses;
-/// <summary>Tetkik Tanımları liste ve detay yanıtı; eski ProcedureDef alan adları korunur.</summary>
+/// <summary>Tetkik Tanımları liste ve detay yanıtı; iş alanlarını ve standart ValidFrom/ValidTo tarihlerini döndürür.</summary>
 public sealed class ProcedureDefResponse
 {
     public Guid Id { get; init; }
@@ -10,8 +10,8 @@ public sealed class ProcedureDefResponse
     public bool RequiresNumericResult { get; init; }
     public bool RequiresReferenceRange { get; init; }
     public bool RequiresDeviationInfo { get; init; }
-    public DateTime? StartDate { get; init; }
-    public DateTime? EndDate { get; init; }
+    public DateTime? ValidFrom { get; init; }
+    public DateTime? ValidTo { get; init; }
     public int ProcedureType { get; init; }
     public string ProcedureTypeName { get; init; } = string.Empty;
     public bool IsActive { get; init; }
@@ -26,7 +26,7 @@ public sealed class ProcedureDefResponse
     {
         Id=x.Id,ProcedureCode=x.ProcedureCode,Name=x.Name,RequiresNumericResult=x.RequiresNumericResult,
         RequiresReferenceRange=x.RequiresReferenceRange,RequiresDeviationInfo=x.RequiresDeviationInfo,
-        StartDate=x.StartDate,EndDate=x.EndDate,ProcedureType=x.ProcedureType,
+        ValidFrom=x.ValidFrom,ValidTo=x.ValidTo,ProcedureType=x.ProcedureType,
         ProcedureTypeName=x.TypeDefinition.Name,IsActive=x.IsActive,CreatedDate=x.CreatedDate,
         CreatedBy=x.CreatedBy,UpdatedDate=x.UpdatedDate,UpdatedBy=x.UpdatedBy,Version=x.Version
     };

@@ -3,8 +3,8 @@ using KLMN.Persistence.Configurations.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace KLMN.Persistence.Configurations.Admissions;
-/// <summary>ProcedureDef kolon adlarını eski modelle aynı tutan PostgreSQL mapping'i.</summary>
-public sealed class ProcedureDefConfiguration : BaseEntityConfiguration<ProcedureDef>
+/// <summary>Tetkik Tanımları; tarihleri ortak EffectiveDatedEntity mapping'iyle ValidFrom/ValidTo kolonlarına bağlar.</summary>
+public sealed class ProcedureDefConfiguration : EffectiveDatedEntityConfiguration<ProcedureDef>
 {
     protected override void ConfigureEntity(EntityTypeBuilder<ProcedureDef> b)
     {
@@ -14,8 +14,6 @@ public sealed class ProcedureDefConfiguration : BaseEntityConfiguration<Procedur
         b.Property(x=>x.RequiresNumericResult).IsRequired();
         b.Property(x=>x.RequiresReferenceRange).IsRequired();
         b.Property(x=>x.RequiresDeviationInfo).IsRequired();
-        b.Property(x=>x.StartDate).HasColumnType("timestamp with time zone");
-        b.Property(x=>x.EndDate).HasColumnType("timestamp with time zone");
         b.Property(x=>x.ProcedureType).IsRequired();
         b.HasIndex(x=>x.ProcedureCode).IsUnique().HasFilter(PostgreSqlIndexFilters.NotDeleted);
         b.HasOne(x=>x.TypeDefinition).WithMany(x=>x.Procedures)

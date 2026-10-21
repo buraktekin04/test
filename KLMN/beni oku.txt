@@ -1,3 +1,31 @@
+ZORUNLU MİMARİ KURAL — GEÇERLİLİK TARİHLERİ (21.10.2026)
+================================================================
+ESKİ MSKBS'DEKİ StartDate / EndDate ALANLARINI YENİ KLMN MODÜLLERİNE
+AYNEN TAŞIMA. KLMN'DE TEK STANDART ValidFrom / ValidTo'DUR.
+- Geçerlilik tarihi olan HER tanım entity'si EffectiveDatedEntity'den
+  türetilir. ValidFrom/ValidTo alanları entity içine tekrar yazılmaz.
+  Persistence konfigürasyonu EffectiveDatedEntityConfiguration<T> kullanır.
+  PostgreSQL fiziksel kolon adları da ValidFrom/ValidTo olur.
+- Backend CQRS Command/Handler/Validator/Response, API JSON sözleşmesi,
+  Angular model/form/kolon, Excel export ve audit alanları da
+  ValidFrom/ValidTo (Angular camelCase validFrom/validTo) kullanır.
+- Bu ortak tarihler başlangıç dahil, bitiş hariç; null sınırsızdır.
+  Uygun tarih sıralaması ve UTC kontrolü mevcut ValidityPeriod kuralına
+  dayanır. BaseEntity içindeki Id, CreatedDate/By, UpdatedDate/By,
+  DeletedDate/By, IsActive, IsDeleted ve Version (xmin) asla kopyalanmaz.
+- Eski şemada StartDate/EndDate varsa veri geçişinde anlam eşlemesi
+  yapılır, fakat KLMN domaininde veya yeni tablo kolonlarında bu isimler
+  bırakılmaz. Veri kaybı yaratacak otomatik DROP/RENAME yasaktır;
+  önce yerel migration zinciri, DB şeması ve veriler incelenmelidir.
+- HER yeni entity'de önce BaseEntity ve EffectiveDatedEntity incelenir:
+  salt ilişki/işlem/kimlik varlıkları BaseEntity;
+  geçerlilik pencereli tanımlar EffectiveDatedEntity kullanır.
+  İşe özel diğer tarihler (ör. HealthReportEndDate, LockoutEnd,
+  LastLoginDate) iş anlamları farklıysa kaldırılmaz.
+- ProcedureDef düzeltmesi: BaseEntity yerine EffectiveDatedEntity;
+  kendi StartDate/EndDate property'leri kaldırıldı ve ValidFrom/ValidTo
+  tüm katmanlarda standardize edildi. Tetkik diğer iş alanları korundu.
+
 ZORUNLU KURAL — HER GELİŞTİRMEDE TEK COMMIT / TEK PUSH
 ====================================================
 KLMN projesinde kullanıcı farklı bir talimat vermedikçe yapılan HER İŞİN
@@ -23,7 +51,7 @@ Bu kural mevcut ve BUNDAN SONRA EKLENECEK TÜM EKRANLARDA GEÇERLİDİR.
 
 KLMN PROJESİ — BENİ OKU / DEVİR DOSYASI
 ====================================
-Güncelleme tarihi: 20.10.2026
+Güncelleme tarihi: 21.10.2026
 Repo: https://github.com/buraktekin04/test
 Proje kökü: KLMN/
 Varsayılan dal: main
@@ -196,10 +224,11 @@ Muayene Sebebi derleme düzeltmesi (20.10.2026)
 
 TETKİK TANIMLARI VE DİNAMİK TETKİK TÜRÜ (20.10.2026)
 -------------------------------------------------------
-- Legacy ProcedureDef screenshot doğrultusunda GEÇİCİ Code/ValidFrom/ValidTo
-  yerine ProcedureCode/StartDate/EndDate kullanılır; fiziksel kolon adları
-  ProcedureCode, Name, RequiresNumericResult, RequiresReferenceRange,
-  RequiresDeviationInfo, StartDate, EndDate, ProcedureType olarak korunur.
+- 20.10.2026 tarihinde eski ProcedureDef'deki StartDate/EndDate geçici olarak
+  taşınmıştı. BU KARAR 21.10.2026'DA DEĞİŞTİRİLDİ:
+  KLMN'de ProcedureCode/Name ve üç sonuç bayrağı korunur ancak tarihler
+  EffectiveDatedEntity.ValidFrom/ValidTo üzerinden gelir; fiziksel
+  PostgreSQL alanları da ValidFrom/ValidTo'dur.
 - Numerik Sonuç Gerektirir, Referans Aralığı Gerektirir ve Sapma Bilgisi
   Gerektirir üç ayrı bool olup Angular formunda checkbox, listede sütun,
   Excel, CRUD DTO ve audit kayıtlarında bulunur.
@@ -241,10 +270,10 @@ Muayene Sebebi modül ailesi (20.10.2026)
 - Alt ekranlar başka tanım izinlerine bağımlı olmadan kendi
   permission kapsamındaki options API'leriyle seçim yapar.
 - Rapor/başvuru grubu/branş mevcut KLMN referans tablolarına bağlanır.
-  ProcedureDef mevcut KLMN'de olmadığı için Code/Name üzerinden ASGARİ
-  referans tablo ve ayrı Tetkik Tanımları ekranı eklendi. Eski
-  ProcedureDef'in gerçek alanları ve cinsiyet INT kodları henüz
-  doğrulanmadı; bunlar iş kullanıcıları/legacy model ile teyit edilmeli.
+  Önceki fazda ProcedureDef yalnız Code/Name ile oluşturulmuştu; sonraki
+  fotoğrafla ProcedureCode ve üç sonuç bayrağı netleşti. Geçerlilik
+  tarihleri şimdi ValidFrom/ValidTo olarak standardize edildi. Gender
+  sayısal kodlarının iş anlamı halen kullanıcılarla teyit edilmeli.
 - Backend'de ReasonForExaminationDef : EffectiveDatedEntity, dört
   alt eşleştirme : BaseEntity; ProcedureDef : EffectiveDatedEntity.
   Dört ayrı FK tablosu, soft-delete partial unique index,
@@ -669,11 +698,27 @@ Kabul öncesinde:
 
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
-2026-10-20 itibarıyla ana hatlar (sondan eskiye):
-- 2026-10-20 (ProcedureDef legacy alanları ve Dinamik Tetkik Türü):
+2026-10-21 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-21 (Genel entity/kalıtım incelemesi ve ProcedureDef standardizasyonu):
+  Tüm KLMN.Domain/Entities altındaki 36 C# entity kaynakları ve ilgili
+  Persistence/Configurations örnekleri karşılaştırıldı. Ortak BaseEntity
+  ve EffectiveDatedEntity alanları incelendi. Geçerlilik tarihli tanımlar
+  EffectiveDatedEntity kullanmalı. ProcedureDef BaseEntity'den
+  EffectiveDatedEntity'ye taşındı; eski StartDate/EndDate yerine kalıtımla
+  ValidFrom/ValidTo kullanıldı. CQRS, DTO, Angular form/list/model, Excel,
+  audit ve test kaynakları aynı adlandırmaya çekildi. ProcedureTypeDef,
+  HospitalReportType ve salt ilişki tabloları BaseEntity olarak bırakıldı;
+  CountryDef/TownDef'de geçerlilik penceresi olmadığı için değiştirilmedi.
+  HealthReportEndDate/LockoutEnd benzeri iş tarihleri KORUNDU.
+  Gerçek dotnet/Angular build, migration ve DB testleri bu ortamda
+  çalıştırılamadı. Mevcut DB'deki eski StartDate/EndDate kolonları
+  migration zinciri incelenmeden değiştirilmemeli. KLMN/
+  PROCEDURE_DEF_TETKIK_TURU_GUNCELLEME.md kontrol edilmelidir.
+
+- 2026-10-20 (TARİHÇE: ProcedureDef legacy alanları ve Dinamik Tetkik Türü):
   ProcedureCode, RequiresNumericResult, RequiresReferenceRange,
-  RequiresDeviationInfo, StartDate, EndDate, ProcedureType fiziksel
-  alanları korundu. ProcedureTypeDefs dinamik CRUD ekranı, eski enum
+  RequiresDeviationInfo ve ProcedureType iş alanları eklendi; eski
+  StartDate/EndDate kullanımı 21.10.2026'da ValidFrom/ValidTo olarak değişti. ProcedureTypeDefs dinamik CRUD ekranı, eski enum
   koduna alternatif key FK, yetki/menü/audit/Excel/test kaynakları eklendi.
   Başlangıç enum data seed'i ve migration yok; gerçek build/test yapılmadı.
   KLMN/PROCEDURE_DEF_TETKIK_TURU_GUNCELLEME.md açıklamasına bakın.
@@ -686,7 +731,7 @@ Kabul öncesinde:
   ana ekranda alt tanımların adlarını gösteren sütunlar,
   dört bağımsız alt tanım ekranı ve gereken tetkik referans ekranı.
   Yaş/cinsiyet INT korunur; gerçek cinsiyet kodlarının ve
-  ProcedureDef eski alanlarının doğrulaması bekleniyor.
+  ProcedureDef iş alanları sonraki fotoğraflarla güncellendi; tarih adlandırması artık ValidFrom/ValidTo.
   Test kaynakları ve kurulum notu eklendi; GERÇEK BUILD, MIGRATION,
   DB VE TARAYICI TESTLERİ YAPILMADI. Bu değişiklik tek commit
   olarak ana dala gönderilecek.
