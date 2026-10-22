@@ -32,3 +32,7 @@
 .dialog-actions{display:flex;justify-content:flex-end;gap:.6rem;border-top:1px solid var(--ui-border);padding-top:.8rem}
 .form-error{color:var(--ui-danger);font-size:.82rem}
 @media(max-width:650px){.form-grid{grid-template-columns:1fr}}
+
+/* SYY tanısı için Seçilebilir alanı dropdown değil, PrimeNG binary checkbox'tır. */
+.syy-eligible-field{justify-content:center}
+.syy-eligible-option{display:flex;align-items:center;gap:.6rem;cursor:pointer;min-height:38px}

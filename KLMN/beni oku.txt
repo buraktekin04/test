@@ -1,3 +1,14 @@
+22.10.2026 — SYY TANI FORMU: SEÇİLEBİLİR CHECKBOX
+====================================================
+- SYY Tanı Listesi (M/D/F) yeni kayıt ve düzenleme formundaki Eligible
+  alanı artık dropdown DEĞİL; PrimeNG p-checkbox (binary) kullanır.
+- İşaretli true, işaretsiz false. Yeni kayıtta varsayılan false.
+  Eski nullable verilerde Eligible=null olan kayıt, kullanıcı checkbox'a
+  dokunmadan başka alanları güncellese de null değeri korunur;
+  kullanıcı işaretleyip kaldırırsa açıkça false kaydedilir.
+- Backend Eligible(bool?) ve liste Evet/Hayır/Belirsiz gösterimi korundu.
+  SYY Tanı Türü ve Dilim ekranları değiştirilmedi.
+
 ZORUNLU ANGULAR KURALI — HER TANIM EKRANI AYRI COMPONENT (22.10.2026)
 ====================================================================
 KLMN'DE BİRDEN FAZLA TANIM TABLOSUNU TEK BİR DİNAMİK ANGULAR EKRANINA

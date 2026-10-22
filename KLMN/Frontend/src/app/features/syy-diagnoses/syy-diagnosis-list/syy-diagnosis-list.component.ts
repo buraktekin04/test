@@ -89,7 +89,7 @@ export class SyyDiagnosisListComponent implements OnInit {
   ++this.editRequestId;this.editing.set(null);this.submitted.set(false);this.formError.set(null);
   this.form.controls.code.enable();
   this.form.reset({code:null,name:'',validFrom:'',validTo:'',syyDiagnosisType:null,
-   attachedRecNo:null,eligible:null,slice:null});
+   attachedRecNo:null,eligible:false,slice:null});
   this.loadOptions();this.dialogVisible.set(true);
  }
  openEdit(item:SyyDiagnosisItem){
@@ -102,7 +102,7 @@ export class SyyDiagnosisListComponent implements OnInit {
       validFrom:ValidityPeriodUtils.toLocalInput(d.validFrom),
       validTo:ValidityPeriodUtils.toLocalInput(d.validTo),
       syyDiagnosisType:d.syyDiagnosisType,attachedRecNo:d.attachedRecNo,
-      eligible:d.eligible,slice:d.slice});
+      eligible:d.eligible===true,slice:d.slice});
     this.form.controls.code.enable();
     this.loadOptions(d);this.dialogVisible.set(true);
   },error:e=>this.error(e)});
@@ -122,7 +122,12 @@ export class SyyDiagnosisListComponent implements OnInit {
     }
     const payload:Record<string,unknown>={
       code,name:f.name.trim(),syyDiagnosisType:f.syyDiagnosisType,
-      attachedRecNo:f.attachedRecNo,eligible:f.eligible,slice:f.slice,
+      attachedRecNo:f.attachedRecNo,
+      // Nullable eski kayıtları değiştirmeden kaydederken null değerini koru.
+      // Yeni kayıtta işaretlenmeyen checkbox false olarak gönderilir.
+      eligible:this.editing()?.eligible===null && this.form.controls.eligible.pristine
+        ? null : f.eligible===true,
+      slice:f.slice,
       ...ValidityPeriodUtils.fromLocalInputs(f.validFrom,f.validTo)
     };
   const current=this.editing();
