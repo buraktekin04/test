@@ -17,9 +17,9 @@ BAĞLAMA. AYRI ROUTE TANIMLAMAK TEK BAŞINA AYRI EKRAN YAPMAK DEĞİLDİR.
 - 22.10.2026 düzeltmesi: Eski SyyDefinitionListComponent ve ortak
   tanım ekranı şablonu/modeli/servisi silindi. Altı ayrı component,
   HTML, SCSS, model ve API servis seti oluşturuldu.
-- Yeni tanım modülü geliştirildiğinde ayrı component koşulunu
-  KLMN/Frontend/scripts/check-independent-definition-pages.cjs
-  ile ve kod incelemesiyle kontrol et.
+- Yeni tanım modülü geliştirildiğinde her ekranın ayrı component, HTML,
+  SCSS, model, servis ve route yapısı kod incelemesiyle doğrulanmalıdır.
+  Bu amaçla ekstra kontrol scripti oluşturulmayacaktır.
 
 ZORUNLU MİMARİ KURAL — GEÇERLİLİK TARİHLERİ (21.10.2026)
 ================================================================

@@ -80,7 +80,5 @@ SYY Tanı Listesi ise tanı bağlantıları ve geçerlilik aralığını düzenl
 Yeni modüllerde route-data ile değiştirilen tek generic liste/form
 component'i kullanılmamalıdır.
 
-Frontend'de bağımsızlık kontrolü:
-`node scripts/check-independent-definition-pages.cjs`
-(dizin: `KLMN/Frontend`). Gerçek Angular build ve tarayıcı kabul
-testleri ayrıca gereklidir.
+Ekranların bağımsızlığı kod incelemesiyle kontrol edilir; ek bir kontrol
+scripti kullanılmaz. Gerçek Angular build ve tarayıcı kabul testleri ayrıca gereklidir.
