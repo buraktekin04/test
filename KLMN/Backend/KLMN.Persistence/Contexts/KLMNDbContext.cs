@@ -73,6 +73,12 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
 
     /// <summary>Tetkik tanımları DbSet.</summary>
     public DbSet<ProcedureTypeDef> ProcedureTypeDefs => Set<ProcedureTypeDef>();
+    public DbSet<SYYDiagnosisDef> SYYDiagnosisDefs => Set<SYYDiagnosisDef>();
+    public DbSet<SYYDiagnosisTypeDef> SYYDiagnosisTypeDefs => Set<SYYDiagnosisTypeDef>();
+    public DbSet<SYYDiagnosisSliceDef> SYYDiagnosisSliceDefs => Set<SYYDiagnosisSliceDef>();
+    public DbSet<AnnotationReasonDef> AnnotationReasonDefs => Set<AnnotationReasonDef>();
+    public DbSet<PlaneTypeDef> PlaneTypeDefs => Set<PlaneTypeDef>();
+    public DbSet<FlyingMissionDef> FlyingMissionDefs => Set<FlyingMissionDef>();
     public DbSet<ProcedureDef> ProcedureDefs => Set<ProcedureDef>();
 
     /// <summary>Muayene rapor türü eşleştirmeleri DbSet.</summary>

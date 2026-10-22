@@ -39,6 +39,12 @@ public interface IKLMNDbContext
 
     /// <summary>Tetkik tanımları DbSet.</summary>
     DbSet<ProcedureTypeDef> ProcedureTypeDefs { get; }
+    DbSet<SYYDiagnosisDef> SYYDiagnosisDefs { get; }
+    DbSet<SYYDiagnosisTypeDef> SYYDiagnosisTypeDefs { get; }
+    DbSet<SYYDiagnosisSliceDef> SYYDiagnosisSliceDefs { get; }
+    DbSet<AnnotationReasonDef> AnnotationReasonDefs { get; }
+    DbSet<PlaneTypeDef> PlaneTypeDefs { get; }
+    DbSet<FlyingMissionDef> FlyingMissionDefs { get; }
     DbSet<ProcedureDef> ProcedureDefs { get; }
 
     /// <summary>Muayene rapor türü eşleştirmeleri DbSet.</summary>

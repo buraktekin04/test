@@ -91,6 +91,36 @@ export const PermissionCodes = {
     View: 'ProcedureTypes.View', Query: 'ProcedureTypes.Query',
     Create: 'ProcedureTypes.Create', Update: 'ProcedureTypes.Update', Delete: 'ProcedureTypes.Delete'
   },
+  /** SYY Tanı Listesi (M/D/F) yetkileri. */
+  SYYDiagnoses:{
+    View:'SYYDiagnoses.View',Query:'SYYDiagnoses.Query',Create:'SYYDiagnoses.Create',
+    Update:'SYYDiagnoses.Update',Delete:'SYYDiagnoses.Delete'
+  },
+  /** SYY Tanı Türü Tanımları yetkileri. */
+  SYYDiagnosisTypes:{
+    View:'SYYDiagnosisTypes.View',Query:'SYYDiagnosisTypes.Query',Create:'SYYDiagnosisTypes.Create',
+    Update:'SYYDiagnosisTypes.Update',Delete:'SYYDiagnosisTypes.Delete'
+  },
+  /** SYY Dilim Tanımları yetkileri. */
+  SYYDiagnosisSlices:{
+    View:'SYYDiagnosisSlices.View',Query:'SYYDiagnosisSlices.Query',Create:'SYYDiagnosisSlices.Create',
+    Update:'SYYDiagnosisSlices.Update',Delete:'SYYDiagnosisSlices.Delete'
+  },
+  /** Sevk Sebebi Tanımları yetkileri. */
+  AnnotationReasons:{
+    View:'AnnotationReasons.View',Query:'AnnotationReasons.Query',Create:'AnnotationReasons.Create',
+    Update:'AnnotationReasons.Update',Delete:'AnnotationReasons.Delete'
+  },
+  /** Uçuşa Uçak Tipi Tanımları yetkileri. */
+  PlaneTypes:{
+    View:'PlaneTypes.View',Query:'PlaneTypes.Query',Create:'PlaneTypes.Create',
+    Update:'PlaneTypes.Update',Delete:'PlaneTypes.Delete'
+  },
+  /** Uçucu Görev Tanımları yetkileri. */
+  FlyingMissions:{
+    View:'FlyingMissions.View',Query:'FlyingMissions.Query',Create:'FlyingMissions.Create',
+    Update:'FlyingMissions.Update',Delete:'FlyingMissions.Delete'
+  },
   Procedures: {
     View: 'Procedures.View', Query: 'Procedures.Query',
     Create: 'Procedures.Create', Update: 'Procedures.Update', Delete: 'Procedures.Delete'

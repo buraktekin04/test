@@ -353,4 +353,63 @@ public static class PermissionCodes
         public const string Delete = "ReasonForExamBranchDefs.Delete";
     }
 
+    /// <summary>SYY Tanı Listesi (M/D/F) yetkileri.</summary>
+    public static class SYYDiagnoses
+    {
+       public const string View="SYYDiagnoses.View";
+       public const string Query="SYYDiagnoses.Query";
+       public const string Create="SYYDiagnoses.Create";
+       public const string Update="SYYDiagnoses.Update";
+       public const string Delete="SYYDiagnoses.Delete";
+    }
+
+    /// <summary>SYY Tanı Türü Tanımları yetkileri.</summary>
+    public static class SYYDiagnosisTypes
+    {
+       public const string View="SYYDiagnosisTypes.View";
+       public const string Query="SYYDiagnosisTypes.Query";
+       public const string Create="SYYDiagnosisTypes.Create";
+       public const string Update="SYYDiagnosisTypes.Update";
+       public const string Delete="SYYDiagnosisTypes.Delete";
+    }
+
+    /// <summary>SYY Dilim Tanımları yetkileri.</summary>
+    public static class SYYDiagnosisSlices
+    {
+       public const string View="SYYDiagnosisSlices.View";
+       public const string Query="SYYDiagnosisSlices.Query";
+       public const string Create="SYYDiagnosisSlices.Create";
+       public const string Update="SYYDiagnosisSlices.Update";
+       public const string Delete="SYYDiagnosisSlices.Delete";
+    }
+
+    /// <summary>Sevk Sebebi Tanımları yetkileri.</summary>
+    public static class AnnotationReasons
+    {
+       public const string View="AnnotationReasons.View";
+       public const string Query="AnnotationReasons.Query";
+       public const string Create="AnnotationReasons.Create";
+       public const string Update="AnnotationReasons.Update";
+       public const string Delete="AnnotationReasons.Delete";
+    }
+
+    /// <summary>Uçuşa Uçak Tipi Tanımları yetkileri.</summary>
+    public static class PlaneTypes
+    {
+       public const string View="PlaneTypes.View";
+       public const string Query="PlaneTypes.Query";
+       public const string Create="PlaneTypes.Create";
+       public const string Update="PlaneTypes.Update";
+       public const string Delete="PlaneTypes.Delete";
+    }
+
+    /// <summary>Uçucu Görev Tanımları yetkileri.</summary>
+    public static class FlyingMissions
+    {
+       public const string View="FlyingMissions.View";
+       public const string Query="FlyingMissions.Query";
+       public const string Create="FlyingMissions.Create";
+       public const string Update="FlyingMissions.Update";
+       public const string Delete="FlyingMissions.Delete";
+    }
 }

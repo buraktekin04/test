@@ -49,9 +49,48 @@ ile kullanıcı kolon sınırını sürükleyip genişliği değiştirebilir;
 gerekirse tablo kapsayıcısında yatay kaydırma olur.
 Bu kural mevcut ve BUNDAN SONRA EKLENECEK TÜM EKRANLARDA GEÇERLİDİR.
 
+SON GELİŞTİRME (22.10.2026) — SYY TANI, SEVK VE UÇUŞ TANIMLARI
+============================================================
+- Fotoğraf üstü yorumlardan UI ekran adları: SYY Tanı Listesi (M/D/F)
+  (SYYDiagnosisDef), Sevk Sebebi Tanımları (AnnotationReasonDef),
+  Uçuşa Uçak Tipi Tanımları (PlaneTypeDef), Uçucu Görev Tanımları
+  (FlyingMissionDef). Ek iki ekran: SYY Tanı Türü Tanımları
+  (SYYDiagnosisTypeDef) ve SYY Dilim Tanımları (SYYDiagnosisSliceDef).
+- Toplam ALTI ayrı menü/route ekranı: backend CQRS, CRUD/Excel,
+  kendi permission modülleri, statik audit alanları, durum onayı,
+  eşzamanlılık (PostgreSQL xmin), Angular 21/PrimeNG liste/form.
+- SYYDiagnosisDef: Code, Name, SYYDiagnosisType(int FK),
+  AttachedRecNo(Guid? self FK), Eligible(bool? seçilebilir),
+  Slice(int? FK). Liste/form, bağlı kayıt adlarını, tanı türünü,
+  dilim adını ve seçilebilir evet/hayır/belirsiz gösterir.
+- SYYDiagnosisTypeDefs ve SYYDiagnosisSliceDefs dinamik kod/ad
+  tablolarıdır; integer Code alanları alternatif PK niteliğinde
+  benzersiz anahtardır. Slice 1=A/2=B/3=C/4=D EF HasData seed'i
+  eklendi; migration uygulanmadan veritabanına işlenmez.
+  Tanı Türü sayısal kodları güvenilir şekilde verilmediği için seed
+  edilmedi; önce eski enum/kod karşılıkları doğrulanmalıdır.
+- SYY tanısındaki AttachedRecNo başka SYYDiagnosisDef.Id'ye Restrict
+  self FK'dir. Yeni bağlantıda aktif kayıt ve bütün ata zinciri
+  kontrol edilerek self-link/döngü engellenir. Bağlı alt kayıtlar
+  varken üst kayıt silinemez/pasifleştirilemez.
+- AnnotationReasonDef, PlaneTypeDef, FlyingMissionDef ve
+  SYYDiagnosisDef tarihli: EffectiveDatedEntity üzerinden
+  nullable ValidFrom/ValidTo. Lookup/ilişki tipleri BaseEntity.
+  Eski StartDate/EndDate veya audit/concurrency kolonları tekrar edilmez.
+- 6 farklı ekran kendi permission'ı ile görünür; SYY tanı ekranı
+  tür/dilim/bağlı tanı seçeneklerini kendi api/syy-diagnoses/options
+  endpoint'inden çeker ve başka modülün yetkisini zorunlu kılmaz.
+- Regresyon test kaynakları: KLMN/Tests/SYYDefinitions.Regression.
+  Uygulama notları: KLMN/SYY_TANI_VE_UCUS_TANIMLARI_KURULUM.md.
+- Açık işler: gerçek dotnet/Angular build, PostgreSQL migration ve
+  tarayıcı testleri YAPILMADI. GitHub'da EF migration zinciri
+  bulunmadığı için yeni tabloların DB'de oluştuğu İDDİA EDİLMEZ.
+  Önce mevcut yerel migration geçmişi/DB şeması incelenmeli;
+  veri kaybı olmadan migration üretilip uygulanmalıdır.
+
 KLMN PROJESİ — BENİ OKU / DEVİR DOSYASI
 ====================================
-Güncelleme tarihi: 21.10.2026
+Güncelleme tarihi: 22.10.2026
 Repo: https://github.com/buraktekin04/test
 Proje kökü: KLMN/
 Varsayılan dal: main
@@ -698,7 +737,16 @@ Kabul öncesinde:
 
 10. GELİŞTİRME KRONOLOJİSİ — SON YAPILANLAR
 ------------------------------------------
-2026-10-21 itibarıyla ana hatlar (sondan eskiye):
+2026-10-22 itibarıyla ana hatlar (sondan eskiye):
+- 2026-10-22 (SYY Tanı ve 5 destek/bağımsız tanım ekranı):
+  SYYDiagnosisDef, SYYDiagnosisTypeDef, SYYDiagnosisSliceDef,
+  AnnotationReasonDef, PlaneTypeDef, FlyingMissionDef için backend +
+  frontend + DB relationship + audit + permission + Excel +
+  regresyon kaynakları oluşturuldu. Başlıklar kaynak yorumlarla aynı.
+  AttachedRecNo self-link/cycle engeli, Slice 1-4 A-D seed'i eklendi.
+  DB migration ve derleme/test henüz çalıştırılmadı.
+  KLMN/SYY_TANI_VE_UCUS_TANIMLARI_KURULUM.md ayrıntılıdır.
+
 - 2026-10-21 (Genel entity/kalıtım incelemesi ve ProcedureDef standardizasyonu):
   Tüm KLMN.Domain/Entities altındaki 36 C# entity kaynakları ve ilgili
   Persistence/Configurations örnekleri karşılaştırıldı. Ortak BaseEntity

@@ -36,6 +36,7 @@ internal static class AuditReferenceDisplayResolver
             ["HcAdmissionTypeDefId"] = "HcAdmissionTypeDef",
             ["ProcedureDefId"] = "ProcedureDef",
             ["BranchDefId"] = "BranchDef",
+            ["AttachedRecNo"] = "SYYDiagnosisDef",
             ["ReportTypeDefId"] = "ReportTypeDef"
         };
 
@@ -184,8 +185,17 @@ internal static class AuditReferenceDisplayResolver
                 .Select(x => new { x.Id, x.Name, x.Code })
                 .ToDictionaryAsync(x => x.Id, x => x.Name + " (" + x.Code + ")", cancellationToken);
 
+        // SYY'nin aynı tablo içindeki bağlı tanısı audit ekranında kod/ad olarak gösterilir.
+        var syyIds=references["SYYDiagnosisDef"];
+        var syyLabels=syyIds.Count==0?new Dictionary<Guid,string>():
+            await dbContext.SYYDiagnosisDefs.IgnoreQueryFilters().AsNoTracking()
+             .Where(x=>syyIds.Contains(x.Id))
+             .Select(x=>new {x.Id,x.Code,x.Name})
+             .ToDictionaryAsync(x=>x.Id,x=>x.Code+" — "+x.Name,cancellationToken);
+
         var labels = new Dictionary<string, Dictionary<Guid, string>>(StringComparer.Ordinal)
         {
+            ["SYYDiagnosisDef"] = syyLabels,
             ["Role"] = roleLabels,
             ["Permission"] = permissionLabels,
             ["User"] = userLabels,

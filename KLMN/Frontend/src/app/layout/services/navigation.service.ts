@@ -60,6 +60,24 @@ export class NavigationService {
           permissionModule: 'Towns'
         },
         {
+          label: 'SYY Tanı Listesi (M/D/F)',icon:'pi pi-sitemap',route:'/app/syy-diagnoses',permissionModule:'SYYDiagnoses'
+        },
+        {
+          label: 'SYY Tanı Türü Tanımları',icon:'pi pi-list',route:'/app/syy-diagnosis-types',permissionModule:'SYYDiagnosisTypes'
+        },
+        {
+          label: 'SYY Dilim Tanımları',icon:'pi pi-tags',route:'/app/syy-diagnosis-slices',permissionModule:'SYYDiagnosisSlices'
+        },
+        {
+          label: 'Sevk Sebebi Tanımları',icon:'pi pi-file-edit',route:'/app/annotation-reasons',permissionModule:'AnnotationReasons'
+        },
+        {
+          label: 'Uçuşa Uçak Tipi Tanımları',icon:'pi pi-send',route:'/app/plane-types',permissionModule:'PlaneTypes'
+        },
+        {
+          label: 'Uçucu Görev Tanımları',icon:'pi pi-compass',route:'/app/flying-missions',permissionModule:'FlyingMissions'
+        },
+        {
           label: 'Muayene Sebebi', icon: 'pi pi-file-edit',
           route: '/app/reasons-for-examination', permissionModule: 'ReasonsForExaminations'
         },

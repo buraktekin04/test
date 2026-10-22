@@ -108,6 +108,54 @@ export const routes: Routes = [
             .then(component => component.MilitaryClassListComponent)
       },
       {
+        path: 'syy-diagnoses',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'SYYDiagnoses',
+          definition: {module:'SYYDiagnoses',path:'syy-diagnoses',title:'SYY Tanı Listesi (M/D/F)',entity:'SYYDiagnosisDef',kind:'diagnosis'} },
+        loadComponent: () => import('./features/syy-definitions/definition-list/definition-list.component')
+          .then(x=>x.SyyDefinitionListComponent)
+      },
+      {
+        path: 'syy-diagnosis-types',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'SYYDiagnosisTypes',
+          definition: {module:'SYYDiagnosisTypes',path:'syy-diagnosis-types',title:'SYY Tanı Türü Tanımları',entity:'SYYDiagnosisTypeDef',kind:'lookup'} },
+        loadComponent: () => import('./features/syy-definitions/definition-list/definition-list.component')
+          .then(x=>x.SyyDefinitionListComponent)
+      },
+      {
+        path: 'syy-diagnosis-slices',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'SYYDiagnosisSlices',
+          definition: {module:'SYYDiagnosisSlices',path:'syy-diagnosis-slices',title:'SYY Dilim Tanımları',entity:'SYYDiagnosisSliceDef',kind:'lookup'} },
+        loadComponent: () => import('./features/syy-definitions/definition-list/definition-list.component')
+          .then(x=>x.SyyDefinitionListComponent)
+      },
+      {
+        path: 'annotation-reasons',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'AnnotationReasons',
+          definition: {module:'AnnotationReasons',path:'annotation-reasons',title:'Sevk Sebebi Tanımları',entity:'AnnotationReasonDef',kind:'simple'} },
+        loadComponent: () => import('./features/syy-definitions/definition-list/definition-list.component')
+          .then(x=>x.SyyDefinitionListComponent)
+      },
+      {
+        path: 'plane-types',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'PlaneTypes',
+          definition: {module:'PlaneTypes',path:'plane-types',title:'Uçuşa Uçak Tipi Tanımları',entity:'PlaneTypeDef',kind:'simple'} },
+        loadComponent: () => import('./features/syy-definitions/definition-list/definition-list.component')
+          .then(x=>x.SyyDefinitionListComponent)
+      },
+      {
+        path: 'flying-missions',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'FlyingMissions',
+          definition: {module:'FlyingMissions',path:'flying-missions',title:'Uçucu Görev Tanımları',entity:'FlyingMissionDef',kind:'simple'} },
+        loadComponent: () => import('./features/syy-definitions/definition-list/definition-list.component')
+          .then(x=>x.SyyDefinitionListComponent)
+      },
+      {
         path: 'reasons-for-examination',
         canActivate: [permissionGuard],
         data: { permissionModule: 'ReasonsForExaminations' },
