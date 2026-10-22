@@ -110,50 +110,44 @@ export const routes: Routes = [
       {
         path: 'syy-diagnoses',
         canActivate: [permissionGuard],
-        data: { permissionModule: 'SYYDiagnoses',
-          definition: {module:'SYYDiagnoses',path:'syy-diagnoses',title:'SYY Tanı Listesi (M/D/F)',entity:'SYYDiagnosisDef',kind:'diagnosis'} },
-        loadComponent: () => import('./features/syy-definitions/definition-list/definition-list.component')
-          .then(x=>x.SyyDefinitionListComponent)
+        data: { permissionModule: 'SYYDiagnoses' },
+        loadComponent: () => import('./features/syy-diagnoses/syy-diagnosis-list/syy-diagnosis-list.component')
+          .then(x=>x.SyyDiagnosisListComponent)
       },
       {
         path: 'syy-diagnosis-types',
         canActivate: [permissionGuard],
-        data: { permissionModule: 'SYYDiagnosisTypes',
-          definition: {module:'SYYDiagnosisTypes',path:'syy-diagnosis-types',title:'SYY Tanı Türü Tanımları',entity:'SYYDiagnosisTypeDef',kind:'lookup'} },
-        loadComponent: () => import('./features/syy-definitions/definition-list/definition-list.component')
-          .then(x=>x.SyyDefinitionListComponent)
+        data: { permissionModule: 'SYYDiagnosisTypes' },
+        loadComponent: () => import('./features/syy-diagnosis-types/syy-diagnosis-type-list/syy-diagnosis-type-list.component')
+          .then(x=>x.SyyDiagnosisTypeListComponent)
       },
       {
         path: 'syy-diagnosis-slices',
         canActivate: [permissionGuard],
-        data: { permissionModule: 'SYYDiagnosisSlices',
-          definition: {module:'SYYDiagnosisSlices',path:'syy-diagnosis-slices',title:'SYY Dilim Tanımları',entity:'SYYDiagnosisSliceDef',kind:'lookup'} },
-        loadComponent: () => import('./features/syy-definitions/definition-list/definition-list.component')
-          .then(x=>x.SyyDefinitionListComponent)
+        data: { permissionModule: 'SYYDiagnosisSlices' },
+        loadComponent: () => import('./features/syy-diagnosis-slices/syy-diagnosis-slice-list/syy-diagnosis-slice-list.component')
+          .then(x=>x.SyyDiagnosisSliceListComponent)
       },
       {
         path: 'annotation-reasons',
         canActivate: [permissionGuard],
-        data: { permissionModule: 'AnnotationReasons',
-          definition: {module:'AnnotationReasons',path:'annotation-reasons',title:'Sevk Sebebi Tanımları',entity:'AnnotationReasonDef',kind:'simple'} },
-        loadComponent: () => import('./features/syy-definitions/definition-list/definition-list.component')
-          .then(x=>x.SyyDefinitionListComponent)
+        data: { permissionModule: 'AnnotationReasons' },
+        loadComponent: () => import('./features/annotation-reasons/annotation-reason-list/annotation-reason-list.component')
+          .then(x=>x.AnnotationReasonListComponent)
       },
       {
         path: 'plane-types',
         canActivate: [permissionGuard],
-        data: { permissionModule: 'PlaneTypes',
-          definition: {module:'PlaneTypes',path:'plane-types',title:'Uçuşa Uçak Tipi Tanımları',entity:'PlaneTypeDef',kind:'simple'} },
-        loadComponent: () => import('./features/syy-definitions/definition-list/definition-list.component')
-          .then(x=>x.SyyDefinitionListComponent)
+        data: { permissionModule: 'PlaneTypes' },
+        loadComponent: () => import('./features/plane-types/plane-type-list/plane-type-list.component')
+          .then(x=>x.PlaneTypeListComponent)
       },
       {
         path: 'flying-missions',
         canActivate: [permissionGuard],
-        data: { permissionModule: 'FlyingMissions',
-          definition: {module:'FlyingMissions',path:'flying-missions',title:'Uçucu Görev Tanımları',entity:'FlyingMissionDef',kind:'simple'} },
-        loadComponent: () => import('./features/syy-definitions/definition-list/definition-list.component')
-          .then(x=>x.SyyDefinitionListComponent)
+        data: { permissionModule: 'FlyingMissions' },
+        loadComponent: () => import('./features/flying-missions/flying-mission-list/flying-mission-list.component')
+          .then(x=>x.FlyingMissionListComponent)
       },
       {
         path: 'reasons-for-examination',

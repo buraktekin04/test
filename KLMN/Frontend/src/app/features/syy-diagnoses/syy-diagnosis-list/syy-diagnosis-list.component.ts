@@ -1,7 +1,7 @@
 import {Component,computed,inject,OnInit,signal} from '@angular/core';
 import {DatePipe} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
-import {ActivatedRoute,RouterLink} from '@angular/router';
+import {RouterLink} from '@angular/router';
 import {FormBuilder,ReactiveFormsModule,Validators} from '@angular/forms';
 import {finalize} from 'rxjs';
 import {ConfirmationService,MessageService} from 'primeng/api';
@@ -17,51 +17,47 @@ import {PermissionCodes} from '../../../core/permissions/constants/permission-co
 import {PermissionService} from '../../../core/permissions/services/permission.service';
 import {AuditHistoryComponent} from '../../../shared/audit-history/audit-history.component';
 import {ValidityPeriodUtils} from '../../../core/utils/validity-period.utils';
-import {SyyDefinitionsService} from '../services/syy-definitions.service';
-import {DefinitionConfig,DefinitionItem,DefinitionQuery,DiagnosisOptions} from '../models/syy-definition.model';
+import {SyyDiagnosisService} from '../services/syy-diagnosis.service';
+import {SyyDiagnosisItem,DefinitionQuery,DiagnosisOptions} from '../models/syy-diagnosis.model';
 const emptyOptions:DiagnosisOptions={types:[],slices:[],parents:[]};
-/** SYY Tanıları, Tanı Türü, Dilim, Sevk Sebebi, Uçak Tipi ve Uçucu Görev için ayrı route'larla çalışan tanım ekranları. */
+/** SYY Tanı Listesi (M/D/F) — bağımsız ekran, kendi formu/template'i ve permission'ları. */
 @Component({
- selector:'app-syy-definition-list',standalone:true,
+ selector:'app-syy-diagnosis-list',standalone:true,
  imports:[DatePipe,RouterLink,ReactiveFormsModule,ButtonModule,CheckboxModule,ConfirmDialogModule,
  DialogModule,InputTextModule,TableModule,TagModule,ToastModule,AuditHistoryComponent],
  providers:[ConfirmationService,MessageService],
- templateUrl:'./definition-list.component.html',
- styleUrl:'./definition-list.component.scss'
+ templateUrl:'./syy-diagnosis-list.component.html',
+ styleUrl:'./syy-diagnosis-list.component.scss'
 })
-export class SyyDefinitionListComponent implements OnInit {
- private readonly route=inject(ActivatedRoute);
- private readonly api=inject(SyyDefinitionsService);
+export class SyyDiagnosisListComponent implements OnInit {
+ private readonly api=inject(SyyDiagnosisService);
  private readonly fb=inject(FormBuilder);
  private readonly permissions=inject(PermissionService);
  private readonly confirm=inject(ConfirmationService);
  private readonly message=inject(MessageService);
- readonly config=this.route.snapshot.data['definition'] as DefinitionConfig;
- readonly diag=this.config.kind==='diagnosis'; readonly lookup=this.config.kind==='lookup';
- readonly hasDate=this.config.kind!=='lookup';
+ readonly config = { module:'SYYDiagnoses' as const, path:'syy-diagnoses', title:'SYY Tanı Listesi (M/D/F)', entity:'SYYDiagnosisDef' };
  readonly canCreate=computed(()=>this.permissions.has(PermissionCodes[this.config.module].Create));
  readonly canUpdate=computed(()=>this.permissions.has(PermissionCodes[this.config.module].Update));
  readonly canDelete=computed(()=>this.permissions.has(PermissionCodes[this.config.module].Delete));
  readonly canExport=computed(()=>this.permissions.has(PermissionCodes[this.config.module].Query));
  readonly canAudit=computed(()=>this.permissions.has(PermissionCodes.AuditLogs.View));
- readonly items=signal<DefinitionItem[]>([]);readonly total=signal(0);
+ readonly items=signal<SyyDiagnosisItem[]>([]);readonly total=signal(0);
  readonly page=signal(1);readonly pageSize=signal(20);
  readonly maxPage=computed(()=>Math.max(1,Math.ceil(this.total()/this.pageSize())));
  readonly loading=signal(false);readonly saving=signal(false);readonly exporting=signal(false);
- readonly dialogVisible=signal(false);readonly editing=signal<DefinitionItem|null>(null);
- readonly auditItem=signal<DefinitionItem|null>(null);
+ readonly dialogVisible=signal(false);readonly editing=signal<SyyDiagnosisItem|null>(null);
+ readonly auditItem=signal<SyyDiagnosisItem|null>(null);
  readonly options=signal<DiagnosisOptions>(emptyOptions);
  readonly filtersVisible=signal(false);
  readonly submitted=signal(false);readonly formError=signal<string|null>(null);
  readonly searchForm=this.fb.nonNullable.group({search:'',includeInactive:false});
  readonly columnForm=this.fb.group({isActive:this.fb.control<boolean|null>(null)});
  readonly form=this.fb.group({
-   code:this.fb.control<string|number|null>(null,[Validators.required]),
+   code:this.fb.control<string|null>(null,[Validators.required,Validators.maxLength(100)]),
    name:this.fb.nonNullable.control('',[Validators.required,Validators.maxLength(500)]),
-   validFrom:this.fb.nonNullable.control(''),validTo:this.fb.nonNullable.control(''),
+   validFrom:this.fb.nonNullable.control(''), validTo:this.fb.nonNullable.control(''),
    syyDiagnosisType:this.fb.control<number|null>(null,[Validators.required]),
-   attachedRecNo:this.fb.control<string|null>(null),
-   eligible:this.fb.control<boolean|null>(null),
+   attachedRecNo:this.fb.control<string|null>(null),eligible:this.fb.control<boolean|null>(null),
    slice:this.fb.control<number|null>(null)
  });
  private requestId=0;private editRequestId=0;
@@ -74,7 +70,7 @@ export class SyyDefinitionListComponent implements OnInit {
  /** Sunucuda filtre/sayfalama; PrimeNG ile sadece istemcide kolon sıralama. */
  load(){
   const request=++this.requestId;this.loading.set(true);
-  this.api.list(this.config.path,this.query()).pipe(finalize(()=>{
+  this.api.list(this.query()).pipe(finalize(()=>{
    if(this.requestId===request)this.loading.set(false);
   })).subscribe({next:r=>{if(this.requestId!==request)return;this.items.set(r.items);this.total.set(r.totalCount);},
    error:e=>{if(this.requestId!==request)return;this.items.set([]);this.total.set(0);this.error(e);}});
@@ -84,8 +80,7 @@ export class SyyDefinitionListComponent implements OnInit {
  toPage(n:number){if(n<1||n>this.maxPage()||this.loading())return;this.page.set(n);this.load();}
  setPageSize(event:Event){const v=Number((event.target as HTMLSelectElement).value);
  if(![10,20,50,100].includes(v))return;this.pageSize.set(v);this.search();}
- private loadOptions(item?:DefinitionItem){
-  if(!this.diag)return;
+ private loadOptions(item?:SyyDiagnosisItem){
   this.api.options(item?.id,item?.syyDiagnosisType,item?.slice,item?.attachedRecNo)
    .subscribe({next:x=>this.options.set(x),error:e=>this.error(e)});
  }
@@ -97,18 +92,18 @@ export class SyyDefinitionListComponent implements OnInit {
    attachedRecNo:null,eligible:null,slice:null});
   this.loadOptions();this.dialogVisible.set(true);
  }
- openEdit(item:DefinitionItem){
+ openEdit(item:SyyDiagnosisItem){
   if(!this.canUpdate())return;
   const id=++this.editRequestId;
-  this.api.detail(this.config.path,item.id).subscribe({next:d=>{
+  this.api.detail(item.id).subscribe({next:d=>{
     if(id!==this.editRequestId)return;
     this.editing.set(d);this.submitted.set(false);this.formError.set(null);
     this.form.reset({code:d.code,name:d.name,
-      validFrom:ValidityPeriodUtils.toLocalInput(d.validFrom??null),
-      validTo:ValidityPeriodUtils.toLocalInput(d.validTo??null),
-      syyDiagnosisType:d.syyDiagnosisType??null,attachedRecNo:d.attachedRecNo??null,
-      eligible:d.eligible??null,slice:d.slice??null});
-    if(this.lookup)this.form.controls.code.disable();else this.form.controls.code.enable();
+      validFrom:ValidityPeriodUtils.toLocalInput(d.validFrom),
+      validTo:ValidityPeriodUtils.toLocalInput(d.validTo),
+      syyDiagnosisType:d.syyDiagnosisType,attachedRecNo:d.attachedRecNo,
+      eligible:d.eligible,slice:d.slice});
+    this.form.controls.code.enable();
     this.loadOptions(d);this.dialogVisible.set(true);
   },error:e=>this.error(e)});
  }
@@ -117,52 +112,50 @@ export class SyyDefinitionListComponent implements OnInit {
  save(){
   if(this.saving()||(this.editing()?!this.canUpdate():!this.canCreate()))return;
   this.submitted.set(true);this.formError.set(null);
-  const f=this.form.getRawValue();
-  const code=this.lookup?Number(f.code):String(f.code??'').trim().toUpperCase();
-  if(!String(f.code??'').trim()||!f.name.trim()||
-    (this.diag&&f.syyDiagnosisType===null)||
-    (this.lookup&&(!Number.isInteger(code)||Number(code)<0))){
-   this.formError.set('Zorunlu alanları kontrol ediniz.');return;
-  }
-  if(this.hasDate&&!ValidityPeriodUtils.hasValidRange(f.validFrom,f.validTo)){
-   this.formError.set('Geçerlilik bitişi başlangıçtan sonra olmalıdır.');return;
-  }
-  const payload:Record<string,unknown>={name:f.name.trim()};
+    const f=this.form.getRawValue();
+    const code=(f.code??'').trim().toUpperCase();
+    if(!code||!f.name.trim()||f.syyDiagnosisType===null||this.form.invalid){
+      this.formError.set('Kod, ad ve tanı türü zorunludur.');return;
+    }
+    if(!ValidityPeriodUtils.hasValidRange(f.validFrom,f.validTo)){
+      this.formError.set('Geçerlilik bitişi başlangıçtan sonra olmalıdır.');return;
+    }
+    const payload:Record<string,unknown>={
+      code,name:f.name.trim(),syyDiagnosisType:f.syyDiagnosisType,
+      attachedRecNo:f.attachedRecNo,eligible:f.eligible,slice:f.slice,
+      ...ValidityPeriodUtils.fromLocalInputs(f.validFrom,f.validTo)
+    };
   const current=this.editing();
-  if(!current||!this.lookup)payload['code']=code;
-  if(this.hasDate)Object.assign(payload,ValidityPeriodUtils.fromLocalInputs(f.validFrom,f.validTo));
-  if(this.diag){
-   payload['syyDiagnosisType']=f.syyDiagnosisType;
-   payload['attachedRecNo']=f.attachedRecNo||null;payload['eligible']=f.eligible;
-   payload['slice']=f.slice;
-  }
-  const req=current?this.api.update(this.config.path,current.id,{...payload,id:current.id,version:current.version}):
-    this.api.create(this.config.path,payload);
-  this.saving.set(true);req.pipe(finalize(()=>this.saving.set(false))).subscribe({
-   next:()=>{this.dialogVisible.set(false);this.message.add({severity:'success',summary:'Kaydedildi',detail:this.config.title});this.load();},
-   error:e=>{this.formError.set(this.errorText(e));this.error(e);}
+  const req=current?this.api.update(current.id,{...payload,id:current.id,version:current.version}):
+    this.api.create(payload);
+  this.saving.set(true);
+  req.pipe(finalize(()=>this.saving.set(false))).subscribe({
+    next:()=>{this.dialogVisible.set(false);this.message.add({severity:'success',
+      summary:'Kaydedildi',detail:this.config.title});this.load();},
+    error:e=>{this.formError.set(this.errorText(e));this.error(e);}
   });
  }
- toggleStatus(item:DefinitionItem){
+
+ toggleStatus(item:SyyDiagnosisItem){
   if(!this.canUpdate())return;
   this.confirm.confirm({header:'Durum Değiştir',message:'Seçilen tanımın durumu değiştirilsin mi?',
    acceptLabel:'Onayla',rejectLabel:'Vazgeç',accept:()=>{
-    this.api.status(this.config.path,item.id,item.version,!item.isActive)
+    this.api.status(item.id,item.version,!item.isActive)
     .subscribe({next:()=>this.load(),error:e=>this.error(e)});
    }});
  }
- remove(item:DefinitionItem){
+ remove(item:SyyDiagnosisItem){
   if(!this.canDelete())return;
   this.confirm.confirm({header:'Silme Onayı',
    message:'Bu tanım silinsin mi? Bağlı tanılar varsa işlem engellenir.',
    acceptLabel:'Sil',rejectLabel:'Vazgeç',accept:()=>{
-    this.api.delete(this.config.path,item.id,item.version)
+    this.api.delete(item.id,item.version)
       .subscribe({next:()=>this.load(),error:e=>this.error(e)});
    }});
  }
  exportExcel(){
   if(!this.canExport())return;this.exporting.set(true);
-  this.api.export(this.config.path,this.query()).pipe(finalize(()=>this.exporting.set(false)))
+  this.api.export(this.query()).pipe(finalize(()=>this.exporting.set(false)))
    .subscribe({next:blob=>{const url=URL.createObjectURL(blob),el=document.createElement('a');
     el.href=url;el.download=this.config.path+'.xlsx';el.click();setTimeout(()=>URL.revokeObjectURL(url),1000);},
     error:e=>this.error(e)});

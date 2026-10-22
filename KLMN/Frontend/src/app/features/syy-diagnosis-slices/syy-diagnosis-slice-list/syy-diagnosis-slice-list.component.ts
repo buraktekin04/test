@@ -1,0 +1,144 @@
+import {Component,computed,inject,OnInit,signal} from '@angular/core';
+import {HttpErrorResponse} from '@angular/common/http';
+import {FormBuilder,ReactiveFormsModule,Validators} from '@angular/forms';
+import {finalize} from 'rxjs';
+import {ConfirmationService,MessageService} from 'primeng/api';
+import {ButtonModule} from 'primeng/button';
+import {CheckboxModule} from 'primeng/checkbox';
+import {ConfirmDialogModule} from 'primeng/confirmdialog';
+import {DialogModule} from 'primeng/dialog';
+import {InputTextModule} from 'primeng/inputtext';
+import {TableModule} from 'primeng/table';
+import {TagModule} from 'primeng/tag';
+import {ToastModule} from 'primeng/toast';
+import {PermissionCodes} from '../../../core/permissions/constants/permission-codes';
+import {PermissionService} from '../../../core/permissions/services/permission.service';
+import {AuditHistoryComponent} from '../../../shared/audit-history/audit-history.component';
+import {SyyDiagnosisSliceService} from '../services/syy-diagnosis-slice.service';
+import {SyyDiagnosisSliceItem,DefinitionQuery} from '../models/syy-diagnosis-slice.model';
+/** SYY Dilim Tanımları — bağımsız ekran, kendi formu/template'i ve permission'ları. */
+@Component({
+ selector:'app-syy-diagnosis-slice-list',standalone:true,
+ imports:[ReactiveFormsModule,ButtonModule,CheckboxModule,ConfirmDialogModule,
+ DialogModule,InputTextModule,TableModule,TagModule,ToastModule,AuditHistoryComponent],
+ providers:[ConfirmationService,MessageService],
+ templateUrl:'./syy-diagnosis-slice-list.component.html',
+ styleUrl:'./syy-diagnosis-slice-list.component.scss'
+})
+export class SyyDiagnosisSliceListComponent implements OnInit {
+ private readonly api=inject(SyyDiagnosisSliceService);
+ private readonly fb=inject(FormBuilder);
+ private readonly permissions=inject(PermissionService);
+ private readonly confirm=inject(ConfirmationService);
+ private readonly message=inject(MessageService);
+ readonly config = { module:'SYYDiagnosisSlices' as const, path:'syy-diagnosis-slices', title:'SYY Dilim Tanımları', entity:'SYYDiagnosisSliceDef' };
+ readonly canCreate=computed(()=>this.permissions.has(PermissionCodes[this.config.module].Create));
+ readonly canUpdate=computed(()=>this.permissions.has(PermissionCodes[this.config.module].Update));
+ readonly canDelete=computed(()=>this.permissions.has(PermissionCodes[this.config.module].Delete));
+ readonly canExport=computed(()=>this.permissions.has(PermissionCodes[this.config.module].Query));
+ readonly canAudit=computed(()=>this.permissions.has(PermissionCodes.AuditLogs.View));
+ readonly items=signal<SyyDiagnosisSliceItem[]>([]);readonly total=signal(0);
+ readonly page=signal(1);readonly pageSize=signal(20);
+ readonly maxPage=computed(()=>Math.max(1,Math.ceil(this.total()/this.pageSize())));
+ readonly loading=signal(false);readonly saving=signal(false);readonly exporting=signal(false);
+ readonly dialogVisible=signal(false);readonly editing=signal<SyyDiagnosisSliceItem|null>(null);
+ readonly auditItem=signal<SyyDiagnosisSliceItem|null>(null);
+ readonly filtersVisible=signal(false);
+ readonly submitted=signal(false);readonly formError=signal<string|null>(null);
+ readonly searchForm=this.fb.nonNullable.group({search:'',includeInactive:false});
+ readonly columnForm=this.fb.group({isActive:this.fb.control<boolean|null>(null)});
+ readonly form=this.fb.group({
+   code:this.fb.control<number|null>(null,[Validators.required,Validators.min(0)]),
+   name:this.fb.nonNullable.control('',[Validators.required,Validators.maxLength(150)])
+ });
+ private requestId=0;private editRequestId=0;
+ ngOnInit(){this.load();}
+ private query():DefinitionQuery{
+  const s=this.searchForm.getRawValue(),c=this.columnForm.getRawValue();
+  return {search:s.search,includeInactive:s.includeInactive||c.isActive===false,
+    isActive:c.isActive,pageNumber:this.page(),pageSize:this.pageSize()};
+ }
+ /** Sunucuda filtre/sayfalama; PrimeNG ile sadece istemcide kolon sıralama. */
+ load(){
+  const request=++this.requestId;this.loading.set(true);
+  this.api.list(this.query()).pipe(finalize(()=>{
+   if(this.requestId===request)this.loading.set(false);
+  })).subscribe({next:r=>{if(this.requestId!==request)return;this.items.set(r.items);this.total.set(r.totalCount);},
+   error:e=>{if(this.requestId!==request)return;this.items.set([]);this.total.set(0);this.error(e);}});
+ }
+ search(){this.page.set(1);this.load();}
+ clear(){this.searchForm.reset({search:'',includeInactive:false});this.columnForm.reset({isActive:null});this.search();}
+ toPage(n:number){if(n<1||n>this.maxPage()||this.loading())return;this.page.set(n);this.load();}
+ setPageSize(event:Event){const v=Number((event.target as HTMLSelectElement).value);
+ if(![10,20,50,100].includes(v))return;this.pageSize.set(v);this.search();}
+ openCreate(){
+  if(!this.canCreate())return;
+  ++this.editRequestId;this.editing.set(null);this.submitted.set(false);this.formError.set(null);
+  this.form.controls.code.enable();
+  this.form.reset({code:null,name:''});
+  this.dialogVisible.set(true);
+ }
+ openEdit(item:SyyDiagnosisSliceItem){
+  if(!this.canUpdate())return;
+  const id=++this.editRequestId;
+  this.api.detail(item.id).subscribe({next:d=>{
+    if(id!==this.editRequestId)return;
+    this.editing.set(d);this.submitted.set(false);this.formError.set(null);
+    this.form.reset({code:d.code,name:d.name});
+    this.form.controls.code.disable();
+    this.dialogVisible.set(true);
+  },error:e=>this.error(e)});
+ }
+ closeDialog(){if(this.saving())return;this.dialogVisible.set(false);++this.editRequestId;}
+ /** Kaynak modeldeki int? Slice / bool? Eligible değerleri aynen korur. */
+ save(){
+  if(this.saving()||(this.editing()?!this.canUpdate():!this.canCreate()))return;
+  this.submitted.set(true);this.formError.set(null);
+    const f=this.form.getRawValue();
+    const code=f.code;
+    if(code===null||!Number.isInteger(code)||code<0||!f.name.trim()||this.form.invalid){
+      this.formError.set('Geçerli bir sayısal kod ve ad giriniz.');return;
+    }
+    const payload:Record<string,unknown>={name:f.name.trim()};
+    if(!this.editing())payload['code']=code;
+  const current=this.editing();
+  const req=current?this.api.update(current.id,{...payload,id:current.id,version:current.version}):
+    this.api.create(payload);
+  this.saving.set(true);
+  req.pipe(finalize(()=>this.saving.set(false))).subscribe({
+    next:()=>{this.dialogVisible.set(false);this.message.add({severity:'success',
+      summary:'Kaydedildi',detail:this.config.title});this.load();},
+    error:e=>{this.formError.set(this.errorText(e));this.error(e);}
+  });
+ }
+
+ toggleStatus(item:SyyDiagnosisSliceItem){
+  if(!this.canUpdate())return;
+  this.confirm.confirm({header:'Durum Değiştir',message:'Seçilen tanımın durumu değiştirilsin mi?',
+   acceptLabel:'Onayla',rejectLabel:'Vazgeç',accept:()=>{
+    this.api.status(item.id,item.version,!item.isActive)
+    .subscribe({next:()=>this.load(),error:e=>this.error(e)});
+   }});
+ }
+ remove(item:SyyDiagnosisSliceItem){
+  if(!this.canDelete())return;
+  this.confirm.confirm({header:'Silme Onayı',
+   message:'Bu tanım silinsin mi? Bağlı tanılar varsa işlem engellenir.',
+   acceptLabel:'Sil',rejectLabel:'Vazgeç',accept:()=>{
+    this.api.delete(item.id,item.version)
+      .subscribe({next:()=>this.load(),error:e=>this.error(e)});
+   }});
+ }
+ exportExcel(){
+  if(!this.canExport())return;this.exporting.set(true);
+  this.api.export(this.query()).pipe(finalize(()=>this.exporting.set(false)))
+   .subscribe({next:blob=>{const url=URL.createObjectURL(blob),el=document.createElement('a');
+    el.href=url;el.download=this.config.path+'.xlsx';el.click();setTimeout(()=>URL.revokeObjectURL(url),1000);},
+    error:e=>this.error(e)});
+ }
+ private errorText(e:unknown):string{
+  const x=e as HttpErrorResponse;
+  return x.error?.detail||x.error?.title||x.message||'İşlem gerçekleştirilemedi.';
+ }
+ private error(e:unknown){this.message.add({severity:'error',summary:'İşlem başarısız',detail:this.errorText(e),life:7000});}
+}

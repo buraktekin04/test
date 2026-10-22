@@ -1,0 +1,34 @@
+:host{display:block;min-width:0}
+.annotation-reason-list-page{display:flex;flex-direction:column;gap:1.15rem;min-width:0}
+.filter-panel,.list-card{background:var(--ui-surface);border:1px solid var(--ui-border);border-radius:var(--ui-radius);min-width:0}
+.filter-panel{padding:1rem}.filter-panel form{display:flex;align-items:center;flex-wrap:wrap;gap:.7rem}
+.search-field{flex:1 1 260px;position:relative}
+.search-field i{position:absolute;left:.8rem;top:50%;transform:translateY(-50%);color:var(--ui-muted)}
+.search-field input{width:100%;padding-left:2.4rem;box-sizing:border-box}
+.inactive-filter{display:flex;align-items:center;gap:.45rem;font-size:.82rem}
+.table-toolbar{display:flex;justify-content:flex-end;gap:.6rem;padding:.8rem}
+.filter-detail{display:flex;align-items:center;gap:.6rem;padding:.8rem;border-top:1px solid var(--ui-border)}
+.filter-detail select,.pagination select,.form-field select{padding:.58rem;border:1px solid var(--ui-control-border);border-radius:6px;background:var(--ui-surface);color:var(--ui-text)}
+.list-card{overflow:hidden}.table-scroll{overflow-x:auto;max-width:100%}
+:host ::ng-deep .table-scroll .p-datatable-thead>tr>th{padding:.75rem;background:var(--ui-surface-muted);border-bottom:1px solid var(--ui-border);font-size:.82rem;white-space:nowrap}
+:host ::ng-deep .table-scroll .p-datatable-tbody>tr>td{padding:.65rem;border-bottom:1px solid var(--ui-border-soft);vertical-align:middle;font-size:.83rem}
+.wrap{white-space:normal;overflow-wrap:anywhere;max-width:360px;min-width:180px}
+.row-actions{display:flex;align-items:center;gap:.2rem}
+.record-code{padding:.18rem .35rem;border-radius:4px;background:var(--ui-surface-muted);font-size:.77rem}
+.pagination{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.8rem;padding:.8rem 1rem;border-top:1px solid var(--ui-border)}
+.pagination-controls{display:flex;gap:.45rem}
+.pagination-controls button{border:0;background:transparent;color:var(--ui-text);font-size:1.25rem;cursor:pointer}
+.pagination-controls button:disabled{opacity:.35;cursor:default}
+.related-links{display:flex;gap:.5rem;font-size:.78rem}.related-links a{color:var(--ui-primary);text-decoration:none}
+.empty-table{text-align:center;padding:2rem!important;color:var(--ui-muted)}
+.definition-form{display:flex;flex-direction:column;gap:.9rem}
+.form-section{display:flex;align-items:center;gap:.7rem;color:var(--ui-muted);font-weight:650;font-size:.8rem}
+.form-section:after{content:'';height:1px;flex:1;background:var(--ui-border)}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.85rem}
+.form-field{display:flex;flex-direction:column;gap:.35rem;min-width:0}
+.form-field label{font-size:.8rem;font-weight:650}
+.form-field input,.form-field select{width:100%;box-sizing:border-box;min-height:38px}
+.form-field small{font-size:.74rem;color:var(--ui-muted)}
+.dialog-actions{display:flex;justify-content:flex-end;gap:.6rem;border-top:1px solid var(--ui-border);padding-top:.8rem}
+.form-error{color:var(--ui-danger);font-size:.82rem}
+@media(max-width:650px){.form-grid{grid-template-columns:1fr}}

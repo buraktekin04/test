@@ -1,0 +1,11 @@
+/** PlaneTypeItem: PlaneTypes ekranına özel sunucu DTO'su. */
+export interface PlaneTypeItem {
+ id:string;code:string;name:string;isActive:boolean;version:number;createdDate:string;
+  validFrom:string|null;validTo:string|null;
+}
+/** PlaneTypes filtreleri ve sunucu sayfalaması. */
+export interface DefinitionQuery {
+ search:string;includeInactive:boolean;isActive:boolean|null;pageNumber:number;pageSize:number;
+}
+export interface PageResult<T> {items:T[];totalCount:number;pageNumber:number;pageSize:number;}
+

@@ -1,3 +1,26 @@
+ZORUNLU ANGULAR KURALI — HER TANIM EKRANI AYRI COMPONENT (22.10.2026)
+====================================================================
+KLMN'DE BİRDEN FAZLA TANIM TABLOSUNU TEK BİR DİNAMİK ANGULAR EKRANINA
+BAĞLAMA. AYRI ROUTE TANIMLAMAK TEK BAŞINA AYRI EKRAN YAPMAK DEĞİLDİR.
+- SYY Tanı Listesi, SYY Tanı Türü ve SYY Dilim KESİNLİKLE
+  ÜÇ AYRI sayfadır; her birinin kendi component.ts, component.html,
+  component.scss, model.ts ve service.ts dosyası olacaktır.
+- Diğer tanım ekranları için de aynı kural geçerlidir: route doğrudan
+  o ekrana ait standalone component'i açmalıdır. Route-data ile
+  tür/alan/kolon değiştiren ortak generic tanım ekranı YASAKTIR.
+- Ortak tasarım, PrimeNG, küçük yardımcı fonksiyonlar paylaşılabilir;
+  FORM, LİSTE KOLONLARI ve CRUD özellikleri tek dinamik component'e
+  taşınamaz. Modüller birbirinden bağımsız değiştirilebilmelidir.
+- SYY Tanı Listesi: Tanı Türü, Bağlı Kayıt, Seçilebilir, Dilim,
+  ValidFrom ve ValidTo içerir. Tanı Türü ve Dilim tanımı ekranları
+  SADECE kendi sayısal Kod/Ad ve ortak durum/audit işlemlerini içerir.
+- 22.10.2026 düzeltmesi: Eski SyyDefinitionListComponent ve ortak
+  tanım ekranı şablonu/modeli/servisi silindi. Altı ayrı component,
+  HTML, SCSS, model ve API servis seti oluşturuldu.
+- Yeni tanım modülü geliştirildiğinde ayrı component koşulunu
+  KLMN/Frontend/scripts/check-independent-definition-pages.cjs
+  ile ve kod incelemesiyle kontrol et.
+
 ZORUNLU MİMARİ KURAL — GEÇERLİLİK TARİHLERİ (21.10.2026)
 ================================================================
 ESKİ MSKBS'DEKİ StartDate / EndDate ALANLARINI YENİ KLMN MODÜLLERİNE
@@ -87,6 +110,20 @@ SON GELİŞTİRME (22.10.2026) — SYY TANI, SEVK VE UÇUŞ TANIMLARI
   bulunmadığı için yeni tabloların DB'de oluştuğu İDDİA EDİLMEZ.
   Önce mevcut yerel migration geçmişi/DB şeması incelenmeli;
   veri kaybı olmadan migration üretilip uygulanmalıdır.
+
+22.10.2026 — ANGULAR SAYFALARI AYIRMA DÜZELTMESİ
+================================================
+Önceki altı SYY/Sevk/Uçuş tanımı tek bir component üzerinden render
+ediliyordu. Bu kullanıcı beklentisine AYKIRIYDI.
+- SyyDiagnosisListComponent, SyyDiagnosisTypeListComponent ve
+  SyyDiagnosisSliceListComponent artık üç bağımsız Angular ekranıdır.
+- AnnotationReasonListComponent, PlaneTypeListComponent,
+  FlyingMissionListComponent da ayrıca ayrıldı.
+- Her ekrana özel component.ts/html/scss, model ve service dosyası
+  oluşturuldu; altı route doğrudan kendi component'ini açıyor.
+- Ortak dinamik ekran ve route-data config'i kaldırıldı.
+- Backend/migration değişmedi; gerçek npm build ve tarayıcı testleri
+  çalıştırılmadı. Yapısal kaynak kontrolü yapıldı.
 
 KLMN PROJESİ — BENİ OKU / DEVİR DOSYASI
 ====================================

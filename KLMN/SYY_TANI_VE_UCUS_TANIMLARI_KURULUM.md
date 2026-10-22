@@ -41,8 +41,8 @@ PostgreSQL RESTRICT FK, soft-delete, xmin, audit whitelist, bağımsız
 PermissionCodes, Identity seed, global 404/409 exception, Excel,
 Angular standalone route/menü, PrimeNG p-table kolon resize + frontend
 sort, backend filtre/sayfalama, durum dialog/Toast ve audit kullanıldı.
-Altı ekran ayrı menü/route açılır; yeniden kullanılabilir Angular ekran
-component'i data konfigürasyonuyla aynı kullanıcı deneyimini sağlar.
+Altı ekranın her biri ayrı Angular component, HTML, SCSS, model ve servis kullanır.
+Tek generic tanım ekranı kullanmak yasaktır.
 
 ## Migration ve test
 GitHub deposunda EF Migrations/ModelSnapshot yok. Bu değişiklikte migration
@@ -63,3 +63,24 @@ Bu ortamda `dotnet` bulunmadığı ve Angular bağımlılıkları kurulmadığı
 5. Eski xmin ile update/status/delete 409.
 6. Farklı izne sahip kullanıcıların ekran, dropdown ve Excel erişimi.
 7. ValidFrom/ValidTo ve UTC tarih, audit ve soft-delete.
+
+## 22.10.2026 — Bağımsız Angular ekran düzeltmesi
+
+Kullanıcının talebi doğrultusunda önceki `SyyDefinitionListComponent`
+silindi. Artık **SYY Tanı Listesi**, **SYY Tanı Türü** ve **SYY Dilim**
+üç ayrı component, HTML/SCSS, model, servis ve route'a sahiptir:
+
+- `features/syy-diagnoses/syy-diagnosis-list/`
+- `features/syy-diagnosis-types/syy-diagnosis-type-list/`
+- `features/syy-diagnosis-slices/syy-diagnosis-slice-list/`
+
+Buna ek olarak Sevk Sebebi, Uçak Tipi ve Uçucu Görev de ayrı ekranlara
+taşındı. Tanı türü ve dilim yalnız sayısal Kod/Ad alanlarını düzenler,
+SYY Tanı Listesi ise tanı bağlantıları ve geçerlilik aralığını düzenler.
+Yeni modüllerde route-data ile değiştirilen tek generic liste/form
+component'i kullanılmamalıdır.
+
+Frontend'de bağımsızlık kontrolü:
+`node scripts/check-independent-definition-pages.cjs`
+(dizin: `KLMN/Frontend`). Gerçek Angular build ve tarayıcı kabul
+testleri ayrıca gereklidir.

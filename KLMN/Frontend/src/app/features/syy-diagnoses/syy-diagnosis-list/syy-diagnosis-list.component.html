@@ -1,0 +1,165 @@
+<div class="syy-diagnosis-list-page">
+ <div class="page-header">
+  <div>
+   <h1>SYY Tanı Listesi (M/D/F)</h1>
+   <p>SYY tanılarını, bağlı kayıtlarını, türlerini ve dilimlerini yönetin.</p>
+   <p class="related-links"><a routerLink="/app/syy-diagnosis-types">Tanı Türü Tanımları</a>
+    <span aria-hidden="true">·</span><a routerLink="/app/syy-diagnosis-slices">Dilim Tanımları</a></p>
+  </div>
+  @if(canCreate()){<p-button type="button" label="Yeni SYY Tanısı" icon="pi pi-plus" (onClick)="openCreate()"/>}
+ </div>
+ <p-toast position="top-right"/>
+ <section class="filter-panel" aria-label="SYY Tanı Listesi (M/D/F) arama">
+  <form [formGroup]="searchForm" (ngSubmit)="search()">
+   <div class="search-field"><i class="pi pi-search" aria-hidden="true"></i>
+    <input pInputText formControlName="search" placeholder="Kod veya ad ara..." aria-label="SYY Tanısı ara"/>
+   </div>
+   <label class="inactive-filter"><p-checkbox formControlName="includeInactive" [binary]="true"/> Pasifleri dahil et</label>
+   <p-button type="submit" label="Ara" icon="pi pi-search" [loading]="loading()"/>
+   <p-button type="button" severity="secondary" [outlined]="true" label="Temizle" (onClick)="clear()"/>
+  </form>
+ </section>
+ <section class="list-card">
+  <div class="table-toolbar">
+   <p-button [label]="filtersVisible()?'Filtreleri Gizle':'Kolon Filtreleri'" icon="pi pi-filter"
+    severity="secondary" [outlined]="true" (onClick)="filtersVisible.set(!filtersVisible())"/>
+   @if(canExport()){<p-button label="Excel'e Aktar" icon="pi pi-file-excel"
+     severity="success" [outlined]="true" [loading]="exporting()" (onClick)="exportExcel()"/>}
+  </div>
+  @if(filtersVisible()){
+   <form class="filter-detail" [formGroup]="columnForm" (ngSubmit)="search()">
+    <label for="syy-diagnosis-list-status-filter">Durum</label>
+    <select id="syy-diagnosis-list-status-filter" formControlName="isActive">
+     <option [ngValue]="null">Tümü</option>
+     <option [ngValue]="true">Aktif</option><option [ngValue]="false">Pasif</option>
+    </select>
+    <p-button type="submit" label="Filtrele" icon="pi pi-check"/>
+   </form>
+  }
+  <div class="table-scroll" role="region" tabindex="0" aria-label="SYY Tanı Listesi (M/D/F) tablosu">
+   <p-table [value]="items()" [loading]="loading()" [resizableColumns]="true"
+     columnResizeMode="expand" [tableStyle]="{'min-width':'1500px','width':'100%'}">
+    <ng-template pTemplate="header"><tr>
+     <th pResizableColumn pSortableColumn="code">Kod <p-sortIcon field="code"/></th>
+     <th pResizableColumn pSortableColumn="name">Ad <p-sortIcon field="name"/></th>
+    <th pResizableColumn pSortableColumn="diagnosisTypeName">Tanı Türü <p-sortIcon field="diagnosisTypeName"/></th>
+    <th pResizableColumn pSortableColumn="attachedDiagnosisName">Bağlı Kayıt <p-sortIcon field="attachedDiagnosisName"/></th>
+    <th pResizableColumn pSortableColumn="eligible">Seçilebilir <p-sortIcon field="eligible"/></th>
+    <th pResizableColumn pSortableColumn="sliceName">Dilim <p-sortIcon field="sliceName"/></th>
+    <th pResizableColumn pSortableColumn="validFrom">Geçerli Başlangıç <p-sortIcon field="validFrom"/></th>
+    <th pResizableColumn pSortableColumn="validTo">Geçerli Bitiş <p-sortIcon field="validTo"/></th>
+     <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive"/></th>
+     <th class="sticky-actions-col">İşlemler</th>
+    </tr></ng-template>
+    <ng-template pTemplate="body" let-item><tr>
+     <td><code class="record-code">{{item.code}}</code></td>
+     <td class="wrap">{{item.name}}</td>
+    <td class="wrap">{{item.diagnosisTypeName || '—'}}</td>
+    <td class="wrap">{{item.attachedDiagnosisName || 'Bağımsız'}}</td>
+    <td><p-tag [value]="item.eligible===null?'Belirsiz':item.eligible?'Evet':'Hayır'"
+      [severity]="item.eligible===null?'secondary':item.eligible?'success':'danger'"/></td>
+    <td>{{item.sliceName || '—'}}</td>
+    <td>{{item.validFrom ? (item.validFrom | date:'dd.MM.yyyy HH:mm') : '—'}}</td>
+    <td>{{item.validTo ? (item.validTo | date:'dd.MM.yyyy HH:mm') : 'Süresiz'}}</td>
+     <td><p-tag [value]="item.isActive?'Aktif':'Pasif'" [severity]="item.isActive?'success':'secondary'"/></td>
+     <td class="sticky-actions-col"><div class="row-actions">
+      @if(canUpdate()){
+       <p-button icon="pi pi-pencil" ariaLabel="Düzenle" [text]="true" severity="secondary" (onClick)="openEdit(item)"/>
+       <p-button [icon]="item.isActive?'pi pi-ban':'pi pi-check-circle'" [text]="true"
+        [ariaLabel]="item.isActive?'Pasifleştir':'Aktifleştir'" severity="secondary" (onClick)="toggleStatus(item)"/>
+      }
+      @if(canAudit()){<p-button icon="pi pi-history" ariaLabel="İşlem geçmişi"
+       [text]="true" severity="secondary" (onClick)="auditItem.set(item)"/>}
+      @if(canDelete()){<p-button icon="pi pi-trash" ariaLabel="Sil"
+       [text]="true" severity="danger" (onClick)="remove(item)"/>}
+     </div></td>
+    </tr></ng-template>
+    <ng-template pTemplate="emptymessage"><tr><td colspan="10" class="empty-table">Kayıt bulunamadı.</td></tr></ng-template>
+   </p-table>
+  </div>
+  <div class="pagination">
+   <span>{{total()}} kayıt · Sayfa {{page()}} / {{maxPage()}}</span>
+   <div class="pagination-controls">
+    <button type="button" [disabled]="page()<=1" (click)="toPage(page()-1)" aria-label="Önceki sayfa">‹</button>
+    <button type="button" [disabled]="page()>=maxPage()" (click)="toPage(page()+1)" aria-label="Sonraki sayfa">›</button>
+   </div>
+   <label>Sayfa başına <select [value]="pageSize()" (change)="setPageSize($event)">
+    <option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option>
+   </select></label>
+  </div>
+ </section>
+</div>
+<p-dialog [header]="editing()?'SYY Tanısı Düzenle':'Yeni SYY Tanısı'"
+ [visible]="dialogVisible()" (visibleChange)="!$event&&closeDialog()" [modal]="true"
+ [draggable]="false" [resizable]="false" [style]="{'width':'min(780px,96vw)'}">
+ <form class="definition-form" [formGroup]="form" (ngSubmit)="save()">
+  <div class="form-section">SYY Tanısı Bilgileri</div>
+  <div class="form-grid">
+   <div class="form-field">
+    <label for="syy-diagnosis-list-code">Kod *</label>
+    <input pInputText id="syy-diagnosis-list-code" type="text" formControlName="code"
+      maxlength="100"/>
+    
+   </div>
+   <div class="form-field">
+    <label for="syy-diagnosis-list-name">Ad *</label>
+    <input pInputText id="syy-diagnosis-list-name" formControlName="name" maxlength="500"/>
+   </div>
+  </div>
+   <div class="form-section">SYY İlişki Bilgileri</div>
+   <div class="form-grid">
+    <div class="form-field">
+      <label for="syy-diagnosis-list-diagnosis-type">Tanı Türü *</label>
+      <select id="syy-diagnosis-list-diagnosis-type" formControlName="syyDiagnosisType">
+       <option [ngValue]="null">Tanı türü seçiniz</option>
+       @for(type of options().types; track type.value){
+        <option [ngValue]="type.value">{{type.label}} ({{type.value}}){{type.isActive?'':' — Pasif'}}</option>}
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="syy-diagnosis-list-attached">Bağlı Kayıt</label>
+      <select id="syy-diagnosis-list-attached" formControlName="attachedRecNo">
+       <option [ngValue]="null">Bağımsız tanı</option>
+       @for(parent of options().parents; track parent.value){
+        <option [ngValue]="parent.value">{{parent.label}}{{parent.isActive?'':' — Pasif'}}</option>}
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="syy-diagnosis-list-slice">Bağlı Dilim</label>
+      <select id="syy-diagnosis-list-slice" formControlName="slice">
+       <option [ngValue]="null">Dilim yok</option>
+       @for(slice of options().slices; track slice.value){
+        <option [ngValue]="slice.value">{{slice.label}} ({{slice.value}}){{slice.isActive?'':' — Pasif'}}</option>}
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="syy-diagnosis-list-eligible">Seçilebilir</label>
+      <select id="syy-diagnosis-list-eligible" formControlName="eligible">
+        <option [ngValue]="null">Belirsiz</option>
+        <option [ngValue]="true">Evet</option>
+        <option [ngValue]="false">Hayır</option>
+      </select>
+    </div>
+   </div>
+   <div class="form-section">Geçerlilik Tarihleri</div>
+   <div class="form-grid">
+     <div class="form-field"><label for="syy-diagnosis-list-valid-from">Geçerli Başlangıç</label>
+       <input pInputText type="datetime-local" id="syy-diagnosis-list-valid-from" formControlName="validFrom"/>
+     </div>
+     <div class="form-field"><label for="syy-diagnosis-list-valid-to">Geçerli Bitiş</label>
+       <input pInputText type="datetime-local" id="syy-diagnosis-list-valid-to" formControlName="validTo"/>
+     </div>
+   </div>
+  @if(formError()){<p class="form-error" role="alert">{{formError()}}</p>}
+  <div class="dialog-actions">
+   <p-button type="button" label="Vazgeç" severity="secondary" [outlined]="true" (onClick)="closeDialog()"/>
+   <p-button type="submit" label="Kaydet" icon="pi pi-check" [loading]="saving()"/>
+  </div>
+ </form>
+</p-dialog>
+<p-confirmdialog/>
+<p-dialog header="SYY Tanı Listesi (M/D/F) — İşlem Geçmişi" [visible]="!!auditItem()"
+ (visibleChange)="!$event&&auditItem.set(null)" [modal]="true"
+ [style]="{'width':'min(780px,96vw)'}">
+ @if(auditItem();as item){<app-audit-history entityType="SYYDiagnosisDef" [entityId]="item.id"/>}
+</p-dialog>
