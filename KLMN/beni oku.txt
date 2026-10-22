@@ -1,3 +1,41 @@
+SON FAZ (22.10.2026) — SYY ÇİZELGESİ, BRANŞ, TETKİK VE ONAY KURALI
+=====================================================================
+- Fotoğraflardaki yorumlar ekran adlarına birebir alındı:
+  SYY Tanı Sınıflandırma Çizelgesi, SYY Gereken Branşlar,
+  SYY Gereken Tetkikler, SYY Onay Gerektiren Maddeler.
+  Her biri bağımsız Angular component.ts/html/scss/model/service,
+  ayrı menü, route ve permission ile oluşturuldu. Tek generic sayfa YOK.
+- SYYClassificationDef: mevcut SYYDiagnosisDef, ForcesCommandDef,
+  RankGroupDef, MilitaryClassGroupDef, HcConnectedDecisionDef FK'leri.
+  EffectiveDatedEntity -> ValidFrom/ValidTo; kuvvet/sınıf grubu
+  tutarlılığı kontrolü.
+- SYYDiagnosisBranchDef ve SYYDiagnosisProcedureDef: mevcut BranchDef
+  ve ProcedureDef'e FK, StartingAge/EndingAge/Gender int.
+  Yaş aralığı ve yinelenen aktif eşleştirme doğrulanır.
+- SYYDiagnosisRequired+SYYDiagnosisRequiredDetail iki TABLO KORUNDU:
+  kuralın MustAll/MustOneOf nullable bool alanları ve farklı madde
+  açıklamalarının one-to-many ilişkisi normalizasyon gereğidir.
+  FAKAT iki ekran DEĞİL; maddeler aynı "SYY Onay Gerektiren Maddeler"
+  ekranında eklenir/sıralanır/güncellenir. Alt madde CRUD işlemi
+  ana kural ile tek SaveChanges içinde audit/soft-delete ile yürür.
+  Bir tanıya birden fazla kural bağlanabilir; her kuralda 1..50 madde.
+- BaseEntity alanlarını tekrar entity'ye yazma; sadece çizelge
+  tarihli olduğu için EffectiveDatedEntity kullanılır.
+  Tüm FK Restrict, soft delete, PostgreSQL xmin, audit whitelist,
+  CQRS command-handler-validator klasörleri ayrı, liste filtre/sayfalama,
+  frontend PrimeNG sıralama/resize, Excel, permission seed ve
+  popup/toast onay/hata davranışı korunur.
+- SYY Tanı Listesi'nden dört ekrana seçilen tanı filtresiyle
+  bağlantılar eklendi. Tanıya bağlı yeni satırlar varsa yanlışlıkla
+  silme/pasifleştirme anlaşılır 409 ile engellenir.
+- Ayrıntılı teknik dosya: KLMN/SYY_ILISKILI_TANIMLAR_KURULUM.md
+- Son doğrulama: kaynak yapısı gözden geçirildi; REAL dotnet/ng build,
+  migration, DB ve tarayıcı testi YAPILMADI. Repo'da migration/snapshot
+  bulunmadığından tablolar DB'de henüz fiziksel olarak oluşmadı;
+  mevcut migration geçmişi bilinmeden DROP/CREATE uygulanmamalıdır.
+- Önceki ZORUNLU Angular ayrı sayfa ve ValidFrom/ValidTo kuralları
+  aynen geçerlidir; fazladan kontrol scripti eklenmemiştir.
+
 22.10.2026 — SYY TANI FORMU: SEÇİLEBİLİR CHECKBOX
 ====================================================
 - SYY Tanı Listesi (M/D/F) yeni kayıt ve düzenleme formundaki Eligible

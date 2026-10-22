@@ -1,0 +1,4 @@
+using KLMN.Application.SYYDiagnosisProcedures.Responses;
+using MediatR;
+namespace KLMN.Application.SYYDiagnosisProcedures.Queries.GetSYYDiagnosisProcedureDefById;
+public sealed record GetSYYDiagnosisProcedureDefByIdQuery(Guid Id):IRequest<SYYDiagnosisProcedureDefResponse>;

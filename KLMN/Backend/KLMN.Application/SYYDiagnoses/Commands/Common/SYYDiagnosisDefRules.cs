@@ -51,6 +51,19 @@ internal static class SYYDiagnosisDefRules
     var q=db.SYYDiagnosisDefs.IgnoreQueryFilters().Where(x=>!x.IsDeleted&&x.AttachedRecNo==id);
     if(onlyActive)q=q.Where(x=>x.IsActive);
     if(await q.AnyAsync(ct))throw new SYYDiagnosisDefConflictException("Tanıya bağlı alt tanılar bulunuyor.");
+    // Yeni bağımlı tablolar varsa anlaşılır 409, PostgreSQL FK hatası değil.
+    var classification=db.SYYClassificationDefs.IgnoreQueryFilters().Where(x=>!x.IsDeleted&&x.SYYDiagnosisDefId==id);
+    var branches=db.SYYDiagnosisBranchDefs.IgnoreQueryFilters().Where(x=>!x.IsDeleted&&x.SYYDiagnosisDefId==id);
+    var procedures=db.SYYDiagnosisProcedureDefs.IgnoreQueryFilters().Where(x=>!x.IsDeleted&&x.SYYDiagnosisDefId==id);
+    var required=db.SYYDiagnosisRequireds.IgnoreQueryFilters().Where(x=>!x.IsDeleted&&x.SYYDiagnosisDefId==id);
+    if(onlyActive){
+      classification=classification.Where(x=>x.IsActive);branches=branches.Where(x=>x.IsActive);
+      procedures=procedures.Where(x=>x.IsActive);required=required.Where(x=>x.IsActive);
+    }
+    if(await classification.AnyAsync(ct)||await branches.AnyAsync(ct)||
+       await procedures.AnyAsync(ct)||await required.AnyAsync(ct))
+      throw new SYYDiagnosisDefConflictException("SYY tanısına bağlı sınıflandırma, kural, branş veya tetkik kaydı bulunuyor.");
+
  }
 
 }

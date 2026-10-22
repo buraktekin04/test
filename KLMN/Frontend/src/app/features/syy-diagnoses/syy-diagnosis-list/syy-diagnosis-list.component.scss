@@ -36,3 +36,6 @@
 /* SYY tanısı için Seçilebilir alanı dropdown değil, PrimeNG binary checkbox'tır. */
 .syy-eligible-field{justify-content:center}
 .syy-eligible-option{display:flex;align-items:center;gap:.6rem;cursor:pointer;min-height:38px}
+
+.syy-related-link{display:inline-flex;align-items:center;justify-content:center;min-width:30px;min-height:30px;text-decoration:none;color:var(--ui-primary);border-radius:6px}
+.syy-related-link:hover{background:var(--ui-surface-muted)}

@@ -73,6 +73,11 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
 
     /// <summary>Tetkik tanımları DbSet.</summary>
     public DbSet<ProcedureTypeDef> ProcedureTypeDefs => Set<ProcedureTypeDef>();
+    public DbSet<SYYClassificationDef> SYYClassificationDefs => Set<SYYClassificationDef>();
+    public DbSet<SYYDiagnosisBranchDef> SYYDiagnosisBranchDefs => Set<SYYDiagnosisBranchDef>();
+    public DbSet<SYYDiagnosisProcedureDef> SYYDiagnosisProcedureDefs => Set<SYYDiagnosisProcedureDef>();
+    public DbSet<SYYDiagnosisRequired> SYYDiagnosisRequireds => Set<SYYDiagnosisRequired>();
+    public DbSet<SYYDiagnosisRequiredDetail> SYYDiagnosisRequiredDetails => Set<SYYDiagnosisRequiredDetail>();
     public DbSet<SYYDiagnosisDef> SYYDiagnosisDefs => Set<SYYDiagnosisDef>();
     public DbSet<SYYDiagnosisTypeDef> SYYDiagnosisTypeDefs => Set<SYYDiagnosisTypeDef>();
     public DbSet<SYYDiagnosisSliceDef> SYYDiagnosisSliceDefs => Set<SYYDiagnosisSliceDef>();

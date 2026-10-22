@@ -17,4 +17,12 @@ public sealed class SYYDiagnosisDef:EffectiveDatedEntity
     /// <summary>Bağlı Dilim: SYYDiagnosisSliceDefs.Code FK (int nullable).</summary>
     public int? Slice {get;set;}
     public SYYDiagnosisSliceDef? SliceDef {get;set;}
+    /// <summary>SYY sınıflandırma çizelgesi satırları.</summary>
+    public ICollection<SYYClassificationDef> Classifications {get;set;}=new List<SYYClassificationDef>();
+    /// <summary>Bu tanıda gereken branşlar.</summary>
+    public ICollection<SYYDiagnosisBranchDef> RequiredBranches {get;set;}=new List<SYYDiagnosisBranchDef>();
+    /// <summary>Bu tanıda gereken tetkikler.</summary>
+    public ICollection<SYYDiagnosisProcedureDef> RequiredProcedures {get;set;}=new List<SYYDiagnosisProcedureDef>();
+    /// <summary>Onay gerektiren maddeler / kurallar.</summary>
+    public ICollection<SYYDiagnosisRequired> RequiredRules {get;set;}=new List<SYYDiagnosisRequired>();
 }

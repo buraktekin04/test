@@ -29,6 +29,11 @@ internal static class AuditReferenceDisplayResolver
             ["ParentId"] = "MilitaryUnitDef",
             ["ConnectedTopUnity"] = "MilitaryUnitDef",
             ["RankGroupId"] = "RankGroupDef",
+            ["RankGroup"] = "RankGroupDef",
+            ["SYYDiagnosisDefId"] = "SYYDiagnosisDef",
+            ["MilitaryClassGroup"] = "MilitaryClassGroupDef",
+            ["HcDecision"] = "HcConnectedDecisionDef",
+            ["SYYDiagnosisRequiredId"] = "SYYDiagnosisRequired",
             ["CityId"] = "CityDef",
             ["RefereeHospitalId"] = "HospitalDef",
             ["HospitalDefId"] = "HospitalDef",
@@ -84,6 +89,9 @@ internal static class AuditReferenceDisplayResolver
         var userIds = references["User"];
         var militaryUnitIds = references["MilitaryUnitDef"];
         var rankGroupIds = references["RankGroupDef"];
+        var classGroupIds = references["MilitaryClassGroupDef"];
+        var hcDecisionIds = references["HcConnectedDecisionDef"];
+        var syyRequiredIds = references["SYYDiagnosisRequired"];
         var cityIds = references["CityDef"];
         var hospitalIds = references["HospitalDef"];
         var reportTypeIds = references["ReportTypeDef"];
@@ -135,6 +143,25 @@ internal static class AuditReferenceDisplayResolver
                 .Where(x => rankGroupIds.Contains(x.Id))
                 .Select(x => new { x.Id, x.Name, x.Code })
                 .ToDictionaryAsync(x => x.Id, x => x.Name + " (" + x.Code + ")", cancellationToken);
+
+        var classGroupLabels = classGroupIds.Count == 0
+            ? new Dictionary<Guid,string>()
+            : await dbContext.MilitaryClassGroupDefs.IgnoreQueryFilters().AsNoTracking()
+                .Where(x=>classGroupIds.Contains(x.Id))
+                .Select(x=>new{x.Id,x.Name,x.Code})
+                .ToDictionaryAsync(x=>x.Id,x=>x.Name+" ("+x.Code+")",cancellationToken);
+        var hcDecisionLabels = hcDecisionIds.Count == 0
+            ? new Dictionary<Guid,string>()
+            : await dbContext.HcConnectedDecisionDefs.IgnoreQueryFilters().AsNoTracking()
+                .Where(x=>hcDecisionIds.Contains(x.Id))
+                .Select(x=>new{x.Id,x.Name,x.Code})
+                .ToDictionaryAsync(x=>x.Id,x=>x.Name+" ("+x.Code+")",cancellationToken);
+        var syyRequiredLabels = syyRequiredIds.Count == 0
+            ? new Dictionary<Guid,string>()
+            : await dbContext.SYYDiagnosisRequireds.IgnoreQueryFilters().AsNoTracking()
+                .Where(x=>syyRequiredIds.Contains(x.Id))
+                .Select(x=>new{x.Id,Name=x.Diagnosis.Name})
+                .ToDictionaryAsync(x=>x.Id,x=>x.Name,cancellationToken);
 
         var cityLabels = cityIds.Count == 0
             ? new Dictionary<Guid, string>()
@@ -196,6 +223,9 @@ internal static class AuditReferenceDisplayResolver
         var labels = new Dictionary<string, Dictionary<Guid, string>>(StringComparer.Ordinal)
         {
             ["SYYDiagnosisDef"] = syyLabels,
+            ["SYYDiagnosisRequired"] = syyRequiredLabels,
+            ["MilitaryClassGroupDef"] = classGroupLabels,
+            ["HcConnectedDecisionDef"] = hcDecisionLabels,
             ["Role"] = roleLabels,
             ["Permission"] = permissionLabels,
             ["User"] = userLabels,

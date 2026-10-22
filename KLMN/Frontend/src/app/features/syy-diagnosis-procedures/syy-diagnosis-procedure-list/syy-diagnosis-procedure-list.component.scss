@@ -1,0 +1,26 @@
+:host{display:block;min-width:0}
+.definition-page{display:flex;flex-direction:column;gap:1.1rem;min-width:0}
+.filter-panel,.list-card{background:var(--ui-surface);border:1px solid var(--ui-border);border-radius:var(--ui-radius);min-width:0}
+.filter-panel{padding:1rem}.filter-panel form{display:flex;gap:.7rem;align-items:center;flex-wrap:wrap}
+.filter-panel label{display:flex;gap:.45rem;align-items:center;font-size:.84rem}.filter-panel input{flex:1 1 260px}
+.list-card{overflow:hidden}.table-toolbar{display:flex;justify-content:flex-end;gap:.6rem;padding:.8rem}
+.table-scroll{overflow-x:auto;max-width:100%}
+:host ::ng-deep .p-datatable-thead>tr>th{white-space:nowrap;background:var(--ui-surface-muted);font-size:.82rem}
+.wrap{white-space:normal;overflow-wrap:anywhere;max-width:330px}
+.row-actions{display:flex;align-items:center;gap:.1rem}
+.filter-detail{display:flex;gap:.6rem;align-items:center;padding:.8rem}
+.filter-detail select,.pagination select,.form-field select{border:1px solid var(--ui-control-border);border-radius:6px;padding:.55rem;background:var(--ui-surface);color:var(--ui-text)}
+.pagination{display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;padding:.85rem}
+.pagination button{border:0;background:none;color:var(--ui-text);font-size:1.25rem;cursor:pointer}
+.pagination button:disabled{opacity:.3}
+.definition-form{display:flex;flex-direction:column;gap:.85rem}
+.form-section{display:flex;align-items:center;gap:.7rem;font-weight:650;color:var(--ui-muted)}
+.form-section:after{content:'';height:1px;background:var(--ui-border);flex:1}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.85rem}
+.form-field{display:flex;flex-direction:column;gap:.35rem;min-width:0}
+.form-field label{font-size:.83rem;font-weight:650}
+.form-field input,.form-field select{width:100%;min-height:38px;box-sizing:border-box}
+.form-field small{font-size:.73rem;color:var(--ui-muted)}
+.dialog-actions{display:flex;justify-content:flex-end;gap:.6rem;border-top:1px solid var(--ui-border);padding-top:.8rem}
+.form-error{color:var(--ui-danger);font-size:.83rem}
+@media(max-width:680px){.form-grid{grid-template-columns:1fr}}

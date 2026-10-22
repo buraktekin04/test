@@ -59,6 +59,10 @@ export class NavigationService {
           route: '/app/towns',
           permissionModule: 'Towns'
         },
+        {label:'SYY Tanı Sınıflandırma Çizelgesi',icon:'pi pi-table',route:'/app/syy-classifications',permissionModule:'SYYClassifications'},
+        {label:'SYY Gereken Branşlar',icon:'pi pi-sitemap',route:'/app/syy-diagnosis-branches',permissionModule:'SYYDiagnosisBranches'},
+        {label:'SYY Gereken Tetkikler',icon:'pi pi-heart',route:'/app/syy-diagnosis-procedures',permissionModule:'SYYDiagnosisProcedures'},
+        {label:'SYY Onay Gerektiren Maddeler',icon:'pi pi-check-square',route:'/app/syy-diagnosis-requireds',permissionModule:'SYYDiagnosisRequireds'},
         {
           label: 'SYY Tanı Listesi (M/D/F)',icon:'pi pi-sitemap',route:'/app/syy-diagnoses',permissionModule:'SYYDiagnoses'
         },

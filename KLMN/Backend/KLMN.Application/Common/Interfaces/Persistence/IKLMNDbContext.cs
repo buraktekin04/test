@@ -39,6 +39,11 @@ public interface IKLMNDbContext
 
     /// <summary>Tetkik tanımları DbSet.</summary>
     DbSet<ProcedureTypeDef> ProcedureTypeDefs { get; }
+    DbSet<SYYClassificationDef> SYYClassificationDefs { get; }
+    DbSet<SYYDiagnosisBranchDef> SYYDiagnosisBranchDefs { get; }
+    DbSet<SYYDiagnosisProcedureDef> SYYDiagnosisProcedureDefs { get; }
+    DbSet<SYYDiagnosisRequired> SYYDiagnosisRequireds { get; }
+    DbSet<SYYDiagnosisRequiredDetail> SYYDiagnosisRequiredDetails { get; }
     DbSet<SYYDiagnosisDef> SYYDiagnosisDefs { get; }
     DbSet<SYYDiagnosisTypeDef> SYYDiagnosisTypeDefs { get; }
     DbSet<SYYDiagnosisSliceDef> SYYDiagnosisSliceDefs { get; }

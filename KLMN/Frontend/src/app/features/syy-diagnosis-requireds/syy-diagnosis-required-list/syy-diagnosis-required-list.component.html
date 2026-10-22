@@ -1,0 +1,123 @@
+<div class="required-page">
+ <div class="page-header">
+  <div><h1>SYY Onay Gerektiren Maddeler</h1>
+   <p>Tanıya ait onay kuralını ve açıklama maddelerini tek ekranda yönetin.</p>
+   <a routerLink="/app/syy-diagnoses">SYY Tanı Listesi'ne dön</a>
+  </div>
+  @if(canCreate()){<p-button label="Yeni Onay Kuralı" icon="pi pi-plus" (onClick)="create()"/>}
+ </div>
+ <p-toast position="top-right"/>
+ <section class="filter-panel">
+  <form [formGroup]="searchForm" (ngSubmit)="search()">
+   <input pInputText formControlName="search" placeholder="Tanı veya madde ara..."/>
+   <label><p-checkbox formControlName="includeInactive" [binary]="true"/> Pasifleri dahil et</label>
+   <p-button label="Ara" type="submit" icon="pi pi-search"/>
+   <p-button label="Temizle" severity="secondary" [outlined]="true" (onClick)="clear()"/>
+  </form>
+ </section>
+ <section class="list-card">
+  <div class="table-toolbar">
+   <p-button [label]="showFilters()?'Durum Filtresini Gizle':'Durum Filtresi'"
+    icon="pi pi-filter" severity="secondary" [outlined]="true" (onClick)="showFilters.set(!showFilters())"/>
+   @if(canExport()){<p-button label="Excel" icon="pi pi-file-excel" severity="success"
+    [outlined]="true" [loading]="exporting()" (onClick)="excel()"/>}
+  </div>
+  @if(showFilters()){
+   <div class="filter-detail"><label>Durum</label><select [formControl]="statusFilter">
+    <option [ngValue]="null">Tümü</option><option [ngValue]="true">Aktif</option><option [ngValue]="false">Pasif</option>
+   </select><p-button label="Uygula" (onClick)="search()"/></div>
+  }
+  <div class="table-scroll" role="region" tabindex="0" aria-label="Onay maddeleri">
+   <p-table [value]="records()" [loading]="loading()" [resizableColumns]="true"
+    columnResizeMode="expand" [tableStyle]="{'min-width':'1020px','width':'100%'}">
+    <ng-template pTemplate="header"><tr>
+     <th pResizableColumn pSortableColumn="diagnosisName">SYY Tanısı <p-sortIcon field="diagnosisName"/></th>
+     <th pResizableColumn pSortableColumn="mustAll">Tümü Gerekli <p-sortIcon field="mustAll"/></th>
+     <th pResizableColumn pSortableColumn="mustOneOf">En Az Biri <p-sortIcon field="mustOneOf"/></th>
+     <th pResizableColumn>Açıklama Maddeleri</th>
+     <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive"/></th>
+     <th>İşlemler</th>
+    </tr></ng-template>
+    <ng-template pTemplate="body" let-row><tr>
+     <td class="wrap">{{row.diagnosisName}}</td>
+     <td><p-tag [value]="row.mustAll===null?'Belirsiz':row.mustAll?'Evet':'Hayır'"
+       [severity]="row.mustAll===true?'success':'secondary'"/></td>
+     <td><p-tag [value]="row.mustOneOf===null?'Belirsiz':row.mustOneOf?'Evet':'Hayır'"
+       [severity]="row.mustOneOf===true?'success':'secondary'"/></td>
+     <td class="wrap"><div class="detail-lines">
+      @for(d of row.details;track d.id){<div>{{d.sortOrder}}. {{d.description}}</div>}
+     </div></td>
+     <td><p-tag [value]="row.isActive?'Aktif':'Pasif'" [severity]="row.isActive?'success':'secondary'"/></td>
+     <td><div class="row-actions">
+      @if(canUpdate()){
+       <p-button icon="pi pi-pencil" [text]="true" severity="secondary" ariaLabel="Düzenle" (onClick)="edit(row)"/>
+       <p-button [icon]="row.isActive?'pi pi-ban':'pi pi-check-circle'"
+         [text]="true" severity="secondary" ariaLabel="Durum" (onClick)="toggle(row)"/>
+      }
+      @if(canAudit()){<p-button icon="pi pi-history" [text]="true" severity="secondary"
+       ariaLabel="Geçmiş" (onClick)="audit.set(row)"/>}
+      @if(canDelete()){<p-button icon="pi pi-trash" [text]="true" severity="danger"
+       ariaLabel="Sil" (onClick)="delete(row)"/>}
+     </div></td>
+    </tr></ng-template>
+    <ng-template pTemplate="emptymessage"><tr><td colspan="6">Kayıt bulunamadı.</td></tr></ng-template>
+   </p-table>
+  </div>
+  <div class="pagination">
+   <span>{{total()}} kayıt · {{page()}} / {{maxPage()}}</span>
+   <button type="button" [disabled]="page()<=1" (click)="changePage(page()-1)">‹</button>
+   <button type="button" [disabled]="page()>=maxPage()" (click)="changePage(page()+1)">›</button>
+   <label>Sayfa başına <select [value]="pageSize()" (change)="changeSize($event)">
+    <option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option>
+   </select></label>
+  </div>
+ </section>
+</div>
+<p-dialog header="SYY Onay Gerektiren Maddeler" [visible]="showForm()"
+ (visibleChange)="showForm.set($event)" [modal]="true"
+ [draggable]="false" [resizable]="false" [style]="{'width':'min(790px,96vw)'}">
+ <form class="definition-form" [formGroup]="form" (ngSubmit)="save()">
+  <div class="form-section">SYY Tanısı</div>
+  <div class="form-field">
+   <label for="required-diagnosis">SYY Tanısı *</label>
+   <select id="required-diagnosis" formControlName="syyDiagnosisDefId">
+    <option value="">Tanı seçiniz</option>
+    @for(o of options();track o.id){
+     <option [value]="o.id">{{o.name}}{{o.isActive?'':' — Pasif'}}</option>
+    }
+   </select>
+  </div>
+  <div class="form-section">Kural Koşulu</div>
+  <div class="rule-flags">
+   <label for="required-all"><p-checkbox inputId="required-all" formControlName="mustAll" [binary]="true"/>
+    Tüm Maddeler Gerekli (MustAll)</label>
+   <label for="required-one"><p-checkbox inputId="required-one" formControlName="mustOneOf" [binary]="true"/>
+    En Az Biri Gerekli (MustOneOf)</label>
+  </div>
+  <div class="form-section">Onay Gerektiren Maddeler</div>
+  <div class="details-group">
+   @for(control of descriptions.controls; track control; let i=$index){
+    <div class="detail-input-row">
+     <span>{{i+1}}.</span>
+     <input pInputText [formControl]="control" [attr.aria-label]="'Madde '+(i+1)"
+      maxlength="1500" placeholder="Gereklilik açıklamasını yazınız"/>
+     <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true"
+      ariaLabel="Maddeyi kaldır" [disabled]="descriptions.length<=1" (onClick)="removeDescription(i)"/>
+    </div>
+   }
+   <p-button type="button" label="Madde Ekle" icon="pi pi-plus" severity="secondary"
+    [outlined]="true" [disabled]="descriptions.length>=50" (onClick)="addDescription()"/>
+  </div>
+  @if(formError()){<p class="form-error" role="alert">{{formError()}}</p>}
+  <div class="dialog-actions">
+   <p-button type="button" label="Vazgeç" severity="secondary" [outlined]="true" (onClick)="showForm.set(false)"/>
+   <p-button type="submit" label="Kaydet" icon="pi pi-check" [loading]="saving()"/>
+  </div>
+ </form>
+</p-dialog>
+<p-confirmdialog/>
+<p-dialog header="Onay Kuralı İşlem Geçmişi" [visible]="!!audit()"
+ (visibleChange)="!$event&&audit.set(null)" [modal]="true"
+ [style]="{'width':'min(760px,96vw)'}">
+ @if(audit();as item){<app-audit-history entityType="SYYDiagnosisRequired" [entityId]="item.id"/>}
+</p-dialog>

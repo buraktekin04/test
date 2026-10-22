@@ -353,6 +353,46 @@ public static class PermissionCodes
         public const string Delete = "ReasonForExamBranchDefs.Delete";
     }
 
+    /// <summary>SYY Tanı Sınıflandırma Çizelgesi ekranının bağımsız permission'ları.</summary>
+    public static class SYYClassifications
+    {
+      public const string View="SYYClassifications.View";
+      public const string Query="SYYClassifications.Query";
+      public const string Create="SYYClassifications.Create";
+      public const string Update="SYYClassifications.Update";
+      public const string Delete="SYYClassifications.Delete";
+    }
+
+    /// <summary>SYY Gereken Branşlar ekranının bağımsız permission'ları.</summary>
+    public static class SYYDiagnosisBranches
+    {
+      public const string View="SYYDiagnosisBranches.View";
+      public const string Query="SYYDiagnosisBranches.Query";
+      public const string Create="SYYDiagnosisBranches.Create";
+      public const string Update="SYYDiagnosisBranches.Update";
+      public const string Delete="SYYDiagnosisBranches.Delete";
+    }
+
+    /// <summary>SYY Gereken Tetkikler ekranının bağımsız permission'ları.</summary>
+    public static class SYYDiagnosisProcedures
+    {
+      public const string View="SYYDiagnosisProcedures.View";
+      public const string Query="SYYDiagnosisProcedures.Query";
+      public const string Create="SYYDiagnosisProcedures.Create";
+      public const string Update="SYYDiagnosisProcedures.Update";
+      public const string Delete="SYYDiagnosisProcedures.Delete";
+    }
+
+    /// <summary>SYY Onay Gerektiren Maddeler ekranının bağımsız permission'ları.</summary>
+    public static class SYYDiagnosisRequireds
+    {
+      public const string View="SYYDiagnosisRequireds.View";
+      public const string Query="SYYDiagnosisRequireds.Query";
+      public const string Create="SYYDiagnosisRequireds.Create";
+      public const string Update="SYYDiagnosisRequireds.Update";
+      public const string Delete="SYYDiagnosisRequireds.Delete";
+    }
+
     /// <summary>SYY Tanı Listesi (M/D/F) yetkileri.</summary>
     public static class SYYDiagnoses
     {

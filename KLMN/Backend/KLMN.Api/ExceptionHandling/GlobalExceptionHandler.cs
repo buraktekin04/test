@@ -1,3 +1,7 @@
+using KLMN.Application.SYYClassifications.Exceptions;
+using KLMN.Application.SYYDiagnosisBranches.Exceptions;
+using KLMN.Application.SYYDiagnosisProcedures.Exceptions;
+using KLMN.Application.SYYDiagnosisRequireds.Exceptions;
 using KLMN.Application.SYYDiagnoses.Exceptions;
 using KLMN.Application.SYYDiagnosisTypes.Exceptions;
 using KLMN.Application.SYYDiagnosisSlices.Exceptions;
@@ -211,6 +215,14 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
                     Title = "Askerî sınıf işlemi gerçekleştirilemedi.", Detail = exception.Message },
             ReasonForExaminationNotFoundException => new ProblemDetails { Status=404, Title="Kayıt bulunamadı.", Detail=exception.Message },
             ReasonForExaminationConflictException => new ProblemDetails { Status=409, Title="Eşleştirme işlemi gerçekleştirilemedi.", Detail=exception.Message },
+            SYYClassificationDefNotFoundException => new ProblemDetails { Status=404,Title="Kayıt bulunamadı.",Detail=exception.Message },
+            SYYClassificationDefConflictException => new ProblemDetails { Status=409,Title="Tanım çakışması.",Detail=exception.Message },
+            SYYDiagnosisBranchDefNotFoundException => new ProblemDetails { Status=404,Title="Kayıt bulunamadı.",Detail=exception.Message },
+            SYYDiagnosisBranchDefConflictException => new ProblemDetails { Status=409,Title="Tanım çakışması.",Detail=exception.Message },
+            SYYDiagnosisProcedureDefNotFoundException => new ProblemDetails { Status=404,Title="Kayıt bulunamadı.",Detail=exception.Message },
+            SYYDiagnosisProcedureDefConflictException => new ProblemDetails { Status=409,Title="Tanım çakışması.",Detail=exception.Message },
+            SYYDiagnosisRequiredNotFoundException => new ProblemDetails { Status=404,Title="Kayıt bulunamadı.",Detail=exception.Message },
+            SYYDiagnosisRequiredConflictException => new ProblemDetails { Status=409,Title="Tanım çakışması.",Detail=exception.Message },
             SYYDiagnosisDefNotFoundException => new ProblemDetails{Status=404,Title="Kayıt bulunamadı.",Detail=exception.Message},
             SYYDiagnosisDefConflictException => new ProblemDetails{Status=409,Title="Tanım işlemi gerçekleştirilemedi.",Detail=exception.Message},
             SYYDiagnosisTypeDefNotFoundException => new ProblemDetails{Status=404,Title="Kayıt bulunamadı.",Detail=exception.Message},

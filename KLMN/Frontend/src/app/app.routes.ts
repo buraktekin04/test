@@ -108,6 +108,30 @@ export const routes: Routes = [
             .then(component => component.MilitaryClassListComponent)
       },
       {
+        path:'syy-classifications',canActivate:[permissionGuard],
+        data:{permissionModule:'SYYClassifications'},
+        loadComponent:()=>import('./features/syy-classifications/syy-classification-list/syy-classification-list.component')
+         .then(c=>c.SyyClassificationListComponent)
+      },
+      {
+        path:'syy-diagnosis-branches',canActivate:[permissionGuard],
+        data:{permissionModule:'SYYDiagnosisBranches'},
+        loadComponent:()=>import('./features/syy-diagnosis-branches/syy-diagnosis-branch-list/syy-diagnosis-branch-list.component')
+         .then(c=>c.SyyDiagnosisBranchListComponent)
+      },
+      {
+        path:'syy-diagnosis-procedures',canActivate:[permissionGuard],
+        data:{permissionModule:'SYYDiagnosisProcedures'},
+        loadComponent:()=>import('./features/syy-diagnosis-procedures/syy-diagnosis-procedure-list/syy-diagnosis-procedure-list.component')
+         .then(c=>c.SyyDiagnosisProcedureListComponent)
+      },
+      {
+        path:'syy-diagnosis-requireds',canActivate:[permissionGuard],
+        data:{permissionModule:'SYYDiagnosisRequireds'},
+        loadComponent:()=>import('./features/syy-diagnosis-requireds/syy-diagnosis-required-list/syy-diagnosis-required-list.component')
+         .then(c=>c.SyyDiagnosisRequiredListComponent)
+      },
+      {
         path: 'syy-diagnoses',
         canActivate: [permissionGuard],
         data: { permissionModule: 'SYYDiagnoses' },

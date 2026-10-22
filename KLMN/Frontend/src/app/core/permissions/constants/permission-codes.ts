@@ -92,6 +92,18 @@ export const PermissionCodes = {
     Create: 'ProcedureTypes.Create', Update: 'ProcedureTypes.Update', Delete: 'ProcedureTypes.Delete'
   },
   /** SYY Tanı Listesi (M/D/F) yetkileri. */
+  /** SYY Tanı Sınıflandırma Çizelgesi izinleri. */
+  SYYClassifications:{View:'SYYClassifications.View',Query:'SYYClassifications.Query',Create:'SYYClassifications.Create',
+   Update:'SYYClassifications.Update',Delete:'SYYClassifications.Delete'},
+  /** SYY Gereken Branşlar izinleri. */
+  SYYDiagnosisBranches:{View:'SYYDiagnosisBranches.View',Query:'SYYDiagnosisBranches.Query',Create:'SYYDiagnosisBranches.Create',
+   Update:'SYYDiagnosisBranches.Update',Delete:'SYYDiagnosisBranches.Delete'},
+  /** SYY Gereken Tetkikler izinleri. */
+  SYYDiagnosisProcedures:{View:'SYYDiagnosisProcedures.View',Query:'SYYDiagnosisProcedures.Query',Create:'SYYDiagnosisProcedures.Create',
+   Update:'SYYDiagnosisProcedures.Update',Delete:'SYYDiagnosisProcedures.Delete'},
+  /** SYY Onay Gerektiren Maddeler izinleri. */
+  SYYDiagnosisRequireds:{View:'SYYDiagnosisRequireds.View',Query:'SYYDiagnosisRequireds.Query',Create:'SYYDiagnosisRequireds.Create',
+   Update:'SYYDiagnosisRequireds.Update',Delete:'SYYDiagnosisRequireds.Delete'},
   SYYDiagnoses:{
     View:'SYYDiagnoses.View',Query:'SYYDiagnoses.Query',Create:'SYYDiagnoses.Create',
     Update:'SYYDiagnoses.Update',Delete:'SYYDiagnoses.Delete'
