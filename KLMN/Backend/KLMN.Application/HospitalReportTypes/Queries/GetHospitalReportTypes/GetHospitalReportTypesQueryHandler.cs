@@ -29,7 +29,17 @@ public sealed class GetHospitalReportTypesQueryHandler(IKLMNDbContext db)
         var total = await query.CountAsync(ct);
         var items = await query.OrderBy(x => x.Hospital.Name).ThenBy(x => x.ReportType.Name)
             .Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize)
-            .Select(HospitalReportTypeResponse.Projection).ToListAsync(ct);
+            .Select(x =>
+        new HospitalReportTypeResponse
+        {
+            Id = x.Id,
+            HospitalDefId = x.HospitalDefId, HospitalName = x.Hospital.Name,
+            HospitalCode = x.Hospital.Code,
+            ReportTypeDefId = x.ReportTypeDefId, ReportTypeName = x.ReportType.Name,
+            IsActive = x.IsActive,
+            CreatedDate = x.CreatedDate, CreatedBy = x.CreatedBy,
+            UpdatedDate = x.UpdatedDate, UpdatedBy = x.UpdatedBy, Version = x.Version
+        }).ToListAsync(ct);
         return new PagedResult<HospitalReportTypeResponse>
         { Items = items, TotalCount = total, PageNumber = request.PageNumber, PageSize = request.PageSize };
     }

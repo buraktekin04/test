@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using KLMN.Domain.Entities.MilitaryUnit;
 
 namespace KLMN.Application.MilitaryClassGroups.Responses;
@@ -18,14 +17,5 @@ public sealed class MilitaryClassGroupResponse
     public uint Version { get; init; }
     public DateTime CreatedDate { get; init; }
     /// <summary>EF Core tarafından SQL'e çevrilebilen response izdüşümüdür.</summary>
-    public static Expression<Func<MilitaryClassGroupDef, MilitaryClassGroupResponse>> Projection => x =>
-        new MilitaryClassGroupResponse {
-            Id = x.Id, Code = x.Code, Name = x.Name, ShortName = x.ShortName,
-            ForcesCommandId = x.ForcesCommandId, ForcesCommandName = x.ForcesCommand.Name,
-            IsActive = x.IsActive, ValidFrom = x.ValidFrom, ValidTo = x.ValidTo,
-            Version = x.Version, CreatedDate = x.CreatedDate
-        };
-}
 
-/// <summary>Değişiklik sonrası kimlik ve PostgreSQL xmin sürümüdür.</summary>
-public sealed record MilitaryClassGroupMutationResponse(Guid Id, uint Version);
+}

@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using KLMN.Domain.Entities.Admissions;
 
 namespace KLMN.Application.AdmissionTypes.Responses;
@@ -32,28 +31,4 @@ public sealed class HcAdmissionTypeDefResponse
     public Guid? UpdatedBy { get; init; }
     public uint Version { get; init; }
 
-    /// <summary>EF Core tarafından SQL'e çevrilen ortak liste/detay projeksiyonudur.</summary>
-    public static Expression<Func<HcAdmissionTypeDef, HcAdmissionTypeDefResponse>> Projection => x =>
-        new HcAdmissionTypeDefResponse
-        {
-            Id = x.Id, Code = x.Code, Name = x.Name,
-            ForcesCommandRequired = x.ForcesCommandRequired,
-            RankRequired = x.RankRequired,
-            MilitaryClassRequired = x.MilitaryClassRequired,
-            MilitaryUnitRequired = x.MilitaryUnitRequired,
-            SenderChairRequired = x.SenderChairRequired,
-            MilitaryOfficeRequired = x.MilitaryOfficeRequired,
-            RegistryNumberRequired = x.RegistryNumberRequired,
-            MilitarySchoolRequired = x.MilitarySchoolRequired,
-            LastNominationDateRequired = x.LastNominationDateRequired,
-            HeightWeightRequired = x.HeightWeightRequired,
-            NthAdmissionRequired = x.NthAdmissionRequired,
-            DispatchDocumentDateRequired = x.DispatchDocumentDateRequired,
-            DispatchDocumentNoRequired = x.DispatchDocumentNoRequired,
-            PertemApprovalRequired = x.PertemApprovalRequired,
-            ValidFrom = x.ValidFrom, ValidTo = x.ValidTo,
-            IsActive = x.IsActive, CreatedDate = x.CreatedDate,
-            CreatedBy = x.CreatedBy, UpdatedDate = x.UpdatedDate,
-            UpdatedBy = x.UpdatedBy, Version = x.Version
-        };
 }

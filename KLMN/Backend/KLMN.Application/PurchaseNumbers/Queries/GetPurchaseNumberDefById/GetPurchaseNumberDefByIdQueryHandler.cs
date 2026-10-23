@@ -12,6 +12,15 @@ public sealed class GetPurchaseNumberDefByIdQueryHandler(IKLMNDbContext db)
     public async Task<PurchaseNumberDefResponse> Handle(GetPurchaseNumberDefByIdQuery request, CancellationToken ct) =>
         await db.PurchaseNumberDefs.IgnoreQueryFilters().AsNoTracking()
             .Where(x => x.Id == request.Id && !x.IsDeleted)
-            .Select(PurchaseNumberDefResponse.Projection)
+            .Select(x =>
+        new PurchaseNumberDefResponse
+        {
+            Id = x.Id, Code = x.Code, Name = x.Name,
+            SupplyDescriptionName = x.SupplyDescriptionName,
+            ValidFrom = x.ValidFrom, ValidTo = x.ValidTo,
+            HealthReportEndDate = x.HealthReportEndDate,
+            IsActive = x.IsActive, CreatedDate = x.CreatedDate, CreatedBy = x.CreatedBy,
+            UpdatedDate = x.UpdatedDate, UpdatedBy = x.UpdatedBy, Version = x.Version
+        })
             .SingleOrDefaultAsync(ct) ?? throw new PurchaseNumberNotFoundException();
 }

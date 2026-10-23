@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using KLMN.Domain.Entities.Admissions;
 
 namespace KLMN.Application.HospitalReportTypes.Responses;
@@ -20,15 +19,5 @@ public sealed class HospitalReportTypeResponse
     public uint Version { get; init; }
 
     /// <summary>EF Core'da sunucu tarafında çevrilebilen DTO projeksiyonu.</summary>
-    public static Expression<Func<HospitalReportType, HospitalReportTypeResponse>> Projection => x =>
-        new HospitalReportTypeResponse
-        {
-            Id = x.Id,
-            HospitalDefId = x.HospitalDefId, HospitalName = x.Hospital.Name,
-            HospitalCode = x.Hospital.Code,
-            ReportTypeDefId = x.ReportTypeDefId, ReportTypeName = x.ReportType.Name,
-            IsActive = x.IsActive,
-            CreatedDate = x.CreatedDate, CreatedBy = x.CreatedBy,
-            UpdatedDate = x.UpdatedDate, UpdatedBy = x.UpdatedBy, Version = x.Version
-        };
+
 }

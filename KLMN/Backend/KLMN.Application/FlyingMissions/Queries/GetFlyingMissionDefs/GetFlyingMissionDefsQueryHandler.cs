@@ -15,7 +15,8 @@ IRequestHandler<GetFlyingMissionDefsQuery,PagedResult<FlyingMissionDefResponse>>
  if(r.IsActive.HasValue)q=q.Where(x=>x.IsActive==r.IsActive.Value);
  var total=await q.CountAsync(ct);
  var items=await q.OrderBy(x=>x.Name).ThenBy(x=>x.Code).Skip((r.PageNumber-1)*r.PageSize)
-    .Take(r.PageSize).Select(FlyingMissionDefResponse.Projection).ToListAsync(ct);
+    .Take(r.PageSize).Select(x=>new(
+ x.Id,x.Code,x.Name,x.ValidFrom,x.ValidTo,x.IsActive,x.Version,x.CreatedDate)).ToListAsync(ct);
  return new PagedResult<FlyingMissionDefResponse>{Items=items,TotalCount=total,PageNumber=r.PageNumber,PageSize=r.PageSize};
  }
 }

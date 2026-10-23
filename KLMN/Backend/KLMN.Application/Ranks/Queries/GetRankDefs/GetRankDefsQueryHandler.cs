@@ -29,7 +29,17 @@ public sealed class GetRankDefsQueryHandler(IKLMNDbContext db)
         var total = await query.CountAsync(ct);
         var items = await query.OrderBy(x => x.Name).ThenBy(x => x.Code)
             .Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize)
-            .Select(RankDefResponse.Projection).ToListAsync(ct);
+            .Select(x =>
+        new RankDefResponse
+        {
+            Id = x.Id, Code = x.Code, Name = x.Name,
+            ShortName = x.ShortName, Type = x.Type,
+            RankGroupId = x.RankGroupId,
+            RankGroupName = x.RankGroup == null ? null : x.RankGroup.Name,
+            ValidFrom = x.ValidFrom, ValidTo = x.ValidTo, IsActive = x.IsActive,
+            CreatedDate = x.CreatedDate, CreatedBy = x.CreatedBy,
+            UpdatedDate = x.UpdatedDate, UpdatedBy = x.UpdatedBy, Version = x.Version
+        }).ToListAsync(ct);
         return new PagedResult<RankDefResponse>
         { Items = items, TotalCount = total, PageNumber = request.PageNumber, PageSize = request.PageSize };
     }

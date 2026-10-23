@@ -24,7 +24,8 @@ public sealed class GetICD10DiagnosticsQueryHandler(IKLMNDbContext db):IRequestH
   var count=await q.CountAsync(ct);
   var items=await q.OrderBy(x=>x.ICD10.Code).ThenBy(x=>x.Id)
    .Skip((r.PageNumber-1)*r.PageSize).Take(r.PageSize)
-   .Select(ICD10DiagnosticResponse.Projection).ToListAsync(ct);
+   .Select(x=>
+ new ICD10DiagnosticResponse(x.Id,x.ICD10DefId,x.ICD10.Code,x.ICD10.Name,x.SYYDiagnosisDefId,x.SYYDiagnosis.Code+" — "+x.SYYDiagnosis.Name,x.HcAdmissionTypeDefId,x.AdmissionType.Name,x.Amount,x.IsActive,x.Version,x.CreatedDate)).ToListAsync(ct);
   return new PagedResult<ICD10DiagnosticResponse>{Items=items,TotalCount=count,PageNumber=r.PageNumber,PageSize=r.PageSize};
  }
 }

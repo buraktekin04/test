@@ -53,7 +53,17 @@ public sealed class GetHospitalReportTypeGroupsQueryHandler(IKLMNDbContext db)
 
         var rows = await links.Where(x => ids.Contains(x.HospitalDefId))
             .OrderBy(x => x.ReportType.Name).ThenBy(x => x.ReportType.Code)
-            .Select(HospitalReportTypeResponse.Projection).ToListAsync(ct);
+            .Select(x =>
+        new HospitalReportTypeResponse
+        {
+            Id = x.Id,
+            HospitalDefId = x.HospitalDefId, HospitalName = x.Hospital.Name,
+            HospitalCode = x.Hospital.Code,
+            ReportTypeDefId = x.ReportTypeDefId, ReportTypeName = x.ReportType.Name,
+            IsActive = x.IsActive,
+            CreatedDate = x.CreatedDate, CreatedBy = x.CreatedBy,
+            UpdatedDate = x.UpdatedDate, UpdatedBy = x.UpdatedBy, Version = x.Version
+        }).ToListAsync(ct);
         var byHospital = rows.GroupBy(x => x.HospitalDefId).ToDictionary(x => x.Key,
             x => (IReadOnlyList<HospitalReportTypeResponse>)x.ToList());
 

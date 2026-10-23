@@ -13,6 +13,12 @@ public sealed class GetMilitaryClassGroupByIdQueryHandler(IKLMNDbContext db)
     /// <summary>Bulunamayan grup için 404 tetikler.</summary>
     public async Task<MilitaryClassGroupResponse> Handle(GetMilitaryClassGroupByIdQuery query, CancellationToken ct) =>
         await db.MilitaryClassGroupDefs.IgnoreQueryFilters().AsNoTracking()
-            .Where(x => x.Id == query.Id && !x.IsDeleted).Select(MilitaryClassGroupResponse.Projection)
+            .Where(x => x.Id == query.Id && !x.IsDeleted).Select(x =>
+        new MilitaryClassGroupResponse {
+            Id = x.Id, Code = x.Code, Name = x.Name, ShortName = x.ShortName,
+            ForcesCommandId = x.ForcesCommandId, ForcesCommandName = x.ForcesCommand.Name,
+            IsActive = x.IsActive, ValidFrom = x.ValidFrom, ValidTo = x.ValidTo,
+            Version = x.Version, CreatedDate = x.CreatedDate
+        })
             .SingleOrDefaultAsync(ct) ?? throw new MilitaryClassGroupNotFoundException();
 }

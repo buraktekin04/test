@@ -9,5 +9,8 @@ public sealed class GetReasonForExamUnusedHcAdmissionTypeByIdQueryHandler(IKLMND
 {
  public async Task<ReasonForExamUnusedHcAdmissionTypeResponse> Handle(GetReasonForExamUnusedHcAdmissionTypeByIdQuery r,CancellationToken ct)=>
  await db.ReasonForExamUnusedHcAdmissionTypes.IgnoreQueryFilters().AsNoTracking().Where(x=>!x.IsDeleted&&x.Id==r.Id)
-    .Select(ReasonForExamUnusedHcAdmissionTypeResponse.Projection).SingleOrDefaultAsync(ct)??throw new ReasonForExamUnusedHcAdmissionTypeNotFoundException();
+    .Select(x=>new ReasonForExamUnusedHcAdmissionTypeResponse(
+ x.Id,x.ReasonForExaminationDefId,x.Reason.Description,x.Reason.Code,
+ x.HcAdmissionTypeDefId,x.AdmissionType.Name,x.IsActive,x.Version,x.CreatedDate
+ )).SingleOrDefaultAsync(ct)??throw new ReasonForExamUnusedHcAdmissionTypeNotFoundException();
 }

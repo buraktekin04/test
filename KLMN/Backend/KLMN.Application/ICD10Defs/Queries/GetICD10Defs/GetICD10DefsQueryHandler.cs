@@ -18,7 +18,8 @@ public sealed class GetICD10DefsQueryHandler(IKLMNDbContext db):IRequestHandler<
   var count=await q.CountAsync(ct);
   var items=await q.OrderBy(x=>x.Code).ThenBy(x=>x.Id)
    .Skip((r.PageNumber-1)*r.PageSize).Take(r.PageSize)
-   .Select(ICD10DefResponse.Projection).ToListAsync(ct);
+   .Select(x=>
+ new ICD10DefResponse(x.Id,x.Code,x.Name,x.IsActive,x.Version,x.CreatedDate)).ToListAsync(ct);
   return new PagedResult<ICD10DefResponse>{Items=items,TotalCount=count,PageNumber=r.PageNumber,PageSize=r.PageSize};
  }
 }

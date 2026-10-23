@@ -17,7 +17,10 @@ public sealed class GetReasonForExamBranchDefsQueryHandler(IKLMNDbContext db)
  if(r.IsActive.HasValue)q=q.Where(x=>x.IsActive==r.IsActive.Value);
  var count=await q.CountAsync(ct);
  var items=await q.OrderBy(x=>x.Reason.Description).ThenBy(x=>x.Branch.Name)
-    .Skip((r.PageNumber-1)*r.PageSize).Take(r.PageSize).Select(ReasonForExamBranchDefResponse.Projection).ToListAsync(ct);
+    .Skip((r.PageNumber-1)*r.PageSize).Take(r.PageSize).Select(x=>new ReasonForExamBranchDefResponse(
+ x.Id,x.ReasonForExaminationDefId,x.Reason.Description,x.Reason.Code,
+ x.BranchDefId,x.Branch.Name,x.IsActive,x.Version,x.CreatedDate
+ ,x.StartingAge,x.EndingAge,x.Gender)).ToListAsync(ct);
  return new PagedResult<ReasonForExamBranchDefResponse>{Items=items,TotalCount=count,PageNumber=r.PageNumber,PageSize=r.PageSize};
  }
 }

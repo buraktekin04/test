@@ -1,7 +1,8 @@
-import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
+import { Component, computed, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { APP_BRANDING } from '../../core/config/app-branding';
+import { NavigationItem } from '../models/navigation-item.model';
 import { NavigationService } from '../services/navigation.service';
 
 /** Menünün içeriği permission bazlıdır, genişliği üst layout tarafından yönetilir. */
@@ -20,7 +21,24 @@ export class SidebarComponent {
   @Output() public readonly expandRequested = new EventEmitter<void>();
 
   public readonly branding = APP_BRANDING;
-  public readonly menuItems = this.navigationService.visibleItems;
+  /** Kullanıcı yalnızca yetkili olduğu menülerde arama yapabilir. */
+  public readonly searchTerm = signal('');
+
+  /** Türkçe karakterlere uygun, alt gruplarda da çalışan arama sonucu. */
+  public readonly menuItems = computed(() => {
+    const allowed = this.navigationService.visibleItems();
+    const term = this.searchTerm().trim().toLocaleLowerCase('tr-TR');
+    return term ? this.filterMenu(allowed, term) : allowed;
+  });
+
+  private filterMenu(items: readonly NavigationItem[], term: string): NavigationItem[] {
+    return items.flatMap(item => {
+      if (item.label.toLocaleLowerCase('tr-TR').includes(term)) return [item];
+      const children = item.children ? this.filterMenu(item.children, term) : [];
+      return children.length ? [{ ...item, children }] : [];
+    });
+  }
+
   private readonly expandedMenus = signal<ReadonlySet<string>>(new Set(['Tanımlamalar']));
 
   public toggleGroup(label: string): void {
@@ -36,6 +54,6 @@ export class SidebarComponent {
     });
   }
 
-  public isExpanded(label: string): boolean { return this.expandedMenus().has(label); }
+  public isExpanded(label: string): boolean { return this.searchTerm().trim().length > 0 || this.expandedMenus().has(label); }
   public onNavigationSelected(): void { this.navigationSelected.emit(); }
 }

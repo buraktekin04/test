@@ -23,7 +23,15 @@ public sealed class GetCityDefsQueryHandler(IKLMNDbContext db) : IRequestHandler
         var total = await query.CountAsync(ct);
         var items = await query.OrderBy(x => x.Name).ThenBy(x => x.Code)
             .Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize)
-            .Select(CityDefResponse.Projection).ToListAsync(ct);
+            .Select(x =>
+        new CityDefResponse
+        {
+            Id=x.Id, Code=x.Code, Name=x.Name, ExternalCode=x.ExternalCode,
+            CountryId=x.CountryId, CountryName=x.Country == null ? null : x.Country.Name,
+            MernisCode=x.MernisCode, ValidFrom=x.ValidFrom, ValidTo=x.ValidTo,
+            IsActive=x.IsActive, CreatedDate=x.CreatedDate, CreatedBy=x.CreatedBy,
+            UpdatedDate=x.UpdatedDate, UpdatedBy=x.UpdatedBy, Version=x.Version
+        }).ToListAsync(ct);
         return new PagedResult<CityDefResponse>
         { Items=items, TotalCount=total, PageNumber=request.PageNumber, PageSize=request.PageSize };
     }

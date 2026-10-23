@@ -14,6 +14,15 @@ public sealed class GetMilitaryOfficeDefByIdQueryHandler(IKLMNDbContext db)
     public async Task<MilitaryOfficeDefResponse> Handle(GetMilitaryOfficeDefByIdQuery request, CancellationToken ct) =>
         await db.MilitaryOfficeDefs.IgnoreQueryFilters().AsNoTracking()
             .Where(x => x.Id == request.Id && !x.IsDeleted)
-            .Select(MilitaryOfficeDefResponse.Projection).SingleOrDefaultAsync(ct)
+            .Select(x =>
+        new MilitaryOfficeDefResponse
+        {
+            Id = x.Id, Code = x.Code, Name = x.Name, ExternalCode = x.ExternalCode,
+            CityId = x.CityId, CityName = x.City == null ? null : x.City.Name,
+            ValidFrom = x.ValidFrom, ValidTo = x.ValidTo, IsActive = x.IsActive,
+            CreatedDate = x.CreatedDate, CreatedBy = x.CreatedBy,
+            UpdatedDate = x.UpdatedDate, UpdatedBy = x.UpdatedBy,
+            Version = x.Version
+        }).SingleOrDefaultAsync(ct)
             ?? throw new MilitaryOfficeNotFoundException();
 }

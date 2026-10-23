@@ -14,6 +14,13 @@ public sealed class GetRankGroupDefByIdQueryHandler(IKLMNDbContext db)
     public async Task<RankGroupDefResponse> Handle(GetRankGroupDefByIdQuery request, CancellationToken ct) =>
         await db.RankGroupDefs.IgnoreQueryFilters().AsNoTracking()
             .Where(x => x.Id == request.Id && !x.IsDeleted)
-            .Select(RankGroupDefResponse.Projection).SingleOrDefaultAsync(ct)
+            .Select(x =>
+        new RankGroupDefResponse
+        {
+            Id = x.Id, Code = x.Code, Name = x.Name, ShortName = x.ShortName,
+            ValidFrom = x.ValidFrom, ValidTo = x.ValidTo, IsActive = x.IsActive,
+            CreatedDate = x.CreatedDate, CreatedBy = x.CreatedBy,
+            UpdatedDate = x.UpdatedDate, UpdatedBy = x.UpdatedBy, Version = x.Version
+        }).SingleOrDefaultAsync(ct)
             ?? throw new RankGroupNotFoundException();
 }

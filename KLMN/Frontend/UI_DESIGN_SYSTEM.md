@@ -116,3 +116,10 @@ npm run build
 ```
 Ardından mobil/masaüstü layout'u, login, kullanıcı hesabı menüsü,
 tanım ekranlarının filtre/sıralama ve dialoglarını tarayıcıda doğrulayın.
+
+## Gruplanmış sol menü ve arama (23.10.2026)
+
+- Tanımlamalar 11 işlevsel alt menü grubundan oluşur. Örnek: Rütbe, Coğrafi Tanımlar, Muayene ve Tetkik, SYY Tanımları.
+- Arama Türkçe karakterlere duyarlıdır ve iç içe öğeleri tarar; eşleşen gruplar arama sırasında açılır.
+- Arama yalnız backend permission sözleşmesiyle eşleşen ve navigation service tarafından yetkili bulunan öğelerde çalışır. Yetkisiz menü aramayla açılamaz.
+- Route adresleri ve sidebar'ın açık/dar, mobil/masaüstü davranışları korunur.

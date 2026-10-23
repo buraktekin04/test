@@ -14,6 +14,17 @@ public sealed class GetMilitarySchoolDefByIdQueryHandler(IKLMNDbContext db)
     public async Task<MilitarySchoolDefResponse> Handle(GetMilitarySchoolDefByIdQuery request, CancellationToken ct) =>
         await db.MilitarySchoolDefs.IgnoreQueryFilters().AsNoTracking()
             .Where(x => x.Id == request.Id && !x.IsDeleted)
-            .Select(MilitarySchoolDefResponse.Projection).SingleOrDefaultAsync(ct)
+            .Select(x =>
+        new MilitarySchoolDefResponse
+        {
+            Id = x.Id, Code = x.Code, Name = x.Name,
+            CityId = x.CityId, CityName = x.City == null ? null : x.City.Name,
+            ForcesCommandDefId = x.ForcesCommandDefId,
+            ForcesCommandName = x.ForcesCommand == null ? null : x.ForcesCommand.Name,
+            ValidFrom = x.ValidFrom, ValidTo = x.ValidTo,
+            IsActive = x.IsActive, CreatedDate = x.CreatedDate,
+            CreatedBy = x.CreatedBy, UpdatedDate = x.UpdatedDate,
+            UpdatedBy = x.UpdatedBy, Version = x.Version
+        }).SingleOrDefaultAsync(ct)
             ?? throw new MilitarySchoolNotFoundException();
 }

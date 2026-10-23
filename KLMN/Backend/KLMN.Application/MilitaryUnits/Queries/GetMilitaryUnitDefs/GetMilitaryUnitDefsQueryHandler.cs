@@ -44,7 +44,29 @@ public sealed class GetMilitaryUnitDefsQueryHandler(IKLMNDbContext db)
         var items = await query
             .OrderBy(x => x.Name).ThenBy(x => x.Code)
             .Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize)
-            .Select(MilitaryUnitDefResponse.Projection)
+            .Select(unit =>
+        new MilitaryUnitDefResponse
+        {
+            Id = unit.Id,
+            Code = unit.Code,
+            ExternalCode = unit.ExternalCode,
+            ForcesCommandDef = unit.ForcesCommandDef,
+            ForcesCommandName = unit.ForceCommand != null ? unit.ForceCommand.Name : null,
+            ForcesCommandCode = unit.ForceCommand != null ? unit.ForceCommand.Code : null,
+            ValidFrom = unit.ValidFrom,
+            ValidTo = unit.ValidTo,
+            Name = unit.Name,
+            ConnectedTopUnity = unit.ConnectedTopUnity,
+            ConnectedTopUnitName = unit.ConnectedTopUnit != null
+                ? unit.ConnectedTopUnit.Name : null,
+            ConnectedTopUnitCode = unit.ConnectedTopUnit != null
+                ? unit.ConnectedTopUnit.Code : null,
+            IsActive = unit.IsActive,
+            CreatedDate = unit.CreatedDate,
+            Version = unit.Version,
+            UserCount = unit.Users.Count(x => !x.IsDeleted),
+            ChildCount = unit.Children.Count(x => !x.IsDeleted)
+        })
             .ToListAsync(ct);
 
         return new PagedResult<MilitaryUnitDefResponse>

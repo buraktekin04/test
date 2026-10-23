@@ -8,5 +8,5 @@ public sealed class GetSYYDiagnosisProcedureDefByIdQueryHandler(IKLMNDbContext d
 {
  public async Task<SYYDiagnosisProcedureDefResponse> Handle(GetSYYDiagnosisProcedureDefByIdQuery r,CancellationToken ct)=>
  await db.SYYDiagnosisProcedureDefs.IgnoreQueryFilters().AsNoTracking().Where(x=>x.Id==r.Id&&!x.IsDeleted)
-  .Select(SYYDiagnosisProcedureDefResponse.Projection).SingleOrDefaultAsync(ct)??throw new SYYDiagnosisProcedureDefNotFoundException();
+  .Select(x=>new SYYDiagnosisProcedureDefResponse(x.Id,x.SYYDiagnosisDefId,x.ProcedureDefId,x.Diagnosis.Name,x.Procedure.Name,x.StartingAge,x.EndingAge,x.Gender,x.IsActive,x.Version,x.CreatedDate)).SingleOrDefaultAsync(ct)??throw new SYYDiagnosisProcedureDefNotFoundException();
 }

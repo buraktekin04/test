@@ -14,6 +14,13 @@ public sealed class GetHcConnectedDecisionDefByIdQueryHandler(IKLMNDbContext db)
     public async Task<HcConnectedDecisionDefResponse> Handle(GetHcConnectedDecisionDefByIdQuery request, CancellationToken ct) =>
         await db.HcConnectedDecisionDefs.IgnoreQueryFilters().AsNoTracking()
             .Where(x => x.Id == request.Id && !x.IsDeleted)
-            .Select(HcConnectedDecisionDefResponse.Projection).SingleOrDefaultAsync(ct)
+            .Select(x =>
+        new HcConnectedDecisionDefResponse
+        {
+            Id = x.Id, Code = x.Code, Name = x.Name,
+            ValidFrom = x.ValidFrom, ValidTo = x.ValidTo, IsActive = x.IsActive,
+            CreatedDate = x.CreatedDate, CreatedBy = x.CreatedBy,
+            UpdatedDate = x.UpdatedDate, UpdatedBy = x.UpdatedBy, Version = x.Version
+        }).SingleOrDefaultAsync(ct)
             ?? throw new ConnectedDecisionNotFoundException();
 }

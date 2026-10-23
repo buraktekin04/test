@@ -8,5 +8,5 @@ public sealed class GetSYYClassificationDefByIdQueryHandler(IKLMNDbContext db):I
 {
  public async Task<SYYClassificationDefResponse> Handle(GetSYYClassificationDefByIdQuery r,CancellationToken ct)=>
  await db.SYYClassificationDefs.IgnoreQueryFilters().AsNoTracking().Where(x=>x.Id==r.Id&&!x.IsDeleted)
-  .Select(SYYClassificationDefResponse.Projection).SingleOrDefaultAsync(ct)??throw new SYYClassificationDefNotFoundException();
+  .Select(x=>new SYYClassificationDefResponse(x.Id,x.SYYDiagnosisDefId,x.ForcesCommandDef,x.RankGroup,x.MilitaryClassGroup,x.HcDecision,x.Diagnosis.Name,x.ForcesCommand.Name,x.RankGroupDefinition.Name,x.MilitaryClassGroupDefinition.Name,x.Decision.Name,x.ValidFrom,x.ValidTo,x.IsActive,x.Version,x.CreatedDate)).SingleOrDefaultAsync(ct)??throw new SYYClassificationDefNotFoundException();
 }

@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using KLMN.Domain.Entities.Admissions;
 
 namespace KLMN.Application.ConnectedDecisions.Responses;
@@ -19,12 +18,5 @@ public sealed class HcConnectedDecisionDefResponse
     public uint Version { get; init; }
 
     /// <summary>EF Core'da sunucu tarafında çevrilebilen DTO projeksiyonu.</summary>
-    public static Expression<Func<HcConnectedDecisionDef, HcConnectedDecisionDefResponse>> Projection => x =>
-        new HcConnectedDecisionDefResponse
-        {
-            Id = x.Id, Code = x.Code, Name = x.Name,
-            ValidFrom = x.ValidFrom, ValidTo = x.ValidTo, IsActive = x.IsActive,
-            CreatedDate = x.CreatedDate, CreatedBy = x.CreatedBy,
-            UpdatedDate = x.UpdatedDate, UpdatedBy = x.UpdatedBy, Version = x.Version
-        };
+
 }

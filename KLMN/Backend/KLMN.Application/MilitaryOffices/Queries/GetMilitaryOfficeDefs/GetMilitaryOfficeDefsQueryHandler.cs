@@ -31,7 +31,16 @@ public sealed class GetMilitaryOfficeDefsQueryHandler(IKLMNDbContext db)
         var count = await query.CountAsync(ct);
         var items = await query.OrderBy(x => x.Name).ThenBy(x => x.Code)
             .Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize)
-            .Select(MilitaryOfficeDefResponse.Projection).ToListAsync(ct);
+            .Select(x =>
+        new MilitaryOfficeDefResponse
+        {
+            Id = x.Id, Code = x.Code, Name = x.Name, ExternalCode = x.ExternalCode,
+            CityId = x.CityId, CityName = x.City == null ? null : x.City.Name,
+            ValidFrom = x.ValidFrom, ValidTo = x.ValidTo, IsActive = x.IsActive,
+            CreatedDate = x.CreatedDate, CreatedBy = x.CreatedBy,
+            UpdatedDate = x.UpdatedDate, UpdatedBy = x.UpdatedBy,
+            Version = x.Version
+        }).ToListAsync(ct);
         return new PagedResult<MilitaryOfficeDefResponse>
         { Items = items, TotalCount = count, PageNumber = request.PageNumber, PageSize = request.PageSize };
     }

@@ -10,6 +10,14 @@ public sealed class GetTownDefByIdQueryHandler(IKLMNDbContext db) : IRequestHand
     public async Task<TownDefResponse> Handle(GetTownDefByIdQuery request, CancellationToken ct) =>
         await db.TownDefs.IgnoreQueryFilters().AsNoTracking()
             .Where(x => x.Id == request.Id && !x.IsDeleted)
-            .Select(TownDefResponse.Projection).SingleOrDefaultAsync(ct)
+            .Select(x =>
+        new TownDefResponse
+        {
+            Id=x.Id, Code=x.Code, Name=x.Name, ExternalCode=x.ExternalCode,
+            CityId=x.CityId, CityName=x.City == null ? null : x.City.Name,
+            MernisCode=x.MernisCode,
+            IsActive=x.IsActive, CreatedDate=x.CreatedDate, CreatedBy=x.CreatedBy,
+            UpdatedDate=x.UpdatedDate, UpdatedBy=x.UpdatedBy, Version=x.Version
+        }).SingleOrDefaultAsync(ct)
             ?? throw new TownNotFoundException();
 }

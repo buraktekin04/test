@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using KLMN.Domain.Entities.MilitaryUnit;
 
 namespace KLMN.Application.MilitaryClasses.Responses;
@@ -24,15 +23,5 @@ public sealed class MilitaryClassDefResponse
     public uint Version { get; init; }
 
     /// <summary>EF Core üzerinde sunucuda çalıştırılabilen liste projeksiyonu.</summary>
-    public static Expression<Func<MilitaryClassDef, MilitaryClassDefResponse>> Projection => x =>
-        new MilitaryClassDefResponse
-        {
-            Id = x.Id, Code = x.Code, Name = x.Name,
-            ShortName = x.ShortName, ExternalCode = x.ExternalCode,
-            IsActive = x.IsActive,
-            ValidFrom = x.ValidFrom, ValidTo = x.ValidTo,
-            CreatedDate = x.CreatedDate, CreatedBy = x.CreatedBy,
-            UpdatedDate = x.UpdatedDate, UpdatedBy = x.UpdatedBy,
-            Version = x.Version
-        };
+
 }

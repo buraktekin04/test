@@ -8,5 +8,6 @@ public sealed class GetICD10DefByIdQueryHandler(IKLMNDbContext db):IRequestHandl
 {
  public async Task<ICD10DefResponse> Handle(GetICD10DefByIdQuery r,CancellationToken ct)=>
  await db.ICD10Defs.IgnoreQueryFilters().AsNoTracking().Where(x=>x.Id==r.Id&&!x.IsDeleted)
- .Select(ICD10DefResponse.Projection).SingleOrDefaultAsync(ct)??throw new ICD10DefNotFoundException();
+ .Select(x=>
+ new ICD10DefResponse(x.Id,x.Code,x.Name,x.IsActive,x.Version,x.CreatedDate)).SingleOrDefaultAsync(ct)??throw new ICD10DefNotFoundException();
 }

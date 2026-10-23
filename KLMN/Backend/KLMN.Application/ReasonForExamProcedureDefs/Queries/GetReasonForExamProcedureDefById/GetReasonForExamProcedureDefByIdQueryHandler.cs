@@ -9,5 +9,8 @@ public sealed class GetReasonForExamProcedureDefByIdQueryHandler(IKLMNDbContext 
 {
  public async Task<ReasonForExamProcedureDefResponse> Handle(GetReasonForExamProcedureDefByIdQuery r,CancellationToken ct)=>
  await db.ReasonForExamProcedureDefs.IgnoreQueryFilters().AsNoTracking().Where(x=>!x.IsDeleted&&x.Id==r.Id)
-    .Select(ReasonForExamProcedureDefResponse.Projection).SingleOrDefaultAsync(ct)??throw new ReasonForExamProcedureDefNotFoundException();
+    .Select(x=>new ReasonForExamProcedureDefResponse(
+ x.Id,x.ReasonForExaminationDefId,x.Reason.Description,x.Reason.Code,
+ x.ProcedureDefId,x.Procedure.Name,x.IsActive,x.Version,x.CreatedDate
+ ,x.StartingAge,x.EndingAge,x.Gender)).SingleOrDefaultAsync(ct)??throw new ReasonForExamProcedureDefNotFoundException();
 }

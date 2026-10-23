@@ -16,7 +16,26 @@ public sealed class GetRoleByIdQueryHandler(IKLMNDbContext dbContext)
         await dbContext.Roles.IgnoreQueryFilters()
             .AsNoTracking()
             .Where(x => x.Id == request.Id && !x.IsDeleted)
-            .Select(RoleResponse.Projection)
+            .Select(role =>
+        new RoleResponse
+        {
+            Id = role.Id,
+            Name = role.Name,
+            Code = role.Code,
+            Description = role.Description,
+            IsSystemRole = role.IsSystemRole,
+            IsActive = role.IsActive,
+            CreatedDate = role.CreatedDate,
+            Version = role.Version,
+            UserCount = role.UserRoles.Count(x => x.IsActive && !x.IsDeleted &&
+                x.User.IsActive && !x.User.IsDeleted),
+            PermissionCodes = role.RolePermissions
+                .Where(x => x.IsActive && !x.IsDeleted &&
+                    x.Permission.IsActive && !x.Permission.IsDeleted)
+                .Select(x => x.Permission.Code)
+                .OrderBy(x => x)
+                .ToArray()
+        })
             .SingleOrDefaultAsync(cancellationToken)
         ?? throw new RoleNotFoundException();
 }

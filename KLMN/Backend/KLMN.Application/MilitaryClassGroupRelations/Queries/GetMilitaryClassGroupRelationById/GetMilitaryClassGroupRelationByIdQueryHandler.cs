@@ -14,6 +14,12 @@ public sealed class GetMilitaryClassGroupRelationByIdQueryHandler(IKLMNDbContext
     public async Task<MilitaryClassGroupRelationResponse> Handle(GetMilitaryClassGroupRelationByIdQuery request, CancellationToken ct) =>
         await db.MilitaryClassGroupRelations.IgnoreQueryFilters().AsNoTracking()
             .Where(x => x.Id == request.Id && !x.IsDeleted)
-            .Select(MilitaryClassGroupRelationResponse.Projection)
+            .Select(x =>
+        new MilitaryClassGroupRelationResponse {
+            Id = x.Id, ForcesCommandId = x.ForcesCommandId, ForcesCommandName = x.ForcesCommand.Name,
+            MilitaryClassId = x.MilitaryClassId, MilitaryClassName = x.MilitaryClass.Name,
+            MilitaryClassGroupId = x.MilitaryClassGroupId, MilitaryClassGroupName = x.MilitaryClassGroup.Name,
+            IsActive = x.IsActive, Version = x.Version, CreatedDate = x.CreatedDate
+        })
             .SingleOrDefaultAsync(ct) ?? throw new MilitaryClassGroupRelationNotFoundException();
 }

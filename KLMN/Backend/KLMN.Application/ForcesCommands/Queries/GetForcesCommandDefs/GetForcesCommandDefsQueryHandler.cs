@@ -29,7 +29,14 @@ public sealed class GetForcesCommandDefsQueryHandler(IKLMNDbContext db)
         var count = await query.CountAsync(ct);
         var items = await query.OrderBy(x => x.Name).ThenBy(x => x.Code)
             .Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize)
-            .Select(ForcesCommandDefResponse.Projection).ToListAsync(ct);
+            .Select(force =>
+        new ForcesCommandDefResponse
+        {
+            Id = force.Id, Code = force.Code, Name = force.Name,
+            ValidFrom = force.ValidFrom, ValidTo = force.ValidTo,
+            IsActive = force.IsActive, CreatedDate = force.CreatedDate, Version = force.Version,
+            MilitaryUnitCount = force.MilitaryUnits.Count(x => !x.IsDeleted)
+        }).ToListAsync(ct);
         return new PagedResult<ForcesCommandDefResponse>
         {
             Items = items, PageNumber = request.PageNumber,

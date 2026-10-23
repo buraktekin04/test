@@ -9,5 +9,8 @@ public sealed class GetReasonForExamReportTypeByIdQueryHandler(IKLMNDbContext db
 {
  public async Task<ReasonForExamReportTypeResponse> Handle(GetReasonForExamReportTypeByIdQuery r,CancellationToken ct)=>
  await db.ReasonForExamReportTypes.IgnoreQueryFilters().AsNoTracking().Where(x=>!x.IsDeleted&&x.Id==r.Id)
-    .Select(ReasonForExamReportTypeResponse.Projection).SingleOrDefaultAsync(ct)??throw new ReasonForExamReportTypeNotFoundException();
+    .Select(x=>new ReasonForExamReportTypeResponse(
+ x.Id,x.ReasonForExaminationDefId,x.Reason.Description,x.Reason.Code,
+ x.ReportTypeDefId,x.ReportType.Name,x.IsActive,x.Version,x.CreatedDate
+ )).SingleOrDefaultAsync(ct)??throw new ReasonForExamReportTypeNotFoundException();
 }

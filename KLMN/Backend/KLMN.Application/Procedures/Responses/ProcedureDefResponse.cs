@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using KLMN.Domain.Entities.Admissions;
 namespace KLMN.Application.Procedures.Responses;
 /// <summary>Tetkik Tanımları liste ve detay yanıtı; iş alanlarını ve standart ValidFrom/ValidTo tarihlerini döndürür.</summary>
@@ -22,12 +21,5 @@ public sealed class ProcedureDefResponse
     public uint Version { get; init; }
 
     /// <summary>Liste ve detay sorgularının EF Core üzerinde projekte ettiği alanlar.</summary>
-    public static Expression<Func<ProcedureDef,ProcedureDefResponse>> Projection => x=> new ProcedureDefResponse
-    {
-        Id=x.Id,ProcedureCode=x.ProcedureCode,Name=x.Name,RequiresNumericResult=x.RequiresNumericResult,
-        RequiresReferenceRange=x.RequiresReferenceRange,RequiresDeviationInfo=x.RequiresDeviationInfo,
-        ValidFrom=x.ValidFrom,ValidTo=x.ValidTo,ProcedureType=x.ProcedureType,
-        ProcedureTypeName=x.TypeDefinition.Name,IsActive=x.IsActive,CreatedDate=x.CreatedDate,
-        CreatedBy=x.CreatedBy,UpdatedDate=x.UpdatedDate,UpdatedBy=x.UpdatedBy,Version=x.Version
-    };
+
 }

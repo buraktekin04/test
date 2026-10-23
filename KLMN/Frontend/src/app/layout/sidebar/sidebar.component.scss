@@ -81,3 +81,13 @@
     .sidebar-status-text, .version-label { display: initial; }
   }
 }
+
+/* Menü araması, grafit tema ve dar sidebar davranışıyla uyumludur. */
+.sidebar-search {display:flex;align-items:center;gap:8px;margin:12px 11px 0;padding:0 10px;min-height:38px;border:1px solid #566675;border-radius:5px;color:#c1ccd6;background:#33414d;}
+.sidebar-search:focus-within {border-color:#c1d0dd;}
+.sidebar-search-input {width:100%;min-width:0;border:0;outline:0;background:transparent;color:#fff;font:inherit;font-size:12.5px;}
+.sidebar-search-input::placeholder {color:#aebbc7;}
+.sidebar-search-input::-webkit-search-cancel-button {display:none;}
+.sidebar-search-clear {border:0;background:transparent;color:#c1ccd6;cursor:pointer;padding:5px;}
+.sidebar-no-result {padding:14px;color:#bcc8d2;font-size:12.5px;}
+@media (min-width:993px){.sidebar.collapsed .sidebar-search{display:none;}}

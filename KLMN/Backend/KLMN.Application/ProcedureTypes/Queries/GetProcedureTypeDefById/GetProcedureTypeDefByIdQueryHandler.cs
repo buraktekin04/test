@@ -9,5 +9,5 @@ public sealed class GetProcedureTypeDefByIdQueryHandler(IKLMNDbContext db):IRequ
 {
     public async Task<ProcedureTypeDefResponse> Handle(GetProcedureTypeDefByIdQuery r,CancellationToken ct)=>
     await db.ProcedureTypeDefs.IgnoreQueryFilters().AsNoTracking().Where(x=>x.Id==r.Id&&!x.IsDeleted)
-      .Select(ProcedureTypeDefResponse.Projection).SingleOrDefaultAsync(ct)??throw new ProcedureTypeNotFoundException();
+      .Select(x=>new ProcedureTypeDefResponse(x.Id,x.Code,x.Name,x.IsActive,x.Version,x.CreatedDate)).SingleOrDefaultAsync(ct)??throw new ProcedureTypeNotFoundException();
 }

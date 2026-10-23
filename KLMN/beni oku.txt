@@ -1,3 +1,30 @@
+SON FAZ (23.10.2026) — BACKEND RESPONSE/EXCEPTION STANDARDI VE MENÜ ARAMASI
+==============================================================================
+- KLMN.Application Responses klasörlerinde aynı dosyada bulunan birden
+  fazla public Response / MutationResponse / Option DTO sınıfı AYRI,
+  kendi sınıf adını taşıyan .cs dosyalarına bölündü. Namespace, tip adı
+  ve public sözleşmeler korunur.
+- Birleştirilmiş *Exceptions.cs dosyaları kaldırıldı. NotFound ve
+  Conflict dahil her özel Exception sınıfı ayrı .cs dosyasında korunur.
+- Response sınıflarına gömülmüş statik Expression<Func<TEntity,TResponse>>
+  Projection üyeleri kaldırıldı. Kullanan EF sorgularının Select
+  projeksiyonları CQRS QueryHandler içerisinde açıkça tanımlanır.
+  DTO yalnızca taşınacak alanlar ve gerekiyorsa normal üyeler içerir.
+  SQL üzerinde sunucu filtreleme/sayfalama korunmalıdır.
+- Aynı dosyada birden fazla DTO/Exception yazmak ve yeni Response
+  türüne Projection koymak GELECEK GELİŞTİRMELERDE YASAKTIR.
+  Her tür için ayrı, aynı adlı dosya; sorgu için Handler ve EF Select.
+- Sol menüdeki 40 tanım sayfası 11 işlevsel alt gruba ayrıldı.
+  Türkçe karakterleri destekleyen menü araması, yetki filtreli ağacı
+  kullanır; eşleşen alt gruplar arama sırasında otomatik açılır.
+  Sidebar, route ve mevcut permission kuralları korunur.
+- Değişiklikler DB entity şeması veya migration gerektirmez.
+- GitHub üzerinden kaynak kodu inceleme ve karşılaştırma yapıldı.
+  Çalışma ortamında .NET/Node derlemesi, PostgreSQL entegrasyonu ve
+  tarayıcı kabul testi KOŞULMADI. Gerçek build/çalışma sonucunu başarılı
+  olarak yorumlamayın; yerel ortamda restore/build ve kabul gerekir.
+- Kod yorum standardı ve UI tasarım notları bu değişimle güncellendi.
+
 SON FAZ (23.10.2026) — ICD10 TANIMLARI VE ICD10 SYY İSTATİSTİKLERİ
 ====================================================================
 - Eski model sınıf yorumları birebir ekran ismi olarak kullanıldı:
@@ -229,6 +256,10 @@ main kodunu, testleri ve son commit'leri karşılaştır, ardından açıklığa
 kavuşturup bu dosyayı güncelle.
 
 KALICI ÇALIŞMA ANLAŞMASI:
+- Her Response/MutationResponse/Option DTO ve her özel Exception TEK SINIF,
+  TEK AYRI .cs DOSYASINDA olmalıdır; toplu sınıf dosyası açılmaz.
+- Response içine EF Expression<Func<...>> Projection konmaz; SQL Select
+  projeksiyonu QueryHandler içinde yer alır. Yeni modüllerde de zorunludur.
 - Kullanıcı açıkça aksini istemedikçe, KLMN için yapılan her yeni
   geliştirmeyi bütün backend + frontend + gerekli dokümantasyon + testlerle
   BİTİR; sonra TEK COMMIT halinde GitHub main dalına PUSHLA.

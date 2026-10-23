@@ -30,7 +30,17 @@ public sealed class GetMilitaryClassDefsQueryHandler(IKLMNDbContext db)
         var total = await query.CountAsync(ct);
         var items = await query.OrderBy(x => x.Name).ThenBy(x => x.Code)
             .Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize)
-            .Select(MilitaryClassDefResponse.Projection).ToListAsync(ct);
+            .Select(x =>
+        new MilitaryClassDefResponse
+        {
+            Id = x.Id, Code = x.Code, Name = x.Name,
+            ShortName = x.ShortName, ExternalCode = x.ExternalCode,
+            IsActive = x.IsActive,
+            ValidFrom = x.ValidFrom, ValidTo = x.ValidTo,
+            CreatedDate = x.CreatedDate, CreatedBy = x.CreatedBy,
+            UpdatedDate = x.UpdatedDate, UpdatedBy = x.UpdatedBy,
+            Version = x.Version
+        }).ToListAsync(ct);
         return new PagedResult<MilitaryClassDefResponse>
         { Items = items, TotalCount = total, PageNumber = request.PageNumber, PageSize = request.PageSize };
     }

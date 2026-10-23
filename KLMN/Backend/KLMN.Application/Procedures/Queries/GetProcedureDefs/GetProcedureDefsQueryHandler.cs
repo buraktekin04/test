@@ -27,7 +27,14 @@ public sealed class GetProcedureDefsQueryHandler(IKLMNDbContext db)
         var total = await query.CountAsync(ct);
         var items = await query.OrderBy(x => x.Name).ThenBy(x => x.ProcedureCode)
             .Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize)
-            .Select(ProcedureDefResponse.Projection).ToListAsync(ct);
+            .Select(x=> new ProcedureDefResponse
+    {
+        Id=x.Id,ProcedureCode=x.ProcedureCode,Name=x.Name,RequiresNumericResult=x.RequiresNumericResult,
+        RequiresReferenceRange=x.RequiresReferenceRange,RequiresDeviationInfo=x.RequiresDeviationInfo,
+        ValidFrom=x.ValidFrom,ValidTo=x.ValidTo,ProcedureType=x.ProcedureType,
+        ProcedureTypeName=x.TypeDefinition.Name,IsActive=x.IsActive,CreatedDate=x.CreatedDate,
+        CreatedBy=x.CreatedBy,UpdatedDate=x.UpdatedDate,UpdatedBy=x.UpdatedBy,Version=x.Version
+    }).ToListAsync(ct);
         return new PagedResult<ProcedureDefResponse>
         { Items = items, TotalCount = total, PageNumber = request.PageNumber, PageSize = request.PageSize };
     }

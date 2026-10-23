@@ -24,182 +24,248 @@ export class NavigationService {
       icon: 'pi pi-cog',
       children: [
         {
-          label: 'Kullanıcı Tanımları',
+          label: 'Kullanıcı ve Yetki',
           icon: 'pi pi-users',
-          route: '/app/users',
-          permissionModule: 'Users'
+          children: [
+            {
+                      label: 'Kullanıcı Tanımları',
+                      icon: 'pi pi-users',
+                      route: '/app/users',
+                      permissionModule: 'Users'
+                    },
+            {
+                      label: 'Rol Tanımları',
+                      icon: 'pi pi-shield',
+                      route: '/app/roles',
+                      permissionModule: 'Roles'
+                    }
+          ]
         },
         {
-          label: 'Rol Tanımları',
-          icon: 'pi pi-shield',
-          route: '/app/roles',
-          permissionModule: 'Roles'
-        },
-        {
-          label: 'Kuvvet Komutanlığı Tanımları',
-          icon: 'pi pi-flag',
-          route: '/app/forces-commands',
-          permissionModule: 'ForcesCommands'
-        },
-        {
-          label: 'Ülke Tanımları',
+          label: 'Coğrafi Tanımlar',
           icon: 'pi pi-globe',
-          route: '/app/countries',
-          permissionModule: 'Countries'
-        },
-        {
-          label: 'Şehir Tanımları',
-          icon: 'pi pi-map-marker',
-          route: '/app/cities',
-          permissionModule: 'Cities'
-        },
-        {
-          label: 'İlçe Tanımları',
-          icon: 'pi pi-map',
-          route: '/app/towns',
-          permissionModule: 'Towns'
-        },
-        {label:'ICD10 Tanımları',icon:'pi pi-book',route:'/app/icd10-defs',permissionModule:'ICD10Defs'},
-        {label:'ICD10 SYY Tanı İstatistik Tanımları',icon:'pi pi-chart-bar',route:'/app/icd10-diagnostics',permissionModule:'ICD10Diagnostics'},
-        {label:'SYY Tanı Sınıflandırma Çizelgesi',icon:'pi pi-table',route:'/app/syy-classifications',permissionModule:'SYYClassifications'},
-        {label:'SYY Gereken Branşlar',icon:'pi pi-sitemap',route:'/app/syy-diagnosis-branches',permissionModule:'SYYDiagnosisBranches'},
-        {label:'SYY Gereken Tetkikler',icon:'pi pi-heart',route:'/app/syy-diagnosis-procedures',permissionModule:'SYYDiagnosisProcedures'},
-        {label:'SYY Onay Gerektiren Maddeler',icon:'pi pi-check-square',route:'/app/syy-diagnosis-requireds',permissionModule:'SYYDiagnosisRequireds'},
-        {
-          label: 'SYY Tanı Listesi (M/D/F)',icon:'pi pi-sitemap',route:'/app/syy-diagnoses',permissionModule:'SYYDiagnoses'
-        },
-        {
-          label: 'SYY Tanı Türü Tanımları',icon:'pi pi-list',route:'/app/syy-diagnosis-types',permissionModule:'SYYDiagnosisTypes'
-        },
-        {
-          label: 'SYY Dilim Tanımları',icon:'pi pi-tags',route:'/app/syy-diagnosis-slices',permissionModule:'SYYDiagnosisSlices'
-        },
-        {
-          label: 'Sevk Sebebi Tanımları',icon:'pi pi-file-edit',route:'/app/annotation-reasons',permissionModule:'AnnotationReasons'
-        },
-        {
-          label: 'Uçuşa Uçak Tipi Tanımları',icon:'pi pi-send',route:'/app/plane-types',permissionModule:'PlaneTypes'
-        },
-        {
-          label: 'Uçucu Görev Tanımları',icon:'pi pi-compass',route:'/app/flying-missions',permissionModule:'FlyingMissions'
-        },
-        {
-          label: 'Muayene Sebebi', icon: 'pi pi-file-edit',
-          route: '/app/reasons-for-examination', permissionModule: 'ReasonsForExaminations'
-        },
-        {
-          label: 'Muayene Sebebi Rapor Türleri', icon: 'pi pi-list',
-          route: '/app/reason-exam-report-types', permissionModule: 'ReasonForExamReportTypes'
-        },
-        {
-          label: 'Kullanılmayacak Hasta Grupları', icon: 'pi pi-users',
-          route: '/app/reason-exam-unused-admission-types', permissionModule: 'ReasonForExamUnusedHcAdmissionTypes'
-        },
-        {
-          label: 'Gereken Tetkikler', icon: 'pi pi-heart',
-          route: '/app/reason-exam-procedures', permissionModule: 'ReasonForExamProcedureDefs'
-        },
-        {
-          label: 'Muayene Gereken Branşlar', icon: 'pi pi-sitemap',
-          route: '/app/reason-exam-branches', permissionModule: 'ReasonForExamBranchDefs'
-        },
-        {
-          label: 'Tetkik Türü Tanımları', icon: 'pi pi-tags',
-          route: '/app/procedure-types', permissionModule: 'ProcedureTypes'
-        },
-        {
-          label: 'Tetkik Tanımları', icon: 'pi pi-list-check',
-          route: '/app/procedures', permissionModule: 'Procedures'
-        },
-        {
-          label: 'Sağlık Tesisi Tanımları',
-          icon: 'pi pi-building',
-          route: '/app/hospitals',
-          permissionModule: 'Hospitals'
-        },
-        {
-          label: 'Sağlık Tesisi Rapor Türleri',
-          icon: 'pi pi-building',
-          route: '/app/hospital-report-types',
-          permissionModule: 'HospitalReportTypes'
-        },
-        {
-          label: 'Rapor Türü Tanımları',
-          icon: 'pi pi-list',
-          route: '/app/report-types',
-          permissionModule: 'ReportTypes'
-        },
-        {
-          label: 'Rütbe Grubu Tanımları',
-          icon: 'pi pi-list',
-          route: '/app/rank-groups',
-          permissionModule: 'RankGroups'
+          children: [
+            {
+                      label: 'Ülke Tanımları',
+                      icon: 'pi pi-globe',
+                      route: '/app/countries',
+                      permissionModule: 'Countries'
+                    },
+            {
+                      label: 'Şehir Tanımları',
+                      icon: 'pi pi-map-marker',
+                      route: '/app/cities',
+                      permissionModule: 'Cities'
+                    },
+            {
+                      label: 'İlçe Tanımları',
+                      icon: 'pi pi-map',
+                      route: '/app/towns',
+                      permissionModule: 'Towns'
+                    }
+          ]
         },
         {
           label: 'Rütbe Tanımları',
-          icon: 'pi pi-list',
-          route: '/app/ranks',
-          permissionModule: 'Ranks'
+          icon: 'pi pi-star',
+          children: [
+            {
+                      label: 'Rütbe Grubu Tanımları',
+                      icon: 'pi pi-list',
+                      route: '/app/rank-groups',
+                      permissionModule: 'RankGroups'
+                    },
+            {
+                      label: 'Rütbe Tanımları',
+                      icon: 'pi pi-list',
+                      route: '/app/ranks',
+                      permissionModule: 'Ranks'
+                    }
+          ]
         },
         {
-          label: 'Branş Tanımları',
-          icon: 'pi pi-list',
-          route: '/app/branches',
-          permissionModule: 'Branches'
-        },
-        {
-          label: 'Bağlı Kurul Karar Tanımları',
-          icon: 'pi pi-file',
-          route: '/app/connected-decisions',
-          permissionModule: 'ConnectedDecisions'
-        },
-        {
-          label: 'Başvuru Grubu Tanımları',
-          icon: 'pi pi-list-check',
-          route: '/app/admission-types',
-          permissionModule: 'AdmissionTypes'
-        },
-        {
-          label: 'Askerlik Şubesi Tanımları',
-          icon: 'pi pi-building',
-          route: '/app/military-offices',
-          permissionModule: 'MilitaryOffices'
-        },
-        {
-          label: 'Askerî Okul Tanımları',
-          icon: 'pi pi-graduation-cap',
-          route: '/app/military-schools',
-          permissionModule: 'MilitarySchools'
-        },
-        {
-          label: 'Askerî Sınıf Tanımları',
-          icon: 'pi pi-book',
-          route: '/app/military-classes',
-          permissionModule: 'MilitaryClasses'
-        },
-        {
-          label: 'Askerî Sınıf Grubu Tanımları',
-          icon: 'pi pi-clone',
-          route: '/app/military-class-groups',
-          permissionModule: 'MilitaryClassGroups'
-        },
-        {
-          label: 'Sınıf–Grup Eşleştirmeleri',
-          icon: 'pi pi-link',
-          route: '/app/military-class-group-relations',
-          permissionModule: 'MilitaryClassGroupRelations'
-        },
-        {
-          label: 'Alım Numarası Tanımları',
-          icon: 'pi pi-tags',
-          route: '/app/purchase-numbers',
-          permissionModule: 'PurchaseNumbers'
-        },
-        {
-          label: 'Birlik Tanımları',
+          label: 'Askerî Organizasyon',
           icon: 'pi pi-sitemap',
-          route: '/app/military-units',
-          permissionModule: 'MilitaryUnits'
+          children: [
+            {
+                      label: 'Kuvvet Komutanlığı Tanımları',
+                      icon: 'pi pi-flag',
+                      route: '/app/forces-commands',
+                      permissionModule: 'ForcesCommands'
+                    },
+            {
+                      label: 'Birlik Tanımları',
+                      icon: 'pi pi-sitemap',
+                      route: '/app/military-units',
+                      permissionModule: 'MilitaryUnits'
+                    },
+            {
+                      label: 'Askerlik Şubesi Tanımları',
+                      icon: 'pi pi-building',
+                      route: '/app/military-offices',
+                      permissionModule: 'MilitaryOffices'
+                    },
+            {
+                      label: 'Askerî Okul Tanımları',
+                      icon: 'pi pi-graduation-cap',
+                      route: '/app/military-schools',
+                      permissionModule: 'MilitarySchools'
+                    }
+          ]
+        },
+        {
+          label: 'Askerî Sınıf ve Gruplar',
+          icon: 'pi pi-book',
+          children: [
+            {
+                      label: 'Askerî Sınıf Tanımları',
+                      icon: 'pi pi-book',
+                      route: '/app/military-classes',
+                      permissionModule: 'MilitaryClasses'
+                    },
+            {
+                      label: 'Askerî Sınıf Grubu Tanımları',
+                      icon: 'pi pi-clone',
+                      route: '/app/military-class-groups',
+                      permissionModule: 'MilitaryClassGroups'
+                    },
+            {
+                      label: 'Sınıf–Grup Eşleştirmeleri',
+                      icon: 'pi pi-link',
+                      route: '/app/military-class-group-relations',
+                      permissionModule: 'MilitaryClassGroupRelations'
+                    }
+          ]
+        },
+        {
+          label: 'Sağlık ve Başvuru',
+          icon: 'pi pi-heart',
+          children: [
+            {
+                      label: 'Sağlık Tesisi Tanımları',
+                      icon: 'pi pi-building',
+                      route: '/app/hospitals',
+                      permissionModule: 'Hospitals'
+                    },
+            {
+                      label: 'Sağlık Tesisi Rapor Türleri',
+                      icon: 'pi pi-building',
+                      route: '/app/hospital-report-types',
+                      permissionModule: 'HospitalReportTypes'
+                    },
+            {
+                      label: 'Rapor Türü Tanımları',
+                      icon: 'pi pi-list',
+                      route: '/app/report-types',
+                      permissionModule: 'ReportTypes'
+                    },
+            {
+                      label: 'Branş Tanımları',
+                      icon: 'pi pi-list',
+                      route: '/app/branches',
+                      permissionModule: 'Branches'
+                    },
+            {
+                      label: 'Bağlı Kurul Karar Tanımları',
+                      icon: 'pi pi-file',
+                      route: '/app/connected-decisions',
+                      permissionModule: 'ConnectedDecisions'
+                    },
+            {
+                      label: 'Başvuru Grubu Tanımları',
+                      icon: 'pi pi-list-check',
+                      route: '/app/admission-types',
+                      permissionModule: 'AdmissionTypes'
+                    }
+          ]
+        },
+        {
+          label: 'Muayene ve Tetkik',
+          icon: 'pi pi-clipboard',
+          children: [
+            {
+                      label: 'Muayene Sebebi', icon: 'pi pi-file-edit',
+                      route: '/app/reasons-for-examination', permissionModule: 'ReasonsForExaminations'
+                    },
+            {
+                      label: 'Muayene Sebebi Rapor Türleri', icon: 'pi pi-list',
+                      route: '/app/reason-exam-report-types', permissionModule: 'ReasonForExamReportTypes'
+                    },
+            {
+                      label: 'Kullanılmayacak Hasta Grupları', icon: 'pi pi-users',
+                      route: '/app/reason-exam-unused-admission-types', permissionModule: 'ReasonForExamUnusedHcAdmissionTypes'
+                    },
+            {
+                      label: 'Gereken Tetkikler', icon: 'pi pi-heart',
+                      route: '/app/reason-exam-procedures', permissionModule: 'ReasonForExamProcedureDefs'
+                    },
+            {
+                      label: 'Muayene Gereken Branşlar', icon: 'pi pi-sitemap',
+                      route: '/app/reason-exam-branches', permissionModule: 'ReasonForExamBranchDefs'
+                    },
+            {
+                      label: 'Tetkik Türü Tanımları', icon: 'pi pi-tags',
+                      route: '/app/procedure-types', permissionModule: 'ProcedureTypes'
+                    },
+            {
+                      label: 'Tetkik Tanımları', icon: 'pi pi-list-check',
+                      route: '/app/procedures', permissionModule: 'Procedures'
+                    }
+          ]
+        },
+        {
+          label: 'SYY Tanımları',
+          icon: 'pi pi-list-check',
+          children: [
+            {
+                      label: 'SYY Tanı Listesi (M/D/F)',icon:'pi pi-sitemap',route:'/app/syy-diagnoses',permissionModule:'SYYDiagnoses'
+                    },
+            {
+                      label: 'SYY Tanı Türü Tanımları',icon:'pi pi-list',route:'/app/syy-diagnosis-types',permissionModule:'SYYDiagnosisTypes'
+                    },
+            {
+                      label: 'SYY Dilim Tanımları',icon:'pi pi-tags',route:'/app/syy-diagnosis-slices',permissionModule:'SYYDiagnosisSlices'
+                    },
+            {label:'SYY Tanı Sınıflandırma Çizelgesi',icon:'pi pi-table',route:'/app/syy-classifications',permissionModule:'SYYClassifications'},
+            {label:'SYY Gereken Branşlar',icon:'pi pi-sitemap',route:'/app/syy-diagnosis-branches',permissionModule:'SYYDiagnosisBranches'},
+            {label:'SYY Gereken Tetkikler',icon:'pi pi-heart',route:'/app/syy-diagnosis-procedures',permissionModule:'SYYDiagnosisProcedures'},
+            {label:'SYY Onay Gerektiren Maddeler',icon:'pi pi-check-square',route:'/app/syy-diagnosis-requireds',permissionModule:'SYYDiagnosisRequireds'}
+          ]
+        },
+        {
+          label: 'ICD10 Tanımları',
+          icon: 'pi pi-book',
+          children: [
+            {label:'ICD10 Tanımları',icon:'pi pi-book',route:'/app/icd10-defs',permissionModule:'ICD10Defs'},
+            {label:'ICD10 SYY Tanı İstatistik Tanımları',icon:'pi pi-chart-bar',route:'/app/icd10-diagnostics',permissionModule:'ICD10Diagnostics'}
+          ]
+        },
+        {
+          label: 'Uçuş ve Sevk',
+          icon: 'pi pi-send',
+          children: [
+            {
+                      label: 'Sevk Sebebi Tanımları',icon:'pi pi-file-edit',route:'/app/annotation-reasons',permissionModule:'AnnotationReasons'
+                    },
+            {
+                      label: 'Uçuşa Uçak Tipi Tanımları',icon:'pi pi-send',route:'/app/plane-types',permissionModule:'PlaneTypes'
+                    },
+            {
+                      label: 'Uçucu Görev Tanımları',icon:'pi pi-compass',route:'/app/flying-missions',permissionModule:'FlyingMissions'
+                    }
+          ]
+        },
+        {
+          label: 'Alım Tanımları',
+          icon: 'pi pi-tags',
+          children: [
+            {
+                      label: 'Alım Numarası Tanımları',
+                      icon: 'pi pi-tags',
+                      route: '/app/purchase-numbers',
+                      permissionModule: 'PurchaseNumbers'
+                    }
+          ]
         }
       ]
     },

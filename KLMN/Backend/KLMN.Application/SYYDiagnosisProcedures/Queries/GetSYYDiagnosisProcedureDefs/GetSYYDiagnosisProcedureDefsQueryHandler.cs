@@ -19,7 +19,7 @@ public sealed class GetSYYDiagnosisProcedureDefsQueryHandler(IKLMNDbContext db):
   var total=await q.CountAsync(ct);
   var items=await q.OrderBy(x=>x.Diagnosis.Name).ThenBy(x=>x.Id)
     .Skip((r.PageNumber-1)*r.PageSize).Take(r.PageSize)
-    .Select(SYYDiagnosisProcedureDefResponse.Projection).ToListAsync(ct);
+    .Select(x=>new SYYDiagnosisProcedureDefResponse(x.Id,x.SYYDiagnosisDefId,x.ProcedureDefId,x.Diagnosis.Name,x.Procedure.Name,x.StartingAge,x.EndingAge,x.Gender,x.IsActive,x.Version,x.CreatedDate)).ToListAsync(ct);
   return new PagedResult<SYYDiagnosisProcedureDefResponse>{Items=items,TotalCount=total,PageNumber=r.PageNumber,PageSize=r.PageSize};
  }
 }

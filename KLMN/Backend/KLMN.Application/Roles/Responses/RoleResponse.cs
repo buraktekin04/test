@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using KLMN.Domain.Entities.Identity;
 
 namespace KLMN.Application.Roles.Responses;
@@ -28,24 +27,5 @@ public sealed class RoleResponse
     public IReadOnlyCollection<string> PermissionCodes { get; init; } = [];
 
     /// <summary>Liste ve detay işlemlerinde tutarlı EF Core DTO projeksiyonudur.</summary>
-    public static Expression<Func<Role, RoleResponse>> Projection => role =>
-        new RoleResponse
-        {
-            Id = role.Id,
-            Name = role.Name,
-            Code = role.Code,
-            Description = role.Description,
-            IsSystemRole = role.IsSystemRole,
-            IsActive = role.IsActive,
-            CreatedDate = role.CreatedDate,
-            Version = role.Version,
-            UserCount = role.UserRoles.Count(x => x.IsActive && !x.IsDeleted &&
-                x.User.IsActive && !x.User.IsDeleted),
-            PermissionCodes = role.RolePermissions
-                .Where(x => x.IsActive && !x.IsDeleted &&
-                    x.Permission.IsActive && !x.Permission.IsDeleted)
-                .Select(x => x.Permission.Code)
-                .OrderBy(x => x)
-                .ToArray()
-        };
+
 }

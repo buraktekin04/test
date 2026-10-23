@@ -9,5 +9,6 @@ public sealed class GetFlyingMissionDefByIdQueryHandler(IKLMNDbContext db):IRequ
 {
  public async Task<FlyingMissionDefResponse> Handle(GetFlyingMissionDefByIdQuery r,CancellationToken ct)=>
  await db.FlyingMissionDefs.IgnoreQueryFilters().AsNoTracking().Where(x=>x.Id==r.Id&&!x.IsDeleted)
- .Select(FlyingMissionDefResponse.Projection).SingleOrDefaultAsync(ct)??throw new FlyingMissionDefNotFoundException();
+ .Select(x=>new(
+ x.Id,x.Code,x.Name,x.ValidFrom,x.ValidTo,x.IsActive,x.Version,x.CreatedDate)).SingleOrDefaultAsync(ct)??throw new FlyingMissionDefNotFoundException();
 }

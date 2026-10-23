@@ -4,11 +4,27 @@
     <i class="pi pi-th-large sidebar-heading-icon" aria-hidden="true"></i>
   </div>
 
+  <div class="sidebar-search">
+    <i class="pi pi-search" aria-hidden="true"></i>
+    <input type="search" class="sidebar-search-input" id="sidebar-menu-search"
+           aria-label="Menülerde ara" placeholder="Menülerde ara..."
+           [value]="searchTerm()" autocomplete="off"
+           (input)="searchTerm.set($any($event.target).value)" />
+    @if (searchTerm()) {
+      <button type="button" class="sidebar-search-clear" aria-label="Aramayı temizle"
+              (click)="searchTerm.set('')"><i class="pi pi-times"></i></button>
+    }
+  </div>
+
   <!-- Menü hiyerarşisi tek kaynaktan gelir; yeni ekran için HTML kopyalanmaz. -->
   <nav class="sidebar-navigation" aria-label="Ana menü">
     <ng-container
       *ngTemplateOutlet="menuTemplate; context: { $implicit: menuItems(), depth: 0 }">
     </ng-container>
+
+    @if (menuItems().length === 0) {
+      <div class="sidebar-no-result" role="status">Eşleşen yetkili menü bulunamadı.</div>
+    }
   </nav>
 
   <footer class="sidebar-footer">

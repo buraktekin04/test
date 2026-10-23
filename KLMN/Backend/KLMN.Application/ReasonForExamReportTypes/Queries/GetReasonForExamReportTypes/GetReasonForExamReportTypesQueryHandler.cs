@@ -17,7 +17,10 @@ public sealed class GetReasonForExamReportTypesQueryHandler(IKLMNDbContext db)
  if(r.IsActive.HasValue)q=q.Where(x=>x.IsActive==r.IsActive.Value);
  var count=await q.CountAsync(ct);
  var items=await q.OrderBy(x=>x.Reason.Description).ThenBy(x=>x.ReportType.Name)
-    .Skip((r.PageNumber-1)*r.PageSize).Take(r.PageSize).Select(ReasonForExamReportTypeResponse.Projection).ToListAsync(ct);
+    .Skip((r.PageNumber-1)*r.PageSize).Take(r.PageSize).Select(x=>new ReasonForExamReportTypeResponse(
+ x.Id,x.ReasonForExaminationDefId,x.Reason.Description,x.Reason.Code,
+ x.ReportTypeDefId,x.ReportType.Name,x.IsActive,x.Version,x.CreatedDate
+ )).ToListAsync(ct);
  return new PagedResult<ReasonForExamReportTypeResponse>{Items=items,TotalCount=count,PageNumber=r.PageNumber,PageSize=r.PageSize};
  }
 }

@@ -19,7 +19,7 @@ public sealed class GetSYYClassificationDefsQueryHandler(IKLMNDbContext db):
   var total=await q.CountAsync(ct);
   var items=await q.OrderBy(x=>x.Diagnosis.Name).ThenBy(x=>x.Id)
     .Skip((r.PageNumber-1)*r.PageSize).Take(r.PageSize)
-    .Select(SYYClassificationDefResponse.Projection).ToListAsync(ct);
+    .Select(x=>new SYYClassificationDefResponse(x.Id,x.SYYDiagnosisDefId,x.ForcesCommandDef,x.RankGroup,x.MilitaryClassGroup,x.HcDecision,x.Diagnosis.Name,x.ForcesCommand.Name,x.RankGroupDefinition.Name,x.MilitaryClassGroupDefinition.Name,x.Decision.Name,x.ValidFrom,x.ValidTo,x.IsActive,x.Version,x.CreatedDate)).ToListAsync(ct);
   return new PagedResult<SYYClassificationDefResponse>{Items=items,TotalCount=total,PageNumber=r.PageNumber,PageSize=r.PageSize};
  }
 }

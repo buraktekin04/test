@@ -17,7 +17,10 @@ public sealed class GetReasonForExamUnusedHcAdmissionTypesQueryHandler(IKLMNDbCo
  if(r.IsActive.HasValue)q=q.Where(x=>x.IsActive==r.IsActive.Value);
  var count=await q.CountAsync(ct);
  var items=await q.OrderBy(x=>x.Reason.Description).ThenBy(x=>x.AdmissionType.Name)
-    .Skip((r.PageNumber-1)*r.PageSize).Take(r.PageSize).Select(ReasonForExamUnusedHcAdmissionTypeResponse.Projection).ToListAsync(ct);
+    .Skip((r.PageNumber-1)*r.PageSize).Take(r.PageSize).Select(x=>new ReasonForExamUnusedHcAdmissionTypeResponse(
+ x.Id,x.ReasonForExaminationDefId,x.Reason.Description,x.Reason.Code,
+ x.HcAdmissionTypeDefId,x.AdmissionType.Name,x.IsActive,x.Version,x.CreatedDate
+ )).ToListAsync(ct);
  return new PagedResult<ReasonForExamUnusedHcAdmissionTypeResponse>{Items=items,TotalCount=count,PageNumber=r.PageNumber,PageSize=r.PageSize};
  }
 }

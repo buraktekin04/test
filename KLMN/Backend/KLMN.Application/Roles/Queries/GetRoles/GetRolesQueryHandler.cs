@@ -43,7 +43,26 @@ public sealed class GetRolesQueryHandler(IKLMNDbContext dbContext)
             .ThenBy(x => x.Code)
             .Skip((request.PageNumber - 1) * request.PageSize)
             .Take(request.PageSize)
-            .Select(RoleResponse.Projection)
+            .Select(role =>
+        new RoleResponse
+        {
+            Id = role.Id,
+            Name = role.Name,
+            Code = role.Code,
+            Description = role.Description,
+            IsSystemRole = role.IsSystemRole,
+            IsActive = role.IsActive,
+            CreatedDate = role.CreatedDate,
+            Version = role.Version,
+            UserCount = role.UserRoles.Count(x => x.IsActive && !x.IsDeleted &&
+                x.User.IsActive && !x.User.IsDeleted),
+            PermissionCodes = role.RolePermissions
+                .Where(x => x.IsActive && !x.IsDeleted &&
+                    x.Permission.IsActive && !x.Permission.IsDeleted)
+                .Select(x => x.Permission.Code)
+                .OrderBy(x => x)
+                .ToArray()
+        })
             .ToListAsync(cancellationToken);
 
         return new PagedResult<RoleResponse>

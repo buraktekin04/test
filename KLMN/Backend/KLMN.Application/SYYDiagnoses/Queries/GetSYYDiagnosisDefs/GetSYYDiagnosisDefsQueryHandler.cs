@@ -15,7 +15,9 @@ IRequestHandler<GetSYYDiagnosisDefsQuery,PagedResult<SYYDiagnosisDefResponse>>
  if(r.IsActive.HasValue)q=q.Where(x=>x.IsActive==r.IsActive.Value);
  var total=await q.CountAsync(ct);
  var items=await q.OrderBy(x=>x.Name).ThenBy(x=>x.Code).Skip((r.PageNumber-1)*r.PageSize)
-    .Take(r.PageSize).Select(SYYDiagnosisDefResponse.Projection).ToListAsync(ct);
+    .Take(r.PageSize).Select(x=>new SYYDiagnosisDefResponse(
+ x.Id,x.Code,x.Name,x.SYYDiagnosisType,x.DiagnosisTypeDef.Name,x.AttachedRecNo,x.AttachedDiagnosis!=null?x.AttachedDiagnosis.Name:null,
+ x.Eligible,x.Slice,x.SliceDef!=null?x.SliceDef.Name:null,x.ValidFrom,x.ValidTo,x.IsActive,x.Version,x.CreatedDate)).ToListAsync(ct);
  return new PagedResult<SYYDiagnosisDefResponse>{Items=items,TotalCount=total,PageNumber=r.PageNumber,PageSize=r.PageSize};
  }
 }

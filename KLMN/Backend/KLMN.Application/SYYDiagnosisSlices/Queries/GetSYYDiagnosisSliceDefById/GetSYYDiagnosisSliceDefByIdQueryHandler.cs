@@ -9,5 +9,6 @@ public sealed class GetSYYDiagnosisSliceDefByIdQueryHandler(IKLMNDbContext db):I
 {
  public async Task<SYYDiagnosisSliceDefResponse> Handle(GetSYYDiagnosisSliceDefByIdQuery r,CancellationToken ct)=>
  await db.SYYDiagnosisSliceDefs.IgnoreQueryFilters().AsNoTracking().Where(x=>x.Id==r.Id&&!x.IsDeleted)
- .Select(SYYDiagnosisSliceDefResponse.Projection).SingleOrDefaultAsync(ct)??throw new SYYDiagnosisSliceDefNotFoundException();
+ .Select(x=>new SYYDiagnosisSliceDefResponse(
+ x.Id,x.Code,x.Name,x.IsActive,x.Version,x.CreatedDate)).SingleOrDefaultAsync(ct)??throw new SYYDiagnosisSliceDefNotFoundException();
 }

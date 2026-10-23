@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using KLMN.Domain.Entities.Admissions;
 
 namespace KLMN.Application.RankGroups.Responses;
@@ -20,12 +19,5 @@ public sealed class RankGroupDefResponse
     public uint Version { get; init; }
 
     /// <summary>EF Core'da sunucu tarafında çevrilebilen DTO projeksiyonu.</summary>
-    public static Expression<Func<RankGroupDef, RankGroupDefResponse>> Projection => x =>
-        new RankGroupDefResponse
-        {
-            Id = x.Id, Code = x.Code, Name = x.Name, ShortName = x.ShortName,
-            ValidFrom = x.ValidFrom, ValidTo = x.ValidTo, IsActive = x.IsActive,
-            CreatedDate = x.CreatedDate, CreatedBy = x.CreatedBy,
-            UpdatedDate = x.UpdatedDate, UpdatedBy = x.UpdatedBy, Version = x.Version
-        };
+
 }

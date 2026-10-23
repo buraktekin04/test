@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using KLMN.Domain.Entities.MilitaryUnit;
 
 namespace KLMN.Application.MilitaryUnits.Responses;
@@ -25,27 +24,5 @@ public sealed class MilitaryUnitDefResponse
     public int ChildCount { get; init; }
 
     /// <summary>EF Core'un SQL'e çevirebildiği tekil DTO projeksiyonudur.</summary>
-    public static Expression<Func<MilitaryUnitDef, MilitaryUnitDefResponse>> Projection => unit =>
-        new MilitaryUnitDefResponse
-        {
-            Id = unit.Id,
-            Code = unit.Code,
-            ExternalCode = unit.ExternalCode,
-            ForcesCommandDef = unit.ForcesCommandDef,
-            ForcesCommandName = unit.ForceCommand != null ? unit.ForceCommand.Name : null,
-            ForcesCommandCode = unit.ForceCommand != null ? unit.ForceCommand.Code : null,
-            ValidFrom = unit.ValidFrom,
-            ValidTo = unit.ValidTo,
-            Name = unit.Name,
-            ConnectedTopUnity = unit.ConnectedTopUnity,
-            ConnectedTopUnitName = unit.ConnectedTopUnit != null
-                ? unit.ConnectedTopUnit.Name : null,
-            ConnectedTopUnitCode = unit.ConnectedTopUnit != null
-                ? unit.ConnectedTopUnit.Code : null,
-            IsActive = unit.IsActive,
-            CreatedDate = unit.CreatedDate,
-            Version = unit.Version,
-            UserCount = unit.Users.Count(x => !x.IsDeleted),
-            ChildCount = unit.Children.Count(x => !x.IsDeleted)
-        };
+
 }

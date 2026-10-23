@@ -9,5 +9,8 @@ public sealed class GetReasonForExamBranchDefByIdQueryHandler(IKLMNDbContext db)
 {
  public async Task<ReasonForExamBranchDefResponse> Handle(GetReasonForExamBranchDefByIdQuery r,CancellationToken ct)=>
  await db.ReasonForExamBranchDefs.IgnoreQueryFilters().AsNoTracking().Where(x=>!x.IsDeleted&&x.Id==r.Id)
-    .Select(ReasonForExamBranchDefResponse.Projection).SingleOrDefaultAsync(ct)??throw new ReasonForExamBranchDefNotFoundException();
+    .Select(x=>new ReasonForExamBranchDefResponse(
+ x.Id,x.ReasonForExaminationDefId,x.Reason.Description,x.Reason.Code,
+ x.BranchDefId,x.Branch.Name,x.IsActive,x.Version,x.CreatedDate
+ ,x.StartingAge,x.EndingAge,x.Gender)).SingleOrDefaultAsync(ct)??throw new ReasonForExamBranchDefNotFoundException();
 }

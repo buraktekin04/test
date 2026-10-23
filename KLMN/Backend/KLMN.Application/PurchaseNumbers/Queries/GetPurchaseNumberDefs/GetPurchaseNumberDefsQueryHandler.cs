@@ -33,7 +33,16 @@ public sealed class GetPurchaseNumberDefsQueryHandler(IKLMNDbContext db)
         var items = await query.OrderBy(x => x.Name).ThenBy(x => x.Code)
             .Skip((request.PageNumber - 1) * request.PageSize)
             .Take(request.PageSize)
-            .Select(PurchaseNumberDefResponse.Projection)
+            .Select(x =>
+        new PurchaseNumberDefResponse
+        {
+            Id = x.Id, Code = x.Code, Name = x.Name,
+            SupplyDescriptionName = x.SupplyDescriptionName,
+            ValidFrom = x.ValidFrom, ValidTo = x.ValidTo,
+            HealthReportEndDate = x.HealthReportEndDate,
+            IsActive = x.IsActive, CreatedDate = x.CreatedDate, CreatedBy = x.CreatedBy,
+            UpdatedDate = x.UpdatedDate, UpdatedBy = x.UpdatedBy, Version = x.Version
+        })
             .ToListAsync(ct);
         return new PagedResult<PurchaseNumberDefResponse>
         {

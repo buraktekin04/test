@@ -30,7 +30,29 @@ public sealed class GetHcAdmissionTypeDefsQueryHandler(IKLMNDbContext db)
         var total = await query.CountAsync(ct);
         var items = await query.OrderBy(x => x.Name).ThenBy(x => x.Code)
             .Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize)
-            .Select(HcAdmissionTypeDefResponse.Projection).ToListAsync(ct);
+            .Select(x =>
+        new HcAdmissionTypeDefResponse
+        {
+            Id = x.Id, Code = x.Code, Name = x.Name,
+            ForcesCommandRequired = x.ForcesCommandRequired,
+            RankRequired = x.RankRequired,
+            MilitaryClassRequired = x.MilitaryClassRequired,
+            MilitaryUnitRequired = x.MilitaryUnitRequired,
+            SenderChairRequired = x.SenderChairRequired,
+            MilitaryOfficeRequired = x.MilitaryOfficeRequired,
+            RegistryNumberRequired = x.RegistryNumberRequired,
+            MilitarySchoolRequired = x.MilitarySchoolRequired,
+            LastNominationDateRequired = x.LastNominationDateRequired,
+            HeightWeightRequired = x.HeightWeightRequired,
+            NthAdmissionRequired = x.NthAdmissionRequired,
+            DispatchDocumentDateRequired = x.DispatchDocumentDateRequired,
+            DispatchDocumentNoRequired = x.DispatchDocumentNoRequired,
+            PertemApprovalRequired = x.PertemApprovalRequired,
+            ValidFrom = x.ValidFrom, ValidTo = x.ValidTo,
+            IsActive = x.IsActive, CreatedDate = x.CreatedDate,
+            CreatedBy = x.CreatedBy, UpdatedDate = x.UpdatedDate,
+            UpdatedBy = x.UpdatedBy, Version = x.Version
+        }).ToListAsync(ct);
         return new PagedResult<HcAdmissionTypeDefResponse>
         { Items = items, TotalCount = total, PageNumber = request.PageNumber, PageSize = request.PageSize };
     }

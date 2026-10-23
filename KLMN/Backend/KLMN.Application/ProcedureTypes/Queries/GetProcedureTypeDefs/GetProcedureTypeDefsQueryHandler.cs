@@ -20,7 +20,7 @@ IRequestHandler<GetProcedureTypeDefsQuery,PagedResult<ProcedureTypeDefResponse>>
         if(r.IsActive.HasValue)q=q.Where(x=>x.IsActive==r.IsActive.Value);
         var total=await q.CountAsync(ct);
         var items=await q.OrderBy(x=>x.Code).Skip((r.PageNumber-1)*r.PageSize).Take(r.PageSize)
-           .Select(ProcedureTypeDefResponse.Projection).ToListAsync(ct);
+           .Select(x=>new ProcedureTypeDefResponse(x.Id,x.Code,x.Name,x.IsActive,x.Version,x.CreatedDate)).ToListAsync(ct);
         return new PagedResult<ProcedureTypeDefResponse>{Items=items,TotalCount=total,PageNumber=r.PageNumber,PageSize=r.PageSize};
     }
 }

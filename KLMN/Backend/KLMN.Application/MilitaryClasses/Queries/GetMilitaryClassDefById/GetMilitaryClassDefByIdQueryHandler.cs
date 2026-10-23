@@ -14,6 +14,16 @@ public sealed class GetMilitaryClassDefByIdQueryHandler(IKLMNDbContext db)
     public async Task<MilitaryClassDefResponse> Handle(GetMilitaryClassDefByIdQuery request, CancellationToken ct) =>
         await db.MilitaryClassDefs.IgnoreQueryFilters().AsNoTracking()
             .Where(x => x.Id == request.Id && !x.IsDeleted)
-            .Select(MilitaryClassDefResponse.Projection).SingleOrDefaultAsync(ct)
+            .Select(x =>
+        new MilitaryClassDefResponse
+        {
+            Id = x.Id, Code = x.Code, Name = x.Name,
+            ShortName = x.ShortName, ExternalCode = x.ExternalCode,
+            IsActive = x.IsActive,
+            ValidFrom = x.ValidFrom, ValidTo = x.ValidTo,
+            CreatedDate = x.CreatedDate, CreatedBy = x.CreatedBy,
+            UpdatedDate = x.UpdatedDate, UpdatedBy = x.UpdatedBy,
+            Version = x.Version
+        }).SingleOrDefaultAsync(ct)
             ?? throw new MilitaryClassNotFoundException();
 }

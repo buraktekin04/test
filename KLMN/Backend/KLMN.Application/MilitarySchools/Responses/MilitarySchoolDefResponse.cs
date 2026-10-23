@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using KLMN.Domain.Entities.MilitaryUnit;
 
 namespace KLMN.Application.MilitarySchools.Responses;
@@ -26,16 +25,5 @@ public sealed class MilitarySchoolDefResponse
     public uint Version { get; init; }
 
     /// <summary>EF Core tarafından SQL'e çevrilebilen server-side DTO projeksiyonudur.</summary>
-    public static Expression<Func<MilitarySchoolDef, MilitarySchoolDefResponse>> Projection => x =>
-        new MilitarySchoolDefResponse
-        {
-            Id = x.Id, Code = x.Code, Name = x.Name,
-            CityId = x.CityId, CityName = x.City == null ? null : x.City.Name,
-            ForcesCommandDefId = x.ForcesCommandDefId,
-            ForcesCommandName = x.ForcesCommand == null ? null : x.ForcesCommand.Name,
-            ValidFrom = x.ValidFrom, ValidTo = x.ValidTo,
-            IsActive = x.IsActive, CreatedDate = x.CreatedDate,
-            CreatedBy = x.CreatedBy, UpdatedDate = x.UpdatedDate,
-            UpdatedBy = x.UpdatedBy, Version = x.Version
-        };
+
 }

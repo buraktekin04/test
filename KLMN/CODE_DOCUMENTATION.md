@@ -28,3 +28,11 @@ Bu dokümantasyon düzenlemesinde kaynak kodun mevcut işlevsel satırları koru
 ## Merkezi yapılandırma
 
 JWT, SMTP, PasswordReset, Authentication, InitialAdmin, PostgreSQL bağlantısı, CORS ve log ayarları iki ortamda ayrıdır: **Production** için `KLMN.Api/appsettings.json`, **Development/test** için `KLMN.Api/appsettings.Development.json` kullanılır. `WebApplication.CreateBuilder(args)` standart yükleme ve override sırasını sağlar. `*Settings` C# sınıfları seçili JSON değerlerinin tipli modelleridir; ayrı veri kaynağı değillerdir. Kod içi yeni açıklamalarda ortam ayrımını koruyun.
+
+## Zorunlu DTO ve Exception dosya düzeni (23.10.2026)
+
+- **Her public Response, MutationResponse ve Option tipi ayrı, kendi ismiyle eşleşen tek `.cs` dosyasında bulunur.** Aynı `Responses.cs` veya `*Response.cs` dosyasına birden fazla public DTO tanımı yazılmaz.
+- **Her özel Exception ayrı `.cs` dosyasında bulunur.** NotFound ve Conflict sınıfları ortak `*Exceptions.cs` dosyasında tutulmaz.
+- DTO içinde `Expression<Func<TEntity,TResponse>> Projection` üyesi bulunmaz. EF Core projeksiyonu ilgili CQRS QueryHandler'ın `Select` çağrısında yazılır. Böylece DTO sadece API verisini temsil eder.
+- Mevcut nullable alanlar, FK gösterim adları, soft-delete, xmin, filter/paging ve permission davranışı korunur. Tür/namespace ve API JSON alan adları değişmez.
+- Yeni modül geliştirmede bu kontroller kod incelemesi ve gerçek derleme ile doğrulanmalıdır.

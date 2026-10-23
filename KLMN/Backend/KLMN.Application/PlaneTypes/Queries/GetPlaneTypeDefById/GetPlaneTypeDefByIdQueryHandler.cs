@@ -9,5 +9,6 @@ public sealed class GetPlaneTypeDefByIdQueryHandler(IKLMNDbContext db):IRequestH
 {
  public async Task<PlaneTypeDefResponse> Handle(GetPlaneTypeDefByIdQuery r,CancellationToken ct)=>
  await db.PlaneTypeDefs.IgnoreQueryFilters().AsNoTracking().Where(x=>x.Id==r.Id&&!x.IsDeleted)
- .Select(PlaneTypeDefResponse.Projection).SingleOrDefaultAsync(ct)??throw new PlaneTypeDefNotFoundException();
+ .Select(x=>new PlaneTypeDefResponse(
+ x.Id,x.Code,x.Name,x.ValidFrom,x.ValidTo,x.IsActive,x.Version,x.CreatedDate)).SingleOrDefaultAsync(ct)??throw new PlaneTypeDefNotFoundException();
 }
