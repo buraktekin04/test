@@ -1,0 +1,112 @@
+<div class="icd10-def-list-page">
+ <div class="page-header">
+  <div>
+   <h1>ICD10 Tanımları</h1>
+   <p>Bu tanımın kod, ad, durum ve kayıt bilgilerini yönetin.</p>
+   
+  </div>
+  @if(canCreate()){<p-button type="button" label="Yeni ICD10" icon="pi pi-plus" (onClick)="openCreate()"/>}
+ </div>
+ <p-toast position="top-right"/>
+ <section class="filter-panel" aria-label="ICD10 Tanımları arama">
+  <form [formGroup]="searchForm" (ngSubmit)="search()">
+   <div class="search-field"><i class="pi pi-search" aria-hidden="true"></i>
+    <input pInputText formControlName="search" placeholder="Kod veya ad ara..." aria-label="ICD10 ara"/>
+   </div>
+   <label class="inactive-filter"><p-checkbox formControlName="includeInactive" [binary]="true"/> Pasifleri dahil et</label>
+   <p-button type="submit" label="Ara" icon="pi pi-search" [loading]="loading()"/>
+   <p-button type="button" severity="secondary" [outlined]="true" label="Temizle" (onClick)="clear()"/>
+  </form>
+ </section>
+ <section class="list-card">
+  <div class="table-toolbar">
+   <p-button [label]="filtersVisible()?'Filtreleri Gizle':'Kolon Filtreleri'" icon="pi pi-filter"
+    severity="secondary" [outlined]="true" (onClick)="filtersVisible.set(!filtersVisible())"/>
+   @if(canExport()){<p-button label="Excel'e Aktar" icon="pi pi-file-excel"
+     severity="success" [outlined]="true" [loading]="exporting()" (onClick)="exportExcel()"/>}
+  </div>
+  @if(filtersVisible()){
+   <form class="filter-detail" [formGroup]="columnForm" (ngSubmit)="search()">
+    <label for="icd10-def-list-status-filter">Durum</label>
+    <select id="icd10-def-list-status-filter" formControlName="isActive">
+     <option [ngValue]="null">Tümü</option>
+     <option [ngValue]="true">Aktif</option><option [ngValue]="false">Pasif</option>
+    </select>
+    <p-button type="submit" label="Filtrele" icon="pi pi-check"/>
+   </form>
+  }
+  <div class="table-scroll" role="region" tabindex="0" aria-label="ICD10 Tanımları tablosu">
+   <p-table [value]="items()" [loading]="loading()" [resizableColumns]="true"
+     columnResizeMode="expand" [tableStyle]="{'min-width':'660px','width':'100%'}">
+    <ng-template pTemplate="header"><tr>
+     <th pResizableColumn pSortableColumn="code">Kod <p-sortIcon field="code"/></th>
+     <th pResizableColumn pSortableColumn="name">Ad <p-sortIcon field="name"/></th>
+     <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive"/></th>
+     <th class="sticky-actions-col">İşlemler</th>
+    </tr></ng-template>
+    <ng-template pTemplate="body" let-item><tr>
+     <td><code class="record-code">{{item.code}}</code></td>
+     <td class="wrap">{{item.name}}</td>
+     <td><p-tag [value]="item.isActive?'Aktif':'Pasif'" [severity]="item.isActive?'success':'secondary'"/></td>
+     <td class="sticky-actions-col"><div class="row-actions">
+      @if(canOpenDiagnostics()){
+       <a class="icd-related-link" [routerLink]="['/app/icd10-diagnostics']"
+        [queryParams]="{icd10DefId:item.id}" aria-label="ICD10 SYY istatistikleri"
+        title="ICD10 SYY Tanı İstatistikleri"><i class="pi pi-chart-bar"></i></a>
+      }
+      @if(canUpdate()){
+       <p-button icon="pi pi-pencil" ariaLabel="Düzenle" [text]="true" severity="secondary" (onClick)="openEdit(item)"/>
+       <p-button [icon]="item.isActive?'pi pi-ban':'pi pi-check-circle'" [text]="true"
+        [ariaLabel]="item.isActive?'Pasifleştir':'Aktifleştir'" severity="secondary" (onClick)="toggleStatus(item)"/>
+      }
+      @if(canAudit()){<p-button icon="pi pi-history" ariaLabel="İşlem geçmişi"
+       [text]="true" severity="secondary" (onClick)="auditItem.set(item)"/>}
+      @if(canDelete()){<p-button icon="pi pi-trash" ariaLabel="Sil"
+       [text]="true" severity="danger" (onClick)="remove(item)"/>}
+     </div></td>
+    </tr></ng-template>
+    <ng-template pTemplate="emptymessage"><tr><td colspan="4" class="empty-table">Kayıt bulunamadı.</td></tr></ng-template>
+   </p-table>
+  </div>
+  <div class="pagination">
+   <span>{{total()}} kayıt · Sayfa {{page()}} / {{maxPage()}}</span>
+   <div class="pagination-controls">
+    <button type="button" [disabled]="page()<=1" (click)="toPage(page()-1)" aria-label="Önceki sayfa">‹</button>
+    <button type="button" [disabled]="page()>=maxPage()" (click)="toPage(page()+1)" aria-label="Sonraki sayfa">›</button>
+   </div>
+   <label>Sayfa başına <select [value]="pageSize()" (change)="setPageSize($event)">
+    <option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option>
+   </select></label>
+  </div>
+ </section>
+</div>
+<p-dialog [header]="editing()?'ICD10 Düzenle':'Yeni ICD10'"
+ [visible]="dialogVisible()" (visibleChange)="!$event&&closeDialog()" [modal]="true"
+ [draggable]="false" [resizable]="false" [style]="{'width':'min(780px,96vw)'}">
+ <form class="definition-form" [formGroup]="form" (ngSubmit)="save()">
+  <div class="form-section">ICD10 Bilgileri</div>
+  <div class="form-grid">
+   <div class="form-field">
+    <label for="icd10-def-list-code">Kod *</label>
+    <input pInputText id="icd10-def-list-code" type="text" formControlName="code"
+      maxlength="32"/>
+    <small>Örnek: A00, E11.9. Kod büyük harfle saklanır.</small>
+   </div>
+   <div class="form-field">
+    <label for="icd10-def-list-name">Ad *</label>
+    <input pInputText id="icd10-def-list-name" formControlName="name" maxlength="500"/>
+   </div>
+  </div>
+  @if(formError()){<p class="form-error" role="alert">{{formError()}}</p>}
+  <div class="dialog-actions">
+   <p-button type="button" label="Vazgeç" severity="secondary" [outlined]="true" (onClick)="closeDialog()"/>
+   <p-button type="submit" label="Kaydet" icon="pi pi-check" [loading]="saving()"/>
+  </div>
+ </form>
+</p-dialog>
+<p-confirmdialog/>
+<p-dialog header="ICD10 Tanımları — İşlem Geçmişi" [visible]="!!auditItem()"
+ (visibleChange)="!$event&&auditItem.set(null)" [modal]="true"
+ [style]="{'width':'min(780px,96vw)'}">
+ @if(auditItem();as item){<app-audit-history entityType="ICD10Def" [entityId]="item.id"/>}
+</p-dialog>

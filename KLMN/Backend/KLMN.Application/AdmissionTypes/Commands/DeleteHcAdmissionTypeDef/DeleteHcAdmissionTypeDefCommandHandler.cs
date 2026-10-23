@@ -18,6 +18,9 @@ public sealed class DeleteHcAdmissionTypeDefCommandHandler(IKLMNDbContext db)
         if (await db.ReasonForExamUnusedHcAdmissionTypes.IgnoreQueryFilters().AnyAsync(x =>
             !x.IsDeleted && x.HcAdmissionTypeDefId == item.Id, ct))
             throw new AdmissionTypeConflictException("Silinmemiş muayene sebebi eşleştirmesi bulunan tanım silinemez.");
+        if(await db.ICD10Diagnostics.IgnoreQueryFilters().AnyAsync(x=>
+            !x.IsDeleted&&x.HcAdmissionTypeDefId==item.Id,ct))
+           throw new AdmissionTypeConflictException("ICD10 SYY istatistik kaydı bağlı olan başvuru grubu silinemez.");
         db.HcAdmissionTypeDefs.Remove(item);
         await db.SaveChangesAsync(ct);
     }

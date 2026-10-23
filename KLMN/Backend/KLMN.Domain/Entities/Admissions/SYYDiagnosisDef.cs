@@ -25,4 +25,6 @@ public sealed class SYYDiagnosisDef:EffectiveDatedEntity
     public ICollection<SYYDiagnosisProcedureDef> RequiredProcedures {get;set;}=new List<SYYDiagnosisProcedureDef>();
     /// <summary>Onay gerektiren maddeler / kurallar.</summary>
     public ICollection<SYYDiagnosisRequired> RequiredRules {get;set;}=new List<SYYDiagnosisRequired>();
+    /// <summary>ICD10 SYY tanı istatistikleri.</summary>
+    public ICollection<ICD10Diagnostic> ICD10Diagnostics {get;set;}=new List<ICD10Diagnostic>();
 }

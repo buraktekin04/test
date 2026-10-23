@@ -31,6 +31,7 @@ internal static class AuditReferenceDisplayResolver
             ["RankGroupId"] = "RankGroupDef",
             ["RankGroup"] = "RankGroupDef",
             ["SYYDiagnosisDefId"] = "SYYDiagnosisDef",
+            ["ICD10DefId"] = "ICD10Def",
             ["MilitaryClassGroup"] = "MilitaryClassGroupDef",
             ["HcDecision"] = "HcConnectedDecisionDef",
             ["SYYDiagnosisRequiredId"] = "SYYDiagnosisRequired",
@@ -213,6 +214,12 @@ internal static class AuditReferenceDisplayResolver
                 .ToDictionaryAsync(x => x.Id, x => x.Name + " (" + x.Code + ")", cancellationToken);
 
         // SYY'nin aynı tablo içindeki bağlı tanısı audit ekranında kod/ad olarak gösterilir.
+        var icd10Ids=references["ICD10Def"];
+        var icd10Labels=icd10Ids.Count==0?new Dictionary<Guid,string>():
+            await dbContext.ICD10Defs.IgnoreQueryFilters().AsNoTracking()
+                .Where(x=>icd10Ids.Contains(x.Id))
+                .Select(x=>new{x.Id,x.Code,x.Name})
+                .ToDictionaryAsync(x=>x.Id,x=>x.Code+" — "+x.Name,cancellationToken);
         var syyIds=references["SYYDiagnosisDef"];
         var syyLabels=syyIds.Count==0?new Dictionary<Guid,string>():
             await dbContext.SYYDiagnosisDefs.IgnoreQueryFilters().AsNoTracking()
@@ -222,6 +229,7 @@ internal static class AuditReferenceDisplayResolver
 
         var labels = new Dictionary<string, Dictionary<Guid, string>>(StringComparer.Ordinal)
         {
+            ["ICD10Def"] = icd10Labels,
             ["SYYDiagnosisDef"] = syyLabels,
             ["SYYDiagnosisRequired"] = syyRequiredLabels,
             ["MilitaryClassGroupDef"] = classGroupLabels,

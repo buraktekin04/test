@@ -1,3 +1,7 @@
+using KLMN.Application.ICD10Defs.Commands.CreateICD10Def;
+using KLMN.Application.ICD10Defs.Commands.UpdateICD10Def;
+using KLMN.Application.ICD10Diagnostics.Commands.CreateICD10Diagnostic;
+using KLMN.Application.ICD10Diagnostics.Commands.UpdateICD10Diagnostic;
 using KLMN.Application.SYYClassifications.Commands.CreateSYYClassificationDef;
 using KLMN.Application.SYYClassifications.Queries.GetSYYClassificationDefs;
 using KLMN.Application.SYYDiagnosisBranches.Commands.CreateSYYDiagnosisBranchDef;
@@ -79,5 +83,28 @@ Check(!new UpdateSYYDiagnosisRequiredCommandValidator().Validate(
  new(Guid.NewGuid(),0,id,true,false,new[]{"Madde"})).IsValid,"Kural değişiminde xmin zorunlu");
 Check(!new GetSYYClassificationDefsQueryValidator().Validate(new(PageSize:101)).IsValid,
  "SYY çizelgesi sayfalama üst sınırı");
+
+
+Check(typeof(ICD10Def).BaseType==typeof(BaseEntity),
+ "ICD10 Tanımları, tarihsiz BaseEntity kalıtımı");
+Check(typeof(ICD10Diagnostic).BaseType==typeof(BaseEntity),
+ "ICD10 SYY istatistikleri, tarihsiz BaseEntity kalıtımı");
+Check(typeof(ICD10Diagnostic).GetProperty(nameof(ICD10Diagnostic.Amount))!.PropertyType==typeof(int),
+ "Amount int olarak korundu");
+var icdId=Guid.NewGuid();var syyId=Guid.NewGuid();var admissionId=Guid.NewGuid();
+Check(new CreateICD10DefCommandValidator().Validate(new("A00","Kolera")).IsValid,
+ "ICD10 geçerli kod/ad");
+Check(!new CreateICD10DefCommandValidator().Validate(new("","Kolera")).IsValid,
+ "ICD10 kod zorunlu");
+Check(!new CreateICD10DefCommandValidator().Validate(new("A00","")).IsValid,
+ "ICD10 tanım adı zorunlu");
+Check(new CreateICD10DiagnosticCommandValidator().Validate(
+ new(icdId,syyId,admissionId,0)).IsValid,"İstatistik Amount=0 geçerli");
+Check(!new CreateICD10DiagnosticCommandValidator().Validate(
+ new(icdId,syyId,admissionId,-1)).IsValid,"Negatif Amount reddedilir");
+Check(!new UpdateICD10DiagnosticCommandValidator().Validate(
+ new(Guid.NewGuid(),0,icdId,syyId,admissionId,10)).IsValid,"Eski xmin 0 reddedilir");
+Check(!new UpdateICD10DefCommandValidator().Validate(
+ new(Guid.NewGuid(),0,"A00","Kolera")).IsValid,"ICD10 güncellemesi xmin zorunlu");
 
 Console.WriteLine("Yalnız kaynak regresyonu; gerçek DB, cycle kontrolü, migration ve tarayıcı testi ayrıca yapılır.");

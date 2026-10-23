@@ -44,6 +44,8 @@ public interface IKLMNDbContext
     DbSet<SYYDiagnosisProcedureDef> SYYDiagnosisProcedureDefs { get; }
     DbSet<SYYDiagnosisRequired> SYYDiagnosisRequireds { get; }
     DbSet<SYYDiagnosisRequiredDetail> SYYDiagnosisRequiredDetails { get; }
+    DbSet<ICD10Def> ICD10Defs { get; }
+    DbSet<ICD10Diagnostic> ICD10Diagnostics { get; }
     DbSet<SYYDiagnosisDef> SYYDiagnosisDefs { get; }
     DbSet<SYYDiagnosisTypeDef> SYYDiagnosisTypeDefs { get; }
     DbSet<SYYDiagnosisSliceDef> SYYDiagnosisSliceDefs { get; }

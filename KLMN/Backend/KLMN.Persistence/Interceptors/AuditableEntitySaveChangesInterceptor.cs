@@ -33,6 +33,8 @@ public sealed class AuditableEntitySaveChangesInterceptor(
             ["ReasonForExaminationDef"] = Fields("Code", "Description", "DispatchRequired",
                 "ClassificationExamination", "Objectionable", "ValidFrom", "ValidTo", "IsActive"),
             ["ProcedureTypeDef"] = Fields("Code", "Name", "IsActive"),
+            ["ICD10Def"] = Fields("Code","Name","IsActive"),
+            ["ICD10Diagnostic"] = Fields("ICD10DefId","SYYDiagnosisDefId","HcAdmissionTypeDefId","Amount","IsActive"),
             ["SYYClassificationDef"] = Fields("SYYDiagnosisDefId","ForcesCommandDef","RankGroup","MilitaryClassGroup","HcDecision","ValidFrom","ValidTo","IsActive"),
             ["SYYDiagnosisBranchDef"] = Fields("SYYDiagnosisDefId","BranchDefId","StartingAge","EndingAge","Gender","IsActive"),
             ["SYYDiagnosisProcedureDef"] = Fields("SYYDiagnosisDefId","ProcedureDefId","StartingAge","EndingAge","Gender","IsActive"),

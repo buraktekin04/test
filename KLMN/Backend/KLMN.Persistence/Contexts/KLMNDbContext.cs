@@ -78,6 +78,8 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     public DbSet<SYYDiagnosisProcedureDef> SYYDiagnosisProcedureDefs => Set<SYYDiagnosisProcedureDef>();
     public DbSet<SYYDiagnosisRequired> SYYDiagnosisRequireds => Set<SYYDiagnosisRequired>();
     public DbSet<SYYDiagnosisRequiredDetail> SYYDiagnosisRequiredDetails => Set<SYYDiagnosisRequiredDetail>();
+    public DbSet<ICD10Def> ICD10Defs => Set<ICD10Def>();
+    public DbSet<ICD10Diagnostic> ICD10Diagnostics => Set<ICD10Diagnostic>();
     public DbSet<SYYDiagnosisDef> SYYDiagnosisDefs => Set<SYYDiagnosisDef>();
     public DbSet<SYYDiagnosisTypeDef> SYYDiagnosisTypeDefs => Set<SYYDiagnosisTypeDef>();
     public DbSet<SYYDiagnosisSliceDef> SYYDiagnosisSliceDefs => Set<SYYDiagnosisSliceDef>();

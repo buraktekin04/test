@@ -93,6 +93,12 @@ export const PermissionCodes = {
   },
   /** SYY Tanı Listesi (M/D/F) yetkileri. */
   /** SYY Tanı Sınıflandırma Çizelgesi izinleri. */
+  /** ICD10Defs için bağımsız tanım izinleri. */
+  ICD10Defs:{View:'ICD10Defs.View',Query:'ICD10Defs.Query',Create:'ICD10Defs.Create',
+   Update:'ICD10Defs.Update',Delete:'ICD10Defs.Delete'},
+  /** ICD10Diagnostics için bağımsız tanım izinleri. */
+  ICD10Diagnostics:{View:'ICD10Diagnostics.View',Query:'ICD10Diagnostics.Query',Create:'ICD10Diagnostics.Create',
+   Update:'ICD10Diagnostics.Update',Delete:'ICD10Diagnostics.Delete'},
   SYYClassifications:{View:'SYYClassifications.View',Query:'SYYClassifications.Query',Create:'SYYClassifications.Create',
    Update:'SYYClassifications.Update',Delete:'SYYClassifications.Delete'},
   /** SYY Gereken Branşlar izinleri. */

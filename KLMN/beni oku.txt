@@ -1,3 +1,40 @@
+SON FAZ (23.10.2026) — ICD10 TANIMLARI VE ICD10 SYY İSTATİSTİKLERİ
+====================================================================
+- Eski model sınıf yorumları birebir ekran ismi olarak kullanıldı:
+  ICD10Def -> "ICD10 Tanımları";
+  ICD10Diagnostic -> "ICD10 SYY Tanı İstatistik Tanımları".
+- İKİ BAĞIMSIZ Angular ekranı: her ekran kendi component.ts,
+  component.html, component.scss, model.ts ve service.ts dosyalarıyla
+  oluşturuldu. Tek generic component kullanılmaz. Route/menü:
+  /app/icd10-defs ve /app/icd10-diagnostics.
+- ICD10Def: Code(string, 32), Name(string, 500), ortak BaseEntity.
+  ICD10 kodu boş olamaz, uppercase ve silinmemiş kayıtlar arasında
+  benzersiz. Geçerlilik tarihi eski modelde olmadığından
+  EffectiveDatedEntity/ValidFrom/ValidTo eklenmedi.
+- ICD10Diagnostic: ICD10DefId, SYYDiagnosisDefId,
+  HcAdmissionTypeDefId (Başvuru Grubu), Amount(int, negatif olamaz).
+  Üçü de mevcut tablolara Restrict FK ile bağlıdır; sayfada ilgili
+  kayıtların kod/adları görüntülenir. Üçlü aktif kayıt kombinasyonu
+  benzersizdir; silinmiş kombinasyonun yeniden oluşturulması mümkündür.
+- BaseEntity standardı: Id, Created/Updated/Deleted audit,
+  IsActive/IsDeleted, PostgreSQL xmin concurrency. Bu alanlar
+  entity içine tekrarlanmadı. Soft-delete, audit whitelist,
+  CQRS handler/validator ayrımı, permission seed, Excel, PrimeNG
+  frontend kolon sıralama ve genişletme, popup onay/hata standardı.
+- İstatistik dropdown'ları kendi endpoint'i üzerinden geliyor;
+  seçili pasif tarihsel değer düzenleme sırasında korunuyor.
+  ICD10 listesinden o koda filtreli istatistik ekranına geçiş var.
+- ICD10, SYY Tanısı ve Başvuru Grubu silme/pasifleştirme işlemleri
+  bağlı ICD10Diagnostic kayıtlarına karşı kontrol ediliyor (409).
+- Ayrıntılı rehber: KLMN/ICD10_TANIMLARI_KURULUM.md.
+- Migration/ModelSnapshot bu repoda mevcut değil:
+  veritabanı tabloları henüz yaratılmış sayılmaz. Mevcut yerel
+  migration geçmişi incelenmeden DB DROP/CREATE veya schema
+  reset yapılmaz. Backend+frontend gerçek build, DB entegrasyon
+  ve tarayıcı kabul testleri henüz çalıştırılmadı.
+- Bundan sonra da her tanım ekranı bağımsız Angular component
+  olarak geliştirilir. Ek kontrol .cjs scripti oluşturulmaz.
+
 SON FAZ (22.10.2026) — SYY ÇİZELGESİ, BRANŞ, TETKİK VE ONAY KURALI
 =====================================================================
 - Fotoğraflardaki yorumlar ekran adlarına birebir alındı:

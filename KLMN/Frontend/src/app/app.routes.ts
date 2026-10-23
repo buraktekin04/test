@@ -108,6 +108,18 @@ export const routes: Routes = [
             .then(component => component.MilitaryClassListComponent)
       },
       {
+        path:'icd10-defs',canActivate:[permissionGuard],
+        data:{permissionModule:'ICD10Defs'},
+        loadComponent:()=>import('./features/icd10-defs/icd10-def-list/icd10-def-list.component')
+         .then(c=>c.Icd10DefListComponent)
+      },
+      {
+        path:'icd10-diagnostics',canActivate:[permissionGuard],
+        data:{permissionModule:'ICD10Diagnostics'},
+        loadComponent:()=>import('./features/icd10-diagnostics/icd10-diagnostic-list/icd10-diagnostic-list.component')
+         .then(c=>c.Icd10DiagnosticListComponent)
+      },
+      {
         path:'syy-classifications',canActivate:[permissionGuard],
         data:{permissionModule:'SYYClassifications'},
         loadComponent:()=>import('./features/syy-classifications/syy-classification-list/syy-classification-list.component')

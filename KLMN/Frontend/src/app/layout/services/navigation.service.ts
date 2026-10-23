@@ -59,6 +59,8 @@ export class NavigationService {
           route: '/app/towns',
           permissionModule: 'Towns'
         },
+        {label:'ICD10 Tanımları',icon:'pi pi-book',route:'/app/icd10-defs',permissionModule:'ICD10Defs'},
+        {label:'ICD10 SYY Tanı İstatistik Tanımları',icon:'pi pi-chart-bar',route:'/app/icd10-diagnostics',permissionModule:'ICD10Diagnostics'},
         {label:'SYY Tanı Sınıflandırma Çizelgesi',icon:'pi pi-table',route:'/app/syy-classifications',permissionModule:'SYYClassifications'},
         {label:'SYY Gereken Branşlar',icon:'pi pi-sitemap',route:'/app/syy-diagnosis-branches',permissionModule:'SYYDiagnosisBranches'},
         {label:'SYY Gereken Tetkikler',icon:'pi pi-heart',route:'/app/syy-diagnosis-procedures',permissionModule:'SYYDiagnosisProcedures'},

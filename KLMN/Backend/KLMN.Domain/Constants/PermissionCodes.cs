@@ -393,6 +393,26 @@ public static class PermissionCodes
       public const string Delete="SYYDiagnosisRequireds.Delete";
     }
 
+    /// <summary>ICD10 Tanımları için bağımsız izin kodları.</summary>
+    public static class ICD10Defs
+    {
+      public const string View="ICD10Defs.View";
+      public const string Query="ICD10Defs.Query";
+      public const string Create="ICD10Defs.Create";
+      public const string Update="ICD10Defs.Update";
+      public const string Delete="ICD10Defs.Delete";
+    }
+
+    /// <summary>ICD10 SYY Tanı İstatistik Tanımları için bağımsız izin kodları.</summary>
+    public static class ICD10Diagnostics
+    {
+      public const string View="ICD10Diagnostics.View";
+      public const string Query="ICD10Diagnostics.Query";
+      public const string Create="ICD10Diagnostics.Create";
+      public const string Update="ICD10Diagnostics.Update";
+      public const string Delete="ICD10Diagnostics.Delete";
+    }
+
     /// <summary>SYY Tanı Listesi (M/D/F) yetkileri.</summary>
     public static class SYYDiagnoses
     {

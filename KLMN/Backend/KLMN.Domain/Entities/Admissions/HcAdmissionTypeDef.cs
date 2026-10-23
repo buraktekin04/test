@@ -59,4 +59,6 @@ public sealed class HcAdmissionTypeDef : EffectiveDatedEntity
 
     /// <summary>Başvuruda PERTEM Onayı alanının zorunlu olup olmayacağını belirler.</summary>
     public bool PertemApprovalRequired { get; set; }
+    /// <summary>Bu başvuru grubuna bağlı ICD10 SYY tanı istatistikleri.</summary>
+    public ICollection<ICD10Diagnostic> ICD10Diagnostics {get;set;}=new List<ICD10Diagnostic>();
 }

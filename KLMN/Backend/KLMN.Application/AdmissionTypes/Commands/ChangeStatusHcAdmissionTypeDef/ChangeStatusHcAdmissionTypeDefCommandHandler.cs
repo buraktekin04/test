@@ -19,6 +19,9 @@ public sealed class ChangeStatusHcAdmissionTypeDefCommandHandler(IKLMNDbContext 
         if (!request.IsActive && await db.ReasonForExamUnusedHcAdmissionTypes.IgnoreQueryFilters().AnyAsync(x =>
             !x.IsDeleted && x.IsActive && x.HcAdmissionTypeDefId == item.Id, ct))
             throw new AdmissionTypeConflictException("Aktif muayene sebebi eşleştirmesi bulunan tanım pasifleştirilemez.");
+        if(!request.IsActive && await db.ICD10Diagnostics.IgnoreQueryFilters().AnyAsync(x=>
+           !x.IsDeleted&&x.IsActive&&x.HcAdmissionTypeDefId==item.Id,ct))
+            throw new AdmissionTypeConflictException("Aktif ICD10 istatistik eşleştirmesi bulunan başvuru grubu pasifleştirilemez.");
         item.IsActive = request.IsActive;
         await db.SaveChangesAsync(ct);
         return new HcAdmissionTypeDefMutationResponse(item.Id, item.Version);

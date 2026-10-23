@@ -1,3 +1,5 @@
+using KLMN.Application.ICD10Defs.Exceptions;
+using KLMN.Application.ICD10Diagnostics.Exceptions;
 using KLMN.Application.SYYClassifications.Exceptions;
 using KLMN.Application.SYYDiagnosisBranches.Exceptions;
 using KLMN.Application.SYYDiagnosisProcedures.Exceptions;
@@ -223,6 +225,10 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             SYYDiagnosisProcedureDefConflictException => new ProblemDetails { Status=409,Title="Tanım çakışması.",Detail=exception.Message },
             SYYDiagnosisRequiredNotFoundException => new ProblemDetails { Status=404,Title="Kayıt bulunamadı.",Detail=exception.Message },
             SYYDiagnosisRequiredConflictException => new ProblemDetails { Status=409,Title="Tanım çakışması.",Detail=exception.Message },
+            ICD10DefNotFoundException => new ProblemDetails{Status=404,Title="Kayıt bulunamadı.",Detail=exception.Message},
+            ICD10DefConflictException => new ProblemDetails{Status=409,Title="ICD10 tanım çakışması.",Detail=exception.Message},
+            ICD10DiagnosticNotFoundException => new ProblemDetails{Status=404,Title="Kayıt bulunamadı.",Detail=exception.Message},
+            ICD10DiagnosticConflictException => new ProblemDetails{Status=409,Title="ICD10 istatistik çakışması.",Detail=exception.Message},
             SYYDiagnosisDefNotFoundException => new ProblemDetails{Status=404,Title="Kayıt bulunamadı.",Detail=exception.Message},
             SYYDiagnosisDefConflictException => new ProblemDetails{Status=409,Title="Tanım işlemi gerçekleştirilemedi.",Detail=exception.Message},
             SYYDiagnosisTypeDefNotFoundException => new ProblemDetails{Status=404,Title="Kayıt bulunamadı.",Detail=exception.Message},
