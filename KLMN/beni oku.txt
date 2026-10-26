@@ -1,3 +1,24 @@
+SON DÜZELTME (26.10.2026) — FLYINGMISSIONS CS0411 DERLEME HATASI
+========================================================================
+- GetFlyingMissionDefByIdQueryHandler ve GetFlyingMissionDefsQueryHandler
+  içerisindeki IQueryable.Select(x => new(...)) ifadeleri, generic
+  LINQ Select dönüş tipinin çıkarılamamasına (CS0411) yol açıyordu.
+- İki Handler'ın Select projeksiyonu açıkça
+  new FlyingMissionDefResponse(...) kullanacak şekilde düzeltildi.
+- Refactor commit'inde değiştirilen 75 QueryHandler dosyası GitHub
+  kaynağı üzerinden tarandı; hedef tipi belirtilmemiş Select(x => new(...))
+  kullanımı yalnızca bu iki Handler'da bulundu.
+- Response DTO'larına Projection geri eklenmedi. Sorguların EF Core SQL
+  filtreleme/sıralama/sayfalama akışları ve API sözleşmesi değiştirilmedi.
+- Bu derleme düzeltmesi için veritabanı migration'ı gerekmiyor.
+- Yerel .NET SDK olmadığından dotnet build/test, npm build ve uygulama
+  entegrasyon testleri bu ortamda ÇALIŞTIRILAMADI. Visual Studio'da
+  Clean/Rebuild ile kesin derleme sonucu doğrulanmalıdır.
+- KURAL: EF Core IQueryable.Select içinde nesne oluşturulurken
+  Select(x => new ResponseType(...)) / new ResponseType { ... } yazılır.
+  Select(x => new(...)) kullanılmaz (CS0411 tür çıkarımı hatası).
+- Kaynaklar GitHub'da tek commit olarak güncellenir.
+
 SON FAZ (23.10.2026) — BACKEND RESPONSE/EXCEPTION STANDARDI VE MENÜ ARAMASI
 ==============================================================================
 - KLMN.Application Responses klasörlerinde aynı dosyada bulunan birden
