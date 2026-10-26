@@ -1,0 +1,110 @@
+<div class="syy-decision-page">
+ <div class="page-header">
+  <div><h1>SYY Tanı Karar İstatistiği Tanımları</h1>
+   <p>SYY Tanısı, kurul kararı, başvuru grubu ve askerî sınıfa göre adet tanımlayın.</p></div>
+  @if(canCreate()){<p-button label="Yeni İstatistik Tanımı" icon="pi pi-plus" (onClick)="openCreate()"/>}
+ </div>
+ <p-toast position="top-right"/>
+ <section class="filter-panel">
+  <form [formGroup]="searchForm" (ngSubmit)="search()">
+   <div class="filter-grid">
+    <label><span>Ara</span><input pInputText formControlName="search" placeholder="Tanı kodu, karar, başvuru grubu..." /></label>
+    <label><span>Durum</span><select formControlName="includeInactive">
+       <option [ngValue]="false">Aktif kayıtlar</option><option [ngValue]="true">Aktif ve pasif</option></select></label>
+   </div>
+   <div class="filter-actions"><p-button type="submit" label="Ara" icon="pi pi-search" [loading]="loading()"/>
+     <p-button type="button" label="Temizle" severity="secondary" [outlined]="true" (onClick)="clear()"/>
+     @if(canQuery()){<a routerLink="/app/syy-diagnosis-decision-search">Gelişmiş İstatistik Sorgulama</a>}
+   </div>
+  </form>
+ </section>
+ <section class="list-card">
+  <div class="table-toolbar">
+    @if(canQuery()){<p-button label="Excel'e Aktar" severity="success" [outlined]="true"
+      icon="pi pi-file-excel" [loading]="exporting()" (onClick)="exportExcel()"/>}
+  </div>
+  <div class="table-scroll" role="region" tabindex="0" aria-label="SYY Tanı Karar İstatistiği tanımları">
+   <p-table [value]="records()" [loading]="loading()" [resizableColumns]="true" columnResizeMode="expand"
+    [tableStyle]="{'min-width':'1270px','width':'100%'}">
+    <ng-template pTemplate="header"><tr>
+     <th pResizableColumn pSortableColumn="syyDiagnosisCode">SYY Tanı Kodu <p-sortIcon field="syyDiagnosisCode"/></th>
+     <th pResizableColumn pSortableColumn="syyDiagnosisName">SYY Tanısı <p-sortIcon field="syyDiagnosisName"/></th>
+     <th pResizableColumn pSortableColumn="hcDecisionName">Kurul Kararı <p-sortIcon field="hcDecisionName"/></th>
+     <th pResizableColumn pSortableColumn="hcAdmissionTypeName">Başvuru Grubu <p-sortIcon field="hcAdmissionTypeName"/></th>
+     <th pResizableColumn pSortableColumn="militaryClassName">Askerî Sınıf <p-sortIcon field="militaryClassName"/></th>
+     <th pResizableColumn pSortableColumn="amount">Adet <p-sortIcon field="amount"/></th>
+     <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive"/></th>
+     <th>İşlemler</th></tr></ng-template>
+    <ng-template pTemplate="body" let-row><tr>
+     <td><code class="record-code">{{row.syyDiagnosisCode}}</code></td>
+     <td class="wrap">{{row.syyDiagnosisName}}</td>
+     <td class="wrap">{{row.hcDecisionCode}} — {{row.hcDecisionName}}</td>
+     <td class="wrap">{{row.hcAdmissionTypeName}}</td>
+     <td class="wrap">{{row.militaryClassName??'Tümü / belirtilmedi'}}</td>
+     <td>{{row.amount}}</td>
+     <td><p-tag [value]="row.isActive?'Aktif':'Pasif'" [severity]="row.isActive?'success':'secondary'"/></td>
+     <td><div class="row-actions">
+      @if(canUpdate()){
+       <p-button icon="pi pi-pencil" [text]="true" severity="secondary" ariaLabel="Düzenle" (onClick)="openEdit(row)"/>
+       <p-button [icon]="row.isActive?'pi pi-ban':'pi pi-check-circle'" [text]="true" severity="secondary"
+        ariaLabel="Durumu değiştir" (onClick)="changeStatus(row)"/>
+      }
+      @if(canAudit()){
+       <p-button icon="pi pi-history" [text]="true" severity="secondary" ariaLabel="İşlem geçmişi" (onClick)="auditItem.set(row)"/>
+      }
+      @if(canDelete()){<p-button icon="pi pi-trash" [text]="true" severity="danger" ariaLabel="Sil" (onClick)="remove(row)"/>}
+     </div></td>
+    </tr></ng-template>
+    <ng-template pTemplate="emptymessage"><tr><td colspan="8" class="empty">Kayıt bulunamadı.</td></tr></ng-template>
+   </p-table>
+  </div>
+  <div class="pagination"><span>{{total()}} kayıt · Sayfa {{page()}} / {{maxPage()}}</span>
+   <button [disabled]="page()<=1" (click)="toPage(page()-1)" aria-label="Önceki sayfa">‹</button>
+   <button [disabled]="page()>=maxPage()" (click)="toPage(page()+1)" aria-label="Sonraki sayfa">›</button>
+   <label>Sayfa başına <select [value]="pageSize()" (change)="changeSize($event)">
+    <option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option>
+   </select></label></div>
+ </section>
+</div>
+<p-dialog [header]="editing()?'SYY Tanı Karar İstatistiği Düzenle':'Yeni SYY Tanı Karar İstatistiği'"
+ [visible]="showForm()" (visibleChange)="!$event&&showForm.set(false)" [modal]="true"
+ [draggable]="false" [resizable]="false" [style]="{'width':'min(780px,96vw)'}">
+ <form class="definition-form" [formGroup]="form" (ngSubmit)="save()">
+  <div class="form-grid">
+   <label class="form-field"><span>SYY Tanı Kodu *</span>
+    <select formControlName="syyDiagnosisDefId"><option value="">Tanı seçiniz</option>
+     @for(item of optionsData().syyDiagnoses;track item.id){
+      <option [value]="item.id">{{item.label}}{{item.isActive?'':' (Pasif)'}}</option>
+     }</select></label>
+   <label class="form-field"><span>Kurul Kararı *</span>
+    <select formControlName="hcDecisionDefId"><option value="">Karar seçiniz</option>
+     @for(item of optionsData().decisions;track item.id){
+      <option [value]="item.id">{{item.label}}{{item.isActive?'':' (Pasif)'}}</option>
+     }</select></label>
+   <label class="form-field"><span>Başvuru Grubu *</span>
+    <select formControlName="hcAdmissionTypeDefId"><option value="">Grup seçiniz</option>
+     @for(item of optionsData().admissionTypes;track item.id){
+      <option [value]="item.id">{{item.label}}{{item.isActive?'':' (Pasif)'}}</option>
+     }</select></label>
+   <label class="form-field"><span>Askerî Sınıf (isteğe bağlı)</span>
+    <select formControlName="militaryClassDefId"><option value="">Tümü / belirtilmedi</option>
+     @for(item of optionsData().militaryClasses;track item.id){
+      <option [value]="item.id">{{item.label}}{{item.isActive?'':' (Pasif)'}}</option>
+     }</select></label>
+   <label class="form-field"><span>Adet *</span>
+    <input pInputText type="number" min="0" step="1" formControlName="amount"/>
+    <small>0 veya üzeri tam sayı.</small>
+   </label>
+  </div>
+  @if(formError()){<p class="form-error" role="alert">{{formError()}}</p>}
+  <div class="dialog-actions">
+   <p-button type="button" label="Vazgeç" severity="secondary" [outlined]="true" (onClick)="showForm.set(false)"/>
+   <p-button type="submit" label="Kaydet" icon="pi pi-check" [loading]="saving()"/>
+  </div>
+ </form>
+</p-dialog>
+<p-confirmdialog/>
+<p-dialog header="SYY Tanı Karar İstatistiği İşlem Geçmişi" [visible]="!!auditItem()"
+ (visibleChange)="!$event&&auditItem.set(null)" [modal]="true" [style]="{'width':'min(760px,96vw)'}">
+ @if(auditItem();as item){<app-audit-history entityType="SYYDiagnosisDecision" [entityId]="item.id"/>}
+</p-dialog>

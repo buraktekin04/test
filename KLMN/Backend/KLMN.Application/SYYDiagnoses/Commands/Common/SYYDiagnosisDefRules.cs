@@ -63,6 +63,10 @@ internal static class SYYDiagnosisDefRules
     if(await classification.AnyAsync(ct)||await branches.AnyAsync(ct)||
        await procedures.AnyAsync(ct)||await required.AnyAsync(ct))
       throw new SYYDiagnosisDefConflictException("SYY tanısına bağlı sınıflandırma, kural, branş veya tetkik kaydı bulunuyor.");
+    var decisions=db.SYYDiagnosisDecisions.IgnoreQueryFilters().Where(x=>!x.IsDeleted&&x.SYYDiagnosisDefId==id);
+    if(onlyActive)decisions=decisions.Where(x=>x.IsActive);
+    if(await decisions.AnyAsync(ct))
+       throw new SYYDiagnosisDefConflictException("Tanıya bağlı SYY karar istatistikleri bulunduğundan işlem yapılamaz.");
     var icd=db.ICD10Diagnostics.IgnoreQueryFilters().Where(x=>!x.IsDeleted&&x.SYYDiagnosisDefId==id);
     if(onlyActive)icd=icd.Where(x=>x.IsActive);
     if(await icd.AnyAsync(ct))

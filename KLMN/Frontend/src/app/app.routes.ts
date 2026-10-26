@@ -144,6 +144,18 @@ export const routes: Routes = [
          .then(c=>c.SyyDiagnosisRequiredListComponent)
       },
       {
+        path: 'syy-diagnosis-decisions',canActivate:[permissionGuard],
+        data:{permissionModule:'SYYDiagnosisDecisions'},
+        loadComponent:()=>import('./features/syy-diagnosis-decisions/syy-diagnosis-decision-list/syy-diagnosis-decision-list.component')
+          .then(c=>c.SyyDiagnosisDecisionListComponent)
+      },
+      {
+        path: 'syy-diagnosis-decision-search',canActivate:[permissionGuard],
+        data:{permissions:[PermissionCodes.SYYDiagnosisDecisions.Query]},
+        loadComponent:()=>import('./features/syy-diagnosis-decisions/syy-diagnosis-decision-search/syy-diagnosis-decision-search.component')
+          .then(c=>c.SyyDiagnosisDecisionSearchComponent)
+      },
+      {
         path: 'syy-diagnoses',
         canActivate: [permissionGuard],
         data: { permissionModule: 'SYYDiagnoses' },

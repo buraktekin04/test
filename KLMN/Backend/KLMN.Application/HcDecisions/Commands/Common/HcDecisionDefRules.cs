@@ -21,6 +21,9 @@ internal static class HcDecisionDefRules
     /// <summary>Silmede tüm, pasifleştirmede yalnız etkin alt ilişkileri denetler; ilişkiler tek tek kapatılır.</summary>
     public static async Task EnsureNoLinksAsync(IKLMNDbContext db,Guid id,bool onlyActive,CancellationToken ct)
     {
+        if(await db.SYYDiagnosisDecisions.IgnoreQueryFilters().AnyAsync(x=>
+           !x.IsDeleted&&x.HcDecisionDefId==id&&(!onlyActive||x.IsActive),ct))
+            throw new HcDecisionDefConflictException("Kurul kararına bağlı SYY tanı karar istatistiği bulunuyor.");
         if(await db.HcUnusedReasonForExams.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.HcDecisionDefId==id&&(!onlyActive||x.IsActive),ct)
         ||await db.HcUnusedAdmissionTypes.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.HcDecisionDefId==id&&(!onlyActive||x.IsActive),ct)
         ||await db.HcUnusedDecisions.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&(x.HcDecisionDefId==id||x.UnusedHcDecisionDefId==id)&&(!onlyActive||x.IsActive),ct)

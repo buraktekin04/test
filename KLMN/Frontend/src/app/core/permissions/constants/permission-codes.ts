@@ -122,6 +122,12 @@ export const PermissionCodes = {
   ICD10Defs:{View:'ICD10Defs.View',Query:'ICD10Defs.Query',Create:'ICD10Defs.Create',
    Update:'ICD10Defs.Update',Delete:'ICD10Defs.Delete'},
   /** ICD10Diagnostics için bağımsız tanım izinleri. */
+  /** SYY tanı karar istatistiği; tanımlama ve salt-okunur sorgulama. */
+  SYYDiagnosisDecisions:{
+    View:'SYYDiagnosisDecisions.View',Query:'SYYDiagnosisDecisions.Query',
+    Create:'SYYDiagnosisDecisions.Create',Update:'SYYDiagnosisDecisions.Update',
+    Delete:'SYYDiagnosisDecisions.Delete'
+  },
   ICD10Diagnostics:{View:'ICD10Diagnostics.View',Query:'ICD10Diagnostics.Query',Create:'ICD10Diagnostics.Create',
    Update:'ICD10Diagnostics.Update',Delete:'ICD10Diagnostics.Delete'},
   SYYClassifications:{View:'SYYClassifications.View',Query:'SYYClassifications.Query',Create:'SYYClassifications.Create',

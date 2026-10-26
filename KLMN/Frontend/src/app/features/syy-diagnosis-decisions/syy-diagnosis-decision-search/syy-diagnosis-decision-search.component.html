@@ -1,0 +1,80 @@
+<div class="syy-decision-page">
+ <div class="page-header"><div>
+  <h1>SYY Tanı Karar İstatistiği Sorgulama</h1>
+  <p>SYY tanı kodu, başvuru grubu ve askerî sınıfı açılır menüden seçerek sonuçları listeleyin.</p>
+ </div>
+ @if(canDefinitions()){<a routerLink="/app/syy-diagnosis-decisions">Tanımlama ekranına dön</a>}
+ </div>
+ <p-toast position="top-right"/>
+ <section class="filter-panel" aria-label="SYY tanı karar istatistiği filtreleri">
+  <form [formGroup]="filters" (ngSubmit)="search()">
+   <div class="filter-grid">
+    <label for="syy-code-filter"><span>SYY Tanı Kodu</span>
+     <select id="syy-code-filter" formControlName="syyDiagnosisDefId" [disabled]="optionsLoading()">
+      <option value="">Tüm SYY tanıları</option>
+      @for(item of optionsData().syyDiagnoses;track item.id){<option [value]="item.id">{{item.label}}{{item.isActive?'':' (Pasif)'}}</option>}
+     </select></label>
+    <label for="admission-filter"><span>Başvuru Grubu</span>
+     <select id="admission-filter" formControlName="hcAdmissionTypeDefId" [disabled]="optionsLoading()">
+      <option value="">Tüm başvuru grupları</option>
+      @for(item of optionsData().admissionTypes;track item.id){<option [value]="item.id">{{item.label}}{{item.isActive?'':' (Pasif)'}}</option>}
+     </select></label>
+    <label for="military-filter"><span>Askerî Sınıf</span>
+     <select id="military-filter" formControlName="militaryClassDefId" [disabled]="optionsLoading()">
+      <option value="">Tüm askerî sınıflar</option>
+      @for(item of optionsData().militaryClasses;track item.id){<option [value]="item.id">{{item.label}}{{item.isActive?'':' (Pasif)'}}</option>}
+     </select></label>
+    <label for="hc-decision-filter"><span>Kurul Kararı (isteğe bağlı)</span>
+     <select id="hc-decision-filter" formControlName="hcDecisionDefId" [disabled]="optionsLoading()">
+      <option value="">Tüm kararlar</option>
+      @for(item of optionsData().decisions;track item.id){<option [value]="item.id">{{item.label}}{{item.isActive?'':' (Pasif)'}}</option>}
+     </select></label>
+   </div>
+   <div class="filter-actions">
+    <label><input type="checkbox" formControlName="includeInactive"/> Pasif kayıtları da getir</label>
+    <p-button type="submit" label="Sorgula" icon="pi pi-search" [loading]="loading()"/>
+    <p-button type="button" label="Temizle" severity="secondary" [outlined]="true" icon="pi pi-times" (onClick)="clear()"/>
+   </div>
+  </form>
+ </section>
+ <section class="list-card">
+  <div class="table-toolbar">
+   @if(canExport()){<p-button label="Excel'e Aktar" icon="pi pi-file-excel" severity="success"
+    [outlined]="true" [loading]="exporting()" (onClick)="exportExcel()"/>}
+  </div>
+  <div class="table-scroll" role="region" tabindex="0" aria-label="SYY tanı karar istatistiği sorgu sonuçları">
+   <p-table [value]="rows()" [loading]="loading()" [resizableColumns]="true" columnResizeMode="expand"
+    [tableStyle]="{'min-width':'1110px','width':'100%'}">
+    <ng-template pTemplate="header"><tr>
+     <th pResizableColumn pSortableColumn="syyDiagnosisCode">SYY Tanı Kodu <p-sortIcon field="syyDiagnosisCode"/></th>
+     <th pResizableColumn pSortableColumn="syyDiagnosisName">SYY Tanısı <p-sortIcon field="syyDiagnosisName"/></th>
+     <th pResizableColumn pSortableColumn="hcDecisionCode">Kurul Kararı Kodu <p-sortIcon field="hcDecisionCode"/></th>
+     <th pResizableColumn pSortableColumn="hcDecisionName">Kurul Kararı <p-sortIcon field="hcDecisionName"/></th>
+     <th pResizableColumn pSortableColumn="hcAdmissionTypeName">Başvuru Grubu <p-sortIcon field="hcAdmissionTypeName"/></th>
+     <th pResizableColumn pSortableColumn="militaryClassName">Askerî Sınıf <p-sortIcon field="militaryClassName"/></th>
+     <th pResizableColumn pSortableColumn="amount">Adet <p-sortIcon field="amount"/></th>
+     <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive"/></th>
+    </tr></ng-template>
+    <ng-template pTemplate="body" let-row><tr>
+      <td><code class="record-code">{{row.syyDiagnosisCode}}</code></td>
+      <td class="wrap">{{row.syyDiagnosisName}}</td>
+      <td>{{row.hcDecisionCode}}</td>
+      <td class="wrap">{{row.hcDecisionName}}</td>
+      <td class="wrap">{{row.hcAdmissionTypeName}}</td>
+      <td class="wrap">{{row.militaryClassName??'Tümü / belirtilmedi'}}</td>
+      <td>{{row.amount}}</td>
+      <td><p-tag [value]="row.isActive?'Aktif':'Pasif'" [severity]="row.isActive?'success':'secondary'"/></td>
+    </tr></ng-template>
+    <ng-template pTemplate="emptymessage"><tr><td colspan="8" class="empty">Seçili filtrelerle eşleşen kayıt bulunamadı.</td></tr></ng-template>
+   </p-table>
+  </div>
+  <div class="summary-line"><span>Toplam eşleşen kayıt: <strong>{{total()}}</strong></span>
+   <span>Görüntülenen sayfadaki adet toplamı: <strong>{{visiblePageAmount()}}</strong></span></div>
+  <div class="pagination"><span>Sayfa {{page()}} / {{maxPage()}}</span>
+   <button [disabled]="page()<=1" (click)="toPage(page()-1)" aria-label="Önceki sayfa">‹</button>
+   <button [disabled]="page()>=maxPage()" (click)="toPage(page()+1)" aria-label="Sonraki sayfa">›</button>
+   <label>Sayfa başına <select [value]="pageSize()" (change)="changeSize($event)">
+    <option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option>
+   </select></label></div>
+ </section>
+</div>

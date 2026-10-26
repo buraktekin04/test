@@ -71,6 +71,8 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     public DbSet<ReasonForExaminationDef> ReasonForExaminationDefs => Set<ReasonForExaminationDef>();
     /// <summary>Kurul Karar Tanımları veri kümesi.</summary>
     public DbSet<HcDecisionDef> HcDecisionDefs => Set<HcDecisionDef>();
+    /// <summary>SYY tanı/kurul kararı istatistiği tanımları.</summary>
+    public DbSet<SYYDiagnosisDecision> SYYDiagnosisDecisions => Set<SYYDiagnosisDecision>();
     /// <summary>Kullanılmayacak Muayene Sebepleri veri kümesi.</summary>
     public DbSet<HcUnusedReasonForExam> HcUnusedReasonForExams => Set<HcUnusedReasonForExam>();
     /// <summary>Kullanılmayacak Başvuru Grupları veri kümesi.</summary>

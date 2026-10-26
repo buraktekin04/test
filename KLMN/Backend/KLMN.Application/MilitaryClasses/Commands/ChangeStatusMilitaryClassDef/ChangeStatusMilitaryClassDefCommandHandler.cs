@@ -18,6 +18,8 @@ public sealed class ChangeStatusMilitaryClassDefCommandHandler(IKLMNDbContext db
         if (!request.IsActive && await db.MilitaryClassGroupRelations.IgnoreQueryFilters()
             .AnyAsync(x => x.MilitaryClassId == item.Id && x.IsActive && !x.IsDeleted, ct))
             throw new MilitaryClassConflictException("Aktif eşleştirmesi bulunan sınıf pasifleştirilemez.");
+        if(!request.IsActive && await db.SYYDiagnosisDecisions.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.IsActive&&x.MilitaryClassDefId==item.Id,ct))
+           throw new MilitaryClassConflictException("Askerî sınıfa bağlı aktif SYY karar istatistiği bulunuyor.");
         item.IsActive = request.IsActive;
         await db.SaveChangesAsync(ct);
         return new MilitaryClassDefMutationResponse(item.Id, item.Version);

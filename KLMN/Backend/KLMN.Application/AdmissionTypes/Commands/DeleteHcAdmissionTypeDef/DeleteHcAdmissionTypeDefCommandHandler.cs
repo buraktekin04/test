@@ -24,6 +24,8 @@ public sealed class DeleteHcAdmissionTypeDefCommandHandler(IKLMNDbContext db)
         // Kurul kararlarında kullanılmayacak olarak işaretlenen gruplar korunur.
         if(await db.HcUnusedAdmissionTypes.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.HcAdmissionTypeDefId==item.Id,ct))
             throw new AdmissionTypeConflictException("Kurul kararına bağlı silinmemiş başvuru grubu eşleştirmesi bulunuyor.");
+        if(await db.SYYDiagnosisDecisions.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.HcAdmissionTypeDefId==item.Id,ct))
+           throw new AdmissionTypeConflictException("Başvuru grubuna bağlı SYY karar istatistiği bulunuyor.");
         db.HcAdmissionTypeDefs.Remove(item);
         await db.SaveChangesAsync(ct);
     }

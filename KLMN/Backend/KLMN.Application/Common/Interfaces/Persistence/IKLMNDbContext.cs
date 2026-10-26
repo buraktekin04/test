@@ -37,6 +37,8 @@ public interface IKLMNDbContext
     DbSet<ReasonForExaminationDef> ReasonForExaminationDefs { get; }
     /// <summary>Kurul Karar Tanımları veri kümesi.</summary>
     DbSet<HcDecisionDef> HcDecisionDefs { get; }
+    /// <summary>SYY tanı/kurul kararı istatistikleri.</summary>
+    DbSet<SYYDiagnosisDecision> SYYDiagnosisDecisions { get; }
     /// <summary>Kullanılmayacak Muayene Sebepleri veri kümesi.</summary>
     DbSet<HcUnusedReasonForExam> HcUnusedReasonForExams { get; }
     /// <summary>Kullanılmayacak Başvuru Grupları veri kümesi.</summary>

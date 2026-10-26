@@ -1,3 +1,30 @@
+26.10.2026 — SYY TANI KARAR İSTATİSTİĞİ: 2 AYRI EKRAN
+================================================================
+- Eski MSKBS/SYYDiagnosisDecision modeline uygun yeni SYYDiagnosisDecision entity'si eklendi.
+  FK'ler: SYYDiagnosisDefId, HcDecisionDefId, HcAdmissionTypeDefId,
+  MilitaryClassDefId (nullable). Amount (int, >=0). BaseEntity audit/soft delete/xmin
+  alanları tekrar tanımlanmaz; bu modelde ValidFrom/ValidTo alanı YOKTUR.
+- Tanımlama ekranı: /app/syy-diagnosis-decisions. Bağımsız Angular component,
+  CRUD, onaylı silme/durum, p-table resize/frontend sort, Excel, audit, seçilebilir
+  FK dropdown; kaydedilen ilişkiler için benzersizlik ve aktif referans kontrolü.
+- Sorgulama ekranı: /app/syy-diagnosis-decision-search. SYY Tanı Kodu,
+  Başvuru Grubu ve Askerî Sınıf açılır listeleri; isteğe bağlı Kurul Kararı
+  ve pasifleri dahil et filtresi. Tüm filtreler backend LINQ'da AND uygulanır.
+  Sonuçlar sunucuda sayfalanır, Excel tüm filtreli kayıtlar (en fazla 5000).
+  Adet toplamı yalnızca görünür sayfanın toplamı olarak açıkça etiketlenmiştir.
+- Ayrı CQRS Command/Handler/Validator, Response, Exception dosyaları; Projection
+  yalnız QueryHandler'da. Önceki tanım ekranlarının permission/audit/Excel düzeni korundu.
+- Tanımlar > SYY Tanımları grubunda iki ayrı menü; sorgulama menüsü Query izni,
+  tanımlama menüsü modülün herhangi bir izniyle görünür.
+- PostgreSQL benzersizlik: nullable MilitaryClass için NULL/NOT NULL kısmi indeksler,
+  0 ve üzeri Amount için check constraint, tüm FK'lerde Restrict.
+- Mevcut tanı, karar, başvuru grubu ve askerî sınıfların pasifleştirme/silme
+  işlemlerinde bağlı aktif veya silinmemiş istatistik referansları korunur.
+- Migration bu committe üretilmedi ve uygulanmadı: mevcut migration snapshot
+  zinciri depoda yoktur, veritabanı otomatik sıfırlanmaz veya DROP edilmez.
+- Statik inceleme yapılır; dotnet/Angular build, migration, tarayıcı testleri
+  gerçekten koşulmadıysa tamamlandı kabul edilmez.
+
 26.10.2026 — İŞLEM GEÇMİŞİ / KİŞİYE ÖZEL YETKİ / EKRAN TEMİZLİĞİ
 ==================================================================
 1) Audit Tür sütunu ekran adını ve teknik türü birlikte gösterir: Ülke Tanımları (CountryDef).

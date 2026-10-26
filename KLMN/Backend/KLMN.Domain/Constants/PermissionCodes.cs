@@ -444,6 +444,16 @@ public static class PermissionCodes
     }
 
     /// <summary>ICD10 SYY Tanı İstatistik Tanımları için bağımsız izin kodları.</summary>
+    /// <summary>SYY tanı karar istatistiği tanımlama ve sorgulama ekranları.</summary>
+    public static class SYYDiagnosisDecisions
+    {
+      public const string View = "SYYDiagnosisDecisions.View";
+      public const string Query = "SYYDiagnosisDecisions.Query";
+      public const string Create = "SYYDiagnosisDecisions.Create";
+      public const string Update = "SYYDiagnosisDecisions.Update";
+      public const string Delete = "SYYDiagnosisDecisions.Delete";
+    }
+
     public static class ICD10Diagnostics
     {
       public const string View="ICD10Diagnostics.View";

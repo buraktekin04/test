@@ -18,6 +18,8 @@ public sealed class DeleteMilitaryClassDefCommandHandler(IKLMNDbContext db)
         if (await db.MilitaryClassGroupRelations.IgnoreQueryFilters().AnyAsync(x =>
             x.MilitaryClassId == item.Id && !x.IsDeleted, ct))
             throw new MilitaryClassConflictException("Eşleştirmesi bulunan askerî sınıf silinemez.");
+        if(await db.SYYDiagnosisDecisions.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.MilitaryClassDefId==item.Id,ct))
+           throw new MilitaryClassConflictException("Askerî sınıfa bağlı SYY karar istatistiği bulunuyor.");
         db.MilitaryClassDefs.Remove(item);
         await db.SaveChangesAsync(ct);
 

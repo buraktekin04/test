@@ -237,6 +237,8 @@ export class NavigationService {
             {
                       label: 'SYY Dilim Tanımları',icon:'pi pi-tags',route:'/app/syy-diagnosis-slices',permissionModule:'SYYDiagnosisSlices'
                     },
+            {label:'SYY Tanı Karar İstatistiği Tanımları',icon:'pi pi-list-check',route:'/app/syy-diagnosis-decisions',permissionModule:'SYYDiagnosisDecisions'},
+            {label:'SYY Tanı Karar İstatistiği Sorgulama',icon:'pi pi-search',route:'/app/syy-diagnosis-decision-search',requiredPermissions:[PermissionCodes.SYYDiagnosisDecisions.Query]},
             {label:'SYY Tanı Sınıflandırma Çizelgesi',icon:'pi pi-table',route:'/app/syy-classifications',permissionModule:'SYYClassifications'},
             {label:'SYY Gereken Branşlar',icon:'pi pi-sitemap',route:'/app/syy-diagnosis-branches',permissionModule:'SYYDiagnosisBranches'},
             {label:'SYY Gereken Tetkikler',icon:'pi pi-heart',route:'/app/syy-diagnosis-procedures',permissionModule:'SYYDiagnosisProcedures'},
