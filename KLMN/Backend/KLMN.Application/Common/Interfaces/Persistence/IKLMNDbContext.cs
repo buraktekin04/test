@@ -36,6 +36,16 @@ public interface IKLMNDbContext
     /// <summary>Sağlık tesisi–rapor türü eşleştirmeleri.</summary>
     /// <summary>Muayene sebepleri DbSet.</summary>
     DbSet<ReasonForExaminationDef> ReasonForExaminationDefs { get; }
+    /// <summary>Kurul Karar Tanımları veri kümesi.</summary>
+    DbSet<HcDecisionDef> HcDecisionDefs { get; }
+    /// <summary>Kullanılmayacak Muayene Sebepleri veri kümesi.</summary>
+    DbSet<HcUnusedReasonForExam> HcUnusedReasonForExams { get; }
+    /// <summary>Kullanılmayacak Başvuru Grupları veri kümesi.</summary>
+    DbSet<HcUnusedAdmissionType> HcUnusedAdmissionTypes { get; }
+    /// <summary>Birlikte Verilmeyecek Kararlar veri kümesi.</summary>
+    DbSet<HcUnusedDecision> HcUnusedDecisions { get; }
+    /// <summary>Bağlı Kararlar veri kümesi.</summary>
+    DbSet<HcConnectedDecision> HcConnectedDecisions { get; }
 
     /// <summary>Tetkik tanımları DbSet.</summary>
     DbSet<ProcedureTypeDef> ProcedureTypeDefs { get; }

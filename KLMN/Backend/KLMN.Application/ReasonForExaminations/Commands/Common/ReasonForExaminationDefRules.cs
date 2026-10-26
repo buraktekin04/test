@@ -27,7 +27,8 @@ internal static class ReasonForExaminationDefRules
         if(await db.ReasonForExamReportTypes.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.IsActive&&x.ReasonForExaminationDefId==id,ct)
         ||await db.ReasonForExamUnusedHcAdmissionTypes.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.IsActive&&x.ReasonForExaminationDefId==id,ct)
         ||await db.ReasonForExamProcedureDefs.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.IsActive&&x.ReasonForExaminationDefId==id,ct)
-        ||await db.ReasonForExamBranchDefs.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.IsActive&&x.ReasonForExaminationDefId==id,ct))
+        ||await db.ReasonForExamBranchDefs.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.IsActive&&x.ReasonForExaminationDefId==id,ct)
+        ||await db.HcUnusedReasonForExams.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.IsActive&&x.ReasonForExaminationDefId==id,ct))
             throw new ReasonForExaminationConflictException("Muayene sebebine bağlı aktif eşleştirmeler var.");
     }
     public static async Task EnsureNoLinksAsync(IKLMNDbContext db,Guid id,CancellationToken ct)
@@ -35,7 +36,8 @@ internal static class ReasonForExaminationDefRules
         if(await db.ReasonForExamReportTypes.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.ReasonForExaminationDefId==id,ct)
         ||await db.ReasonForExamUnusedHcAdmissionTypes.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.ReasonForExaminationDefId==id,ct)
         ||await db.ReasonForExamProcedureDefs.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.ReasonForExaminationDefId==id,ct)
-        ||await db.ReasonForExamBranchDefs.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.ReasonForExaminationDefId==id,ct))
+        ||await db.ReasonForExamBranchDefs.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.ReasonForExaminationDefId==id,ct)
+        ||await db.HcUnusedReasonForExams.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.ReasonForExaminationDefId==id,ct))
             throw new ReasonForExaminationConflictException("Muayene sebebinin silinmemiş eşleştirmeleri var.");
     }
 }

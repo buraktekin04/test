@@ -70,6 +70,16 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     /// <summary>Tesislerin verebildiği rapor türleri eşleştirmesi.</summary>
     /// <summary>Muayene sebepleri DbSet.</summary>
     public DbSet<ReasonForExaminationDef> ReasonForExaminationDefs => Set<ReasonForExaminationDef>();
+    /// <summary>Kurul Karar Tanımları veri kümesi.</summary>
+    public DbSet<HcDecisionDef> HcDecisionDefs => Set<HcDecisionDef>();
+    /// <summary>Kullanılmayacak Muayene Sebepleri veri kümesi.</summary>
+    public DbSet<HcUnusedReasonForExam> HcUnusedReasonForExams => Set<HcUnusedReasonForExam>();
+    /// <summary>Kullanılmayacak Başvuru Grupları veri kümesi.</summary>
+    public DbSet<HcUnusedAdmissionType> HcUnusedAdmissionTypes => Set<HcUnusedAdmissionType>();
+    /// <summary>Birlikte Verilmeyecek Kararlar veri kümesi.</summary>
+    public DbSet<HcUnusedDecision> HcUnusedDecisions => Set<HcUnusedDecision>();
+    /// <summary>Bağlı Kararlar veri kümesi.</summary>
+    public DbSet<HcConnectedDecision> HcConnectedDecisions => Set<HcConnectedDecision>();
 
     /// <summary>Tetkik tanımları DbSet.</summary>
     public DbSet<ProcedureTypeDef> ProcedureTypeDefs => Set<ProcedureTypeDef>();

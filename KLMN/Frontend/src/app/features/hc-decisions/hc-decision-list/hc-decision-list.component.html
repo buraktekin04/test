@@ -1,0 +1,97 @@
+<div class="reasons-page">
+ <div class="page-header"><div><h1>Kurul Karar Tanımları</h1><p>Kurul kararlarını ve birlikte kullanılamayacak/bağlı tanımlarını yönetin.</p></div>
+ @if(canCreate()){<p-button label="Yeni Kurul Kararı" icon="pi pi-plus" (onClick)="openCreate()"/>}</div>
+ <p-toast position="top-right"/>
+ <section class="filter-panel"><form [formGroup]="filterForm" (ngSubmit)="search()">
+  <div class="search-field"><i class="pi pi-search"></i><input pInputText formControlName="search" placeholder="Kod veya karar adı ara..."/></div>
+  <div class="inactive-filter"><p-checkbox formControlName="includeInactive" [binary]="true" inputId="decision-inactive"/><label for="decision-inactive">Pasifleri dahil et</label></div>
+  <div class="filter-actions"><p-button type="submit" label="Ara" icon="pi pi-search" [loading]="loading()"/>
+  <p-button type="button" label="Temizle" severity="secondary" [outlined]="true" (onClick)="clear()"/></div></form></section>
+ <section class="reasons-table-card">
+  <div class="table-toolbar"><p-button [label]="filtersVisible()?'Filtreleri Gizle':'Kolon Filtreleri'" icon="pi pi-filter" severity="secondary" [outlined]="true" (onClick)="filtersVisible.set(!filtersVisible())"/>
+  @if(canExport()){<p-button label="Excel'e Aktar" icon="pi pi-file-excel" severity="success" [outlined]="true" [loading]="exporting()" (onClick)="exportExcel()"/>}</div>
+  @if(filtersVisible()){<form class="column-filter-panel" [formGroup]="columnFilterForm" (ngSubmit)="search()">
+   <div class="filter-panel-heading"><strong>Kolon Filtreleri</strong></div>
+   <div class="column-filter-grid"><div class="column-filter-field"><label for="hc-decision-status">Durum</label>
+   <select id="hc-decision-status" formControlName="isActive"><option [ngValue]="null">Tümü</option><option [ngValue]="true">Aktif</option><option [ngValue]="false">Pasif</option></select></div></div>
+   <div class="column-filter-actions"><p-button type="button" label="Tümünü Temizle" severity="secondary" [outlined]="true" (onClick)="clear()"/><p-button type="submit" label="Filtreleri Uygula" icon="pi pi-check"/></div></form>}
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Kurul kararları">
+   <p-table [value]="records()" [loading]="loading()" [resizableColumns]="true" columnResizeMode="expand" [tableStyle]="{'min-width':'2050px','width':'100%'}">
+    <ng-template pTemplate="header"><tr>
+      <th pResizableColumn pSortableColumn="code">Kod <p-sortIcon field="code"/></th>
+      <th pResizableColumn pSortableColumn="name">Karar Adı <p-sortIcon field="name"/></th>
+      <th pResizableColumn pSortableColumn="timeInformationRequired">Süre Bilgisi Gerekir <p-sortIcon field="timeInformationRequired"/></th>
+<th pResizableColumn pSortableColumn="additionalDescriptionRequired">Ek Açıklama Gerekir <p-sortIcon field="additionalDescriptionRequired"/></th>
+<th pResizableColumn pSortableColumn="negativeDecision">Olumsuz Karar <p-sortIcon field="negativeDecision"/></th>
+<th pResizableColumn pSortableColumn="approvalRequired">MSB Onayı Gerekir <p-sortIcon field="approvalRequired"/></th>
+<th pResizableColumn pSortableColumn="pertemApprovalRequired">Pertem Onayı Gerekir <p-sortIcon field="pertemApprovalRequired"/></th>
+<th pResizableColumn pSortableColumn="diagnosisRequired">Tanı Zorunlu <p-sortIcon field="diagnosisRequired"/></th>
+      <th pResizableColumn>Kullanılmayacak Muayene Sebepleri</th>
+<th pResizableColumn>Kullanılmayacak Başvuru Grupları</th>
+<th pResizableColumn>Birlikte Verilmeyecek Kararlar</th>
+<th pResizableColumn>Bağlı Kararlar</th>
+      <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive"/></th><th class="sticky-actions-col">İşlemler</th>
+    </tr></ng-template>
+    <ng-template pTemplate="body" let-item><tr>
+     <td><code class="record-code">{{item.code}}</code></td><td class="reason-description">{{item.name}}</td>
+     <td><p-tag [value]="item.timeInformationRequired?'Evet':'Hayır'" [severity]="item.timeInformationRequired?'success':'secondary'"/></td>
+<td><p-tag [value]="item.additionalDescriptionRequired?'Evet':'Hayır'" [severity]="item.additionalDescriptionRequired?'success':'secondary'"/></td>
+<td><p-tag [value]="item.negativeDecision?'Evet':'Hayır'" [severity]="item.negativeDecision?'success':'secondary'"/></td>
+<td><p-tag [value]="item.approvalRequired?'Evet':'Hayır'" [severity]="item.approvalRequired?'success':'secondary'"/></td>
+<td><p-tag [value]="item.pertemApprovalRequired?'Evet':'Hayır'" [severity]="item.pertemApprovalRequired?'success':'secondary'"/></td>
+<td><p-tag [value]="item.diagnosisRequired?'Evet':'Hayır'" [severity]="item.diagnosisRequired?'success':'secondary'"/></td>
+     @for(column of relationColumns;track column.kind){<td><div class="linked-items">
+       @if(item[column.kind].length){@for(name of item[column.kind];track $index){<span class="linked-entry">{{name}}</span>}}
+       @else{<span class="root-record">Yok</span>}
+       @if(canOpenRelation(column.module)){<button type="button" class="text-retry" (click)="openRelation(item,column.slug)">{{item[column.kind].length}} kayıt · Yönet</button>}
+     </div></td>}
+     <td><p-tag [value]="item.isActive?'Aktif':'Pasif'" [severity]="item.isActive?'success':'secondary'"/></td>
+     <td class="sticky-actions-col"><div class="row-actions">
+     @if(canUpdate()){<p-button icon="pi pi-pencil" size="small" severity="secondary" [text]="true" ariaLabel="Düzenle" (onClick)="openEdit(item)"/>
+     <p-button [icon]="item.isActive?'pi pi-ban':'pi pi-check-circle'" size="small" severity="secondary" [text]="true" [ariaLabel]="item.isActive?'Pasifleştir':'Aktifleştir'" (onClick)="changeStatus(item)"/>}
+     @if(canAudit()){<p-button icon="pi pi-history" size="small" severity="secondary" [text]="true" ariaLabel="İşlem geçmişi" (onClick)="auditRecord.set(item)"/>}
+     @if(canDelete()){<p-button icon="pi pi-trash" size="small" severity="danger" [text]="true" ariaLabel="Sil" (onClick)="delete(item)"/>}
+     </div></td></tr></ng-template>
+    <ng-template pTemplate="emptymessage"><tr><td colspan="14" class="empty-table">Kayıt bulunamadı.</td></tr></ng-template>
+   </p-table></div>
+  <div class="pagination"><span>{{rangeStart()}}–{{rangeEnd()}} / {{totalCount()}} kayıt</span>
+   <div class="pagination-controls">
+   <button class="page-nav" (click)="page(1)" [disabled]="pageNumber()<=1">«</button>
+   <button class="page-nav" (click)="page(pageNumber()-1)" [disabled]="pageNumber()<=1">‹</button>
+   <span>{{pageNumber()}} / {{totalPages()}}</span>
+   <button class="page-nav" (click)="page(pageNumber()+1)" [disabled]="pageNumber()>=totalPages()">›</button>
+   <button class="page-nav" (click)="page(totalPages())" [disabled]="pageNumber()>=totalPages()">»</button></div>
+   <label class="page-size">Sayfa başına <select [value]="pageSize()" (change)="size($event)">
+   <option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option>
+   </select></label></div>
+ </section>
+</div>
+<p-dialog [header]="editing()?'Kurul Kararı Düzenle':'Yeni Kurul Kararı'" [visible]="dialogVisible()" (visibleChange)="dialogVisible.set($event)"
+ [modal]="true" [draggable]="false" [resizable]="false" [style]="{'width':'min(750px,96vw)'}">
+ <form class="reason-form" [formGroup]="itemForm" (ngSubmit)="save()">
+ <div class="form-divider"><span>Kurul Kararı Bilgileri</span></div>
+ <div class="form-grid"><div class="form-field"><label for="hc-code">Kod *</label><input pInputText type="number" id="hc-code" formControlName="code" min="0"/>
+ @if(fieldError('code');as msg){<small class="field-error">{{msg}}</small>}</div>
+ <div class="form-field form-field-full"><label for="hc-name">Karar Adı *</label><input pInputText id="hc-name" formControlName="name"/>
+ @if(fieldError('name');as msg){<small class="field-error">{{msg}}</small>}</div></div>
+ <div class="form-divider"><span>Karar Özellikleri</span></div><div class="checkbox-list">
+ <label><p-checkbox formControlName="timeInformationRequired" [binary]="true"/> Süre Bilgisi Gerekir</label>
+<label><p-checkbox formControlName="additionalDescriptionRequired" [binary]="true"/> Ek Açıklama Gerekir</label>
+<label><p-checkbox formControlName="negativeDecision" [binary]="true"/> Olumsuz Karar</label>
+<label><p-checkbox formControlName="approvalRequired" [binary]="true"/> MSB Onayı Gerekir</label>
+<label><p-checkbox formControlName="pertemApprovalRequired" [binary]="true"/> Pertem Onayı Gerekir</label>
+<label><p-checkbox formControlName="diagnosisRequired" [binary]="true"/> Tanı Zorunlu</label>
+ </div>
+ <div class="form-divider"><span>Geçerlilik Tarihleri</span></div><div class="form-grid">
+ <div class="form-field"><label for="hc-from">Geçerli Başlangıç</label><input pInputText type="datetime-local" id="hc-from" formControlName="validFrom"/></div>
+ <div class="form-field"><label for="hc-to">Geçerli Bitiş</label><input pInputText type="datetime-local" id="hc-to" formControlName="validTo"/>
+ @if(fieldError('validTo');as msg){<small class="field-error">{{msg}}</small>}</div></div>
+ <div class="form-footer">@if(formError()){<div class="form-save-error" role="alert">{{formError()}}</div>}
+ <div class="dialog-actions"><p-button type="button" label="Vazgeç" severity="secondary" [outlined]="true" (onClick)="dialogVisible.set(false)"/>
+ <p-button type="submit" label="Kaydet" icon="pi pi-check" [loading]="saving()"/></div></div>
+ </form></p-dialog>
+<p-confirmdialog/>
+<p-dialog header="Kurul Kararı İşlem Geçmişi" [visible]="!!auditRecord()" (visibleChange)="!$event&&auditRecord.set(null)"
+ [modal]="true" [style]="{'width':'min(760px,96vw)'}">
+ @if(auditRecord();as item){<app-audit-history entityType="HcDecisionDef" [entityId]="item.id"/>}
+</p-dialog>

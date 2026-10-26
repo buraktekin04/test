@@ -284,6 +284,55 @@ public static class PermissionCodes
         public const string Print = "Investigations.Print";
     }
     /// <summary>Muayene Sebebi ekranının işlem yetkileri.</summary>
+    /// <summary>Kurul Karar Tanımları için eylem bazlı izinler.</summary>
+    public static class HcDecisions
+    {
+        public const string View = "HcDecisions.View";
+        public const string Query = "HcDecisions.Query";
+        public const string Create = "HcDecisions.Create";
+        public const string Update = "HcDecisions.Update";
+        public const string Delete = "HcDecisions.Delete";
+    }
+
+    /// <summary>Kullanılmayacak Muayene Sebepleri için eylem bazlı izinler.</summary>
+    public static class HcUnusedReasons
+    {
+        public const string View = "HcUnusedReasons.View";
+        public const string Query = "HcUnusedReasons.Query";
+        public const string Create = "HcUnusedReasons.Create";
+        public const string Update = "HcUnusedReasons.Update";
+        public const string Delete = "HcUnusedReasons.Delete";
+    }
+
+    /// <summary>Kullanılmayacak Başvuru Grupları için eylem bazlı izinler.</summary>
+    public static class HcUnusedAdmissionTypes
+    {
+        public const string View = "HcUnusedAdmissionTypes.View";
+        public const string Query = "HcUnusedAdmissionTypes.Query";
+        public const string Create = "HcUnusedAdmissionTypes.Create";
+        public const string Update = "HcUnusedAdmissionTypes.Update";
+        public const string Delete = "HcUnusedAdmissionTypes.Delete";
+    }
+
+    /// <summary>Birlikte Verilmeyecek Kararlar için eylem bazlı izinler.</summary>
+    public static class HcUnusedDecisions
+    {
+        public const string View = "HcUnusedDecisions.View";
+        public const string Query = "HcUnusedDecisions.Query";
+        public const string Create = "HcUnusedDecisions.Create";
+        public const string Update = "HcUnusedDecisions.Update";
+        public const string Delete = "HcUnusedDecisions.Delete";
+    }
+
+    /// <summary>Bağlı Kararlar için eylem bazlı izinler.</summary>
+    public static class HcDecisionConnections
+    {
+        public const string View = "HcDecisionConnections.View";
+        public const string Query = "HcDecisionConnections.Query";
+        public const string Create = "HcDecisionConnections.Create";
+        public const string Update = "HcDecisionConnections.Update";
+        public const string Delete = "HcDecisionConnections.Delete";
+    }
     public static class ReasonsForExaminations
     {
         public const string View = "ReasonsForExaminations.View";

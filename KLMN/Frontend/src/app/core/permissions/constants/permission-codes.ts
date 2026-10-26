@@ -61,6 +61,31 @@ export const PermissionCodes = {
   /** Rapor Türü yetki kodları. */
   /** Sağlık Tesisi tanım izinleri. */
   /** ReasonsForExaminations işlemleri backend ile aynı yetki kodlarını kullanır. */
+  /** Kurul Karar Tanımları için eylem bazlı izinler. */
+  HcDecisions: {
+    View:'HcDecisions.View',Query:'HcDecisions.Query',Create:'HcDecisions.Create',
+    Update:'HcDecisions.Update',Delete:'HcDecisions.Delete'
+  },
+  /** Kullanılmayacak Muayene Sebepleri için eylem bazlı izinler. */
+  HcUnusedReasons: {
+    View:'HcUnusedReasons.View',Query:'HcUnusedReasons.Query',Create:'HcUnusedReasons.Create',
+    Update:'HcUnusedReasons.Update',Delete:'HcUnusedReasons.Delete'
+  },
+  /** Kullanılmayacak Başvuru Grupları için eylem bazlı izinler. */
+  HcUnusedAdmissionTypes: {
+    View:'HcUnusedAdmissionTypes.View',Query:'HcUnusedAdmissionTypes.Query',Create:'HcUnusedAdmissionTypes.Create',
+    Update:'HcUnusedAdmissionTypes.Update',Delete:'HcUnusedAdmissionTypes.Delete'
+  },
+  /** Birlikte Verilmeyecek Kararlar için eylem bazlı izinler. */
+  HcUnusedDecisions: {
+    View:'HcUnusedDecisions.View',Query:'HcUnusedDecisions.Query',Create:'HcUnusedDecisions.Create',
+    Update:'HcUnusedDecisions.Update',Delete:'HcUnusedDecisions.Delete'
+  },
+  /** Bağlı Kararlar için eylem bazlı izinler. */
+  HcDecisionConnections: {
+    View:'HcDecisionConnections.View',Query:'HcDecisionConnections.Query',Create:'HcDecisionConnections.Create',
+    Update:'HcDecisionConnections.Update',Delete:'HcDecisionConnections.Delete'
+  },
   ReasonsForExaminations: {
     View: 'ReasonsForExaminations.View', Query: 'ReasonsForExaminations.Query',
     Create: 'ReasonsForExaminations.Create', Update: 'ReasonsForExaminations.Update', Delete: 'ReasonsForExaminations.Delete'

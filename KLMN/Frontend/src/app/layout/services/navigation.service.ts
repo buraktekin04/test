@@ -180,6 +180,17 @@ export class NavigationService {
           ]
         },
         {
+          label: 'Kurul Kararları',
+          icon: 'pi pi-briefcase',
+          children: [
+            {label:'Kurul Karar Tanımları',icon:'pi pi-file',route:'/app/hc-decisions',permissionModule:'HcDecisions'},
+            {label:'Kullanılmayacak Muayene Sebepleri',icon:'pi pi-ban',route:'/app/hc-unused-reasons',permissionModule:'HcUnusedReasons'},
+            {label:'Kullanılmayacak Başvuru Grupları',icon:'pi pi-users',route:'/app/hc-unused-admission-types',permissionModule:'HcUnusedAdmissionTypes'},
+            {label:'Birlikte Verilmeyecek Kararlar',icon:'pi pi-times-circle',route:'/app/hc-unused-decisions',permissionModule:'HcUnusedDecisions'},
+            {label:'Bağlı Kararlar',icon:'pi pi-link',route:'/app/hc-decision-connections',permissionModule:'HcDecisionConnections'}
+          ]
+        },
+        {
           label: 'Muayene ve Tetkik',
           icon: 'pi pi-clipboard',
           children: [

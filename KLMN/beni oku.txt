@@ -1,3 +1,24 @@
+SON FAZ (26.10.2026) — KURUL KARAR TANIMLARI VE DÖRT ALT İLİŞKİ
+=================================================================
+- Fotoğraflardaki eski HcDecisionDef ve dört ilişki modeli temel alındı.
+- Kurul Karar Tanımları (6 bool + int kod + ValidFrom/ValidTo) ve
+  Kullanılmayacak Muayene Sebepleri / Kullanılmayacak Başvuru Grupları /
+  Birlikte Verilmeyecek Kararlar / Bağlı Kararlar olmak üzere beş ayrı
+  tanım ekranı, backend CQRS modülü, controller, permission ve menü eklendi.
+- Her Angular ekranı kendi TS/HTML/SCSS/model/service dosyasıyla bağımsızdır.
+  Ana karar tablosu aktif alt ilişkileri isimleriyle listeler; yönetim linkleri
+  ilgili karar filtresine gider. Onaylı p-table/filtre/modal tasarımı korunur.
+- Her Response ve Exception ayrı .cs dosyasındadır; EF projection Handler'dadır.
+  BaseEntity/xmin/audit, FK Restrict, soft-delete partial unique index,
+  referans aktiflik kontrolü, Excel ve eylem permission'ları eklendi.
+- Migration/ModelSnapshot repo'da YOK: migration oluşturulmadı ve DB'ye
+  uygulanmadı; var olan yerel migration zinciri olmadan tablo sıfırlanmaz.
+- Yeni KLMN/Tests/HcDecisions.Regression kaynak regresyon projesi ve
+  KLMN/KURUL_KARAR_TANIMLARI_KURULUM.md teknik kılavuzu oluşturuldu.
+- GitHub statik kod, frontend import ve route/permission incelemesi yapıldı.
+  dotnet/npm build, PostgreSQL migration, regresyon ve tarayıcı testleri bu
+  ortamda ÇALIŞTIRILAMADI; production/kabul tamamlandı denemez.
+
 SON DÜZELTME (26.10.2026) — FLYINGMISSIONS CS0411 DERLEME HATASI
 ========================================================================
 - GetFlyingMissionDefByIdQueryHandler ve GetFlyingMissionDefsQueryHandler
@@ -261,7 +282,7 @@ ediliyordu. Bu kullanıcı beklentisine AYKIRIYDI.
 
 KLMN PROJESİ — BENİ OKU / DEVİR DOSYASI
 ====================================
-Güncelleme tarihi: 22.10.2026
+Güncelleme tarihi: 26.10.2026
 Repo: https://github.com/buraktekin04/test
 Proje kökü: KLMN/
 Varsayılan dal: main

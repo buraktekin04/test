@@ -1,3 +1,8 @@
+using KLMN.Application.HcDecisions.Exceptions;
+using KLMN.Application.HcUnusedReasons.Exceptions;
+using KLMN.Application.HcUnusedAdmissionTypes.Exceptions;
+using KLMN.Application.HcUnusedDecisions.Exceptions;
+using KLMN.Application.HcDecisionConnections.Exceptions;
 using KLMN.Application.ICD10Defs.Exceptions;
 using KLMN.Application.ICD10Diagnostics.Exceptions;
 using KLMN.Application.SYYClassifications.Exceptions;
@@ -215,6 +220,16 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             MilitaryClassConflictException =>
                 new ProblemDetails { Status = StatusCodes.Status409Conflict,
                     Title = "Askerî sınıf işlemi gerçekleştirilemedi.", Detail = exception.Message },
+            HcDecisionDefNotFoundException => new ProblemDetails { Status=404, Title="Kurul Karar Tanımları - kayıt bulunamadı.", Detail=exception.Message },
+            HcDecisionDefConflictException => new ProblemDetails { Status=409, Title="Kurul Karar Tanımları - işlem engellendi.", Detail=exception.Message },
+            HcUnusedReasonForExamNotFoundException => new ProblemDetails { Status=404, Title="Kullanılmayacak Muayene Sebepleri - kayıt bulunamadı.", Detail=exception.Message },
+            HcUnusedReasonForExamConflictException => new ProblemDetails { Status=409, Title="Kullanılmayacak Muayene Sebepleri - işlem engellendi.", Detail=exception.Message },
+            HcUnusedAdmissionTypeNotFoundException => new ProblemDetails { Status=404, Title="Kullanılmayacak Başvuru Grupları - kayıt bulunamadı.", Detail=exception.Message },
+            HcUnusedAdmissionTypeConflictException => new ProblemDetails { Status=409, Title="Kullanılmayacak Başvuru Grupları - işlem engellendi.", Detail=exception.Message },
+            HcUnusedDecisionNotFoundException => new ProblemDetails { Status=404, Title="Birlikte Verilmeyecek Kararlar - kayıt bulunamadı.", Detail=exception.Message },
+            HcUnusedDecisionConflictException => new ProblemDetails { Status=409, Title="Birlikte Verilmeyecek Kararlar - işlem engellendi.", Detail=exception.Message },
+            HcConnectedDecisionNotFoundException => new ProblemDetails { Status=404, Title="Bağlı Kararlar - kayıt bulunamadı.", Detail=exception.Message },
+            HcConnectedDecisionConflictException => new ProblemDetails { Status=409, Title="Bağlı Kararlar - işlem engellendi.", Detail=exception.Message },
             ReasonForExaminationNotFoundException => new ProblemDetails { Status=404, Title="Kayıt bulunamadı.", Detail=exception.Message },
             ReasonForExaminationConflictException => new ProblemDetails { Status=409, Title="Eşleştirme işlemi gerçekleştirilemedi.", Detail=exception.Message },
             SYYClassificationDefNotFoundException => new ProblemDetails { Status=404,Title="Kayıt bulunamadı.",Detail=exception.Message },

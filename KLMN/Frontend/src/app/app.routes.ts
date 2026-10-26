@@ -186,6 +186,31 @@ export const routes: Routes = [
           .then(x=>x.FlyingMissionListComponent)
       },
       {
+        path:'hc-decisions',canActivate:[permissionGuard],
+        data:{permissionModule:'HcDecisions'},
+        loadComponent:()=>import('./features/hc-decisions/hc-decision-list/hc-decision-list.component').then(c=>c.HcDecisionListComponent)
+      },
+      {
+        path:'hc-unused-reasons',canActivate:[permissionGuard],
+        data:{permissionModule:'HcUnusedReasons'},
+        loadComponent:()=>import('./features/hc-unused-reasons/hc-unused-reason-list/hc-unused-reason-list.component').then(c=>c.HcUnusedReasonListComponent)
+      },
+      {
+        path:'hc-unused-admission-types',canActivate:[permissionGuard],
+        data:{permissionModule:'HcUnusedAdmissionTypes'},
+        loadComponent:()=>import('./features/hc-unused-admission-types/hc-unused-admission-list/hc-unused-admission-list.component').then(c=>c.HcUnusedAdmissionListComponent)
+      },
+      {
+        path:'hc-unused-decisions',canActivate:[permissionGuard],
+        data:{permissionModule:'HcUnusedDecisions'},
+        loadComponent:()=>import('./features/hc-unused-decisions/hc-unused-decision-list/hc-unused-decision-list.component').then(c=>c.HcUnusedDecisionListComponent)
+      },
+      {
+        path:'hc-decision-connections',canActivate:[permissionGuard],
+        data:{permissionModule:'HcDecisionConnections'},
+        loadComponent:()=>import('./features/hc-decision-connections/hc-decision-connection-list/hc-decision-connection-list.component').then(c=>c.HcDecisionConnectionListComponent)
+      },
+      {
         path: 'reasons-for-examination',
         canActivate: [permissionGuard],
         data: { permissionModule: 'ReasonsForExaminations' },
