@@ -2,7 +2,7 @@
  <div class="page-header">
   <div><h1>SYY Onay Gerektiren Maddeler</h1>
    <p>Tanıya ait onay kuralını ve açıklama maddelerini tek ekranda yönetin.</p>
-   <a routerLink="/app/syy-diagnoses">SYY Tanı Listesi'ne dön</a>
+   <a routerLink="/app/syy-rules" [queryParams]="presetDiagnosisId?{syyDiagnosisId:presetDiagnosisId}:{}">SYY Kural Tanımlarına dön</a>
   </div>
   @if(canCreate()){<p-button label="Yeni Onay Kuralı" icon="pi pi-plus" (onClick)="create()"/>}
  </div>

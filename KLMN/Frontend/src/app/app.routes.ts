@@ -156,6 +156,12 @@ export const routes: Routes = [
           .then(c=>c.SyyDiagnosisDecisionSearchComponent)
       },
       {
+        path: 'syy-rules',canActivate:[permissionGuard],
+        data:{permissions:[PermissionCodes.SYYDiagnoses.View,PermissionCodes.SYYDiagnoses.Query],permissionMode:'any'},
+        loadComponent:()=>import('./features/syy-rules/syy-rule-list/syy-rule-list.component')
+          .then(c=>c.SyyRuleListComponent)
+      },
+      {
         path: 'syy-diagnoses',
         canActivate: [permissionGuard],
         data: { permissionModule: 'SYYDiagnoses' },

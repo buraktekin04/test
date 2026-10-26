@@ -1,3 +1,29 @@
+26.10.2026 — SYY KURAL TANIMLARI (SALT OKUNUR)
+============================================================
+- Kullanıcı gereksinimi: SYY Kural Tanımları ekranı mevcut SYYDiagnosisDef entity'sini
+  kullanır. EF sorgusu yalnız Eligible == true (bool? nullable; null/false hariç)
+  tanıları getirir. Yeni entity, tablo, DbSet veya migration OLUŞTURULMADI.
+- Yeni GET /api/syy-rules API'si; SYYDiagnoses.View veya SYYDiagnoses.Query yetkisi.
+  CQRS GetSYYRules Query / Handler / Validator ve her DTO için ayrı .cs dosyası.
+  Aynı sayfanın mevcut SYYDiagnosisBranchDefs, SYYDiagnosisProcedureDefs,
+  SYYDiagnosisRequireds ve açıklama detayları 3 toplu sorguyla yüklenir (N+1 yok).
+- /app/syy-rules bağımsız Angular sayfası yalnız görüntüleme/aramanın yanında
+  branş, tetkik ve onay ilişkilerinin adlarını, adetlerini, yaş/cinsiyet koşullarını,
+  MustAll/MustOneOf ve sıralanmış açıklama maddelerini satır detayında gösterir.
+  Bu sayfada Create/Update/Delete/Status düğmesi veya endpoint'i YOKTUR.
+- SYY Tanı Listesi (M/D/F) ekranından branş/tetkik/onay geçişleri kaldırıldı;
+  SYY Tanı Sınıflandırma Çizelgesi ilişkisi M/D/F'de korundu.
+- Tanımlamalar > SYY Tanımları > SYY Kural ve Eşleştirmeler menü grubu:
+  Kural Tanımları ve mevcut Branşlar/Tetkikler/Onay Maddeleri ekranları.
+  Üç alt ekranın geri dönüşü Kural Tanımları'na yönlendirildi; ilgili
+  kurala bağlantılarda syyDiagnosisId filtresi korunur. Geri dönüşte kurala
+  ait satır otomatik filtrelenip genişletilir; Temizle tüm kuralları gösterir.
+- Pasifler eklenmediğinde hem tanı hem ilişki kayıtlarında yalnız aktif olanlar;
+  pasifleri dahil et işaretlendiğinde bağlı ilişkilerin pasif kayıtları da görüntülenir.
+- Mevcut tanı ve alt eşleştirme CRUD API'leri/verileri değiştirilmedi.
+- GitHub statik kaynak/import incelemesi; gerçek dotnet/npm build bu ortamda
+  yürütülmeden başarılı test olarak raporlanmaz.
+
 26.10.2026 — SYY TANI KARAR İSTATİSTİĞİ: 2 AYRI EKRAN
 ================================================================
 - Eski MSKBS/SYYDiagnosisDecision modeline uygun yeni SYYDiagnosisDecision entity'si eklendi.

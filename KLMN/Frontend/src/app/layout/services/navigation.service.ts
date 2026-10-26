@@ -240,9 +240,17 @@ export class NavigationService {
             {label:'SYY Tanı Karar İstatistiği Tanımları',icon:'pi pi-list-check',route:'/app/syy-diagnosis-decisions',permissionModule:'SYYDiagnosisDecisions'},
             {label:'SYY Tanı Karar İstatistiği Sorgulama',icon:'pi pi-search',route:'/app/syy-diagnosis-decision-search',requiredPermissions:[PermissionCodes.SYYDiagnosisDecisions.Query]},
             {label:'SYY Tanı Sınıflandırma Çizelgesi',icon:'pi pi-table',route:'/app/syy-classifications',permissionModule:'SYYClassifications'},
-            {label:'SYY Gereken Branşlar',icon:'pi pi-sitemap',route:'/app/syy-diagnosis-branches',permissionModule:'SYYDiagnosisBranches'},
-            {label:'SYY Gereken Tetkikler',icon:'pi pi-heart',route:'/app/syy-diagnosis-procedures',permissionModule:'SYYDiagnosisProcedures'},
-            {label:'SYY Onay Gerektiren Maddeler',icon:'pi pi-check-square',route:'/app/syy-diagnosis-requireds',permissionModule:'SYYDiagnosisRequireds'}
+            {
+              label:'SYY Kural ve Eşleştirmeler',
+              icon:'pi pi-book',
+              children:[
+                {label:'SYY Kural Tanımları',icon:'pi pi-eye',route:'/app/syy-rules',
+                 requiredPermissions:[PermissionCodes.SYYDiagnoses.View,PermissionCodes.SYYDiagnoses.Query],permissionMode:'any'},
+                {label:'SYY Gereken Branşlar',icon:'pi pi-sitemap',route:'/app/syy-diagnosis-branches',permissionModule:'SYYDiagnosisBranches'},
+                {label:'SYY Gereken Tetkikler',icon:'pi pi-heart',route:'/app/syy-diagnosis-procedures',permissionModule:'SYYDiagnosisProcedures'},
+                {label:'SYY Onay Gerektiren Maddeler',icon:'pi pi-check-square',route:'/app/syy-diagnosis-requireds',permissionModule:'SYYDiagnosisRequireds'}
+              ]
+            }
           ]
         },
         {

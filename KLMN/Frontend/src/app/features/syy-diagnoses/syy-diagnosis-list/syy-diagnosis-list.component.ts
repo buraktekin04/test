@@ -41,9 +41,6 @@ export class SyyDiagnosisListComponent implements OnInit {
  readonly canDelete=computed(()=>this.permissions.has(PermissionCodes[this.config.module].Delete));
  readonly canExport=computed(()=>this.permissions.has(PermissionCodes[this.config.module].Query));
  readonly canOpenSyyClassifications=computed(()=>this.permissions.hasModule('SYYClassifications'));
- readonly canOpenSyyBranches=computed(()=>this.permissions.hasModule('SYYDiagnosisBranches'));
- readonly canOpenSyyProcedures=computed(()=>this.permissions.hasModule('SYYDiagnosisProcedures'));
- readonly canOpenSyyRequireds=computed(()=>this.permissions.hasModule('SYYDiagnosisRequireds'));
  readonly canAudit=computed(()=>this.permissions.has(PermissionCodes.AuditLogs.View));
  readonly items=signal<SyyDiagnosisItem[]>([]);readonly total=signal(0);
  readonly page=signal(1);readonly pageSize=signal(20);

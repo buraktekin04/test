@@ -2,7 +2,7 @@
  <div class="page-header">
   <div>
    <h1>SYY Tanı Listesi (M/D/F)</h1>
-   <p>SYY tanılarını, bağlı kayıtlarını, türlerini ve dilimlerini yönetin.</p>
+   <p>SYY tanılarını, bağlı kayıtlarını, türlerini ve dilimlerini yönetin. Branş, tetkik ve onay eşleştirmeleri SYY Kural Tanımları ekranında görüntülenir.</p>
    <p class="related-links"><a routerLink="/app/syy-diagnosis-types">Tanı Türü Tanımları</a>
     <span aria-hidden="true">·</span><a routerLink="/app/syy-diagnosis-slices">Dilim Tanımları</a></p>
   </div>
@@ -63,9 +63,7 @@
     <td>{{item.validTo ? (item.validTo | date:'dd.MM.yyyy HH:mm') : 'Süresiz'}}</td>
      <td><p-tag [value]="item.isActive?'Aktif':'Pasif'" [severity]="item.isActive?'success':'secondary'"/></td>
      <td class="sticky-actions-col"><div class="row-actions">@if(canOpenSyyClassifications()){<a class="syy-related-link" [routerLink]="['/app/syy-classifications']" [queryParams]="{syyDiagnosisId:item.id}" title="SYY Tanı Sınıflandırma Çizelgesi" aria-label="SYY Tanı Sınıflandırma Çizelgesi"><i class="pi pi-table" aria-hidden="true"></i></a>}
-@if(canOpenSyyBranches()){<a class="syy-related-link" [routerLink]="['/app/syy-diagnosis-branches']" [queryParams]="{syyDiagnosisId:item.id}" title="SYY Gereken Branşlar" aria-label="SYY Gereken Branşlar"><i class="pi pi-sitemap" aria-hidden="true"></i></a>}
-@if(canOpenSyyProcedures()){<a class="syy-related-link" [routerLink]="['/app/syy-diagnosis-procedures']" [queryParams]="{syyDiagnosisId:item.id}" title="SYY Gereken Tetkikler" aria-label="SYY Gereken Tetkikler"><i class="pi pi-heart" aria-hidden="true"></i></a>}
-@if(canOpenSyyRequireds()){<a class="syy-related-link" [routerLink]="['/app/syy-diagnosis-requireds']" [queryParams]="{syyDiagnosisId:item.id}" title="SYY Onay Gerektiren Maddeler" aria-label="SYY Onay Gerektiren Maddeler"><i class="pi pi-check-square" aria-hidden="true"></i></a>}
+
       @if(canUpdate()){
        <p-button icon="pi pi-pencil" ariaLabel="Düzenle" [text]="true" severity="secondary" (onClick)="openEdit(item)"/>
        <p-button [icon]="item.isActive?'pi pi-ban':'pi pi-check-circle'" [text]="true"

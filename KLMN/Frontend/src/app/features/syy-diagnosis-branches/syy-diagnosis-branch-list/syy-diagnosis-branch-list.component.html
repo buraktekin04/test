@@ -1,7 +1,7 @@
 <div class="definition-page">
  <div class="page-header">
   <div><h1>SYY Gereken Branşlar</h1><p>SYY tanılarına bağlı referansları ve koşulları yönetin.</p>
-   <a routerLink="/app/syy-diagnoses">SYY Tanı Listesi'ne dön</a>
+   <a routerLink="/app/syy-rules" [queryParams]="presetDiagnosisId?{syyDiagnosisId:presetDiagnosisId}:{}">SYY Kural Tanımlarına dön</a>
   </div>
   @if(canCreate()){<p-button label="Yeni Eşleştirme" icon="pi pi-plus" (onClick)="openCreate()"/>}
  </div>

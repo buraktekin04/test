@@ -1,0 +1,125 @@
+<div class="syy-rule-page">
+ <header class="page-header">
+  <div><h1>SYY Kural Tanımları</h1>
+   <p>SYY Tanı Listesi'nde <strong>Seçilebilir = Evet</strong> olan tanılar ve onlara bağlı branş, tetkik, onay kuralları.</p>
+   <span class="page-note">Bu ekran yalnızca görüntüleme amaçlıdır. Eşleştirmeler ilgili tanım ekranlarında yönetilir.</span>
+  </div>
+ </header>
+ <p-toast position="top-right"/>
+ <section class="filter-panel">
+  <form [formGroup]="form" (ngSubmit)="search()">
+    <div class="search-field">
+     <i class="pi pi-search" aria-hidden="true"></i>
+     <input pInputText formControlName="search" placeholder="SYY tanı kodu veya adı ara..." aria-label="SYY tanı kodu veya adında ara"/>
+    </div>
+    <label class="inactive-filter"><p-checkbox [binary]="true" formControlName="includeInactive"/> Pasifleri dahil et</label>
+    <p-button label="Ara" icon="pi pi-search" type="submit" [loading]="loading()"/>
+    <p-button label="Temizle" type="button" severity="secondary" [outlined]="true" (onClick)="clear()"/>
+  </form>
+ </section>
+ <section class="list-card">
+  <div class="table-scroll" role="region" tabindex="0" aria-label="SYY Kural Tanımları">
+   <p-table [value]="items()" [loading]="loading()" [resizableColumns]="true" columnResizeMode="expand"
+      [tableStyle]="{'min-width':'1180px','width':'100%'}">
+    <ng-template pTemplate="header"><tr>
+     <th pResizableColumn pSortableColumn="code">SYY Kodu <p-sortIcon field="code"/></th>
+     <th pResizableColumn pSortableColumn="name">SYY Tanısı <p-sortIcon field="name"/></th>
+     <th pResizableColumn pSortableColumn="diagnosisTypeName">Tanı Türü <p-sortIcon field="diagnosisTypeName"/></th>
+     <th pResizableColumn>Gereken Branşlar</th><th pResizableColumn>Gereken Tetkikler</th>
+     <th pResizableColumn>Onay Gerektiren Maddeler</th>
+     <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive"/></th>
+     <th>Detay</th>
+    </tr></ng-template>
+    <ng-template pTemplate="body" let-item>
+     <tr>
+      <td><code class="record-code">{{item.code}}</code></td>
+      <td class="wrap">{{item.name}}</td>
+      <td class="wrap">{{item.diagnosisTypeName}}</td>
+      <td><div class="summary-cell">
+       <strong>{{item.branches.length}} branş</strong>
+       @for(branch of item.branches.slice(0,2);track branch.id){<span class="related-entry">{{branch.branchName}}</span>}
+       @if(item.branches.length>2){<span class="more-count">+{{item.branches.length-2}} diğer</span>}
+      </div></td>
+      <td><div class="summary-cell">
+       <strong>{{item.procedures.length}} tetkik</strong>
+       @for(procedure of item.procedures.slice(0,2);track procedure.id){<span class="related-entry">{{procedure.procedureName}}</span>}
+       @if(item.procedures.length>2){<span class="more-count">+{{item.procedures.length-2}} diğer</span>}
+      </div></td>
+      <td><div class="summary-cell"><strong>{{item.approvals.length}} onay kuralı</strong>
+       @for(approval of item.approvals.slice(0,2);track approval.id){
+         <span class="related-entry">{{approval.details.length}} açıklama maddesi</span>
+       }
+      </div></td>
+      <td><p-tag [value]="item.isActive?'Aktif':'Pasif'" [severity]="item.isActive?'success':'secondary'"/></td>
+      <td><p-button [label]="expandedId()===item.id?'Kapat':'İncele'"
+       [icon]="expandedId()===item.id?'pi pi-chevron-up':'pi pi-eye'"
+       severity="secondary" [outlined]="true" size="small" (onClick)="toggle(item.id)"/></td>
+     </tr>
+     @if(expandedId()===item.id){
+      <tr class="details-row"><td colspan="8">
+       <div class="details-heading">
+        <div><strong>{{item.code}} — {{item.name}}</strong>
+         <p>{{item.sliceName||'Dilim belirtilmedi'}} ·
+          {{item.validFrom?(item.validFrom|date:'dd.MM.yyyy'):'Başlangıç sınırsız'}} –
+          {{item.validTo?(item.validTo|date:'dd.MM.yyyy'):'Süresiz'}}</p>
+        </div>
+       </div>
+       <div class="relation-grid">
+        <section class="relation-box"><div class="relation-header"><h3>SYY Gereken Branşlar</h3>
+         @if(canSeeBranches()){<a [routerLink]="['/app/syy-diagnosis-branches']"
+          [queryParams]="{syyDiagnosisId:item.id}">Tanım ekranına git</a>}
+        </div>
+        @for(branch of item.branches;track branch.id){
+         <div class="relation-item"><strong>{{branch.branchName}}</strong>
+          <span>{{branch.startingAge}}–{{branch.endingAge}} yaş · Cinsiyet kodu: {{branch.gender}}
+           @if(!branch.isActive){· Pasif}
+          </span>
+         </div>
+        } @empty {<p class="relation-empty">Branş eşleştirmesi bulunmuyor.</p>}
+        </section>
+        <section class="relation-box"><div class="relation-header"><h3>SYY Gereken Tetkikler</h3>
+         @if(canSeeProcedures()){<a [routerLink]="['/app/syy-diagnosis-procedures']"
+          [queryParams]="{syyDiagnosisId:item.id}">Tanım ekranına git</a>}
+        </div>
+        @for(procedure of item.procedures;track procedure.id){
+         <div class="relation-item"><strong>{{procedure.procedureName}}</strong>
+          <span>{{procedure.startingAge}}–{{procedure.endingAge}} yaş · Cinsiyet kodu: {{procedure.gender}}
+           @if(!procedure.isActive){· Pasif}
+          </span>
+         </div>
+        } @empty {<p class="relation-empty">Tetkik eşleştirmesi bulunmuyor.</p>}
+        </section>
+        <section class="relation-box"><div class="relation-header"><h3>SYY Onay Gerektiren Maddeler</h3>
+         @if(canSeeApprovals()){<a [routerLink]="['/app/syy-diagnosis-requireds']"
+          [queryParams]="{syyDiagnosisId:item.id}">Tanım ekranına git</a>}
+        </div>
+        @for(approval of item.approvals;track approval.id){
+         <div class="relation-item"><strong>
+          {{approval.mustAll===true?'Tüm maddeler gerekli':approval.mustOneOf===true?'En az bir madde gerekli':'Onay kuralı'}}
+          @if(!approval.isActive){ · Pasif}
+         </strong>
+         <ul class="approval-items">
+          @for(detail of approval.details;track detail.id){<li>{{detail.description}}</li>}
+          @empty {<li>Açıklama maddesi bulunmuyor.</li>}
+         </ul></div>
+        } @empty {<p class="relation-empty">Onay kuralı bulunmuyor.</p>}
+        </section>
+       </div>
+      </td></tr>
+     }
+    </ng-template>
+    <ng-template pTemplate="emptymessage"><tr><td colspan="8" class="empty-table">Seçilebilir (Eligible = 1) tanı bulunamadı.</td></tr></ng-template>
+   </p-table>
+  </div>
+  <div class="pagination">
+   <span>{{total()}} tanım · Sayfa {{page()}} / {{maxPage()}}</span>
+   <div class="pagination-controls">
+    <button type="button" [disabled]="page()<=1" (click)="toPage(page()-1)" aria-label="Önceki">‹</button>
+    <button type="button" [disabled]="page()>=maxPage()" (click)="toPage(page()+1)" aria-label="Sonraki">›</button>
+   </div>
+   <label>Sayfa başına <select [value]="pageSize()" (change)="changePageSize($event)">
+    <option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option>
+   </select></label>
+  </div>
+ </section>
+</div>
