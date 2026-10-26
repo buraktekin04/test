@@ -23,7 +23,6 @@ using KLMN.Application.ReasonForExamReportTypes.Exceptions;
 using KLMN.Application.Procedures.Exceptions;
 using KLMN.Application.ReasonForExaminations.Exceptions;
 using KLMN.Application.ForcesCommands.Exceptions;
-using KLMN.Application.PurchaseNumbers.Exceptions;
 using KLMN.Application.Countries.Exceptions;
 using KLMN.Application.Cities.Exceptions;
 using KLMN.Application.MilitarySchools.Exceptions;
@@ -334,12 +333,6 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             CityConflictException =>
                 new ProblemDetails { Status = StatusCodes.Status409Conflict,
                     Title = "Şehir işlemi gerçekleştirilemedi.", Detail = exception.Message },
-            PurchaseNumberNotFoundException =>
-                new ProblemDetails { Status = StatusCodes.Status404NotFound,
-                    Title = "Alım numarası bulunamadı.", Detail = exception.Message },
-            PurchaseNumberConflictException =>
-                new ProblemDetails { Status = StatusCodes.Status409Conflict,
-                    Title = "Alım numarası kaydedilemedi.", Detail = exception.Message },
 
             MilitaryUnitNotFoundException =>
                 new ProblemDetails

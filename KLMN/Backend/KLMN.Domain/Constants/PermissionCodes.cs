@@ -217,15 +217,6 @@ public static class PermissionCodes
         public const string Delete = "MilitarySchools.Delete";
     }
 
-    public static class PurchaseNumbers
-    {
-        public const string View = "PurchaseNumbers.View";
-        public const string Query = "PurchaseNumbers.Query";
-        public const string Create = "PurchaseNumbers.Create";
-        public const string Update = "PurchaseNumbers.Update";
-        public const string Delete = "PurchaseNumbers.Delete";
-    }
-
     public static class MilitaryUnits
     {
         /// <summary>Modül kayıtlarını görüntüleyebilme yetkisinin teknik kodudur.</summary>
@@ -502,7 +493,7 @@ public static class PermissionCodes
        public const string Delete="AnnotationReasons.Delete";
     }
 
-    /// <summary>Uçuşa Uçak Tipi Tanımları yetkileri.</summary>
+    /// <summary>Uçtuğu Uçak Tipi Tanımları yetkileri.</summary>
     public static class PlaneTypes
     {
        public const string View="PlaneTypes.View";

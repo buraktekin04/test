@@ -12,7 +12,7 @@ using KLMN.Application.PlaneTypes.Queries.GetPlaneTypeDefById;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 namespace KLMN.Api.Controllers;
-/// <summary>Uçuşa Uçak Tipi Tanımları CRUD, Excel ve izin kontrollü API.</summary>
+/// <summary>Uçtuğu Uçak Tipi Tanımları CRUD, Excel ve izin kontrollü API.</summary>
 [ApiController]
 [Route("api/plane-types")]
 public sealed class PlaneTypesController(ISender sender,IExcelExportService excel):ControllerBase
@@ -34,7 +34,7 @@ public sealed class PlaneTypesController(ISender sender,IExcelExportService exce
    for(var page=2;page<=(int)Math.Ceiling(first.TotalCount/100d);page++)
       rows.AddRange((await sender.Send(q with{PageNumber=page,PageSize=100},ct)).Items);
    ExcelColumn<PlaneTypeDefResponse>[] columns={new("Kod",x=>x.Code,Width:17),new("Ad",x=>x.Name,Width:42),new("Geçerli Başlangıç",x=>x.ValidFrom,NumberFormat:"dd.MM.yyyy HH:mm"),new("Geçerli Bitiş",x=>x.ValidTo,NumberFormat:"dd.MM.yyyy HH:mm"),new("Durum",x=>x.IsActive?"Aktif":"Pasif")};
-   return File(excel.Export(rows,columns,"Uçuşa Uçak Tipi Tanımları"),
+   return File(excel.Export(rows,columns,"Uçtuğu Uçak Tipi Tanımları"),
      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
      "plane-types_"+DateTime.UtcNow.ToString("yyyyMMdd_HHmm")+".xlsx");
  }

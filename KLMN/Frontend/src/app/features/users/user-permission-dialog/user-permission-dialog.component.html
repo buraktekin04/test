@@ -1,0 +1,63 @@
+<p-dialog header="Kişiye Özel Yetkiler" [visible]="!!user"
+ (visibleChange)="!$event && close()" [modal]="true" [draggable]="false" [resizable]="false"
+ [style]="{'width':'min(920px,97vw)'}">
+ @if(user;as target){
+ <div class="permissions-root">
+  <div class="permissions-intro">
+   <strong>{{target.fullName}} · {{target.userName}}</strong>
+   <p>Rolden devralınan izinler ayrı gösterilir. <b>İzin ver</b> rolü genişletir,
+   <b>Reddet</b> rolün verdiği yetkiyi de kapatır. <b>Rolden devral</b> kişisel istisnayı kaldırır.</p>
+   <small>Değişiklik kaydedilince bu kullanıcının açık oturumları kapatılır ve yeniden giriş gerekir.</small>
+  </div>
+  @if(error()){<div class="permissions-error" role="alert">{{error()}}</div>}
+  @if(loading()){<div class="permissions-empty">Yetkiler yükleniyor...</div>}
+  @else if(snapshot();as data){
+   @if(data.isAdmin){<div class="permissions-error">ADMIN rolündeki kullanıcıların özel yetkileri düzenlenemez.</div>}
+   <div class="permissions-tools">
+     <label class="permissions-search"><i class="pi pi-search" aria-hidden="true"></i>
+       <input type="search" aria-label="İzin ara" placeholder="Modül, yetki adı veya kodu ara..."
+        [value]="filter()" (input)="filter.set($any($event.target).value)" /></label>
+     <p-button label="Özel Kararları Temizle" severity="secondary" [outlined]="true"
+       size="small" [disabled]="data.isAdmin||saving()" (onClick)="resetOverrides()"/>
+   </div>
+   <div class="permissions-scroll">
+   @for(group of groups();track group.module){
+    <section class="permission-group">
+     <h3>{{group.module}}</h3>
+     <div class="permission-rows">
+      @for(row of group.rows;track row.permissionId){
+       <div class="permission-row">
+        <div class="permission-name"><strong>{{row.name}}</strong><small>{{row.code}}</small></div>
+        <span class="permission-role" [class.is-granted]="row.grantedByRole">
+         Rol: {{row.grantedByRole?'İzinli':'Yetkisiz'}}</span>
+        <label class="permission-choice"><span>Özel Karar</span>
+          <select [value]="row.selected" [disabled]="data.isAdmin||saving()"
+           (change)="setChoice(row.permissionId,$any($event.target).value)">
+             <option value="inherit">Rolden devral</option>
+             <option value="grant">İzin ver</option>
+             <option value="deny">Reddet</option>
+          </select></label>
+        <span class="permission-result" [class.is-granted]="effective(row)">
+          Sonuç: {{effective(row)?'İzinli':'Yetkisiz'}}
+        </span>
+       </div>
+      }
+     </div>
+    </section>
+   } @empty {
+    <div class="permissions-empty">Arama ile eşleşen izin bulunamadı.</div>
+   }
+   </div>
+  } @else if(!loading()){
+   <div class="permissions-empty">Yetkiler getirilemedi.</div>
+  }
+  <div class="permissions-footer">
+    <p-button label="Vazgeç" severity="secondary" [outlined]="true"
+       [disabled]="saving()" (onClick)="close()"/>
+    <p-button label="Özel Yetkileri Kaydet" icon="pi pi-check" [loading]="saving()"
+       [disabled]="!changed() || loading() || !snapshot() || snapshot()?.isAdmin === true"
+       (onClick)="save()"/>
+  </div>
+ </div>
+ }
+</p-dialog>

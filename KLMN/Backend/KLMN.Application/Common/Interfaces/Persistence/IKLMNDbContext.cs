@@ -2,7 +2,6 @@ using KLMN.Domain.Entities.Identity;
 using KLMN.Domain.Entities.Auditing;
 using KLMN.Domain.Entities.MilitaryUnit;
 using KLMN.Domain.Entities.Admissions;
-using KLMN.Domain.Entities.PurchaseNumbers;
 using KLMN.Domain.Entities.Geography;
 using Microsoft.EntityFrameworkCore;
 
@@ -111,7 +110,6 @@ public interface IKLMNDbContext
     /// <summary>Kuvvet, askerî sınıf ve grup arasındaki üçlü eşleştirmeler.</summary>
     DbSet<MilitaryClassGroupRelation> MilitaryClassGroupRelations { get; }
 
-    DbSet<PurchaseNumberDef> PurchaseNumberDefs { get; }
     DbSet<CountryDef> CountryDefs { get; }
     DbSet<CityDef> CityDefs { get; }
 

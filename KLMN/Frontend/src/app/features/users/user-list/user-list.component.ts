@@ -31,6 +31,7 @@ import { UserQuery } from '../models/user-query.model';
 import { UserMutationResponse } from '../models/user-mutation-response.model';
 import { UserService } from '../services/user.service';
 import { AuditHistoryComponent } from '../../../shared/audit-history/audit-history.component';
+import { UserPermissionDialogComponent } from '../user-permission-dialog/user-permission-dialog.component';
 
 /** Dropdown'un kullanıcıya gösterdiği kod + ad etiketli birim seçeneğidir. */
 type MilitaryUnitSelectOption = MilitaryUnitDefOption & { label: string };
@@ -57,13 +58,31 @@ type UserFormField = 'firstName' | 'lastName' | 'userName' | 'email' | 'phoneNum
     MessageModule,
     DialogModule,
     ConfirmDialogModule,
-    AuditHistoryComponent
+    AuditHistoryComponent,
+    UserPermissionDialogComponent
   ],
   providers: [ConfirmationService],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.scss'
 })
 export class UserListComponent implements OnInit {
+  /** Profil formundan bağımsız kullanıcı bazlı yetki paneli. */
+  public readonly permissionUser = signal<UserListItem | null>(null);
+  public readonly canManageUserPermissions = computed(() =>
+    this.permissionService.has(PermissionCodes.Users.ManagePermissions));
+  public canEditPersonalPermissions(user:UserListItem):boolean {
+    return this.canManageUserPermissions() && user.id!==this.authService.currentUser()?.id &&
+      !user.roles.some(role=>role.toUpperCase()==='ADMIN');
+  }
+  public openPersonalPermissions(user:UserListItem):void {
+    if(this.canEditPersonalPermissions(user))this.permissionUser.set(user);
+  }
+  public onPersonalPermissionsSaved():void {
+    this.permissionUser.set(null);
+    this.successMessage.set('Kişiye özel yetkiler güncellendi. Kullanıcının yeniden giriş yapması gerekir.');
+    this.loadUsers();
+  }
+
   /** Seçili kullanıcının değişiklik geçmişi dialog içeriğidir. */
   public readonly auditUser = signal<UserListItem | null>(null);
   /** Audit Log görüntüleme yetkisi backend endpoint'inde de denetlenir. */

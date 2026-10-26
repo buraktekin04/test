@@ -1,4 +1,5 @@
 import { UserRoleOption } from '../models/user-role-option.model';
+import { UserPermissionSettings, UpdateUserPermissionSettingsRequest } from '../models/user-permission-settings.model';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -93,6 +94,16 @@ export class UserService {
   /** Atama yetkisine uygun aktif rol seçeneklerini getirir. */
   public getRoleOptions(): Observable<UserRoleOption[]> {
     return this.http.get<UserRoleOption[]>(`${this.apiBaseUrl}/users/role-options`);
+  }
+
+  /** Seçili kullanıcının rol ve kişisel izinleri. */
+  public getUserPermissionSettings(id:string):Observable<UserPermissionSettings> {
+    return this.http.get<UserPermissionSettings>(`${this.apiBaseUrl}/users/${id}/permissions`);
+  }
+
+  /** Üç durumlu kararları xmin ile tek istek olarak kaydeder. */
+  public updateUserPermissionSettings(request:UpdateUserPermissionSettingsRequest):Observable<UserMutationResponse> {
+    return this.http.put<UserMutationResponse>(`${this.apiBaseUrl}/users/${request.userId}/permissions`,request);
   }
 
   /** Kullanıcının profilini, mevcut rol atamalarını ve xmin versiyonunu okur. */

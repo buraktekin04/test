@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../config/api.tokens';
 import { PagedResult } from '../models/paged-result.model';
 import { AuditLogItem, AuditLogQuery, AuditFieldChange, AuditDisplayChange } from './audit-log.model';
+import { auditEntityLabel, auditFieldLabel } from './audit-display-labels';
 
 /** Kullanıcı, rol ve diğer tanımlamaların ortak, salt okunur geçmiş servisidir. */
 @Injectable({ providedIn: 'root' })
@@ -45,7 +46,7 @@ export class AuditLogService {
           oldValue === newValue;
 
         return {
-          field: this.fieldLabel(field),
+          field: auditFieldLabel(field),
           oldValue: this.format(oldValue),
           newValue: this.format(newValue),
           isContext
@@ -79,24 +80,8 @@ export class AuditLogService {
       labels[item.action] ?? item.action;
   }
 
-  /** Tanımlama ekranlarında teknik EF alanlarını anlaşılır Türkçe başlıklara dönüştürür. */
-  private fieldLabel(field: string): string {
-    const labels: Record<string, string> = {
-      UserName: 'Kullanıcı Adı', FirstName: 'Ad', LastName: 'Soyad',
-      Email: 'E-posta', PhoneNumber: 'Telefon',
-      MilitaryUnitDefId: 'Görev Yeri', OrganizationUnitId: 'Görev Yeri',
-      ParentOrganizationUnitId: 'Üst Birlik', ConnectedTopUnity: 'Üst Birlik',
-      ExternalCode: 'Harici Kod', ForcesCommandDef: 'Kuvvet Komutanlığı', RoleId: 'Rol',
-      UserId: 'Kullanıcı', PermissionId: 'Yetki',
-      IsGranted: 'Yetki Verildi', Name: 'Ad', Code: 'Kod',
-      Description: 'Açıklama', Module: 'Modül',
-      IsActive: 'Aktiflik', ClockLimit: 'Mesai Dışı Kısıtı',
-      IsLocked: 'Kilit Durumu', ValidFrom: 'Geçerlilik Başlangıcı',
-      ValidTo: 'Geçerlilik Bitişi', OriginalFileName: 'PDF Adı',
-      SizeBytes: 'Dosya Boyutu', SortOrder: 'Sıralama'
-    };
-    return labels[field] ?? field;
-  }
+  /** Teknik tür koduyla birlikte ekranda Türkçe görünür ad. */
+  public entityLabel(type: string): string { return auditEntityLabel(type); }
 
   /** Boş, tarih ve boolean gibi değerleri arayüzde uygun metinle gösterir. */
   private format(value: unknown): string {

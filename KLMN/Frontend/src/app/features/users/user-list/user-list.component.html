@@ -205,7 +205,7 @@
           <th pResizableColumn pSortableColumn="validFrom">Başlangıç <p-sortIcon field="validFrom" /></th>
           <th pResizableColumn pSortableColumn="validTo">Bitiş <p-sortIcon field="validTo" /></th>
           <th pResizableColumn pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
-          @if (canUpdate() || canDelete() || canActivate() || canViewDocuments() || canViewAudit()) {
+          @if (canUpdate() || canDelete() || canActivate() || canViewDocuments() || canViewAudit() || canManageUserPermissions()) {
             <th class="actions-column sticky-actions-col">İşlemler</th>
           }
         </tr>
@@ -266,7 +266,7 @@
           <td>{{ user.validFrom ? (user.validFrom | date:'dd.MM.yyyy HH:mm') : 'Sınırsız' }}</td>
           <td>{{ user.validTo ? (user.validTo | date:'dd.MM.yyyy HH:mm') : 'Sınırsız' }}</td>
           <td>{{ user.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
-          @if (canUpdate() || canDelete() || canActivate() || canViewDocuments() || canViewAudit()) {
+          @if (canUpdate() || canDelete() || canActivate() || canViewDocuments() || canViewAudit() || canManageUserPermissions()) {
             <td class="sticky-actions-col">
               <div class="row-actions">
                 @if (canViewAudit()) {
@@ -275,7 +275,12 @@
                             ariaLabel="Kullanıcı işlem geçmişi"
                             (onClick)="openUserAudit(user)"></p-button>
                 }
-                @if (canViewDocuments()) {
+                @if (canEditPersonalPermissions(user)) {
+                   <p-button type="button" icon="pi pi-shield" severity="secondary" [text]="true"
+                             size="small" ariaLabel="Kişiye özel yetkileri yönet"
+                             (onClick)="openPersonalPermissions(user)"></p-button>
+                 }
+                 @if (canViewDocuments()) {
                   <p-button type="button" icon="pi pi-file-pdf"
                             severity="secondary" [text]="true" size="small"
                             ariaLabel="Kullanıcı PDF belgeleri"
@@ -325,7 +330,7 @@
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td [attr.colspan]="canUpdate() || canDelete() || canActivate() || canViewDocuments() || canViewAudit() ? 11 : 10"
+          <td [attr.colspan]="canUpdate() || canDelete() || canActivate() || canViewDocuments() || canViewAudit() || canManageUserPermissions() ? 11 : 10"
               class="empty-table">Kriterlere uygun kullanıcı bulunamadı.</td>
         </tr>
       </ng-template>
@@ -665,7 +670,7 @@
     @if (selectedUser()) {
       <div class="form-info-note">
         <i class="pi pi-info-circle" aria-hidden="true"></i>
-        Rol, yetki ve parola değişiklikleri kendi yönetim ekranlarından yapılır.
+        Rol ataması bu formdan yapılır. Kişisel yetkiler kullanıcı satırındaki kalkan simgesiyle düzenlenir.
       </div>
     }
 
@@ -687,6 +692,10 @@
     </div>
   </form>
 </p-dialog>
+
+<!-- Kullanıcı bazlı üç durumlu yetki paneli. -->
+<app-user-permission-dialog [user]="permissionUser()"
+  (closed)="permissionUser.set(null)" (saved)="onPersonalPermissionsSaved()" />
 
 <!-- Kritik status ve silme işlemlerinde kullanıcı onayı istenir. -->
 <p-confirmdialog></p-confirmdialog>

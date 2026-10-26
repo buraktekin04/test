@@ -154,7 +154,7 @@ export const PermissionCodes = {
     View:'AnnotationReasons.View',Query:'AnnotationReasons.Query',Create:'AnnotationReasons.Create',
     Update:'AnnotationReasons.Update',Delete:'AnnotationReasons.Delete'
   },
-  /** Uçuşa Uçak Tipi Tanımları yetkileri. */
+  /** Uçtuğu Uçak Tipi Tanımları yetkileri. */
   PlaneTypes:{
     View:'PlaneTypes.View',Query:'PlaneTypes.Query',Create:'PlaneTypes.Create',
     Update:'PlaneTypes.Update',Delete:'PlaneTypes.Delete'
@@ -226,10 +226,6 @@ export const PermissionCodes = {
   Cities: {
     View: 'Cities.View', Query: 'Cities.Query',
     Create: 'Cities.Create', Update: 'Cities.Update', Delete: 'Cities.Delete'
-  },
-  PurchaseNumbers: {
-    View: 'PurchaseNumbers.View', Query: 'PurchaseNumbers.Query',
-    Create: 'PurchaseNumbers.Create', Update: 'PurchaseNumbers.Update', Delete: 'PurchaseNumbers.Delete'
   },
   MilitaryUnits: {
     View: 'MilitaryUnits.View',

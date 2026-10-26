@@ -1,3 +1,25 @@
+26.10.2026 — İŞLEM GEÇMİŞİ / KİŞİYE ÖZEL YETKİ / EKRAN TEMİZLİĞİ
+==================================================================
+1) Audit Tür sütunu ekran adını ve teknik türü birlikte gösterir: Ülke Tanımları (CountryDef).
+   Audit detayları Türkçe alan etiketleriyle gösterilir: IsTownRequired => Doğum Yeri Gerekir.
+   Bu çeviri merkezi audit-display-labels.ts dosyasında hem genel hem kayıt özel audit'e uygulanır.
+   Ham ChangesJson ve geçmiş kayıtlar değiştirilmez; bilinmeyen alanlar okunabilir hâle getirilir.
+2) Uçuşa Uçak Tipi Tanımları => Uçtuğu Uçak Tipi Tanımları:
+   menü, ekran, açıklama, Excel ve Permission Seed adları güncellendi (teknik kod PlaneTypes aynı).
+3) Kullanılmayan Alım Numarası ekranı ve tüm uygulama kaynak modülü kaldırıldı:
+   Angular sayfa/service/model, route, menü; backend Controller/CQRS/Entity/EF Config;
+   DbContext, IKLMNDbContext, izin sabitleri, seed ve modül regression dosyaları temizlendi.
+   Eski DB tablosu ve historical audit verileri DROP edilmedi. Eski permission satırları seeder ile
+   PASİF yapılır; mevcut migration zinciri olmadan şema silinmez.
+4) Kişiye Özel Yetkiler: zaten mevcut UserPermission override altyapısı kullanıldı;
+   ayrı GET/PUT api/users/{id}/permissions uçları ve CQRS/Validator/DTO dosyaları eklendi.
+   Kullanıcı listesine kalkan butonu ve üç aşamalı seçim: Rolden devral / İzin ver / Reddet.
+   ADMIN ve kendi hesabı korunur; yetki yöneticisi kendi sahip olmadığı izni başkasına veremez.
+   xmin sürümü ve audit korunur; değişiklik sonrası SecurityStamp değişir, refresh oturumları iptal edilir.
+   Kullanıcı yeniden giriş yaptığında güncel izinler gelir.
+5) Bu çalışma ortamında dotnet/npm build, tarayıcı ve PostgreSQL testleri koşulamadı.
+   Yerel derleme, API regresyon ve kullanıcı izin senaryoları kabul öncesi doğrulanmalıdır.
+
 SON FAZ (26.10.2026) — KURUL KARAR TANIMLARI VE DÖRT ALT İLİŞKİ
 =================================================================
 - Fotoğraflardaki eski HcDecisionDef ve dört ilişki modeli temel alındı.

@@ -9,6 +9,8 @@ using KLMN.Application.Users.Agreements.Responses;
 using KLMN.Application.Users.Commands.CreateUser;
 using KLMN.Application.Users.Commands.DeleteUser;
 using KLMN.Application.Users.Commands.UpdateUser;
+using KLMN.Application.Users.Commands.UpdateUserPermissionSettings;
+using KLMN.Application.Users.Queries.GetUserPermissionSettings;
 using KLMN.Application.Users.Queries.GetMilitaryUnitDefOptions;
 using KLMN.Application.Users.Queries.GetUserById;
 using KLMN.Application.Users.Queries.GetUsers;
@@ -138,6 +140,22 @@ public sealed class UsersController(ISender sender, IExcelExportService excelExp
     [HasPermission(PermissionCodes.Users.AssignRole)]
     public async Task<IActionResult> GetRoleOptions(CancellationToken cancellationToken) =>
         Ok(await sender.Send(new GetUserRoleOptionsQuery(), cancellationToken));
+
+    /// <summary>Rol ve kişisel override haklarının yan yana görüntülenmesi.</summary>
+    [HttpGet("{id:guid}/permissions")]
+    [HasPermission(PermissionCodes.Users.ManagePermissions)]
+    public async Task<IActionResult> GetUserPermissions(Guid id,CancellationToken ct) =>
+        Ok(await sender.Send(new GetUserPermissionSettingsQuery(id),ct));
+
+    /// <summary>Null: devral, true: izin ver, false: reddet; xmin sürümü zorunlu.</summary>
+    [HttpPut("{id:guid}/permissions")]
+    [HasPermission(PermissionCodes.Users.ManagePermissions)]
+    public async Task<IActionResult> UpdateUserPermissions(Guid id,
+        [FromBody] UpdateUserPermissionSettingsCommand command,CancellationToken ct)
+    {
+        if(id!=command.UserId)return BadRequest("Kullanıcı kimliği uyuşmuyor.");
+        return Ok(await sender.Send(command,ct));
+    }
 
     /// <summary>Seçilen kullanıcıyı düzenleme ekranı için getirir.</summary>
     [HttpGet("{id:guid}")]

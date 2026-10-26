@@ -412,17 +412,6 @@ export const routes: Routes = [
         redirectTo: 'military-class-group-relations'
       },
       {
-        path: 'purchase-numbers',
-        canActivate: [permissionGuard],
-        data: { permissionModule: 'PurchaseNumbers' },
-        loadComponent: () =>
-          import('./features/purchase-numbers/purchase-number-list/purchase-number-list.component')
-            .then(component => component.PurchaseNumberListComponent)
-      },
-      {
-        path: 'definitions/purchase-numbers', pathMatch: 'full', redirectTo: 'purchase-numbers'
-      },
-      {
         path: 'military-units',
         canActivate: [permissionGuard],
         data: {

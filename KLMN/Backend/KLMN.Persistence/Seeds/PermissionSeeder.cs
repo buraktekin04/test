@@ -46,6 +46,14 @@ internal sealed class PermissionSeeder
             existingPermissions.Add(newCode, permission);
         }
 
+        // Kaldırılan modülün veritabanında kalmış permission satırları denetim geçmişi
+        // için korunur, fakat yeni oturumlarda erişime kapalı tutulur.
+        foreach (var stale in existingPermissions.Values.Where(x =>
+                     x.Code.StartsWith("PurchaseNumbers.", StringComparison.OrdinalIgnoreCase)))
+        {
+            stale.IsActive = false;
+        }
+
         foreach (var seedItem in IdentitySeedData.Permissions)
         {
             if (existingPermissions.TryGetValue(seedItem.Code, out var permission))

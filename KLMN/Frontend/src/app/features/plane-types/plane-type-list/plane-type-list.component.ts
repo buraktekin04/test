@@ -18,7 +18,7 @@ import {AuditHistoryComponent} from '../../../shared/audit-history/audit-history
 import {ValidityPeriodUtils} from '../../../core/utils/validity-period.utils';
 import {PlaneTypeService} from '../services/plane-type.service';
 import {PlaneTypeItem,DefinitionQuery} from '../models/plane-type.model';
-/** Uçuşa Uçak Tipi Tanımları — bağımsız ekran, kendi formu/template'i ve permission'ları. */
+/** Uçtuğu Uçak Tipi Tanımları — bağımsız ekran, kendi formu/template'i ve permission'ları. */
 @Component({
  selector:'app-plane-type-list',standalone:true,
  imports:[DatePipe,ReactiveFormsModule,ButtonModule,CheckboxModule,ConfirmDialogModule,
@@ -33,7 +33,7 @@ export class PlaneTypeListComponent implements OnInit {
  private readonly permissions=inject(PermissionService);
  private readonly confirm=inject(ConfirmationService);
  private readonly message=inject(MessageService);
- readonly config = { module:'PlaneTypes' as const, path:'plane-types', title:'Uçuşa Uçak Tipi Tanımları', entity:'PlaneTypeDef' };
+ readonly config = { module:'PlaneTypes' as const, path:'plane-types', title:'Uçtuğu Uçak Tipi Tanımları', entity:'PlaneTypeDef' };
  readonly canCreate=computed(()=>this.permissions.has(PermissionCodes[this.config.module].Create));
  readonly canUpdate=computed(()=>this.permissions.has(PermissionCodes[this.config.module].Update));
  readonly canDelete=computed(()=>this.permissions.has(PermissionCodes[this.config.module].Delete));

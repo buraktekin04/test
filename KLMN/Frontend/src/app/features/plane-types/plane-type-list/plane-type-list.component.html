@@ -1,14 +1,14 @@
 <div class="plane-type-list-page">
  <div class="page-header">
   <div>
-   <h1>Uçuşa Uçak Tipi Tanımları</h1>
+   <h1>Uçtuğu Uçak Tipi Tanımları</h1>
    <p>Bu tanımın kod, ad, durum ve kayıt bilgilerini yönetin.</p>
    
   </div>
   @if(canCreate()){<p-button type="button" label="Yeni Uçak Tipi" icon="pi pi-plus" (onClick)="openCreate()"/>}
  </div>
  <p-toast position="top-right"/>
- <section class="filter-panel" aria-label="Uçuşa Uçak Tipi Tanımları arama">
+ <section class="filter-panel" aria-label="Uçtuğu Uçak Tipi Tanımları arama">
   <form [formGroup]="searchForm" (ngSubmit)="search()">
    <div class="search-field"><i class="pi pi-search" aria-hidden="true"></i>
     <input pInputText formControlName="search" placeholder="Kod veya ad ara..." aria-label="Uçak Tipi ara"/>
@@ -35,7 +35,7 @@
     <p-button type="submit" label="Filtrele" icon="pi pi-check"/>
    </form>
   }
-  <div class="table-scroll" role="region" tabindex="0" aria-label="Uçuşa Uçak Tipi Tanımları tablosu">
+  <div class="table-scroll" role="region" tabindex="0" aria-label="Uçtuğu Uçak Tipi Tanımları tablosu">
    <p-table [value]="items()" [loading]="loading()" [resizableColumns]="true"
      columnResizeMode="expand" [tableStyle]="{'min-width':'900px','width':'100%'}">
     <ng-template pTemplate="header"><tr>
@@ -113,7 +113,7 @@
  </form>
 </p-dialog>
 <p-confirmdialog/>
-<p-dialog header="Uçuşa Uçak Tipi Tanımları — İşlem Geçmişi" [visible]="!!auditItem()"
+<p-dialog header="Uçtuğu Uçak Tipi Tanımları — İşlem Geçmişi" [visible]="!!auditItem()"
  (visibleChange)="!$event&&auditItem.set(null)" [modal]="true"
  [style]="{'width':'min(780px,96vw)'}">
  @if(auditItem();as item){<app-audit-history entityType="PlaneTypeDef" [entityId]="item.id"/>}
