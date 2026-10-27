@@ -151,7 +151,6 @@ const FIELD_NAMES: Readonly<Record<string,string>> = {
   "MilitarySchoolRequired": "Askerî Okul Gerekir",
   "LastNominationDateRequired": "Son Başvuru Tarihi Gerekir",
   "HeightWeightRequired": "Boy Kilo Gerekir",
-  "NthAdmissionRequired": "Başvuru Sayısı Gerekir",
 };
 export function auditEntityLabel(type: string): string {
  const name = ENTITY_NAMES[type];

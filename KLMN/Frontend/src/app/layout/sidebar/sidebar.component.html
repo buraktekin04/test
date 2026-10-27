@@ -39,7 +39,7 @@
 </aside>
 
 <ng-template #menuTemplate let-items let-depth="depth" let-parentKey="parentKey">
-  @for (item of items; track (item.route || groupKey(parentKey, item.label))) {
+  @for (item of items; track item) {
     @if (item.children?.length) {
       <button type="button" class="menu-item menu-parent"
               [class.menu-sub-item]="depth > 0"

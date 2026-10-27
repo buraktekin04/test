@@ -255,7 +255,7 @@ export class MilitaryOfficeListComponent implements OnInit {
     this.fieldServerErrors.set({});
     if (this.itemForm.invalid) {
       this.itemForm.markAllAsTouched();
-      const first = (['code','name'] as FormField[])
+      const first = (['code','name','cityId'] as FormField[])
         .find(f => this.itemForm.controls[f].invalid);
       if (first) this.focusField(first);
       return;

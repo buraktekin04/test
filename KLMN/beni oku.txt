@@ -1,3 +1,16 @@
+27.10.2026 — ANGULAR DERLEME DÜZELTMESİ (SEKİZ MADDE SONRASI)
+====================================================================
+- Angular NG8009: ng-template parametresi parentKey, @for track ifadesinden
+  erişilemez; track item kullanıldı. Grup açma anahtarında hiyerarşik
+  groupKey(parentKey,item.label) KORUNDU.
+- TS1117: NthAdmissionRequired audit label anahtarı iki defa eklenmişti;
+  yinelenen eski başlık kaldırıldı, tek geçerli Türkçe ad
+  "Kaçıncı İşlem Gerekir" olarak bırakıldı.
+- Şehir/İlçe/Askerlik Şubesi zorunlu ülke/şehir alanı yanlış girildiğinde
+  ilk hatalı alana kaydırma ve odaklanma da eklendi.
+- Build/test komutları bu ortamda çalıştırılmadı, kod ve kaynak bazlı
+  statik denetim yapıldı; migration oluşturulmadı.
+
 27.10.2026 — SEKİZ MADDELİ TANIM EKRANI DÜZELTMELERİ
 ===================================================================
 1) Şehir Tanımları: Ülke, Angular reactive form ve FluentValidation

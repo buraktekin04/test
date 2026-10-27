@@ -240,7 +240,7 @@ export class TownListComponent implements OnInit {
     this.fieldServerErrors.set({});
     if (this.itemForm.invalid) {
       this.itemForm.markAllAsTouched();
-      const first = (['code','name','externalCode','mernisCode'] as FormField[])
+      const first = (['code','name','cityId','externalCode','mernisCode']] as FormField[])
         .find(f => this.itemForm.controls[f].invalid);
       if (first) this.focusField(first);
       return;
