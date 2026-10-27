@@ -42,7 +42,7 @@
      <th pResizableColumn pSortableColumn="hcAdmissionTypeName">Başvuru Grubu <p-sortIcon field="hcAdmissionTypeName"/></th>
      <th pResizableColumn pSortableColumn="amount">Adet <p-sortIcon field="amount"/></th>
      <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive"/></th>
-     <th>İşlemler</th>
+     <th class="sticky-actions-col">İşlemler</th>
     </tr></ng-template>
     <ng-template pTemplate="body" let-row><tr>
      <td><code class="icd-code">{{row.icd10Code}}</code></td>
@@ -51,7 +51,7 @@
      <td class="wrap">{{row.hcAdmissionTypeName}}</td>
      <td>{{row.amount}}</td>
      <td><p-tag [value]="row.isActive?'Aktif':'Pasif'" [severity]="row.isActive?'success':'secondary'"/></td>
-     <td><div class="row-actions">
+     <td class="sticky-actions-col"><div class="row-actions">
       @if(canUpdate()){
        <p-button icon="pi pi-pencil" [text]="true" severity="secondary" ariaLabel="Düzenle" (onClick)="openEdit(row)"/>
        <p-button [icon]="row.isActive?'pi pi-ban':'pi pi-check-circle'" [text]="true" severity="secondary"

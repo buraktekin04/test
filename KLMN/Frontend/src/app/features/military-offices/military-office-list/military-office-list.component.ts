@@ -76,7 +76,7 @@ export class MilitaryOfficeListComponent implements OnInit {
     code: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/^[A-Za-z0-9_-]+$/)]],
     name: ['', [Validators.required, Validators.maxLength(250)]],
     externalCode: ['', [Validators.maxLength(100)]],
-    cityId: [''],
+    cityId: ['', Validators.required],
     validFrom: [''],
     validTo: ['']
   });

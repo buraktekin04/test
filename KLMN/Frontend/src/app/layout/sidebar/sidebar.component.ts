@@ -39,13 +39,15 @@ export class SidebarComponent {
     });
   }
 
-  private readonly expandedMenus = signal<ReadonlySet<string>>(new Set(['Tanımlamalar']));
+  private readonly expandedMenus = signal<ReadonlySet<string>>(new Set(['root/Tanımlamalar']));
+
+  /** Her grup kendi tam hiyerarşik yoluyla tutulur; aynı adlı alt/üst menüler çakışmaz. */
+  public groupKey(parentKey: string, label: string): string {
+    return parentKey + '/' + label;
+  }
 
   public toggleGroup(label: string): void {
-    if (this.collapsed) {
-      this.expandRequested.emit();
-      if (this.isExpanded(label)) return;
-    }
+    if (this.collapsed) this.expandRequested.emit();
     this.expandedMenus.update(current => {
       const next = new Set(current);
       if (next.has(label)) next.delete(label);
@@ -55,5 +57,7 @@ export class SidebarComponent {
   }
 
   public isExpanded(label: string): boolean { return this.searchTerm().trim().length > 0 || this.expandedMenus().has(label); }
-  public onNavigationSelected(): void { this.navigationSelected.emit(); }
+  public onNavigationSelected(): void {
+    this.navigationSelected.emit();
+  }
 }

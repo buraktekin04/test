@@ -106,7 +106,7 @@ export class AdmissionTypeListComponent implements OnInit {
     { title: 'Başvuru ve Sağlık', fields: [
       { key: 'lastNominationDateRequired', label: 'Son Adaylık Tarihi' },
       { key: 'heightWeightRequired', label: 'Boy ve Kilo' },
-      { key: 'nthAdmissionRequired', label: 'Kaçıncı Başvuru' },
+      { key: 'nthAdmissionRequired', label: 'Kaçıncı İşlem Gerekir' },
     ] },
     { title: 'Belgeler ve Onay', fields: [
       { key: 'dispatchDocumentDateRequired', label: 'Sevk Belgesi Tarihi' },

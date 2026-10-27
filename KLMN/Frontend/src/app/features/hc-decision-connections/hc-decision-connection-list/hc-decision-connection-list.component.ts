@@ -9,6 +9,7 @@ import {CheckboxModule} from 'primeng/checkbox';
 import {ConfirmDialogModule} from 'primeng/confirmdialog';
 import {DialogModule} from 'primeng/dialog';
 import {InputTextModule} from 'primeng/inputtext';
+import {SelectModule} from 'primeng/select';
 import {TableModule} from 'primeng/table';
 import {TagModule} from 'primeng/tag';
 import {ToastModule} from 'primeng/toast';
@@ -20,7 +21,7 @@ import {HcDecisionConnectionsService} from '../services/hc-decision-connection.s
 /** Bağlı Kararlar: kendi HTML, stil, model, servis ve permission'a sahip bağımsız ekran. */
 @Component({
  selector:'app-hc-decision-connection-list',standalone:true,
- imports:[RouterLink,ReactiveFormsModule,ButtonModule,CheckboxModule,ConfirmDialogModule,DialogModule,InputTextModule,TableModule,TagModule,ToastModule,AuditHistoryComponent],
+ imports:[RouterLink,ReactiveFormsModule,ButtonModule,CheckboxModule,ConfirmDialogModule,DialogModule,InputTextModule,SelectModule,TableModule,TagModule,ToastModule,AuditHistoryComponent],
  providers:[ConfirmationService,MessageService],templateUrl:'./hc-decision-connection-list.component.html',styleUrl:'./hc-decision-connection-list.component.scss'
 })
 export class HcDecisionConnectionListComponent implements OnInit {

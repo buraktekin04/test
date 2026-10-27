@@ -41,7 +41,9 @@ internal static class TownDefRules
     {
         // Pasifleştirilmiş bir şehirye bağlı geçmiş ilçe kaydı mevcut bağlantısını koruyabilir.
         // Yeni bağlama veya ilçe aktivasyonu bu istisnadan yararlanamaz.
-        if (!cityId.HasValue || (unchangedCityId.HasValue && cityId == unchangedCityId))
+        if (!cityId.HasValue || cityId.Value == Guid.Empty)
+            throw new TownConflictException("Şehir seçimi zorunludur.");
+        if (unchangedCityId.HasValue && cityId == unchangedCityId)
             return;
         if (!await db.CityDefs.AnyAsync(x => x.Id == cityId.Value && x.IsActive && !x.IsDeleted, ct))
             throw new TownConflictException("Seçilen şehir aktif ve geçerli olmalıdır.");

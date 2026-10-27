@@ -73,7 +73,7 @@ export class TownListComponent implements OnInit {
     code: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/^[A-Za-z0-9_-]+$/)]],
     name: ['', [Validators.required, Validators.maxLength(250)]],
     externalCode: ['', Validators.maxLength(100)],
-    cityId: [''],
+    cityId: ['', Validators.required],
     mernisCode: ['', Validators.pattern(/^[0-9]*$/)]
   });
   public readonly totalPages = computed(() => Math.max(1, Math.ceil(this.totalCount() / this.pageSize())));

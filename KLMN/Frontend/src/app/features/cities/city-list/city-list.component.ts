@@ -74,7 +74,7 @@ export class CityListComponent implements OnInit {
     code: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(/^[A-Za-z0-9_-]+$/)]],
     name: ['', [Validators.required, Validators.maxLength(250)]],
     externalCode: ['', Validators.maxLength(100)],
-    countryId: [''],
+    countryId: ['', Validators.required],
     mernisCode: ['', Validators.pattern(/^[0-9]*$/)],
     validFrom: [''],
     validTo: ['']

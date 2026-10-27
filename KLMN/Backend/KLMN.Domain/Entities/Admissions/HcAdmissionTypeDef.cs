@@ -48,7 +48,7 @@ public sealed class HcAdmissionTypeDef : EffectiveDatedEntity
     /// <summary>Başvuruda Boy ve Kilo alanının zorunlu olup olmayacağını belirler.</summary>
     public bool HeightWeightRequired { get; set; }
 
-    /// <summary>Başvuruda Kaçıncı Başvuru alanının zorunlu olup olmayacağını belirler.</summary>
+    /// <summary>Başvuruda Kaçıncı İşlem Gerekir alanının zorunlu olup olmayacağını belirler.</summary>
     public bool NthAdmissionRequired { get; set; }
 
     /// <summary>Başvuruda Sevk Belgesi Tarihi alanının zorunlu olup olmayacağını belirler.</summary>

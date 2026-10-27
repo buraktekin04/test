@@ -14,9 +14,13 @@
  @if(filtersVisible()){<form class="column-filter-panel" [formGroup]="columnFilterForm" (ngSubmit)="search()">
  <div class="filter-panel-heading"><strong>Kolon Filtreleri</strong></div>
  <div class="column-filter-grid">
- <div class="form-field"><label for="hc-decision-filter">Kurul Kararı</label><select formControlName="hcDecisionDefId" id="hc-decision-filter">
- <option [ngValue]="null">Tümü</option>
- @for(option of optionsData().decisions;track option.id){<option [ngValue]="option.id">{{option.label}}</option>}</select></div>
+ <div class="form-field"><label for="hc-decision-filter">Kurul Kararı</label><p-select formControlName="hcDecisionDefId" inputId="hc-decision-filter"
+ [options]="optionsData().decisions" optionLabel="label" optionValue="id"
+ [filter]="true" filterBy="label" [showClear]="true" [fluid]="true" appendTo="body"
+ placeholder="Tüm kurul kararları"
+ [panelStyle]="{'max-width':'min(520px, calc(100vw - 32px))'}">
+ <ng-template #item let-option><div class="long-option-label" [title]="option.label">{{option.label}}</div></ng-template>
+</p-select></div>
  <div class="form-field"><label for="hc-link-status">Durum</label><select formControlName="isActive" id="hc-link-status">
  <option [ngValue]="null">Tümü</option><option [ngValue]="true">Aktif</option><option [ngValue]="false">Pasif</option></select></div></div>
  <div class="column-filter-actions"><p-button type="button" label="Tümünü Temizle" severity="secondary" [outlined]="true" (onClick)="clear()"/>
@@ -54,14 +58,24 @@
  [modal]="true" [draggable]="false" [resizable]="false" [style]="{'width':'min(700px,96vw)'}">
  <form class="relation-form" [formGroup]="itemForm" (ngSubmit)="save()">
  <div class="form-divider"><span>Eşleştirme Bilgileri</span></div><div class="form-grid">
- <div class="form-field"><label for="hc-main">Kurul Kararı *</label><select id="hc-main" formControlName="hcDecisionDefId">
- <option value="">Seçiniz</option>
- @for(option of optionsData().decisions;track option.id){<option [value]="option.id">{{option.label}}{{option.isActive?'':' (Pasif)'}}</option>}
- </select></div>
- <div class="form-field"><label for="hc-ref">Başvuru Grubu *</label><select id="hc-ref" formControlName="referenceId">
- <option value="">Seçiniz</option>
- @for(option of optionsData().references;track option.id){<option [value]="option.id">{{option.label}}{{option.isActive?'':' (Pasif)'}}</option>}
- </select></div></div>
+ <div class="form-field"><label for="hc-main">Kurul Kararı *</label><p-select inputId="hc-main" formControlName="hcDecisionDefId"
+ [options]="optionsData().decisions" optionLabel="label" optionValue="id"
+ [filter]="true" filterBy="label" [showClear]="false" [fluid]="true"
+ appendTo="body" placeholder="Kurul kararı seçiniz"
+ [panelStyle]="{'max-width':'min(520px, calc(100vw - 32px))'}">
+ <ng-template #item let-option>
+  <div class="long-option-label" [title]="option.label">{{option.label}}{{option.isActive?'':' (Pasif)'}}</div>
+ </ng-template>
+</p-select></div>
+ <div class="form-field"><label for="hc-ref">Başvuru Grubu *</label><p-select inputId="hc-ref" formControlName="referenceId"
+ [options]="optionsData().references" optionLabel="label" optionValue="id"
+ [filter]="true" filterBy="label" [showClear]="false" [fluid]="true"
+ appendTo="body" placeholder="Tanım seçiniz"
+ [panelStyle]="{'max-width':'min(520px, calc(100vw - 32px))'}">
+ <ng-template #item let-option>
+  <div class="long-option-label" [title]="option.label">{{option.label}}{{option.isActive?'':' (Pasif)'}}</div>
+ </ng-template>
+</p-select></div></div>
  <div class="form-footer">@if(formError()){<div class="form-save-error" role="alert">{{formError()}}</div>}
  <div class="dialog-actions"><p-button type="button" label="Vazgeç" severity="secondary" [outlined]="true" (onClick)="dialogVisible.set(false)"/>
  <p-button type="submit" label="Kaydet" icon="pi pi-check" [loading]="saving()"/></div></div></form></p-dialog>

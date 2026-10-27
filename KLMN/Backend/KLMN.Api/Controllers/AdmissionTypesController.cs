@@ -60,7 +60,7 @@ public sealed class AdmissionTypesController(ISender sender, IExcelExportService
             new("Askerî Okul", x => x.MilitarySchoolRequired ? "Zorunlu" : "Değil", Width: 26),
             new("Son Adaylık Tarihi", x => x.LastNominationDateRequired ? "Zorunlu" : "Değil", Width: 26),
             new("Boy ve Kilo", x => x.HeightWeightRequired ? "Zorunlu" : "Değil", Width: 26),
-            new("Kaçıncı Başvuru", x => x.NthAdmissionRequired ? "Zorunlu" : "Değil", Width: 26),
+            new("Kaçıncı İşlem Gerekir", x => x.NthAdmissionRequired ? "Zorunlu" : "Değil", Width: 26),
             new("Sevk Belgesi Tarihi", x => x.DispatchDocumentDateRequired ? "Zorunlu" : "Değil", Width: 26),
             new("Sevk Belgesi Numarası", x => x.DispatchDocumentNoRequired ? "Zorunlu" : "Değil", Width: 26),
             new("PERTEM Onayı", x => x.PertemApprovalRequired ? "Zorunlu" : "Değil", Width: 26),

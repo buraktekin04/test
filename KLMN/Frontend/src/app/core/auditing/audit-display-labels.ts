@@ -56,6 +56,7 @@ const ENTITY_NAMES: Readonly<Record<string,string>> = {
   "UserAgreementPdf": "Kullanıcı PDF Dokümanları",
 };
 const FIELD_NAMES: Readonly<Record<string,string>> = {
+  "NthAdmissionRequired": "Kaçıncı İşlem Gerekir",
   "RefereeHospitalId": "Hakem Sağlık Tesisi",
   "Amount": "Miktar",
   "RankGroup": "Rütbe Grubu",

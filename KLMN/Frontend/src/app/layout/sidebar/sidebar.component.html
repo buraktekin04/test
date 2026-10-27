@@ -19,7 +19,7 @@
   <!-- Menü hiyerarşisi tek kaynaktan gelir; yeni ekran için HTML kopyalanmaz. -->
   <nav class="sidebar-navigation" aria-label="Ana menü">
     <ng-container
-      *ngTemplateOutlet="menuTemplate; context: { $implicit: menuItems(), depth: 0 }">
+      *ngTemplateOutlet="menuTemplate; context: { $implicit: menuItems(), depth: 0, parentKey: 'root' }">
     </ng-container>
 
     @if (menuItems().length === 0) {
@@ -38,28 +38,28 @@
   </footer>
 </aside>
 
-<ng-template #menuTemplate let-items let-depth="depth">
-  @for (item of items; track item.label) {
+<ng-template #menuTemplate let-items let-depth="depth" let-parentKey="parentKey">
+  @for (item of items; track (item.route || groupKey(parentKey, item.label))) {
     @if (item.children?.length) {
       <button type="button" class="menu-item menu-parent"
               [class.menu-sub-item]="depth > 0"
               [attr.title]="collapsed ? item.label : null"
               [attr.aria-label]="item.label"
-              [attr.aria-expanded]="isExpanded(item.label)"
-              (click)="toggleGroup(item.label)">
+              [attr.aria-expanded]="isExpanded(groupKey(parentKey, item.label))"
+              (click)="toggleGroup(groupKey(parentKey, item.label))">
         @if (item.icon) {
           <i class="menu-icon" [class]="item.icon" aria-hidden="true"></i>
         }
         <span class="menu-label">{{ item.label }}</span>
         <i class="pi menu-chevron"
-           [class.pi-chevron-down]="isExpanded(item.label)"
-           [class.pi-chevron-right]="!isExpanded(item.label)"
+           [class.pi-chevron-down]="isExpanded(groupKey(parentKey, item.label))"
+           [class.pi-chevron-right]="!isExpanded(groupKey(parentKey, item.label))"
            aria-hidden="true"></i>
       </button>
-      @if (isExpanded(item.label)) {
+      @if (isExpanded(groupKey(parentKey, item.label))) {
         <div class="menu-children">
           <ng-container
-            *ngTemplateOutlet="menuTemplate; context: { $implicit: item.children, depth: depth + 1 }">
+            *ngTemplateOutlet="menuTemplate; context: { $implicit: item.children, depth: depth + 1, parentKey: groupKey(parentKey, item.label) }">
           </ng-container>
         </div>
       }

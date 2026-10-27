@@ -36,7 +36,7 @@
      <th pResizableColumn pSortableColumn="equivalentProcedureCode">Eşdeğer Tetkik Kodu <p-sortIcon field="equivalentProcedureCode"/></th>
      <th pResizableColumn pSortableColumn="equivalentProcedureName">Eşdeğer Tetkik Adı <p-sortIcon field="equivalentProcedureName"/></th>
      <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive"/></th>
-     @if(canUpdate()||canDelete()||canAudit()){<th class="action-head">İşlemler</th>}
+     @if(canUpdate()||canDelete()||canAudit()){<th class="action-head sticky-actions-col">İşlemler</th>}
     </tr></ng-template>
     <ng-template pTemplate="body" let-row><tr>
      <td><code class="record-code">{{row.procedureCode}}</code></td>
@@ -45,7 +45,7 @@
      <td class="wrap">{{row.equivalentProcedureName}}</td>
      <td><p-tag [value]="row.isActive?'Aktif':'Pasif'" [severity]="row.isActive?'success':'secondary'"/></td>
      @if(canUpdate()||canDelete()||canAudit()){
-     <td><div class="row-actions">
+     <td class="sticky-actions-col"><div class="row-actions">
       @if(canUpdate()){
        <p-button icon="pi pi-pencil" [text]="true" severity="secondary" ariaLabel="Düzenle" (onClick)="openEdit(row)"/>
        <p-button [icon]="row.isActive?'pi pi-ban':'pi pi-check-circle'" [text]="true" severity="secondary"

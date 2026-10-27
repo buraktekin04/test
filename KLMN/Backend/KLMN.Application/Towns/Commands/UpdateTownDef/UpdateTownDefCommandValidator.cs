@@ -10,7 +10,8 @@ public sealed class UpdateTownDefCommandValidator : AbstractValidator<UpdateTown
         RuleFor(x => x.Code).NotEmpty().MaximumLength(100).Matches("^[A-Za-z0-9_-]+$");
         RuleFor(x => x.Name).NotEmpty().MaximumLength(250);
         RuleFor(x => x.ExternalCode).MaximumLength(100);
-        RuleFor(x => x.CityId).Must(x => !x.HasValue || x.Value != Guid.Empty);
+        RuleFor(x => x.CityId).NotNull().WithMessage("Şehir seçimi zorunludur.")
+            .Must(x => x.HasValue && x.Value != Guid.Empty).WithMessage("Geçerli bir şehir seçiniz.");
         RuleFor(x => x.MernisCode).GreaterThanOrEqualTo(0).When(x => x.MernisCode.HasValue);
     }
 }

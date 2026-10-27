@@ -31,7 +31,9 @@ internal static class CityDefRules
     {
         // Pasifleştirilmiş bir ülkeye bağlı geçmiş şehir kaydı mevcut bağlantısını koruyabilir.
         // Yeni bağlama veya şehir aktivasyonu bu istisnadan yararlanamaz.
-        if (!countryId.HasValue || (unchangedCountryId.HasValue && countryId == unchangedCountryId))
+        if (!countryId.HasValue || countryId.Value == Guid.Empty)
+            throw new CityConflictException("Ülke seçimi zorunludur.");
+        if (unchangedCountryId.HasValue && countryId == unchangedCountryId)
             return;
         if (!await db.CountryDefs.AnyAsync(x => x.Id == countryId.Value && x.IsActive && !x.IsDeleted, ct))
             throw new CityConflictException("Seçilen ülke aktif ve geçerli olmalıdır.");

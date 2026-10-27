@@ -33,7 +33,9 @@ internal static class MilitaryOfficeDefRules
     public static async Task EnsureCityAsync(
         IKLMNDbContext db, Guid? cityId, CancellationToken ct, Guid? unchangedCityId = null)
     {
-        if (!cityId.HasValue || cityId == unchangedCityId) return;
+        if (!cityId.HasValue || cityId.Value == Guid.Empty)
+            throw new MilitaryOfficeConflictException("Şehir seçimi zorunludur.");
+        if (cityId == unchangedCityId) return;
         if (!await db.CityDefs.AnyAsync(x => x.Id == cityId.Value && x.IsActive && !x.IsDeleted, ct))
             throw new MilitaryOfficeConflictException("Seçilen şehir aktif ve silinmemiş olmalıdır.");
     }

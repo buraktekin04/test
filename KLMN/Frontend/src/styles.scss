@@ -147,7 +147,7 @@ p-select { min-width: 0; max-width: 100%; }
 .content .p-datatable .p-datatable-tbody > tr > td:last-child {
   border-right: 0;
 }
-.content .p-datatable .p-datatable-thead > tr > th { position: relative; }
+.content .p-datatable .p-datatable-thead > tr > th:not(.sticky-actions-col) { position: relative; }
 .content .p-datatable .p-column-resizer {
   z-index: 2;
   width: 10px;
@@ -228,3 +228,40 @@ p-select { min-width: 0; max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
 }
+
+/* #7: Sticky İşlemler BAŞLIĞI da gövdeyle aynı sabit konumda olmalıdır.
+   Önceki genel th position:relative kuralının sticky'yi ezmesi engellendi. */
+.content :is(.table-scroll, .users-table-scroll, .roles-table-scroll, .audit-table-scroll)
+  .p-datatable .p-datatable-thead > tr > th.sticky-actions-col {
+    position: sticky;
+    right: 0;
+    z-index: 8;
+    min-width: 135px;
+    background: var(--ui-surface-muted);
+    border-left: 1px solid var(--ui-border);
+    box-shadow: -7px 0 14px -12px rgba(16,24,40,.30);
+}
+.content :is(.table-scroll, .users-table-scroll, .roles-table-scroll, .audit-table-scroll)
+  .p-datatable .p-datatable-tbody > tr > td.sticky-actions-col {
+    position: sticky;
+    right: 0;
+    z-index: 4;
+    min-width: 135px;
+    background: var(--ui-surface);
+}
+/* #6: uzun dropdown değerleri ekrandan taşmasın, overlay viewport'u aşmasın. */
+.p-select-overlay, .p-autocomplete-overlay {
+    max-width: min(520px, calc(100vw - 32px)) !important;
+    box-sizing: border-box;
+}
+.p-select-option, .p-autocomplete-option {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.45;
+}
+.p-select-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.p-select, .p-autocomplete { min-width: 0; max-width: 100%; }
+
+/* Popup seçenekleri seçim paneli içinde satır kırarak gösterilir. */
+.long-option-label {white-space:normal;overflow-wrap:anywhere;line-height:1.4;max-width:100%}

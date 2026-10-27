@@ -9,6 +9,7 @@ import {CheckboxModule} from 'primeng/checkbox';
 import {ConfirmDialogModule} from 'primeng/confirmdialog';
 import {DialogModule} from 'primeng/dialog';
 import {InputTextModule} from 'primeng/inputtext';
+import {SelectModule} from 'primeng/select';
 import {TableModule} from 'primeng/table';
 import {TagModule} from 'primeng/tag';
 import {ToastModule} from 'primeng/toast';
@@ -20,7 +21,7 @@ import {HcUnusedAdmissionTypesService} from '../services/hc-unused-admission.ser
 /** Kullanılmayacak Başvuru Grupları: kendi HTML, stil, model, servis ve permission'a sahip bağımsız ekran. */
 @Component({
  selector:'app-hc-unused-admission-list',standalone:true,
- imports:[RouterLink,ReactiveFormsModule,ButtonModule,CheckboxModule,ConfirmDialogModule,DialogModule,InputTextModule,TableModule,TagModule,ToastModule,AuditHistoryComponent],
+ imports:[RouterLink,ReactiveFormsModule,ButtonModule,CheckboxModule,ConfirmDialogModule,DialogModule,InputTextModule,SelectModule,TableModule,TagModule,ToastModule,AuditHistoryComponent],
  providers:[ConfirmationService,MessageService],templateUrl:'./hc-unused-admission-list.component.html',styleUrl:'./hc-unused-admission-list.component.scss'
 })
 export class HcUnusedAdmissionListComponent implements OnInit {

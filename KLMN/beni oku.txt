@@ -1,3 +1,44 @@
+27.10.2026 — SEKİZ MADDELİ TANIM EKRANI DÜZELTMELERİ
+===================================================================
+1) Şehir Tanımları: Ülke, Angular reactive form ve FluentValidation
+   Create/Update'de zorunlu; CityDefRules boş/Guid.Empty reddeder.
+2) İlçe Tanımları: Şehir, aynı katmanlarda zorunlu; TownDefRules kontrolü.
+3) Askerlik Şubesi Tanımları: Şehir, aynı katmanlarda zorunlu;
+   MilitaryOfficeDefRules kontrolü. Mevcut nullable DB kolonlarını
+   geçmişteki null satırları bozacak bir migration olmadan NOT NULL yapmadık.
+4) HcAdmissionTypeDef.NthAdmissionRequired TEKNİK ALAN ADI DEĞİŞMEDİ.
+   Kullanıcı etiketi, Excel başlığı, açıklamalar ve audit Türkçe adı
+   "Kaçıncı İşlem Gerekir" olarak güncellendi.
+5) Sidebar: Grup açılma durumunun yalnız label ile tutulması nedeniyle
+   farklı seviyelerde aynı adlı grupların çakışması engellendi;
+   artık grup hiyerarşisinin tam anahtarı kullanılıyor. Dar menüde
+   önce genişletme olayında gereksiz erken dönme kaldırıldı.
+6) Uzun Kurul Kararı/Muayene/Grup seçenekleri:
+   HcUnusedReasons, HcUnusedAdmissionTypes, HcUnusedDecisions,
+   HcDecisionConnections yeni eşleştirme dialoglarında native select'ler
+   PrimeNG aramalı p-select'e dönüştürüldü (appendTo body, viewport sınırı,
+   kaydırma ve satır kırma). styles.scss'de ortak popover genişlik standardı.
+7) P-table İşlemler kolonunda başlık ve veri hücresi aynı sticky/right
+   konumunu kullanır. styles.scss'in genel th position:relative çakışması
+   kaldırıldı, eksik sticky-actions-col th/td sınıfları tamamlandı.
+8) Soft-delete sonrası kod tekrar kullanımı:
+   Standart tanım tablolarındaki CQRS benzersizlik kontrolleri halihazırda
+   !IsDeleted, EF indeksleri PostgreSqlIndexFilters.NotDeleted kullanıyor.
+   AuditableEntitySaveChangesInterceptor Remove() işlemini IsDeleted=true
+   yaparak fiziki kaydı ve geçmişi koruyor. Mevcut DB'deki eski
+   KOŞULSUZ UNIQUE indeksleri belirlemek için yalnız SELECT çalışan
+   KLMN.Persistence/MigrationSupport/SoftDeletedCodeIndexAudit.sql eklendi.
+   Kullanıcı kendi DB migrationlarını yönettiği için otomatik DROP/ALTER yok.
+   İSTİSNA (tamamlanmadı): ProcedureTypeDefs, SYYDiagnosisTypeDefs,
+   SYYDiagnosisSliceDefs Code alanları HasAlternateKey olup başka tablolardan
+   Code üzerinden FK ile referanslanıyor. Bunlar sadece filtered unique'e
+   çevrilemez; GUID tabanlı FK şema refactor + migration planı gerekir.
+   Bu üç tipte silinmiş kod yeniden kullanılamıyor; sessizce başarı iddiası yok.
+Test: DefinitionQuality.Regression test projesi eklendi; testler bu ortamda
+.NET SDK bulunmadığından çalıştırılmadı. Angular/PrimeNG tarayıcı testi,
+PostgreSQL şema/index denetimi ve migration geliştiricide yapılmalı.
+İşlem değişiklikleri tek commit/push şeklinde yönetilir.
+
 27.10.2026 — EŞDEĞER TETKİKLER (EquivalentProcedureDef)
 =======================================================
 - Eski MSKBS EquivalentProcedureDef modeline göre iki ProcedureDef FK'li yeni

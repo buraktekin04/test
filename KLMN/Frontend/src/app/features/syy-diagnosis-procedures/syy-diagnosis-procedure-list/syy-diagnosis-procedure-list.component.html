@@ -35,13 +35,13 @@
   <th pResizableColumn pSortableColumn="endingAge">Bitiş Yaşı <p-sortIcon field="endingAge"/></th>
   <th pResizableColumn pSortableColumn="gender">Cinsiyet Kodu <p-sortIcon field="gender"/></th>
      <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive"/></th>
-     <th>İşlemler</th>
+     <th class="sticky-actions-col">İşlemler</th>
     </tr></ng-template>
     <ng-template pTemplate="body" let-row><tr><td class="wrap">{{row.diagnosisName}}</td>
 <td class="wrap">{{row.procedureName}}</td>
      <td>{{row.startingAge}}</td><td>{{row.endingAge}}</td><td>{{row.gender}}</td>
      <td><p-tag [value]="row.isActive?'Aktif':'Pasif'" [severity]="row.isActive?'success':'secondary'"/></td>
-     <td><div class="row-actions">
+     <td class="sticky-actions-col"><div class="row-actions">
       @if(canUpdate()){
        <p-button icon="pi pi-pencil" ariaLabel="Düzenle" [text]="true" severity="secondary" (onClick)="openEdit(row)"/>
        <p-button [icon]="row.isActive?'pi pi-ban':'pi pi-check-circle'" ariaLabel="Durum" [text]="true" severity="secondary" (onClick)="status(row)"/>

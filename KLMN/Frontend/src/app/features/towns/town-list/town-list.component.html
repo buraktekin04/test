@@ -200,9 +200,9 @@
       </div>
 
       <div class="form-field">
-        <label for="towns-cityId">Şehir</label>
+        <label for="towns-cityId">Şehir <span class="required">*</span></label>
         <select id="towns-cityId" formControlName="cityId">
-          <option value="">Şehir seçilmedi</option>
+          <option value="">Şehir seçiniz</option>
           @for (city of cityOptions(); track city.id) {
             <option [value]="city.id">{{ city.name }} ({{ city.code }})</option>
           }

@@ -9,6 +9,7 @@ import {CheckboxModule} from 'primeng/checkbox';
 import {ConfirmDialogModule} from 'primeng/confirmdialog';
 import {DialogModule} from 'primeng/dialog';
 import {InputTextModule} from 'primeng/inputtext';
+import {SelectModule} from 'primeng/select';
 import {TableModule} from 'primeng/table';
 import {TagModule} from 'primeng/tag';
 import {ToastModule} from 'primeng/toast';
@@ -20,7 +21,7 @@ import {HcUnusedDecisionsService} from '../services/hc-unused-decision.service';
 /** Birlikte Verilmeyecek Kararlar: kendi HTML, stil, model, servis ve permission'a sahip bağımsız ekran. */
 @Component({
  selector:'app-hc-unused-decision-list',standalone:true,
- imports:[RouterLink,ReactiveFormsModule,ButtonModule,CheckboxModule,ConfirmDialogModule,DialogModule,InputTextModule,TableModule,TagModule,ToastModule,AuditHistoryComponent],
+ imports:[RouterLink,ReactiveFormsModule,ButtonModule,CheckboxModule,ConfirmDialogModule,DialogModule,InputTextModule,SelectModule,TableModule,TagModule,ToastModule,AuditHistoryComponent],
  providers:[ConfirmationService,MessageService],templateUrl:'./hc-unused-decision-list.component.html',styleUrl:'./hc-unused-decision-list.component.scss'
 })
 export class HcUnusedDecisionListComponent implements OnInit {
