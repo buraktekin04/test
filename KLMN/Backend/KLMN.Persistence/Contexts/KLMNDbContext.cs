@@ -98,6 +98,8 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     public DbSet<PlaneTypeDef> PlaneTypeDefs => Set<PlaneTypeDef>();
     public DbSet<FlyingMissionDef> FlyingMissionDefs => Set<FlyingMissionDef>();
     public DbSet<ProcedureDef> ProcedureDefs => Set<ProcedureDef>();
+    /// <summary>İki tetkik arasındaki eşdeğerlik eşleştirmeleri.</summary>
+    public DbSet<EquivalentProcedureDef> EquivalentProcedureDefs => Set<EquivalentProcedureDef>();
 
     /// <summary>Muayene rapor türü eşleştirmeleri DbSet.</summary>
     public DbSet<ReasonForExamReportType> ReasonForExamReportTypes => Set<ReasonForExamReportType>();

@@ -245,6 +245,13 @@ export const routes: Routes = [
             .then(c => c.ProcedureTypeListComponent)
       },
       {
+        path: 'equivalent-procedures',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'EquivalentProcedures' },
+        loadComponent: () => import('./features/equivalent-procedures/equivalent-procedure-list/equivalent-procedure-list.component')
+          .then(c => c.EquivalentProcedureListComponent)
+      },
+      {
         path: 'procedures',
         canActivate: [permissionGuard],
         data: { permissionModule: 'Procedures' },

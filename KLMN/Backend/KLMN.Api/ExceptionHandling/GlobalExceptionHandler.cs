@@ -22,6 +22,7 @@ using KLMN.Application.ReasonForExamProcedureDefs.Exceptions;
 using KLMN.Application.ReasonForExamUnusedHcAdmissionTypes.Exceptions;
 using KLMN.Application.ReasonForExamReportTypes.Exceptions;
 using KLMN.Application.Procedures.Exceptions;
+using KLMN.Application.EquivalentProcedures.Exceptions;
 using KLMN.Application.ReasonForExaminations.Exceptions;
 using KLMN.Application.ForcesCommands.Exceptions;
 using KLMN.Application.Countries.Exceptions;
@@ -260,6 +261,8 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             PlaneTypeDefConflictException => new ProblemDetails{Status=409,Title="Tanım işlemi gerçekleştirilemedi.",Detail=exception.Message},
             FlyingMissionDefNotFoundException => new ProblemDetails{Status=404,Title="Kayıt bulunamadı.",Detail=exception.Message},
             FlyingMissionDefConflictException => new ProblemDetails{Status=409,Title="Tanım işlemi gerçekleştirilemedi.",Detail=exception.Message},
+            EquivalentProcedureNotFoundException => new ProblemDetails { Status=404, Title="Eşdeğer tetkik eşleştirmesi bulunamadı.",Detail=exception.Message },
+            EquivalentProcedureConflictException => new ProblemDetails { Status=409, Title="Eşdeğer tetkik eşleştirmesi yapılamadı.",Detail=exception.Message },
             ProcedureTypeNotFoundException => new ProblemDetails { Status=404, Title="Tetkik Türü bulunamadı.", Detail=exception.Message },
             ProcedureTypeConflictException => new ProblemDetails { Status=409, Title="Tetkik Türü işlemi gerçekleştirilemedi.", Detail=exception.Message },
             ProcedureNotFoundException => new ProblemDetails { Status=404, Title="Kayıt bulunamadı.", Detail=exception.Message },

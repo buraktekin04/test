@@ -344,6 +344,16 @@ public static class PermissionCodes
     }
 
     /// <summary>Tetkik Tanımları ekranının işlem yetkileri.</summary>
+    /// <summary>Eşdeğer Tetkikler ekranının bağımsız işlem yetkileri.</summary>
+    public static class EquivalentProcedures
+    {
+       public const string View="EquivalentProcedures.View";
+       public const string Query="EquivalentProcedures.Query";
+       public const string Create="EquivalentProcedures.Create";
+       public const string Update="EquivalentProcedures.Update";
+       public const string Delete="EquivalentProcedures.Delete";
+    }
+
     public static class Procedures
     {
         public const string View = "Procedures.View";

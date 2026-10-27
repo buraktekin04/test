@@ -1,5 +1,6 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize, Observable } from 'rxjs';
@@ -26,7 +27,7 @@ type FormField = 'procedureCode' | 'name' | 'validFrom' | 'validTo' | 'procedure
 @Component({
   selector: 'app-procedure-list',
   standalone: true,
-  imports: [DatePipe, ReactiveFormsModule, ButtonModule, CheckboxModule,
+  imports: [DatePipe, RouterLink, ReactiveFormsModule, ButtonModule, CheckboxModule,
     ConfirmDialogModule, DialogModule, InputTextModule, TableModule, TagModule, AuditHistoryComponent],
   providers: [ConfirmationService],
   templateUrl: './procedure-list.component.html',
@@ -42,6 +43,7 @@ export class ProcedureListComponent implements OnInit {
   public readonly canDelete = computed(() => this.permissions.has(PermissionCodes.Procedures.Delete));
   public readonly canExport = computed(() => this.permissions.has(PermissionCodes.Procedures.Query));
   public readonly canAudit = computed(() => this.permissions.has(PermissionCodes.AuditLogs.View));
+  public readonly canOpenEquivalents = computed(() => this.permissions.hasModule('EquivalentProcedures'));
   public readonly typeOptions = signal<ProcedureTypeOption[]>([]);
   public readonly records = signal<ProcedureDefItem[]>([]);
   public readonly totalCount = signal(0);

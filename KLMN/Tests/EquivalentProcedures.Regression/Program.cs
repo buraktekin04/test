@@ -1,0 +1,20 @@
+using KLMN.Application.EquivalentProcedures.Commands.CreateEquivalentProcedure;
+using KLMN.Application.EquivalentProcedures.Commands.UpdateEquivalentProcedure;
+using KLMN.Application.EquivalentProcedures.Queries.GetEquivalentProcedures;
+using KLMN.Application.EquivalentProcedures.Queries.GetEquivalentProcedureOptions;
+using KLMN.Domain.Common;
+using KLMN.Domain.Entities.Admissions;
+static void Check(bool condition,string name){if(!condition)throw new Exception(name);Console.WriteLine("PASS: "+name);}
+var a=Guid.NewGuid();var b=Guid.NewGuid();
+var v=new CreateEquivalentProcedureCommandValidator();
+Check(v.Validate(new CreateEquivalentProcedureCommand(a,b)).IsValid,"İki ayrı tetkik");
+Check(!v.Validate(new CreateEquivalentProcedureCommand(a,a)).IsValid,"Kendisiyle eşleştirme engeli");
+Check(!v.Validate(new CreateEquivalentProcedureCommand(Guid.Empty,b)).IsValid,"İlk tetkik zorunlu");
+Check(!v.Validate(new CreateEquivalentProcedureCommand(a,Guid.Empty)).IsValid,"Eşdeğer tetkik zorunlu");
+Check(!new UpdateEquivalentProcedureCommandValidator().Validate(new UpdateEquivalentProcedureCommand(Guid.Empty,0,a,b)).IsValid,"Güncelleme ID zorunlu");
+Check(!new GetEquivalentProceduresQueryValidator().Validate(new GetEquivalentProceduresQuery(PageSize:101)).IsValid,"Sayfa sınırı");
+Check(new GetEquivalentProceduresQuery(ProcedureId:a).ProcedureId==a,"Her iki FK'den filtrelenebilir tetkik kimliği");
+Check(!new GetEquivalentProcedureOptionsQueryValidator().Validate(new GetEquivalentProcedureOptionsQuery(new string('x',201))).IsValid,"Dropdown arama sınırı");
+Check(typeof(BaseEntity).IsAssignableFrom(typeof(EquivalentProcedureDef)),"BaseEntity kalıtımı");
+Check(typeof(EquivalentProcedureDef).GetProperty(nameof(EquivalentProcedureDef.EquivalentProcedureId))?.PropertyType==typeof(Guid),"İkinci tetkik FK");
+Console.WriteLine("Not: DB duplicate ve concurrent unique kontrolleri ayrıca entegrasyon testine ihtiyaç duyar.");

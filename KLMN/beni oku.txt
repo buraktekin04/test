@@ -1,3 +1,31 @@
+27.10.2026 — EŞDEĞER TETKİKLER (EquivalentProcedureDef)
+=======================================================
+- Eski MSKBS EquivalentProcedureDef modeline göre iki ProcedureDef FK'li yeni
+  BaseEntity türevi EquivalentProcedureDef tanımlandı:
+  ProcedureDefId ve EquivalentProcedureId. BaseEntity audit/soft-delete/xmin tekrar
+  alan olarak yazılmadı. Yeni geçerlilik tarihi gerekmiyor.
+- Eşdeğerlik simetrik kabul edildi: A-B ve B-A aynı ilişkidir.
+  Yeni/eşlenen kayıt Guid.CompareTo ile kanonik sırada saklanır;
+  kendisiyle eşleştirme, aynı yön/ters yön duplicate engellenir.
+  Partial unique index (IsDeleted=false), self-pair check ve iki Restrict FK eklendi.
+- Ayrı CQRS Create/Update/ChangeStatus/Delete komutları, handler ve validatorlar,
+  GetList/GetById/GetOptions Query Handler, her response/exception ayrı dosya.
+  Tetkik pasifleştirme/silme işlemleri ilişkili aktif/silinmemiş bağları korur.
+- Angular 21 + PrimeNG 21: /app/equivalent-procedures ayrı TS/HTML/SCSS/model/
+  service ekranı. Her iki tetkik AutoComplete dropdown panelinde server-side
+  kod/ad araması (max 60 öneri), zorunlu seçim; CRUD, kolon sort/resize, durum,
+  audit, Excel, sayfalama ve filtre. Liste iki taraftan da procedureId ile filtrelenir.
+  Tetkik Tanımları listesindeki bağlantı seçili tetkiğe göre bu ekrana yönlenir.
+- Menü ikiye ayrıldı: Muayene Tanımları ve Tetkik Tanımları;
+  Tetkik Türü/Tetkik Tanımları/Eşdeğer Tetkikler ikinci gruptadır.
+- EquivalentProcedures View/Query/Create/Update/Delete permission seed ve
+  route + API koruması, audit whitelist/tür etiketi eklendi.
+- Migration OLUŞTURULMADI/UYGULANMADI: Bu kod yeni tablo içerir;
+  mevcut local migration/snapshot zinciri üzerinden geliştirici migration
+  üretmeden API'deki eşdeğer tetkik uçları çalışmaz. DB silinmez/sıfırlanmaz.
+- Bu çalışma ortamında .NET SDK, npm, PostgreSQL ve tarayıcı testleri çalıştırılmadı;
+  statik kontrol ve commit gerçek derleme/entegrasyon testi yerine geçmez.
+
 26.10.2026 — SYY KURAL TANIMLARI (SALT OKUNUR)
 ============================================================
 - Kullanıcı gereksinimi: SYY Kural Tanımları ekranı mevcut SYYDiagnosisDef entity'sini

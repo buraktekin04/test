@@ -15,6 +15,9 @@ public sealed class ChangeStatusProcedureDefCommandHandler(IKLMNDbContext db)
  if(!r.IsActive&&await db.ReasonForExamProcedureDefs.IgnoreQueryFilters()
     .AnyAsync(x=>!x.IsDeleted&&x.IsActive&&x.ProcedureDefId==item.Id,ct))
    throw new ProcedureConflictException("Aktif muayene sebebi eşleştirmesi bulunan tetkik pasifleştirilemez.");
+ if(!r.IsActive&&await db.EquivalentProcedureDefs.IgnoreQueryFilters()
+   .AnyAsync(x=>!x.IsDeleted&&x.IsActive&&(x.ProcedureDefId==item.Id||x.EquivalentProcedureId==item.Id),ct))
+   throw new ProcedureConflictException("Aktif eşdeğer tetkik eşleştirmesi bulunan tetkik pasifleştirilemez.");
  item.IsActive=r.IsActive;await db.SaveChangesAsync(ct);
  return new ProcedureDefMutationResponse(item.Id,item.Version);
  }

@@ -52,6 +52,7 @@ public sealed class AuditableEntitySaveChangesInterceptor(
             ["AnnotationReasonDef"] = Fields("Code","Name","ValidFrom","ValidTo","IsActive"),
             ["PlaneTypeDef"] = Fields("Code","Name","ValidFrom","ValidTo","IsActive"),
             ["FlyingMissionDef"] = Fields("Code","Name","ValidFrom","ValidTo","IsActive"),
+            ["EquivalentProcedureDef"] = Fields("ProcedureDefId","EquivalentProcedureId","IsActive"),
             ["ProcedureDef"] = Fields("ProcedureCode", "Name", "RequiresNumericResult",
                 "RequiresReferenceRange", "RequiresDeviationInfo", "ValidFrom", "ValidTo",
                 "ProcedureType", "IsActive"),

@@ -2,6 +2,8 @@
   <div class="page-header">
     <div>
       <h1>Tetkik Tanımları</h1>
+        @if(canOpenEquivalents()){<a class="syy-related-link" routerLink="/app/equivalent-procedures">
+          <i class="pi pi-link" aria-hidden="true"></i> Eşdeğer Tetkikler</a>}
       <p>Tetkikleri, sonuç gerekliliklerini ve dinamik tetkik türlerini yönetin.</p>
     </div>
     @if (canCreate()) {
@@ -96,7 +98,7 @@
             <th pResizableColumn pSortableColumn="validTo">Bitiş Tarihi <p-sortIcon field="validTo" /></th>
             <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive" /></th>
             <th pResizableColumn pSortableColumn="createdDate">Oluşturulma <p-sortIcon field="createdDate" /></th>
-            @if (canUpdate() || canDelete() || canAudit()) { <th class="sticky-actions-col">İşlemler</th> }
+            @if (canUpdate() || canDelete() || canAudit() || canOpenEquivalents()) { <th class="sticky-actions-col">İşlemler</th> }
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item>
@@ -113,8 +115,15 @@
             <td><p-tag [value]="item.isActive ? 'Aktif' : 'Pasif'"
                        [severity]="item.isActive ? 'success' : 'secondary'"></p-tag></td>
             <td>{{ item.createdDate | date:'dd.MM.yyyy HH:mm' }}</td>
-            @if (canUpdate() || canDelete() || canAudit()) {
+            @if (canUpdate() || canDelete() || canAudit() || canOpenEquivalents()) {
               <td class="sticky-actions-col"><div class="row-actions">
+                @if(canOpenEquivalents()) {
+                  <a class="syy-related-link" [routerLink]="['/app/equivalent-procedures']"
+                    [queryParams]="{procedureId:item.id}" title="Eşdeğer Tetkikleri Görüntüle"
+                    aria-label="Eşdeğer tetkikleri görüntüle">
+                    <i class="pi pi-link" aria-hidden="true"></i>
+                  </a>
+                }
                 @if (canUpdate()) {
                   <p-button type="button" icon="pi pi-pencil" size="small" severity="secondary"
                             [text]="true" ariaLabel="Düzenle"
@@ -142,7 +151,7 @@
           </tr>
         </ng-template>
         <ng-template pTemplate="emptymessage">
-          <tr><td [attr.colspan]="canUpdate() || canDelete() || canAudit() ? 11 : 10"
+          <tr><td [attr.colspan]="canUpdate() || canDelete() || canAudit() || canOpenEquivalents() ? 11 : 10"
                   class="empty-table">Arama koşullarına uygun kayıt bulunamadı.</td></tr>
         </ng-template>
       </p-table>

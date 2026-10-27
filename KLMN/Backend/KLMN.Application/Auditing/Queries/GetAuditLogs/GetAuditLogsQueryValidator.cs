@@ -10,7 +10,7 @@ public sealed class GetAuditLogsQueryValidator : AbstractValidator<GetAuditLogsQ
          "MilitarySchoolDef", "MilitaryOfficeDef", "HcAdmissionTypeDef", "HcConnectedDecisionDef", "BranchDef", "HospitalDef", "HospitalReportType", "ReportTypeDef", "RankGroupDef", "RankDef", "MilitaryClassDef", "MilitaryClassGroupDef",
          "MilitaryClassGroupRelation", "CountryDef", "CityDef", "TownDef",
          "HcDecisionDef", "HcUnusedReasonForExam", "HcUnusedAdmissionType", "HcUnusedDecision", "HcConnectedDecision",
-         "ICD10Def", "ICD10Diagnostic", "SYYDiagnosisDecision", "SYYClassificationDef", "SYYDiagnosisBranchDef", "SYYDiagnosisProcedureDef", "SYYDiagnosisRequired", "SYYDiagnosisRequiredDetail", "SYYDiagnosisDef", "SYYDiagnosisTypeDef", "SYYDiagnosisSliceDef", "AnnotationReasonDef", "PlaneTypeDef", "FlyingMissionDef", "ReasonForExaminationDef", "ProcedureTypeDef", "ProcedureDef", "ReasonForExamReportType",
+         "ICD10Def", "ICD10Diagnostic", "SYYDiagnosisDecision", "SYYClassificationDef", "SYYDiagnosisBranchDef", "SYYDiagnosisProcedureDef", "SYYDiagnosisRequired", "SYYDiagnosisRequiredDetail", "SYYDiagnosisDef", "SYYDiagnosisTypeDef", "SYYDiagnosisSliceDef", "AnnotationReasonDef", "PlaneTypeDef", "FlyingMissionDef", "ReasonForExaminationDef", "ProcedureTypeDef", "ProcedureDef", "EquivalentProcedureDef", "ReasonForExamReportType",
          "ReasonForExamUnusedHcAdmissionType", "ReasonForExamProcedureDef",
          "ReasonForExamBranchDef",         "PurchaseNumberDef", "Permission", "UserRole", "RolePermission",
          "UserPermission", "UserAgreementPdf"];

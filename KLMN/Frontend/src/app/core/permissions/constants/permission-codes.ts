@@ -170,6 +170,12 @@ export const PermissionCodes = {
     View:'FlyingMissions.View',Query:'FlyingMissions.Query',Create:'FlyingMissions.Create',
     Update:'FlyingMissions.Update',Delete:'FlyingMissions.Delete'
   },
+  /** Eşdeğer Tetkikler CRUD ve sorgulama izinleri. */
+  EquivalentProcedures: {
+    View:'EquivalentProcedures.View',Query:'EquivalentProcedures.Query',
+    Create:'EquivalentProcedures.Create',Update:'EquivalentProcedures.Update',
+    Delete:'EquivalentProcedures.Delete'
+  },
   Procedures: {
     View: 'Procedures.View', Query: 'Procedures.Query',
     Create: 'Procedures.Create', Update: 'Procedures.Update', Delete: 'Procedures.Delete'

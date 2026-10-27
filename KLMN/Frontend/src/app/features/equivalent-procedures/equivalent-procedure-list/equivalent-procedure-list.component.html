@@ -1,0 +1,122 @@
+<div class="equivalent-page">
+ <header class="page-header">
+  <div><h1>Eşdeğer Tetkikler</h1>
+   <p>Mevcut Tetkik Tanımlarından iki farklı tetkiki ilişkilendirin. Eşdeğerlik çift yönlüdür.</p>
+   @if(procedureFilterId){<a routerLink="/app/procedures">Tetkik Tanımlarına Dön</a>}
+  </div>
+  @if(canCreate()){
+   <p-button label="Yeni Eşdeğer Tetkik" icon="pi pi-plus" (onClick)="openCreate()"/>
+  }
+ </header>
+ <p-toast position="top-right"/>
+ <section class="filter-panel">
+  <form [formGroup]="filterForm" (ngSubmit)="search()">
+   <div class="search-field">
+    <i class="pi pi-search" aria-hidden="true"></i>
+    <input pInputText formControlName="search" aria-label="Tetkik ara" placeholder="Tetkik kodu veya adında ara..."/>
+   </div>
+   <label class="inactive-filter"><p-checkbox formControlName="includeInactive" [binary]="true"/> Pasifleri dahil et</label>
+   <p-button type="submit" label="Ara" icon="pi pi-search" [loading]="loading()"/>
+   <p-button type="button" label="Temizle" icon="pi pi-times" severity="secondary" [outlined]="true" (onClick)="clear()"/>
+  </form>
+ </section>
+ <section class="list-card">
+  <div class="table-toolbar">
+   @if(canExport()){
+    <p-button label="Excel'e Aktar" icon="pi pi-file-excel" severity="success" [outlined]="true"
+      [loading]="exporting()" (onClick)="excel()"/>
+   }
+  </div>
+  <div class="table-scroll" role="region" tabindex="0" aria-label="Eşdeğer tetkik eşleştirmeleri">
+   <p-table [value]="records()" [loading]="loading()" [resizableColumns]="true" columnResizeMode="expand"
+      [tableStyle]="{'min-width':'1120px','width':'100%'}">
+    <ng-template pTemplate="header"><tr>
+     <th pResizableColumn pSortableColumn="procedureCode">Tetkik Kodu <p-sortIcon field="procedureCode"/></th>
+     <th pResizableColumn pSortableColumn="procedureName">Tetkik Adı <p-sortIcon field="procedureName"/></th>
+     <th pResizableColumn pSortableColumn="equivalentProcedureCode">Eşdeğer Tetkik Kodu <p-sortIcon field="equivalentProcedureCode"/></th>
+     <th pResizableColumn pSortableColumn="equivalentProcedureName">Eşdeğer Tetkik Adı <p-sortIcon field="equivalentProcedureName"/></th>
+     <th pResizableColumn pSortableColumn="isActive">Durum <p-sortIcon field="isActive"/></th>
+     @if(canUpdate()||canDelete()||canAudit()){<th class="action-head">İşlemler</th>}
+    </tr></ng-template>
+    <ng-template pTemplate="body" let-row><tr>
+     <td><code class="record-code">{{row.procedureCode}}</code></td>
+     <td class="wrap">{{row.procedureName}}</td>
+     <td><code class="record-code">{{row.equivalentProcedureCode}}</code></td>
+     <td class="wrap">{{row.equivalentProcedureName}}</td>
+     <td><p-tag [value]="row.isActive?'Aktif':'Pasif'" [severity]="row.isActive?'success':'secondary'"/></td>
+     @if(canUpdate()||canDelete()||canAudit()){
+     <td><div class="row-actions">
+      @if(canUpdate()){
+       <p-button icon="pi pi-pencil" [text]="true" severity="secondary" ariaLabel="Düzenle" (onClick)="openEdit(row)"/>
+       <p-button [icon]="row.isActive?'pi pi-ban':'pi pi-check-circle'" [text]="true" severity="secondary"
+          ariaLabel="Durumu değiştir" (onClick)="status(row)"/>
+      }
+      @if(canAudit()){
+       <p-button icon="pi pi-history" [text]="true" severity="secondary" ariaLabel="İşlem geçmişi"
+         (onClick)="auditRecord.set(row)"/>
+      }
+      @if(canDelete()){
+       <p-button icon="pi pi-trash" [text]="true" severity="danger" ariaLabel="Sil" (onClick)="remove(row)"/>
+      }
+     </div></td>}
+    </tr></ng-template>
+    <ng-template pTemplate="emptymessage">
+     <tr><td [attr.colspan]="canUpdate()||canDelete()||canAudit()?6:5" class="empty">Eşdeğer tetkik kaydı bulunamadı.</td></tr>
+    </ng-template>
+   </p-table>
+  </div>
+  <div class="pagination">
+   <span>{{total()}} eşleştirme · Sayfa {{page()}} / {{maxPage()}}</span>
+   <button type="button" [disabled]="page()<=1||loading()" (click)="goToPage(page()-1)" aria-label="Önceki sayfa">‹</button>
+   <button type="button" [disabled]="page()>=maxPage()||loading()" (click)="goToPage(page()+1)" aria-label="Sonraki sayfa">›</button>
+   <label>Sayfa başına <select [value]="pageSize()" (change)="setPageSize($event)">
+     <option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option>
+   </select></label>
+  </div>
+ </section>
+</div>
+<p-dialog [header]="editing()?'Eşdeğer Tetkik Düzenle':'Yeni Eşdeğer Tetkik'"
+ [visible]="dialogVisible()" (visibleChange)="!$event&&close()" [modal]="true"
+ [draggable]="false" [resizable]="false" [style]="{'width':'min(740px,96vw)'}">
+ <form class="definition-form" [formGroup]="form" (ngSubmit)="save()">
+  <p class="form-info">Aramak için kod veya isim yazın ya da açılır ok ile tetkik panelini açın.
+   Her iki seçim de mevcut Tetkik Tanımları kayıtlarından gelir.</p>
+  <div class="form-field">
+   <label for="equivalent-procedure-primary">Tetkik *</label>
+   <p-autocomplete inputId="equivalent-procedure-primary" formControlName="procedure"
+      [suggestions]="primaryOptions()" (completeMethod)="loadPrimary($event)"
+      optionLabel="label" [dropdown]="true" [forceSelection]="true" [minLength]="0"
+      [appendTo]="'body'" [fluid]="true" placeholder="Tetkik kodu veya adıyla ara...">
+     <ng-template let-item pTemplate="item">
+      <div class="option-row"><strong>{{item.code}}</strong><span>{{item.name}}</span>
+       @if(!item.isActive){<small>Pasif</small>}
+      </div>
+     </ng-template>
+   </p-autocomplete>
+  </div>
+  <div class="pair-icon"><i class="pi pi-arrows-h" aria-hidden="true"></i><span>İki yönlü eşdeğerlik</span></div>
+  <div class="form-field">
+   <label for="equivalent-procedure-target">Eşdeğer Tetkik *</label>
+   <p-autocomplete inputId="equivalent-procedure-target" formControlName="equivalent"
+      [suggestions]="equivalentOptions()" (completeMethod)="loadEquivalent($event)"
+      optionLabel="label" [dropdown]="true" [forceSelection]="true" [minLength]="0"
+      [appendTo]="'body'" [fluid]="true" placeholder="Eşdeğer tetkiki seçiniz...">
+     <ng-template let-item pTemplate="item">
+      <div class="option-row"><strong>{{item.code}}</strong><span>{{item.name}}</span>
+       @if(!item.isActive){<small>Pasif</small>}
+      </div>
+     </ng-template>
+   </p-autocomplete>
+  </div>
+  @if(formError()){<p class="form-error" role="alert">{{formError()}}</p>}
+  <div class="dialog-actions">
+   <p-button type="button" label="Vazgeç" severity="secondary" [outlined]="true" (onClick)="close()"/>
+   <p-button type="submit" label="Kaydet" icon="pi pi-check" [loading]="saving()"/>
+  </div>
+ </form>
+</p-dialog>
+<p-confirmdialog/>
+<p-dialog header="Eşdeğer Tetkik İşlem Geçmişi" [visible]="!!auditRecord()"
+ (visibleChange)="!$event&&auditRecord.set(null)" [modal]="true" [style]="{'width':'min(760px,96vw)'}">
+ @if(auditRecord();as row){<app-audit-history entityType="EquivalentProcedureDef" [entityId]="row.id"/>}
+</p-dialog>

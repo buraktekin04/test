@@ -64,6 +64,7 @@ public interface IKLMNDbContext
     DbSet<PlaneTypeDef> PlaneTypeDefs { get; }
     DbSet<FlyingMissionDef> FlyingMissionDefs { get; }
     DbSet<ProcedureDef> ProcedureDefs { get; }
+    DbSet<EquivalentProcedureDef> EquivalentProcedureDefs { get; }
 
     /// <summary>Muayene rapor türü eşleştirmeleri DbSet.</summary>
     DbSet<ReasonForExamReportType> ReasonForExamReportTypes { get; }

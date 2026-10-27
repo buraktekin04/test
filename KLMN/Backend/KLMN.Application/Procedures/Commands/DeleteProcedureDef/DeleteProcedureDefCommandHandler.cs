@@ -13,6 +13,9 @@ public sealed class DeleteProcedureDefCommandHandler(IKLMNDbContext db):IRequest
  if(await db.ReasonForExamProcedureDefs.IgnoreQueryFilters()
      .AnyAsync(x=>!x.IsDeleted&&x.ProcedureDefId==item.Id,ct))
    throw new ProcedureConflictException("Muayene sebebi eşleştirmesi bulunan tetkik silinemez.");
+ if(await db.EquivalentProcedureDefs.IgnoreQueryFilters()
+    .AnyAsync(x=>!x.IsDeleted&&(x.ProcedureDefId==item.Id||x.EquivalentProcedureId==item.Id),ct))
+   throw new ProcedureConflictException("Eşdeğer tetkik eşleştirmesi bulunan tetkik silinemez.");
  db.ProcedureDefs.Remove(item);await db.SaveChangesAsync(ct);
  }
 }

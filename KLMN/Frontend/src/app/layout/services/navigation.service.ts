@@ -191,7 +191,7 @@ export class NavigationService {
           ]
         },
         {
-          label: 'Muayene ve Tetkik',
+          label: 'Muayene Tanımları',
           icon: 'pi pi-clipboard',
           children: [
             {
@@ -214,14 +214,15 @@ export class NavigationService {
                       label: 'Muayene Gereken Branşlar', icon: 'pi pi-sitemap',
                       route: '/app/reason-exam-branches', permissionModule: 'ReasonForExamBranchDefs'
                     },
-            {
-                      label: 'Tetkik Türü Tanımları', icon: 'pi pi-tags',
-                      route: '/app/procedure-types', permissionModule: 'ProcedureTypes'
-                    },
-            {
-                      label: 'Tetkik Tanımları', icon: 'pi pi-list-check',
-                      route: '/app/procedures', permissionModule: 'Procedures'
-                    }
+          ]
+        },
+        {
+          label: 'Tetkik Tanımları',
+          icon: 'pi pi-flask',
+          children: [
+            {label:'Tetkik Türü Tanımları',icon:'pi pi-tags',route:'/app/procedure-types',permissionModule:'ProcedureTypes'},
+            {label:'Tetkik Tanımları',icon:'pi pi-list-check',route:'/app/procedures',permissionModule:'Procedures'},
+            {label:'Eşdeğer Tetkikler',icon:'pi pi-link',route:'/app/equivalent-procedures',permissionModule:'EquivalentProcedures'}
           ]
         },
         {
