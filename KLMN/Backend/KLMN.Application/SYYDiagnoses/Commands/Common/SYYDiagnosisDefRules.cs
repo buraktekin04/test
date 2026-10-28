@@ -19,6 +19,24 @@ internal static class SYYDiagnosisDefRules
     if(item.Version!=version)throw new DbUpdateConcurrencyException("Kayıt başka kullanıcı tarafından değiştirildi.");
     return item;
  }
+ /// <summary>Mevcut sayısal kodu aktif bir GUID referansına dönüştürür.</summary>
+ public static async Task<Guid> ResolveTypeIdAsync(IKLMNDbContext db,int code,CancellationToken ct)
+ {
+   var id=await db.SYYDiagnosisTypeDefs.IgnoreQueryFilters().AsNoTracking()
+     .Where(x=>x.Code==code&&!x.IsDeleted&&x.IsActive)
+     .Select(x=>x.Id).FirstOrDefaultAsync(ct);
+   if(id==Guid.Empty)throw new SYYDiagnosisDefConflictException("Aktif bir Tanı Türü seçiniz.");
+   return id;
+ }
+ public static async Task<Guid?> ResolveSliceIdAsync(IKLMNDbContext db,int? code,CancellationToken ct)
+ {
+   if(!code.HasValue)return null;
+   var id=await db.SYYDiagnosisSliceDefs.IgnoreQueryFilters().AsNoTracking()
+     .Where(x=>x.Code==code.Value&&!x.IsDeleted&&x.IsActive)
+     .Select(x=>x.Id).FirstOrDefaultAsync(ct);
+   if(id==Guid.Empty)throw new SYYDiagnosisDefConflictException("Aktif bir Dilim seçiniz.");
+   return id;
+ }
  public static async Task EnsureRelationsAsync(IKLMNDbContext db,Guid id,int type,Guid? parent,int? slice,
  Guid? previousParent,int? previousType,int? previousSlice,CancellationToken ct)
  {

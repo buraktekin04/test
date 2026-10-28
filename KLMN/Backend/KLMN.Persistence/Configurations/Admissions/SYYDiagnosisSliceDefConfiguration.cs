@@ -11,7 +11,7 @@ public sealed class SYYDiagnosisSliceDefConfiguration:BaseEntityConfiguration<SY
         b.ToTable("SYYDiagnosisSliceDefs");
         b.Property(x=>x.Name).HasMaxLength(150).IsRequired();
         b.Property(x=>x.Code).ValueGeneratedNever();
-        b.HasAlternateKey(x=>x.Code);
+        b.HasIndex(x=>x.Code).IsUnique().HasFilter(PostgreSqlIndexFilters.NotDeleted);
         // Kaynak fotoğraf: 1=A, 2=B, 3=C, 4=D. GUID'ler migrationlar boyunca değişmez.
         b.HasData(
           new {Id=Guid.Parse("267733b0-a50c-41c9-b116-0e6cfef14a01"),Code=1,Name="A",

@@ -14,7 +14,7 @@ public sealed class CreateProcedureDefCommandHandler(IKLMNDbContext db)
     public async Task<ProcedureDefMutationResponse> Handle(CreateProcedureDefCommand request, CancellationToken ct)
     {
         await ProcedureDefRules.EnsureUniqueCodeAsync(db, request.ProcedureCode, null, ct);
-        await ProcedureDefRules.EnsureTypeAsync(db,request.ProcedureType,ct);
+        var typeId=await ProcedureDefRules.ResolveTypeIdAsync(db,request.ProcedureType,ct);
         var item = new ProcedureDef
         {
             ProcedureCode = request.ProcedureCode.Trim().ToUpperInvariant(),
@@ -24,7 +24,8 @@ public sealed class CreateProcedureDefCommandHandler(IKLMNDbContext db)
             RequiresNumericResult = request.RequiresNumericResult,
             RequiresReferenceRange = request.RequiresReferenceRange,
             RequiresDeviationInfo = request.RequiresDeviationInfo,
-            ProcedureType = request.ProcedureType
+            ProcedureType = request.ProcedureType,
+            ProcedureTypeDefId = typeId
         };
         await db.ProcedureDefs.AddAsync(item, ct);
         await db.SaveChangesAsync(ct);

@@ -11,7 +11,7 @@ public sealed class ProcedureTypeDefConfiguration : BaseEntityConfiguration<Proc
         b.ToTable("ProcedureTypeDefs");
         b.Property(x=>x.Code).ValueGeneratedNever();
         b.Property(x=>x.Name).IsRequired().HasMaxLength(200);
-        // İlişki Code alanına bağlandığından tüm kayıtlar için benzersiz olmalıdır.
-        b.HasAlternateKey(x=>x.Code);
+        // FK artık GUID kimliğine bağlı; silinmiş kodu tekrar kullanmak mümkündür.
+        b.HasIndex(x=>x.Code).IsUnique().HasFilter(PostgreSqlIndexFilters.NotDeleted);
     }
 }

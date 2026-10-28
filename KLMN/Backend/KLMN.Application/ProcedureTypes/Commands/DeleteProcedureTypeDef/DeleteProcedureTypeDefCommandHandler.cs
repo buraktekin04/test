@@ -11,7 +11,7 @@ public sealed class DeleteProcedureTypeDefCommandHandler(IKLMNDbContext db):
     public async Task Handle(DeleteProcedureTypeDefCommand r,CancellationToken ct)
     {
         var item=await ProcedureTypeRules.LoadAsync(db,r.Id,r.Version,ct);
-        await ProcedureTypeRules.EnsureNoProceduresAsync(db,item.Code,ct);
+        await ProcedureTypeRules.EnsureNoProceduresAsync(db,item.Id,ct);
         db.ProcedureTypeDefs.Remove(item);
         await db.SaveChangesAsync(ct);
     }

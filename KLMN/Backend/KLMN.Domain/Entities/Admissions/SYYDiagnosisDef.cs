@@ -5,8 +5,9 @@ public sealed class SYYDiagnosisDef:EffectiveDatedEntity
 {
     public string Code {get;set;}=string.Empty;
     public string Name {get;set;}=string.Empty;
-    /// <summary>Tanı Türü: SYYDiagnosisTypeDefs.Code FK (int).</summary>
+    /// <summary>Tanı Türü: API uyumlu eski kod (int); FK SYYDiagnosisTypeDefId.</summary>
     public int SYYDiagnosisType {get;set;}
+    public Guid SYYDiagnosisTypeDefId {get;set;}
     public SYYDiagnosisTypeDef DiagnosisTypeDef {get;set;}=null!;
     /// <summary>Kendi tablosundaki bağlı kayıt; id üzerinden self-FK.</summary>
     public Guid? AttachedRecNo {get;set;}
@@ -14,8 +15,9 @@ public sealed class SYYDiagnosisDef:EffectiveDatedEntity
     public ICollection<SYYDiagnosisDef> AttachedChildren {get;set;}=new List<SYYDiagnosisDef>();
     /// <summary>Seçilebilir: null, bilinmiyor anlamını korur.</summary>
     public bool? Eligible {get;set;}
-    /// <summary>Bağlı Dilim: SYYDiagnosisSliceDefs.Code FK (int nullable).</summary>
+    /// <summary>Bağlı Dilim: API uyumlu eski dilim kodu; FK SYYDiagnosisSliceDefId.</summary>
     public int? Slice {get;set;}
+    public Guid? SYYDiagnosisSliceDefId {get;set;}
     public SYYDiagnosisSliceDef? SliceDef {get;set;}
     /// <summary>SYY sınıflandırma çizelgesi satırları.</summary>
     public ICollection<SYYClassificationDef> Classifications {get;set;}=new List<SYYClassificationDef>();

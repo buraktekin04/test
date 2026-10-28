@@ -16,7 +16,7 @@ public sealed class UpdateProcedureDefCommandHandler(IKLMNDbContext db)
         await ProcedureDefRules.EnsureUniqueCodeAsync(db, request.ProcedureCode, item.Id, ct);
         // Değişen tür seçimi, aktif dinamik tür tablosunda doğrulanır.
         if(item.ProcedureType!=request.ProcedureType)
-            await ProcedureDefRules.EnsureTypeAsync(db,request.ProcedureType,ct);
+            item.ProcedureTypeDefId=await ProcedureDefRules.ResolveTypeIdAsync(db,request.ProcedureType,ct);
         item.ProcedureCode = request.ProcedureCode.Trim().ToUpperInvariant();
         item.Name = request.Name.Trim();
         item.ValidFrom = request.ValidFrom;

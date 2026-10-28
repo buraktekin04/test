@@ -6,10 +6,10 @@ namespace KLMN.Application.ProcedureTypes.Commands.Common;
 /// <summary>Eski enum kodunu koruyan tekillik, ilişki ve xmin kuralları.</summary>
 internal static class ProcedureTypeRules
 {
-    /// <summary>Silinmiş kodun dahi yeniden farklı anlamla kullanılmasını engeller.</summary>
+    /// <summary>Yalnız silinmemiş kodlarla çakışmayı engeller; arşiv kodları tekrar kullanılabilir.</summary>
     public static async Task EnsureNewCodeAsync(IKLMNDbContext db,int code,CancellationToken ct)
     {
-        if(await db.ProcedureTypeDefs.IgnoreQueryFilters().AnyAsync(x=>x.Code==code,ct))
+        if(await db.ProcedureTypeDefs.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.Code==code,ct))
             throw new ProcedureTypeConflictException("Bu tetkik türü kodu kullanımda.");
     }
     /// <summary>İşlemin mevcut kayıt sürümüne ait olduğunu doğrular.</summary>
@@ -21,15 +21,15 @@ internal static class ProcedureTypeRules
         return item;
     }
     /// <summary>Bir türe aktif tetkik bağlıysa pasifleştirmeyi reddeder.</summary>
-    public static async Task EnsureNoActiveProceduresAsync(IKLMNDbContext db,int code,CancellationToken ct)
+    public static async Task EnsureNoActiveProceduresAsync(IKLMNDbContext db,Guid id,CancellationToken ct)
     {
-        if(await db.ProcedureDefs.IgnoreQueryFilters().AnyAsync(x=>x.ProcedureType==code&&!x.IsDeleted&&x.IsActive,ct))
+        if(await db.ProcedureDefs.IgnoreQueryFilters().AnyAsync(x=>x.ProcedureTypeDefId==id&&!x.IsDeleted&&x.IsActive,ct))
             throw new ProcedureTypeConflictException("Aktif tetkikleri bulunan tür pasifleştirilemez.");
     }
     /// <summary>Tarihçede bile referans varsa türün silinmesini engeller.</summary>
-    public static async Task EnsureNoProceduresAsync(IKLMNDbContext db,int code,CancellationToken ct)
+    public static async Task EnsureNoProceduresAsync(IKLMNDbContext db,Guid id,CancellationToken ct)
     {
-        if(await db.ProcedureDefs.IgnoreQueryFilters().AnyAsync(x=>x.ProcedureType==code,ct))
+        if(await db.ProcedureDefs.IgnoreQueryFilters().AnyAsync(x=>x.ProcedureTypeDefId==id&&!x.IsDeleted,ct))
             throw new ProcedureTypeConflictException("Bu türe bağlı tetkikler bulunduğundan silinemez.");
     }
 }

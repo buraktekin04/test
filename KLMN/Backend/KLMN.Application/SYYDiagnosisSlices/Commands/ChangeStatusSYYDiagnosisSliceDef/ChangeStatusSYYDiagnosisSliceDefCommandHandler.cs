@@ -10,7 +10,7 @@ using KLMN.Application.Common.Interfaces.Persistence;
  {
  public async Task<SYYDiagnosisSliceDefMutationResponse> Handle(ChangeStatusSYYDiagnosisSliceDefCommand r,CancellationToken ct){
  var item=await SYYDiagnosisSliceDefRules.LoadAsync(db,r.Id,r.Version,ct);
- if(!r.IsActive)await SYYDiagnosisSliceDefRules.EnsureUnusedAsync(db,item.Code,ct);
+ if(!r.IsActive)await SYYDiagnosisSliceDefRules.EnsureUnusedAsync(db,item.Id,ct);
  item.IsActive=r.IsActive;await db.SaveChangesAsync(ct);return new(item.Id,item.Version);
  }
  }

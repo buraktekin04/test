@@ -1,3 +1,55 @@
+SOFT DELETE KOD TEKRAR KULLANIMI — 28.10.2026
+================================================
+Problem ve temel neden:
+  Çok sayıdaki standart tanım zaten !IsDeleted iş kuralları ve IsDeleted=false
+  kısmî (partial) UNIQUE index ile doğruydu. Ancak tam üç kod tablosu
+  (ProcedureTypeDefs, SYYDiagnosisTypeDefs, SYYDiagnosisSliceDefs)
+  .HasAlternateKey(Code) nedeniyle IsDeleted=true kayıtları da blokluyordu.
+  Özellikle "Kod daha önce tanımlanmış; eski kod tekrar kullanılamaz" hatası
+  SYYDiagnosisTypeDefRules / SYYDiagnosisSliceDefRules kaynaklıydı.
+
+Yapılan kod değişiklikleri:
+  1. Üç Code alternatif anahtarı kaldırıldı; her birinde
+     HasIndex(Code).IsUnique().HasFilter(PostgreSqlIndexFilters.NotDeleted) var.
+  2. FK'ler sayısal kod yerine kalıcı GUID kimliğine taşındı:
+       ProcedureDef.ProcedureTypeDefId -> ProcedureTypeDef.Id
+       SYYDiagnosisDef.SYYDiagnosisTypeDefId -> SYYDiagnosisTypeDef.Id
+       SYYDiagnosisDef.SYYDiagnosisSliceDefId -> SYYDiagnosisSliceDef.Id
+     Eski ProcedureType/SYYDiagnosisType/Slice int kodları API/sorgu uyumu için
+     bırakıldı. Create işlemleri koddan güncel aktif GUID çözümler; Update yalnız
+     seçim değişmişse çözümler. Değişmeyen eski ilişki farklı kayda bağlanmaz.
+  3. Üç tanımın unique sorguları yalnız !IsDeleted kayıtlarını sayar.
+     Soft-delete edilmiş alt çocuklar üst kaydın soft-delete edilmesini engellemez;
+     silinmemiş çocukların FK koruması devam eder. Aktif çocuk varsa pasifleştirme
+     kontrolleri GUID üzerinden yapılır.
+  4. Kalan tanım modüllerinin Code unique indeksleri ve QueryHandler/Rules
+     dizini denetlendi; standart Code kontrolleri zaten !IsDeleted idi.
+     Kimlik/token/path benzersizliği değiştirilmeyip güvenlik korunmuştur.
+
+ZORUNLU VERİTABANI GEÇİŞİ:
+  Backend/KLMN.Persistence/MigrationSupport/
+    20261028_SoftDeletedCode_GuidFk_Upgrade.sql
+  Kod değişikliği tek başına mevcut PostgreSQL şemasını değiştirmez.
+  Repo güncel EF migrations/snapshot zincirini içermiyor. Bu dosya
+  geçiş/teknik SQL örneğidir; VERİTABANINA UYGULANMADI.
+  Yerel EF migration zincirinde aynı DDL'yi temsil eden migration üretip
+  test DB'sinde önce backfill, FK swap, eski AK DROP ve filtered unique
+  index işlemlerini doğrulayın. Hem SQL'yi hem aynı EF migration'ı iki kere
+  çalıştırmayın. Hata durumunda transaction rollback yapar.
+  DB önce yeni sürüme geçirilmeden yeni API ile çalıştırılmamalıdır.
+
+Kabul senaryoları:
+  - Kodu X olan kayıt soft-delete edilince X ile yeni kayıt eklenebilir.
+  - X olan silinmemiş aktif/pasif ikinci kayıt 409 / unique reddi.
+  - Eski soft-delete kaydın Id/audit tarihi korunur.
+  - İlişkili geçmiş tetkik/tanı eski Guid ID'ye bağlı kalır, yeni X'e geçmez.
+  - Aktif ilişkisi olan üst tanım silme/pasifleştirme koruması devam eder.
+  - Code dışında UserName/TokenHash gibi alanların politikası değişmez.
+  - Yeni metadata regresyonu: dotnet run --project KLMN/Tests/SoftDeletedCodeReuse.Regression
+
+NOT: Bu çalışma ortamında .NET SDK / PostgreSQL bağlantısı bulunmadığı için
+dotnet build, migration, veritabanı ve browser testleri KOŞULMADI.
+
 27.10.2026 — ANGULAR DERLEME DÜZELTMESİ (SEKİZ MADDE SONRASI)
 ====================================================================
 - Angular NG8009: ng-template parametresi parentKey, @for track ifadesinden

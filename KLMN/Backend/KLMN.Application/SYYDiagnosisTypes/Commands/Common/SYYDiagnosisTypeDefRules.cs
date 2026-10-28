@@ -8,8 +8,8 @@ internal static class SYYDiagnosisTypeDefRules
 {
  public static async Task EnsureUniqueAsync(IKLMNDbContext db,int code,Guid? ignored,CancellationToken ct)
  {
-    if(await db.SYYDiagnosisTypeDefs.IgnoreQueryFilters().AnyAsync(x=>x.Code==code,ct))
-        throw new SYYDiagnosisTypeDefConflictException("Kod daha önce tanımlanmış; eski kod tekrar kullanılamaz.");
+    if(await db.SYYDiagnosisTypeDefs.IgnoreQueryFilters().AnyAsync(x=>!x.IsDeleted&&x.Code==code&&(!ignored.HasValue||x.Id!=ignored.Value),ct))
+        throw new SYYDiagnosisTypeDefConflictException("Bu kod silinmemiş başka bir tanımda zaten kullanılıyor.");
  }
  public static async Task<SYYDiagnosisTypeDef> LoadAsync(IKLMNDbContext db,Guid id,uint version,CancellationToken ct)
  {
@@ -18,10 +18,10 @@ internal static class SYYDiagnosisTypeDefRules
     if(item.Version!=version)throw new DbUpdateConcurrencyException("Kayıt başka kullanıcı tarafından değiştirildi.");
     return item;
  }
- public static async Task EnsureUnusedAsync(IKLMNDbContext db,int code,CancellationToken ct)
+ public static async Task EnsureUnusedAsync(IKLMNDbContext db,Guid id,CancellationToken ct)
  {
   if(await db.SYYDiagnosisDefs.IgnoreQueryFilters()
-   .AnyAsync(x=>x.SYYDiagnosisType==code,ct))
+   .AnyAsync(x=>x.SYYDiagnosisTypeDefId==id&&!x.IsDeleted,ct))
     throw new SYYDiagnosisTypeDefConflictException("Bu tanıma bağlı SYY kayıtları bulunduğundan silinemez.");
  }
 }

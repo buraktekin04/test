@@ -11,6 +11,6 @@ public sealed class SYYDiagnosisTypeDefConfiguration:BaseEntityConfiguration<SYY
         b.ToTable("SYYDiagnosisTypeDefs");
         b.Property(x=>x.Name).HasMaxLength(150).IsRequired();
         b.Property(x=>x.Code).ValueGeneratedNever();
-        b.HasAlternateKey(x=>x.Code);
+        b.HasIndex(x=>x.Code).IsUnique().HasFilter(PostgreSqlIndexFilters.NotDeleted);
     }
 }

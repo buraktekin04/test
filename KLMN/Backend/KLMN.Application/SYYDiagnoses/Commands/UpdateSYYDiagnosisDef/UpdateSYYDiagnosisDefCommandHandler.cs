@@ -14,6 +14,10 @@ using KLMN.Application.Common.Interfaces.Persistence;
  await SYYDiagnosisDefRules.EnsureRelationsAsync(db,item.Id,r.SYYDiagnosisType,r.AttachedRecNo,r.Slice,
  item.AttachedRecNo,item.SYYDiagnosisType,item.Slice,ct);
  item.Code=r.Code.Trim().ToUpperInvariant();item.Name=r.Name.Trim();
+ if(item.SYYDiagnosisType!=r.SYYDiagnosisType)
+   item.SYYDiagnosisTypeDefId=await SYYDiagnosisDefRules.ResolveTypeIdAsync(db,r.SYYDiagnosisType,ct);
+ if(item.Slice!=r.Slice)
+   item.SYYDiagnosisSliceDefId=await SYYDiagnosisDefRules.ResolveSliceIdAsync(db,r.Slice,ct);
  item.SYYDiagnosisType=r.SYYDiagnosisType;item.AttachedRecNo=r.AttachedRecNo;item.Eligible=r.Eligible;
  item.Slice=r.Slice;item.ValidFrom=r.ValidFrom;item.ValidTo=r.ValidTo;
  await db.SaveChangesAsync(ct);return new(item.Id,item.Version);

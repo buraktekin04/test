@@ -12,10 +12,12 @@ public sealed class SYYDiagnosisDefConfiguration:EffectiveDatedEntityConfigurati
         b.Property(x=>x.Code).HasMaxLength(100).IsRequired();
         b.Property(x=>x.Name).HasMaxLength(500).IsRequired();
         b.HasIndex(x=>x.Code).IsUnique().HasFilter(PostgreSqlIndexFilters.NotDeleted);
+        b.HasIndex(x=>x.SYYDiagnosisTypeDefId);
+        b.HasIndex(x=>x.SYYDiagnosisSliceDefId);
         b.HasOne(x=>x.DiagnosisTypeDef).WithMany(x=>x.Diagnoses)
-         .HasForeignKey(x=>x.SYYDiagnosisType).HasPrincipalKey(x=>x.Code).OnDelete(DeleteBehavior.Restrict);
+         .HasForeignKey(x=>x.SYYDiagnosisTypeDefId).OnDelete(DeleteBehavior.Restrict);
         b.HasOne(x=>x.SliceDef).WithMany(x=>x.Diagnoses)
-         .HasForeignKey(x=>x.Slice).HasPrincipalKey(x=>x.Code).OnDelete(DeleteBehavior.Restrict);
+         .HasForeignKey(x=>x.SYYDiagnosisSliceDefId).OnDelete(DeleteBehavior.Restrict);
         b.HasOne(x=>x.AttachedDiagnosis).WithMany(x=>x.AttachedChildren)
          .HasForeignKey(x=>x.AttachedRecNo).OnDelete(DeleteBehavior.Restrict);
         b.HasIndex(x=>x.AttachedRecNo);

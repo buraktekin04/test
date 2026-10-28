@@ -10,7 +10,7 @@ using KLMN.Application.Common.Interfaces.Persistence;
  {
  public async Task Handle(DeleteSYYDiagnosisTypeDefCommand r,CancellationToken ct){
  var item=await SYYDiagnosisTypeDefRules.LoadAsync(db,r.Id,r.Version,ct);
- await SYYDiagnosisTypeDefRules.EnsureUnusedAsync(db,item.Code,ct);
+ await SYYDiagnosisTypeDefRules.EnsureUnusedAsync(db,item.Id,ct);
  db.SYYDiagnosisTypeDefs.Remove(item);await db.SaveChangesAsync(ct);
  }
  }
