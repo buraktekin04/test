@@ -14,9 +14,19 @@ BEGIN
  ) THEN
    RAISE EXCEPTION 'Kaynakta tip/kod/ad/IsActive geçersiz';
  END IF;
- IF EXISTS (SELECT 1 FROM mskbs."_SpecialDefinitionsImport"
- GROUP BY "RecordType",upper(btrim("Code")) HAVING count(*)>1
- ) THEN RAISE EXCEPTION 'Kaynakta aynı tür için mükerrer Code'; END IF;
+ -- Sadece TÜM alanları birebir aynı olan tekrarlar güvenle tekilleştirilir.
+ -- Aynı RecordType+Code altında Name, IsActive veya herhangi bir zorunlu
+ -- bool alanı farklıysa veri kaybını önlemek için aktarım durdurulur.
+ IF EXISTS (
+   SELECT 1
+   FROM mskbs."_SpecialDefinitionsImport" s
+   GROUP BY s."RecordType",upper(btrim(s."Code"))
+   HAVING count(DISTINCT to_jsonb(s))>1
+ ) THEN
+   RAISE EXCEPTION 'Aynı tür+Code için FARKLI içerikli kayıtlar var. 05_MUKERRER_KOD_KONTROL.sql çalıştırın';
+ END IF;
+ -- Import edilen CSV aynı kayıtları iki kez içeriyorsa INSERT kaynakları
+ -- SELECT DISTINCT ile aynı satırı bir kez değerlendirir; staging değişmez.
   IF EXISTS (
  SELECT 1 FROM mskbs."_SpecialDefinitionsImport"
  WHERE "RecordType"='ADMISSION' AND (
@@ -86,7 +96,7 @@ SELECT md5('KLMN_SPECIAL_ADMISSION_V1|' || upper(btrim(s."Code")))::uuid,
        lower(btrim(s."DispatchDocumentDateRequired"))::boolean,
        lower(btrim(s."DispatchDocumentNoRequired"))::boolean,
        lower(btrim(s."PertemApprovalRequired"))::boolean
-FROM mskbs."_SpecialDefinitionsImport" s
+FROM (SELECT DISTINCT * FROM mskbs."_SpecialDefinitionsImport") s
 WHERE s."RecordType"='ADMISSION'
  AND NOT EXISTS (
   SELECT 1 FROM mskbs."HcAdmissionTypeDefs" x
@@ -108,7 +118,7 @@ SELECT md5('KLMN_SPECIAL_DECISION_V1|' || upper(btrim(s."Code")))::uuid,
        lower(btrim(s."ApprovalRequired"))::boolean,
        lower(btrim(s."PertemApprovalRequired"))::boolean,
        lower(btrim(s."DiagnosisRequired"))::boolean
-FROM mskbs."_SpecialDefinitionsImport" s
+FROM (SELECT DISTINCT * FROM mskbs."_SpecialDefinitionsImport") s
 WHERE s."RecordType"='DECISION'
  AND NOT EXISTS (
   SELECT 1 FROM mskbs."HcDecisionDefs" x
@@ -127,7 +137,7 @@ SELECT md5('KLMN_SPECIAL_EXAM_REASON_V1|' || upper(btrim(s."Code")))::uuid,
        lower(btrim(s."DispatchRequired"))::boolean,
        lower(btrim(s."ClassificationExamination"))::boolean,
        lower(btrim(s."Objectionable"))::boolean
-FROM mskbs."_SpecialDefinitionsImport" s
+FROM (SELECT DISTINCT * FROM mskbs."_SpecialDefinitionsImport") s
 WHERE s."RecordType"='EXAM_REASON'
  AND NOT EXISTS (
   SELECT 1 FROM mskbs."ReasonForExaminationDefs" x

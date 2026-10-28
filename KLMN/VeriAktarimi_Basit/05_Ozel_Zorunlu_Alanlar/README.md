@@ -14,3 +14,9 @@ Bu paket üç özel tanımı **tek Oracle sonuç dosyası, tek PostgreSQL yardı
 5. `04_POSTGRES_KONTROL.sql` ile satır sayısı/durum kontrol edin.
 
 Yükleme yalnız kaydı olmayan Code'lar için INSERT yapar, mevcut GUID'leri ve ilişkili kayıtları değiştirmez. Yeni Id'ler kaynak tür+Code üzerinden deterministik MD5 UUID'dir. CreatedDate import anı, IsDeleted=false. Eski gerçek tarih, audit ve ek kolonlar kaynak verisi doğrulanmadan aktarılmaz. Test/backup şarttır; gerçek veriler public GitHub'a yüklenmez.
+
+## Mükerrer Code hata yönetimi (28.10.2026)
+
+`03_POSTGRES_INSERT.sql` güncellendi: CSV'nin staging tablosuna yanlışlıkla **iki kez import edilmesi** nedeniyle birebir aynı veri satırı tekrar ediyorsa `SELECT DISTINCT` ile INSERT kaynağında tekilleştirilir; gerçek tabloya veya staging tablosuna silme/güncelleme yapılmaz. **Aynı RecordType+Code için farklı Name, IsActive ya da bool içeriği** varsa işlem hata vererek durur. Bunun için `05_MUKERRER_KOD_KONTROL.sql` çalıştırın; `farkli_icerik_sayisi=1` güvenli aynı-satır tekrarı, daha büyükse kaynak uyuşmazlığıdır. 
+
+Daha önce hata almış DBeaver oturumunda açık transaction varsa `ROLLBACK;` uygulayın. Bu kontrol gerçek PostgreSQL sunucusunda henüz çalıştırılmamıştır.
