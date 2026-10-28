@@ -1,3 +1,18 @@
+28.10.2026 — MIGRATIONSUPPORT KALDIRILDI
+===========================================
+- Kullanıcı eski geliştirme veritabanını DROP DATABASE ile sıfırladı,
+  eski migration'ları sildi ve yeni ilk migration'ı kendi makinesinde üretti.
+  Bu commit veritabanını, yerel migration'ları veya ModelSnapshot'ı değiştirmez.
+- KLMN.Persistence altındaki eski MigrationSupport yardımcısı (iki .cs,
+  iki .sql) kaldırıldı. Bunlar eski veriyi dönüştürmek içindi; temiz
+  başlangıçtaki veritabanında artık gerekli değiller.
+- GitHub main içinde bu aşamada Migrations/ModelSnapshot görünmüyor; yereldeki
+  yeni InitialCreate ve snapshot dosyaları ayrıca git'e eklenmelidir.
+  Aynı ilk migration'ı yeniden oluşturma veya DB'yi tekrar sıfırlama.
+- Mevcut IsDeleted=false unique indeks modeli, Guid FK'ler ve BaseEntity
+  soft-delete / optimistic concurrency kodu korundu.
+- Bu commit kapsamında gerçek dotnet build / migration / DB testi çalıştırılmadı.
+
 SOFT DELETE KOD TEKRAR KULLANIMI — 28.10.2026
 ================================================
 Problem ve temel neden:
@@ -26,17 +41,11 @@ Yapılan kod değişiklikleri:
      dizini denetlendi; standart Code kontrolleri zaten !IsDeleted idi.
      Kimlik/token/path benzersizliği değiştirilmeyip güvenlik korunmuştur.
 
-ZORUNLU VERİTABANI GEÇİŞİ:
-  Backend/KLMN.Persistence/MigrationSupport/
-    20261028_SoftDeletedCode_GuidFk_Upgrade.sql
-  Kod değişikliği tek başına mevcut PostgreSQL şemasını değiştirmez.
-  Repo güncel EF migrations/snapshot zincirini içermiyor. Bu dosya
-  geçiş/teknik SQL örneğidir; VERİTABANINA UYGULANMADI.
-  Yerel EF migration zincirinde aynı DDL'yi temsil eden migration üretip
-  test DB'sinde önce backfill, FK swap, eski AK DROP ve filtered unique
-  index işlemlerini doğrulayın. Hem SQL'yi hem aynı EF migration'ı iki kere
-  çalıştırmayın. Hata durumunda transaction rollback yapar.
-  DB önce yeni sürüme geçirilmeden yeni API ile çalıştırılmamalıdır.
+GÜNCEL VERİTABANI DURUMU (28.10.2026):
+  Kullanıcı ilk migration'ı yerelde yeniden oluşturdu; eski şemayı dönüştüren
+  MigrationSupport yardımcıları ve SQL scriptleri artık kullanılmıyor.
+  Yereldeki yeni InitialCreate'nin Guid FK / IsDeleted=false unique indeksleri
+  doğru oluşturduğu doğrulanmalı.
 
 Kabul senaryoları:
   - Kodu X olan kayıt soft-delete edilince X ile yeni kayıt eklenebilir.
@@ -89,16 +98,12 @@ dotnet build, migration, veritabanı ve browser testleri KOŞULMADI.
 8) Soft-delete sonrası kod tekrar kullanımı:
    Standart tanım tablolarındaki CQRS benzersizlik kontrolleri halihazırda
    !IsDeleted, EF indeksleri PostgreSqlIndexFilters.NotDeleted kullanıyor.
-   AuditableEntitySaveChangesInterceptor Remove() işlemini IsDeleted=true
-   yaparak fiziki kaydı ve geçmişi koruyor. Mevcut DB'deki eski
-   KOŞULSUZ UNIQUE indeksleri belirlemek için yalnız SELECT çalışan
-   KLMN.Persistence/MigrationSupport/SoftDeletedCodeIndexAudit.sql eklendi.
-   Kullanıcı kendi DB migrationlarını yönettiği için otomatik DROP/ALTER yok.
-   İSTİSNA (tamamlanmadı): ProcedureTypeDefs, SYYDiagnosisTypeDefs,
-   SYYDiagnosisSliceDefs Code alanları HasAlternateKey olup başka tablolardan
-   Code üzerinden FK ile referanslanıyor. Bunlar sadece filtered unique'e
-   çevrilemez; GUID tabanlı FK şema refactor + migration planı gerekir.
-   Bu üç tipte silinmiş kod yeniden kullanılamıyor; sessizce başarı iddiası yok.
+   AuditableEntitySaveChangesInterceptor Remove() işlemi IsDeleted=true
+   yaparak fiziksel kaydı ve audit geçmişini korur.
+   TARİHSEL NOT: Eski veritabanının koşulsuz unique/alternate-key şeması
+   için kullanılan MigrationSupport SQL yardımcıları kaldırıldı.
+   Yeni ilk migration'da soft-delete kod tekrar kullanımının indeksleri
+   ve GUID FK ilişkileri doğrulanmalıdır.
 Test: DefinitionQuality.Regression test projesi eklendi; testler bu ortamda
 .NET SDK bulunmadığından çalıştırılmadı. Angular/PrimeNG tarayıcı testi,
 PostgreSQL şema/index denetimi ve migration geliştiricide yapılmalı.
@@ -1076,20 +1081,16 @@ Auth/cookie/SameSite ayrıntısı için KLMN/Backend/README.md'ye bak.
 
 8. MIGRATION / VERİ KAYBI UYARISI — KRİTİK
 -----------------------------------------
-Repo içinde EF Core'un güncel Migrations ve ModelSnapshot zinciri
-bulunmuyor; kullanıcı tarafındaki yerel veritabanında ve projede
-önceden uygulanmış migration'lar olabilir. Bunları silme, snapshot'ı
-rastgele yeniden oluşturma, InitialCreate'i körlemesine yeniden
-uygulama veya tüm tabloyu Drop/Create ile değiştirme.
-Değişen gerçek entity/kolonları mevcut local snapshot'a göre
-migration ile üret, script'i incele, uygun ortama uygula.
+28.10.2026: Kullanıcı eski geliştirme DB ve migration dosyalarını sıfırladı,
+yerel makinesinde yeni ilk migration'ı üretti. Bu değişiklik sırasında yeni
+InitialCreate/ModelSnapshot GitHub'da görünmüyor; bunları ayrıca git'e ekle.
+Tekrar ilk migration üretme veya veritabanını rastgele sıfırlama.
 
 Özellikle:
 - Birlik/OrganizationUnit dönüşümünde eski kullanıcı-görev yeri
   bağlantıları ve gerçek FK'ler korunmalı.
 - Kuvvet bağlantılarında eski nullable GUID'ler varsa referans
   veri geçişi doğrulanmalı; yanlış GUID'leri zorla null yapma.
-- Yeni PurchaseNumberDefs tablosu için gerçek migration uygulanmalı.
 - Son ForcesCommandDef/MilitaryUnitDef kalıtım refactor'u sadece C#
   miras/mapping tekrarını kaldırır; mevcut ValidFrom/ValidTo sütun
   tipleri aynı olduğundan tek başına migration gerektirmemeli.
@@ -1097,7 +1098,7 @@ migration ile üret, script'i incele, uygun ortama uygula.
 - Uygulama Program.cs başlatılırken Database.MigrateAsync()
   çağırır. Migration oluşturma / test aşamasındaki durumla canlı
   veritabanı hazırlığı birbirine karıştırılmamalıdır.
-Yardımcılar: KLMN/Backend/KLMN.Persistence/MigrationSupport.
+Eski MigrationSupport klasörü kaldırıldı; temiz ilk kurulumda kullanılmaz.
 Ayrıntılar ilgili *_KURULUM.md dosyalarındadır.
 
 9. DERLEME VE TEST — BİLDİĞİMİZ GERÇEK DURUM

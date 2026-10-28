@@ -73,7 +73,7 @@ Publish edilen uygulamanın çalışma ortamı **Production** seçili olmalıdı
 
 ## Migration (önemli)
 
-Bu depoda henüz ilk EF Core migration dosyası bulunmuyor. İlk başlangıçtan önce uygun ortamın bağlantı değerleriyle migration oluşturun:
+28.10.2026: Kullanıcı geliştirme veritabanını sıfırlayıp ilk EF Core migration'ını yerel makinesinde yeniden oluşturdu. GitHub main'de bu migration ve ModelSnapshot henüz görünmüyor. **İlk migration'ı ikinci kez üretmeyin.** Yereldeki mevcut dosyaları inceleyip git'e dahil edin, ardından doğru veritabanı bağlantısıyla migration uygulayın:
 
 ```powershell
 cd KLMN/Backend
@@ -83,13 +83,14 @@ dotnet tool install --global dotnet-ef --version 10.0.0
 # bilgileri yine appsettings.Development.json üzerinden okunur.
 $env:ASPNETCORE_ENVIRONMENT = "Development"
 
-dotnet ef migrations add InitialCreate --project KLMN.Persistence --startup-project KLMN.Api --output-dir Migrations
+# Yerelde oluşturulmuş InitialCreate ve ModelSnapshot dosyalarını koruyun.
 dotnet ef database update --project KLMN.Persistence --startup-project KLMN.Api
 
 # Sonraki işlemlerin yanlışlıkla Development olarak çalışmaması için:
 Remove-Item Env:ASPNETCORE_ENVIRONMENT
 ```
 
+MigrationSupport altındaki tarihsel SQL/C# geçiş yardımcıları kaldırıldı; yeni ilk kurulumda kullanılmazlar.
 Migration ve seed işlemleri **seçili ortamın PostgreSQL veritabanına** uygulanacaktır. Geliştirme/test ve canlı veritabanlarını karıştırmayın.
 
 ## Auth ve frontend notları
