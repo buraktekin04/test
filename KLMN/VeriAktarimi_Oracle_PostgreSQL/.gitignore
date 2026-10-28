@@ -1,0 +1,12 @@
+# Oracle/PostgreSQL export files and credentials are local only
+*.csv
+*.xlsx
+*.xls
+*.tsv
+*.zip
+*.bak
+*.dump
+*.sql.gz
+*.env
+*.log
+!*.sql
