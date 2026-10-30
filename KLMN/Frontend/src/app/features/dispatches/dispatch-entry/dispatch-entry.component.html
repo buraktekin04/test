@@ -90,7 +90,7 @@
          appendTo="body" placeholder="Seçiniz"/>
        </label>
        <label class="field">Cinsiyet
-        <p-select formControlName="gender" [options]="genderItems" optionLabel="label"
+        <p-select formControlName="gender" [options]="genderItems()" optionLabel="label"
          optionValue="value" [fluid]="true" appendTo="body"/>
        </label>
        <label class="field">Telefon No
@@ -239,28 +239,8 @@
    </section>
   </div>
 
-  <!-- İsteğe bağlı belge yükleme ve kayıt: iki sütunun altında tek yatay bant. -->
+  <!-- Fotoğraf kişi bölümünde korunur; sevk belge yükleme bu ekranda yoktur. -->
   <div class="entry-footer">
-   <div class="entry-file-actions">
-    <label class="entry-file-picker">
-     <i class="pi pi-paperclip"></i> Belge Ekle
-     <input type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg"
-      (change)="selectFile($event)"/>
-    </label>
-    @if(uploadFile()){
-     <span class="entry-file-name"><i class="pi pi-file"></i> {{uploadFile()!.name}}</span>
-    }
-    @if(editing()&&files().length){
-     <div class="attached-files">
-      @for(file of files();track file.id){
-       <button type="button" (click)="download(file)">
-        <i class="pi pi-download"></i> {{file.fileName}}
-       </button>
-      }
-     </div>
-    }
-    <small class="entry-file-note">PDF/JPG/PNG · 5 MiB</small>
-   </div>
    <div class="entry-save-actions">
     <p-button type="button" label="Vazgeç" severity="secondary" [outlined]="true"
      [disabled]="saving()" (onClick)="close()"/>
