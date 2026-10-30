@@ -13,13 +13,13 @@ public sealed class GetDispatchAdmissionRulesQueryHandler(IKLMNDbContext db)
     public async Task<DispatchAdmissionRulesResponse> Handle(GetDispatchAdmissionRulesQuery request,CancellationToken ct)
     {
         var group=await db.HcAdmissionTypeDefs.AsNoTracking()
-            .Where(x=>x.Id==request.AdmissionTypeId&&x.IsActive)
+            .Where(x=>x.Id==request.AdmissionTypeId&&x.IsActive&&!x.IsDeleted)
             .Select(x=>new {x.ForcesCommandRequired,x.RankRequired,x.MilitaryClassRequired,x.MilitaryUnitRequired,
                 x.SenderChairRequired,x.MilitaryOfficeRequired,x.RegistryNumberRequired,x.MilitarySchoolRequired,
                 x.LastNominationDateRequired,x.NthAdmissionRequired,x.DispatchDocumentDateRequired,x.DispatchDocumentNoRequired})
             .SingleOrDefaultAsync(ct)??throw new DispatchConflictException("Başvuru grubu aktif değildir.");
         var blocked=await db.ReasonForExamUnusedHcAdmissionTypes.AsNoTracking()
-            .Where(x=>x.HcAdmissionTypeDefId==request.AdmissionTypeId&&x.IsActive)
+            .Where(x=>x.HcAdmissionTypeDefId==request.AdmissionTypeId&&x.IsActive&&!x.IsDeleted)
             .Select(x=>x.ReasonForExaminationDefId).ToListAsync(ct);
         return new DispatchAdmissionRulesResponse(group.ForcesCommandRequired,group.RankRequired,
             group.MilitaryClassRequired,group.MilitaryUnitRequired,group.SenderChairRequired,
