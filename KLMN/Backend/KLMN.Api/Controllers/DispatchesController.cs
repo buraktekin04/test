@@ -4,6 +4,7 @@ using KLMN.Application.Dispatches.Commands.CreateDispatch;
 using KLMN.Application.Dispatches.Commands.UpdateDispatch;
 using KLMN.Application.Dispatches.Commands.UploadDispatchFile;
 using KLMN.Application.Dispatches.Queries.GetDispatchById;
+using KLMN.Application.Dispatches.Queries.GetDispatchAdmissionRules;
 using KLMN.Application.Dispatches.Queries.GetDispatches;
 using KLMN.Application.Dispatches.Queries.GetDispatchOptions;
 using KLMN.Application.Dispatches.Queries.GetDispatchFile;
@@ -49,6 +50,14 @@ public sealed class DispatchesController(ISender sender):ControllerBase
     public async Task<IActionResult> Options([FromQuery] GetDispatchOptionsQuery query,CancellationToken ct)
     {
         return Ok(await sender.Send(query,ct));
+    }
+
+    /// <summary>Seçili başvuru grubunun dinamik zorunluluklarını ve kullanılamayan muayene sebeplerini verir.</summary>
+    [HttpGet("admission-rules/{admissionTypeId:guid}")]
+    [HasPermission(PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query,PermissionCodes.Dispatches.Create,PermissionCodes.Dispatches.Update)]
+    public async Task<IActionResult> AdmissionRules(Guid admissionTypeId,CancellationToken ct)
+    {
+        return Ok(await sender.Send(new GetDispatchAdmissionRulesQuery(admissionTypeId),ct));
     }
 
     [HttpPost]
