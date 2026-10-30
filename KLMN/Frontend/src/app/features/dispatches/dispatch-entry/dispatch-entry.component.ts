@@ -38,7 +38,7 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
  private readonly router=inject(Router);
  private readonly route=inject(ActivatedRoute);
  readonly canView=computed(()=>this.permissions.hasAny(PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query));
- readonly canQuery=computed(()=>this.permissions.has(PermissionCodes.Dispatches.Query));
+ readonly canQuery=computed(()=>this.permissions.hasAny(PermissionCodes.Dispatches.Create,PermissionCodes.Dispatches.Query));
  readonly canCreate=computed(()=>this.permissions.has(PermissionCodes.Dispatches.Create));
  readonly canUpdate=computed(()=>this.permissions.has(PermissionCodes.Dispatches.Update));
  readonly saving=signal(false);
@@ -270,7 +270,7 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   },error:e=>{this.loadingEntry.set(false);this.error(e);void this.router.navigateByUrl('/app/dispatches');}});
  }
  close(){if(this.saving())return;this.dialogVisible.set(false);this.qrVisible.set(false);this.resetPhoto();++this.editRequest;void this.router.navigateByUrl(this.canView()?'/app/dispatches':'/app');}
- /** Yalnız veritabanında kayıtlı kişi aranır; harici MERNİS servisi mevcut değildir. QR alanlarını korur. */
+ /** Kimlik ve doğum tarihi kurum nüfus sorgulama handler'ına gönderilir, yerel KLMN kaydı aranmaz. */
  lookup(qr?:DispatchQrData){
   if(!this.canQuery())return;
   const f=this.personForm.getRawValue();
@@ -278,18 +278,34 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
    this.message.add({severity:'warn',summary:'Eksik bilgi',detail:'Kimlik numarası ve doğum tarihi giriniz.'});return;
   }
   this.queryingPerson.set(true);
-  this.api.lookupPerson({tcKimlikNo:this.identityType()==='tc'?f.tcKimlikNo:null,
+  this.api.queryPopulation({tcKimlikNo:this.identityType()==='tc'?f.tcKimlikNo:null,
    yabanciKimlikNo:this.identityType()==='foreign'?f.yabanciKimlikNo:null,birthDate:f.birthDate})
    .pipe(finalize(()=>this.queryingPerson.set(false))).subscribe({
-    next:r=>{this.personForm.patchValue(r.person);
-     // QR ile aktarılan iletişim alanı, eski yerel kayıt dönüşünde kaybolmaz.
-     if(qr?.telefonNo)this.personForm.controls.phoneNumber.setValue(qr.telefonNo);
+    next:r=>{
+     this.personForm.patchValue(r.person);
+     // Entegrasyon KLMN tanım ID'lerine eşleştirmişse askerî bilgiler de doldurulur.
+     if(r.military){
+      this.dispatchForm.patchValue(r.military);
+      for(const field of this.dispatchSelections){
+       const id=this.dispatchForm.get(field.key)?.value as string|null;
+       if(id)this.loadOptions(field.type,'',id);
+      }
+     }
+     // QR'den gelen telefon bilgisi nüfus yanıtında boşsa kaybolmasın.
+     if(qr?.telefonNo&&!r.person.phoneNumber)this.personForm.controls.phoneNumber.setValue(qr.telefonNo);
      this.message.add({severity:'success',
-     summary:'Yerel kişi bulundu',detail:'Kişi bilgileri dolduruldu.'});},
-    error:e=>{const h=e as HttpErrorResponse;
-     if(h.status===404)this.message.add({severity:'info',summary:'Kişi bulunamadı',
-      detail:'Yerel kayıtta bulunamadı; kişi bilgilerini manuel doldurabilirsiniz.'});
-     else this.error(e);}
+      summary:'Nüfus sorgusu tamamlandı',detail:'Kişi bilgileri forma aktarıldı.'});
+    },
+    error:e=>{
+     const h=e as HttpErrorResponse;
+     if(h.status===404){
+      this.message.add({severity:'info',summary:'Nüfus kaydı bulunamadı',
+       detail:'Nüfus servisinden eşleşen kayıt dönmedi.'});
+     }else if(h.status===503){
+      this.message.add({severity:'warn',summary:'Nüfus servisi henüz bağlı değil',
+       detail:'Kimlik sorgulama backend entegrasyonu tamamlandığında kullanılabilecek. Kişi bilgilerini elle girebilirsiniz.',life:8000});
+     }else this.error(e);
+    }
    });
  }
 
