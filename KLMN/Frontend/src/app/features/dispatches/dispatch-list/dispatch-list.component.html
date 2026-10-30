@@ -1,0 +1,225 @@
+<div class="dispatch-page">
+ <header class="page-header">
+  <div>
+   <h1>Sevk Giriş ve Takip</h1>
+   <p>Başvuran kişi, sevk evrakı ve askerî bilgilerini mevcut KLMN tanımlarıyla ilişkilendirin.</p>
+  </div>
+  @if(canCreate()) {
+   <p-button label="Yeni Sevk Girişi" icon="pi pi-plus" (onClick)="openCreate()"/>
+  }
+ </header>
+ <p-toast position="top-right"/>
+ @if(canView()) {
+  <section class="filter-panel">
+   <form [formGroup]="searchForm" (ngSubmit)="search()">
+    <input pInputText formControlName="search" aria-label="Sevk ara" placeholder="Sevk no, ad veya soyad ile ara..."/>
+    <label class="check"><p-checkbox formControlName="includeCancelled" [binary]="true"/> İptal edilenleri dahil et</label>
+    <p-button type="submit" icon="pi pi-search" label="Ara" [loading]="loading()"/>
+    <p-button type="button" icon="pi pi-times" label="Temizle" [outlined]="true" severity="secondary" (onClick)="resetSearch()"/>
+   </form>
+  </section>
+  <section class="list-card">
+   <div class="table-scroll">
+    <p-table [value]="records()" [loading]="loading()" [resizableColumns]="true" columnResizeMode="expand"
+      [tableStyle]="{'min-width':'1000px','width':'100%'}">
+     <ng-template pTemplate="header"><tr>
+      <th pResizableColumn pSortableColumn="dispatchNo">Sevk No <p-sortIcon field="dispatchNo"/></th>
+      <th pResizableColumn pSortableColumn="personName">Başvuran Kişi <p-sortIcon field="personName"/></th>
+      <th pResizableColumn>Kimlik No (Maskeli)</th>
+      <th pResizableColumn pSortableColumn="dispatchDate">Sevk Tarihi <p-sortIcon field="dispatchDate"/></th>
+      <th pResizableColumn pSortableColumn="dispatchDocumentNo">Evrak No <p-sortIcon field="dispatchDocumentNo"/></th>
+      <th pResizableColumn pSortableColumn="admissionTypeName">Başvuru Grubu <p-sortIcon field="admissionTypeName"/></th>
+      <th pResizableColumn pSortableColumn="currentState">Durum <p-sortIcon field="currentState"/></th>
+      @if(canUpdate()||canAudit()){<th class="sticky-actions-col">İşlemler</th>}
+     </tr></ng-template>
+     <ng-template pTemplate="body" let-item><tr>
+      <td><strong>{{item.dispatchNo}}</strong></td>
+      <td class="wrap">{{item.personName}}</td>
+      <td class="mono">{{item.identityMasked}}</td>
+      <td>{{item.dispatchDate|date:'dd.MM.yyyy HH:mm'}}</td>
+      <td>{{item.dispatchDocumentNo||'—'}}</td>
+      <td class="wrap">{{item.admissionTypeName}}</td>
+      <td><p-tag [value]="stateLabel(item.currentState)" [severity]="stateSeverity(item.currentState)"/></td>
+      @if(canUpdate()||canAudit()){
+       <td class="sticky-actions-col">
+        <div class="row-actions">
+         @if(canUpdate()&&item.currentState===1){
+          <p-button icon="pi pi-pencil" ariaLabel="Sevk düzenle" [text]="true" severity="secondary" (onClick)="openEdit(item)"/>
+          <p-button icon="pi pi-ban" ariaLabel="Sevk iptal et" [text]="true" severity="danger" (onClick)="cancel(item)"/>
+         }
+         @if(canAudit()){
+          <p-button icon="pi pi-history" ariaLabel="İşlem geçmişi" [text]="true" severity="secondary" (onClick)="auditRecord.set(item)"/>
+         }
+        </div>
+       </td>
+      }
+     </tr></ng-template>
+     <ng-template pTemplate="emptymessage"><tr>
+      <td [attr.colspan]="canUpdate()||canAudit()?8:7" class="empty">Sevk kaydı bulunamadı.</td>
+     </tr></ng-template>
+    </p-table>
+   </div>
+   <div class="pagination">
+    <span>{{total()}} sevk · Sayfa {{page()}} / {{maxPage()}}</span>
+    <div class="pagination-buttons">
+     <button type="button" [disabled]="page()<=1||loading()" (click)="toPage(page()-1)" aria-label="Önceki">‹</button>
+     <button type="button" [disabled]="page()>=maxPage()||loading()" (click)="toPage(page()+1)" aria-label="Sonraki">›</button>
+     <label>Sayfa boyutu
+      <select [value]="pageSize()" (change)="setPageSize($event)">
+       <option value="10">10</option><option value="20">20</option><option value="50">50</option><option value="100">100</option>
+      </select>
+     </label>
+    </div>
+   </div>
+  </section>
+ } @else {
+  <p class="muted">Sevk listesi için görüntüleme yetkisi gereklidir. Yeni sevk oluşturma izniniz varsa üstteki butonu kullanabilirsiniz.</p>
+ }
+</div>
+<p-dialog [header]="editing()?'Sevk Düzenle · #'+editing()!.dispatchNo:'Yeni Sevk Girişi'"
+ [visible]="dialogVisible()" (visibleChange)="!$event&&close()" [modal]="true"
+ [draggable]="false" [resizable]="false" [style]="{'width':'min(1120px,97vw)','max-height':'95vh'}"
+ [contentStyle]="{'overflow-y':'auto'}">
+ <form class="dispatch-form" [formGroup]="form" (ngSubmit)="save()">
+  <section class="form-section" formGroupName="person">
+   <div class="section-heading"><h2><i class="pi pi-user"></i> Başvuran Kişi</h2>
+    @if(canQuery()&&!editing()){
+     <p-button type="button" label="Yerel Kaydı Sorgula" icon="pi pi-search" [outlined]="true"
+      [loading]="queryingPerson()" (onClick)="lookup()"/>
+    }
+   </div>
+   <p class="section-note">Kimlik sorgusu yalnız KLMN'ye daha önce kaydedilen kişileri bulur. MERNİS entegrasyonu değildir.</p>
+   <div class="identity-switch">
+    <button type="button" [class.active]="identityType()==='tc'" (click)="setIdentity('tc')"
+      [disabled]="!!editing()">T.C. Kimlik No</button>
+    <button type="button" [class.active]="identityType()==='foreign'" (click)="setIdentity('foreign')"
+      [disabled]="!!editing()">Yabancı Kimlik No</button>
+   </div>
+   <div class="form-grid">
+    @if(identityType()==='tc'){
+     <label class="field">T.C. Kimlik No *
+      <input pInputText formControlName="tcKimlikNo" maxlength="11" inputmode="numeric"
+       [readOnly]="!!editing()" placeholder="11 haneli kimlik numarası" autocomplete="off"/>
+     </label>
+    } @else {
+     <label class="field">Yabancı Kimlik No *
+      <input pInputText formControlName="yabanciKimlikNo" maxlength="20" inputmode="numeric"
+       [readOnly]="!!editing()" placeholder="Yabancı kimlik numarası" autocomplete="off"/>
+     </label>
+    }
+    <label class="field">Doğum Tarihi *
+     <input type="date" formControlName="birthDate" [readOnly]="!!editing()"/>
+    </label>
+    @for(field of personTexts;track field.key){
+     <label class="field">{{field.label}}
+      <input pInputText [formControlName]="field.key" [attr.maxlength]="field.key==='address'?512:field.key==='phoneNumber'?20:64"
+        [attr.autocomplete]="field.key==='address'?'street-address':'off'"/>
+     </label>
+    }
+    <label class="field">Cinsiyet
+     <p-select formControlName="gender" [options]="genderItems" optionLabel="label" optionValue="value" [fluid]="true" appendTo="body"/>
+    </label>
+    @for(field of personSelections;track field.key){
+     <label class="field">{{field.label}}
+      <p-select [formControlName]="field.key" [options]="optionMap()[field.type]" optionLabel="label" optionValue="id"
+        [showClear]="true" [filter]="true" (onFilter)="filterOptions(field.type,$event.filter)"
+        [fluid]="true" appendTo="body" placeholder="Seçiniz veya arayınız"/>
+     </label>
+    }
+   </div>
+  </section>
+  <section class="form-section" formGroupName="dispatch">
+   <div class="section-heading"><h2><i class="pi pi-file-edit"></i> Sevk Bilgileri</h2></div>
+   <div class="form-grid">
+    <label class="field">Kaçıncı İşlem
+     <p-inputnumber formControlName="nthAdmission" [useGrouping]="false" [min]="1" [showButtons]="true" [fluid]="true"/>
+    </label>
+    <label class="field">Sevk Evrak Tarihi
+     <input type="date" formControlName="dispatchDocumentDate"/>
+    </label>
+    <label class="field">Sevk Evrak Sayısı
+     <input pInputText formControlName="dispatchDocumentNo" maxlength="50"/>
+    </label>
+    <label class="field">Sevk Kapsamı
+     <p-select [options]="scopeItems" formControlName="dispatchScope" optionLabel="label" optionValue="value" [fluid]="true" appendTo="body"/>
+    </label>
+    @if(dispatchForm.controls.dispatchScope.value===2){
+     <label class="field">Sevk Kapsamı Şehir *
+      <p-select [options]="optionMap().cities" formControlName="dispatchScopeCityId" optionLabel="label" optionValue="id"
+       [filter]="true" (onFilter)="filterOptions('cities',$event.filter)" [fluid]="true" appendTo="body"/>
+     </label>
+    }
+    @if(dispatchForm.controls.dispatchScope.value===3){
+     <label class="field">Sevk Kapsamı Sağlık Tesisi *
+      <p-select [options]="optionMap().hospitals" formControlName="dispatchScopeHospitalId" optionLabel="label" optionValue="id"
+       [filter]="true" (onFilter)="filterOptions('hospitals',$event.filter)" [fluid]="true" appendTo="body"/>
+     </label>
+    }
+    <label class="field">Alım ID
+     <p-inputnumber formControlName="purchaseId" [useGrouping]="false" [min]="0" [fluid]="true"/>
+    </label>
+   </div>
+  </section>
+  <section class="form-section" formGroupName="dispatch">
+   <div class="section-heading"><h2><i class="pi pi-sitemap"></i> Başvuru ve Askerî Bilgiler</h2></div>
+   <p class="section-note">Başvuru grubuna bağlı zorunlu alanlar sunucuda kontrol edilir. Gönderen makam için birlik veya şubeden biri seçilebilir.</p>
+   <div class="form-grid">
+    @for(field of dispatchSelections;track field.key){
+     <label class="field">{{field.label}}
+      <p-select [formControlName]="field.key" [options]="optionMap()[field.type]"
+       optionLabel="label" optionValue="id" [filter]="true" [showClear]="true" [fluid]="true"
+       (onFilter)="filterOptions(field.type,$event.filter)"
+       appendTo="body" placeholder="Seçiniz veya arayınız"/>
+     </label>
+    }
+    <label class="field">Sicil No
+     <input pInputText formControlName="registryNumber" maxlength="50"/>
+    </label>
+    <label class="field">Nasbı
+     <input type="date" formControlName="lastNominationDate"/>
+    </label>
+    <label class="field">Birlik Açıklama
+     <input pInputText formControlName="militaryUnitDescription" maxlength="1000"/>
+    </label>
+    <label class="field">Gönderen Makam Açıklama
+     <input pInputText formControlName="senderChairOther" maxlength="1000"/>
+    </label>
+    <label class="field wide">Açıklama
+     <textarea formControlName="description" rows="2" maxlength="500"></textarea>
+    </label>
+   </div>
+  </section>
+  <section class="form-section">
+   <div class="section-heading"><h2><i class="pi pi-paperclip"></i> Sevk Dosyaları</h2></div>
+   <p class="section-note">İsteğe bağlı PDF, PNG veya JPEG. Dosya başına en fazla 5 MiB.
+    Dosya, sevk kaydı başarılı olduğunda yüklenir.</p>
+   <label class="field upload-field">Dosya Seç
+    <input type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg"
+     (change)="selectFile($event)"/>
+   </label>
+   @if(uploadFile()){<p class="selected-file"><i class="pi pi-file"></i> {{uploadFile()!.name}} (yüklenmeye hazır)</p>}
+   @if(editing()&&files().length){
+    <div class="attached-files">
+     @for(file of files();track file.id){
+      <button type="button" (click)="download(file)">
+       <i class="pi pi-download"></i> {{file.fileName}} · {{file.fileSize}} bayt
+      </button>
+     }
+    </div>
+   }
+  </section>
+  @if(formError()){<p role="alert" class="form-error">{{formError()}}</p>}
+  <div class="dialog-actions">
+   <p-button label="Vazgeç" type="button" severity="secondary" [outlined]="true" (onClick)="close()"/>
+   <p-button label="Sevki Kaydet" type="submit" icon="pi pi-check" [loading]="saving()"/>
+  </div>
+ </form>
+</p-dialog>
+<p-confirmdialog/>
+<p-dialog header="Sevk İşlem Geçmişi" [visible]="!!auditRecord()"
+ (visibleChange)="!$event&&auditRecord.set(null)" [modal]="true"
+ [style]="{'width':'min(780px,96vw)'}">
+ @if(auditRecord();as item){
+  <app-audit-history entityType="Dispatch" [entityId]="item.id"/>
+ }
+</p-dialog>
