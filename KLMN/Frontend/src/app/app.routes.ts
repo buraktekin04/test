@@ -48,10 +48,27 @@ export const routes: Routes = [
       {
         path: 'dispatches',
         canActivate: [permissionGuard],
-        data: { permissionModule: 'Dispatches' },
+        data: { permissions:[PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query],
+          permissionMode:'any' },
         loadComponent: () =>
           import('./features/dispatches/dispatch-list/dispatch-list.component')
             .then(component => component.DispatchListComponent)
+      },
+      {
+        path: 'dispatches/new',
+        canActivate: [permissionGuard],
+        data: { permissions:[PermissionCodes.Dispatches.Create] },
+        loadComponent: () =>
+          import('./features/dispatches/dispatch-entry/dispatch-entry.component')
+            .then(component => component.DispatchEntryComponent)
+      },
+      {
+        path: 'dispatches/:id/edit',
+        canActivate: [permissionGuard],
+        data: { permissions:[PermissionCodes.Dispatches.Update] },
+        loadComponent: () =>
+          import('./features/dispatches/dispatch-entry/dispatch-entry.component')
+            .then(component => component.DispatchEntryComponent)
       },
       {
         path: 'users',
