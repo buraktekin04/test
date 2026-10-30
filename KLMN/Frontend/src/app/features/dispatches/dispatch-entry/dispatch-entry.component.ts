@@ -17,7 +17,7 @@ import {DispatchQrReaderComponent} from '../qr/dispatch-qr-reader.component';
 import {DispatchPhotoCaptureComponent} from '../camera/dispatch-photo-capture.component';
 import {DispatchQrData,DispatchQrFormatError,parseDispatchQr} from '../qr/dispatch-qr.parser';
 import {DispatchOption,DispatchPerson,DispatchDetails,DispatchResponse,
- DispatchFileItem,OptionType,DispatchSaveResponse,DispatchAdmissionRules} from '../models/dispatch.model';
+ OptionType,DispatchSaveResponse,DispatchAdmissionRules,DispatchGenderOption} from '../models/dispatch.model';
 
 /** Sevk kayıt ve düzenleme için ayrı sayfa: QR, kamera ve kişi/sevk formu. */
 @Component({
@@ -46,7 +46,6 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
  readonly queryingPerson=signal(false);
  readonly dialogVisible=signal(false);
  readonly editing=signal<DispatchResponse|null>(null);
- readonly files=signal<DispatchFileItem[]>([]);
  readonly formError=signal<string|null>(null);
  readonly identityType=signal<'tc'|'foreign'>('tc');
  readonly personForm=this.fb.group({
@@ -94,7 +93,8 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
  readonly form=this.fb.group({person:this.personForm,dispatch:this.dispatchForm});
  readonly scopeItems=[{label:'Kapsam belirtilmemiş',value:1},
   {label:'Şehirdeki sağlık tesisleri',value:2},{label:'Belirli sağlık tesisi',value:3}];
- readonly genderItems=[{label:'Belirtilmedi',value:null},{label:'Erkek (1)',value:1},{label:'Kadın (2)',value:2}];
+ readonly genderOptions=signal<DispatchGenderOption[]>([]);
+ readonly genderItems=computed(()=>this.genderOptions().map(x=>({label:x.name,value:x.code})));
  readonly personTexts=[
   {key:'name',label:'Adı'},{key:'surname',label:'Soyadı'},
   {key:'motherName',label:'Anne Adı'},{key:'fatherName',label:'Baba Adı'},
@@ -147,10 +147,13 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
  private photoObjectUrl:string|null=null;
  private photoRequest=0;
  private pendingQrReasonId:string|null=null;
- readonly uploadFile=signal<File|null>(null);
  private editRequest=0;
 
  ngOnInit(){
+  this.api.genders().subscribe({
+   next:items=>this.genderOptions.set(items),
+   error:e=>this.error(e)
+  });
   this.dispatchForm.controls.hcAdmissionTypeDefId.valueChanges.subscribe(id=>{
    this.dispatchForm.controls.reasonForExaminationDefId.setValue(null);
    if(!id){++this.rulesRequest;this.admissionRules.set(null);this.rulesLoading.set(false);return;}
@@ -237,8 +240,8 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
  }
  openCreate(){
   if(!this.canCreate())return;
-  ++this.editRequest;this.editing.set(null);this.files.set([]);
-  this.formError.set(null);this.uploadFile.set(null);this.identityType.set('tc');
+  ++this.editRequest;this.editing.set(null);
+  this.formError.set(null);this.identityType.set('tc');
   this.resetPhoto();
   this.pendingQrReasonId=null;
   this.personForm.reset({name:'',surname:'',birthDate:'',tcKimlikNo:null,yabanciKimlikNo:null});
@@ -252,7 +255,7 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
    if(this.editRequest!==requestId)return;
    this.loadingEntry.set(false);
    if(item.currentState!==1){this.message.add({severity:'warn',summary:'Sevk düzenlenemez',detail:'Yalnız Yeni durumundaki sevkler düzenlenebilir.'});void this.router.navigateByUrl('/app/dispatches');return;}
-   this.editing.set(item);this.formError.set(null);this.uploadFile.set(null);
+   this.editing.set(item);this.formError.set(null);
    this.resetPhoto();
    if(item.hasPhoto)this.loadCurrentPhoto(item.id,requestId);
    this.personForm.reset(item.person);
@@ -262,7 +265,6 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
    this.dispatchForm.controls.reasonForExaminationDefId.setValue(item.dispatch.reasonForExaminationDefId,{emitEvent:false});
    this.identityType.set(item.person.tcKimlikNo?'tc':'foreign');
    this.dialogVisible.set(true);
-   this.loadFiles(item.id);
    for(const field of [...this.personSelections,...this.dispatchSelections]){
     const selected=(this.personForm.get(field.key)?.value||this.dispatchForm.get(field.key)?.value) as string|null;
     if(selected)this.loadOptions(field.type,'',selected);
@@ -432,19 +434,6 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
  }
  ngOnDestroy(){this.resetPhoto();}
 
-  /** Dosya, kayıt başarılı olduktan sonra sevke bağlanır; başarısız upload ayrıca bildirilir. */
- selectFile(event:Event){
-  const input=event.target as HTMLInputElement;
-  const file=input.files?.[0]??null;
-  input.value='';
-  if(file&&(file.size>5242880||file.size<1||
-    !['application/pdf','image/png','image/jpeg'].includes(file.type))){
-    this.uploadFile.set(null);
-    this.message.add({severity:'warn',summary:'Dosya seçilemedi',detail:'En fazla 5 MiB PDF, PNG veya JPEG dosyası seçiniz.'});
-    return;
-  }
-  this.uploadFile.set(file);
- }
  save(){
   if(this.saving())return;
   this.formError.set(null);
@@ -489,18 +478,12 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
  private async onSaved(result:DispatchSaveResponse){
   const failures:string[]=[];
   const photo=this.photoFile();
-  const file=this.uploadFile();
   if(photo){
    try{await firstValueFrom(this.api.uploadPhoto(result.id,photo));}
    catch(e){failures.push('Fotoğraf yüklenemedi: '+this.errorText(e));}
   }
-  if(file){
-   try{await firstValueFrom(this.api.uploadFile(result.id,file));}
-   catch(e){failures.push('Sevk belgesi yüklenemedi: '+this.errorText(e));}
-  }
   this.saving.set(false);
   this.dialogVisible.set(false);
-  this.uploadFile.set(null);
   this.resetPhoto();
   // Query/View olmadan yalnız Create yetkisi bulunan kullanıcı listeye yönlendirilmez.
   if(this.canView()){
@@ -515,16 +498,6 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
       (failures.length?' '+failures.join(' '):''),
     life:9000});
   }
- }
-  private loadFiles(id:string){
-  this.api.files(id).subscribe({next:items=>this.files.set(items),error:e=>this.error(e)});
- }
- download(file:DispatchFileItem){
-  const selected=this.editing();if(!selected)return;
-  this.api.downloadFile(selected.id,file.id).subscribe({
-   next:blob=>{const url=URL.createObjectURL(blob);const a=document.createElement('a');
-    a.href=url;a.download=file.fileName;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);},
-   error:e=>this.error(e)});
  }
  private errorText(e:unknown):string{
   const r=e as HttpErrorResponse;
