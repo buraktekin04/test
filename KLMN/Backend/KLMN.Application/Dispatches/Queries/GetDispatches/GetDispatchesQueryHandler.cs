@@ -13,7 +13,13 @@ public sealed class GetDispatchesQueryHandler(IKLMNDbContext db)
     public async Task<PagedResult<DispatchListItemResponse>> Handle(GetDispatchesQuery request,CancellationToken ct)
     {
         var q=db.Dispatches.AsNoTracking().Where(x=>!x.IsDeleted &&
-            (request.IncludeCancelled||x.CurrentState!=4));
+            (request.IncludeCancelled||request.CurrentState==4||x.CurrentState!=4));
+        if(request.CurrentState.HasValue)
+            q=q.Where(x=>x.CurrentState==request.CurrentState.Value);
+        if(request.DocumentDateFrom.HasValue)
+            q=q.Where(x=>x.DispatchDocumentDate>=request.DocumentDateFrom.Value);
+        if(request.DocumentDateTo.HasValue)
+            q=q.Where(x=>x.DispatchDocumentDate<=request.DocumentDateTo.Value);
         if(!string.IsNullOrWhiteSpace(request.Search))
         {
             var search=request.Search.Trim().ToUpperInvariant();
