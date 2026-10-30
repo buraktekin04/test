@@ -161,6 +161,13 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
    if(scope!==2)this.dispatchForm.controls.dispatchScopeCityId.setValue(null);
    if(scope!==3)this.dispatchForm.controls.dispatchScopeHospitalId.setValue(null);
   });
+  // Gönderen makam seçiminde birlik ve askerlik şubesi aynı anda doldurulamaz.
+  this.dispatchForm.controls.senderMilitaryUnitDefId.valueChanges.subscribe(id=>{
+   if(id)this.dispatchForm.controls.senderMilitaryOfficeDefId.setValue(null);
+  });
+  this.dispatchForm.controls.senderMilitaryOfficeDefId.valueChanges.subscribe(id=>{
+   if(id)this.dispatchForm.controls.senderMilitaryUnitDefId.setValue(null);
+  });
   const editId=this.route.snapshot.paramMap.get('id');
   if(editId){
    if(!this.canUpdate()){void this.router.navigateByUrl('/app/dispatches');return;}
@@ -169,7 +176,7 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
    if(!this.canCreate()){void this.router.navigateByUrl('/app');return;}
    this.openCreate();
   }
-  // Filtreleme sunucu tarafında yapılır, ilk 100 sonuç için yerel cache tutulur.
+  // Referans seçenekleri sunucu üzerinde aramayla yüklenir; her türde ilk 100 sonuç gösterilir.
   for(const type of Object.keys(this.optionMap()) as OptionType[])this.loadOptions(type);
  }
  /** Tanım aramaları istek sıralamasıyla korunur; eski cevap yeni arama sonuçlarını ezmez. */
