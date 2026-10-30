@@ -17,7 +17,7 @@ import {ToastModule} from 'primeng/toast';
 import {PermissionCodes} from '../../../core/permissions/constants/permission-codes';
 import {PermissionService} from '../../../core/permissions/services/permission.service';
 import {AuditHistoryComponent} from '../../../shared/audit-history/audit-history.component';
-import {DispatchItem} from '../models/dispatch.model';
+import {DispatchItem,DispatchOption,DispatchStatusOption,DispatchAdvancedFilters} from '../models/dispatch.model';
 import {DispatchService} from '../services/dispatch.service';
 
 /** Sevk listesi ve sunucu üzerinde sorgulama. Sevk giriş formunu içermez. */
@@ -52,26 +52,81 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
  readonly auditRecord=signal<DispatchItem|null>(null);
  private lastRequest=0;
 
- readonly statusItems=[
-  {label:'Tüm durumlar',value:null},
-  {label:'Yeni',value:1},
-  {label:'Provizyon',value:2},
-  {label:'Rapor',value:3},
-  {label:'İptal',value:4},
-  {label:'Bildirim',value:5}
+ readonly statuses=signal<DispatchStatusOption[]>([]);
+ readonly statusItems=computed(()=>[
+  {label:'Tüm durumlar',value:null as number|null},
+  ...this.statuses().map(x=>({label:x.name,value:x.code as number|null}))
+ ]);
+ readonly scopeItems=[
+  {label:'Tüm kapsamlar',value:null as number|null},
+  {label:'Kapsam belirtilmemiş',value:1},
+  {label:'Şehirdeki sağlık tesisleri',value:2},
+  {label:'Belirli sağlık tesisi',value:3}
  ];
+ readonly optionMap=signal<Record<'units'|'offices'|'cities'|'hospitals',DispatchOption[]>>({
+  units:[],offices:[],cities:[],hospitals:[]
+ });
+ readonly senderItems=computed(()=>[
+  ...this.optionMap().units.map(x=>({label:'Birlik · '+x.label,value:'unit:'+x.id})),
+  ...this.optionMap().offices.map(x=>({label:'Askerlik Şubesi · '+x.label,value:'office:'+x.id}))
+ ]);
+ private optionRequest:Partial<Record<'units'|'offices'|'cities'|'hospitals',number>>={};
  readonly searchForm=this.fb.group({
   search:this.fb.nonNullable.control(''),
   includeCancelled:this.fb.nonNullable.control(false),
   currentState:this.fb.control<number|null>(null),
-  documentDateFrom:this.fb.nonNullable.control(''),
-  documentDateTo:this.fb.nonNullable.control('')
+  dateFrom:this.fb.nonNullable.control(''),
+  dateTo:this.fb.nonNullable.control(''),
+  dispatchNo:this.fb.control<number|null>(null),
+  purchaseId:this.fb.control<number|null>(null),
+  tcKimlikNo:this.fb.nonNullable.control(''),
+  yabanciKimlikNo:this.fb.nonNullable.control(''),
+  name:this.fb.nonNullable.control(''),
+  surname:this.fb.nonNullable.control(''),
+  senderAuthority:this.fb.control<string|null>(null),
+  includeRelatedOrganizations:this.fb.nonNullable.control(false),
+  dispatchScope:this.fb.control<number|null>(null),
+  dispatchScopeCityId:this.fb.control<string|null>(null),
+  dispatchScopeHospitalId:this.fb.control<string|null>(null)
  });
  readonly filterError=signal<string|null>(null);
 
  ngOnInit(){
-  if(this.canView())this.load();
+  this.searchForm.controls.senderAuthority.valueChanges.subscribe(value=>{
+   if(!value?.startsWith('unit:'))this.searchForm.controls.includeRelatedOrganizations.setValue(false);
+  });
+  this.searchForm.controls.dispatchScope.valueChanges.subscribe(value=>{
+   if(value!==2)this.searchForm.controls.dispatchScopeCityId.setValue(null);
+   if(value!==3)this.searchForm.controls.dispatchScopeHospitalId.setValue(null);
+  });
+  if(this.canView()){
+   this.load();
+   this.api.statuses().subscribe({
+    next:items=>this.statuses.set(items),
+    error:e=>this.error(e)
+   });
+   for(const type of ['units','offices','cities','hospitals'] as const)this.loadOptions(type);
+  }
  }
+ /** PrimeNG açılır listeleri backend üzerinden gerektiğinde arar. */
+ loadOptions(type:'units'|'offices'|'cities'|'hospitals',search=''){
+  const request=(this.optionRequest[type]??0)+1;
+  this.optionRequest[type]=request;
+  this.api.options(type,search).subscribe({
+   next:values=>{if(this.optionRequest[type]===request)
+    this.optionMap.update(map=>({...map,[type]:values}));},
+   error:e=>{if(this.optionRequest[type]===request)this.error(e);}
+  });
+ }
+ filterSenderOptions(search:string){
+  this.loadOptions('units',search??'');
+  this.loadOptions('offices',search??'');
+ }
+ /** Seçili gönderen birlikse alt organizasyon filtresi kullanılabilir. */
+ canIncludeRelated():boolean{
+  return this.searchForm.controls.senderAuthority.value?.startsWith('unit:')??false;
+ }
+
 
  /** PrimeNG toast view hazır olduktan sonra kayıt sonucu gösterilir. */
  ngAfterViewInit(){
@@ -93,8 +148,21 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
   const request=++this.lastRequest;
   this.loading.set(true);
   const form=this.searchForm.getRawValue();
+  const authority=form.senderAuthority;
+  const filters:DispatchAdvancedFilters={
+   dateFrom:form.dateFrom,dateTo:form.dateTo,
+   dispatchNo:form.dispatchNo,purchaseId:form.purchaseId,
+   tcKimlikNo:form.tcKimlikNo,surname:form.surname,
+   yabanciKimlikNo:form.yabanciKimlikNo,name:form.name,
+   senderMilitaryUnitDefId:authority?.startsWith('unit:')?authority.slice(5):undefined,
+   senderMilitaryOfficeDefId:authority?.startsWith('office:')?authority.slice(7):undefined,
+   includeRelatedOrganizations:form.includeRelatedOrganizations,
+   dispatchScope:form.dispatchScope,
+   dispatchScopeCityId:form.dispatchScopeCityId??undefined,
+   dispatchScopeHospitalId:form.dispatchScopeHospitalId??undefined
+  };
   this.api.list(this.page(),this.pageSize(),form.search,form.includeCancelled,
-    form.currentState,form.documentDateFrom,form.documentDateTo)
+    form.currentState,'','',filters)
    .pipe(finalize(()=>{if(this.lastRequest===request)this.loading.set(false);}))
    .subscribe({
     next:response=>{
@@ -110,7 +178,7 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
  }
  search(){
   const values=this.searchForm.getRawValue();
-  if(values.documentDateFrom&&values.documentDateTo&&values.documentDateFrom>values.documentDateTo){
+  if(values.dateFrom&&values.dateTo&&values.dateFrom>values.dateTo){
    this.filterError.set('Başlangıç tarihi bitiş tarihinden sonra olamaz.');
    return;
   }
@@ -119,7 +187,10 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
   this.load();
  }
  resetSearch(){
-  this.searchForm.reset({search:'',includeCancelled:false,currentState:null,documentDateFrom:'',documentDateTo:''});
+  this.searchForm.reset({search:'',includeCancelled:false,currentState:null,dateFrom:'',dateTo:'',
+   dispatchNo:null,purchaseId:null,tcKimlikNo:'',yabanciKimlikNo:'',name:'',surname:'',
+   senderAuthority:null,includeRelatedOrganizations:false,
+   dispatchScope:null,dispatchScopeCityId:null,dispatchScopeHospitalId:null});
   this.search();
  }
  toPage(n:number){if(n<1||n>this.maxPage())return;this.page.set(n);this.load();}
@@ -146,7 +217,7 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
   });
  }
  stateLabel(state:number):string{
-  return ({1:'Yeni',2:'Provizyon',3:'Rapor',4:'İptal',5:'Bildirim'} as Record<number,string>)[state]??'Bilinmiyor';
+  return this.statuses().find(item=>item.code===state)?.name??'Durum #'+state;
  }
  stateSeverity(state:number):'success'|'warn'|'danger'|'info'{
   return state===4?'danger':state===1?'success':state===3?'info':'warn';
