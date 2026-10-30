@@ -1,3 +1,64 @@
+30.10.2026 — SEVK GİRİŞİ / SEVK LİSTESİ EKRANLARININ AYRILMASI
+===================================================================
+KURAL: Sevk girişi ile sevk listeleme/sorgulama artık aynı ekran
+veya büyük bir modal içinde DEĞİLDİR. Ayrı Angular 21
+standalone component, route, menü ve permission kullanılacaktır.
+
+1) Sevk Girişi (yeni):
+   /app/dispatches/new
+   features/dispatches/dispatch-entry/dispatch-entry.component.ts/html/scss
+   Permission: Dispatches.Create
+   Ekran: Kişi kimlik/doğum, yerel kişi sorgusu (varsa Query),
+   QR kamera/görsel/USB-metni, fotoğraf kamera/resim seçme,
+   tüm sevk/askerî alanlar, tanım eşlemeleri ve evrak ekleri.
+   Tam sayfadır; liste tablosu / filtre / büyük dialog YOKTUR.
+
+2) Sevk Listesi ve Sorgulama:
+   /app/dispatches
+   features/dispatches/dispatch-list/dispatch-list.component.ts/html/scss
+   Permission: Dispatches.View VEYA Dispatches.Query
+   Liste: sevk no/ad/soyad arama, durum seçimi, evrak tarihi
+   başlangıç/bitiş, iptal edilenler, sunucu tarafı sayfalama,
+   PrimeNG kolon sıralama/genişletme, yeni kayıt yönlendirme,
+   iptal onayı, audit işlem geçmişi.
+   Form, QR veya kamera komponenti bu ekranda OLMAYACAK.
+
+3) Sevk Düzenleme:
+   /app/dispatches/:id/edit
+   Ayrı Sevk Giriş formuyla aynı DispatchEntryComponent.
+   Permission: Dispatches.Update; yalnız CurrentState = Yeni
+   kayıtlar açılıp güncellenebilir. Liste üzerinden Düzenle
+   butonu bu route'a gönderir; kayıt sayfası tam ekran kalır.
+
+4) Route guard ve menü:
+   app.routes.ts ve layout/services/navigation.service.ts
+   güncellendi. Sevk İşlemleri grubunda ayrı "Sevk Girişi" ve
+   "Sevk Listesi ve Sorgulama" menüleri bulunur.
+   Sadece Create olan kullanıcı liste yetkisi olmadan giriş
+   yapabilir; kayıt başarılı olunca yine girişte başarı popup
+   görür (View/Query varsa listeye yönlendirilir).
+   Listedeki satır düzenleme ayrı route'tur, iptal listede kalır.
+
+5) Backend filtresi:
+   Application/Dispatches/Queries/GetDispatches/
+   GetDispatchesQuery.cs, GetDispatchesQueryHandler.cs,
+   GetDispatchesQueryValidator.cs: CurrentState (1-5),
+   DocumentDateFrom/DocumentDateTo (Sevk Evrak Tarihi).
+   Tüm filtreler EF Core + PostgreSQL'de, sayfalama öncesi.
+   Yanlış tarih aralığı ve geçersiz durum validator'da reddedilir.
+   İptal durumu açıkça seçilirse otomatik hariç tutulmaz.
+   Frontend service.list parametreleri bu filtreleri gönderir.
+
+6) Test ve doküman:
+   Frontend/tests/dispatch-pages-regression.mjs
+   npm run test:dispatch-pages
+   KLMN/SEVK_GIRIS_KURULUM.md
+   Ayrıştırmanın veritabanı şema değişikliği YOK; önceki
+   sevk/fotoğraf migration'ı yerel geliştirici tarafından
+   yapılır. Migration oluşturma/uygulama veya DB reset yapılmadı.
+   Bu ortamda npm/dotnet derleme ve tarayıcı testleri
+   çalıştırılamadı. Tek squash commit ile main'e alınır.
+
 30.10.2026 — SEVK QR KOD ve KAMERA / FOTOĞRAF TAMAMLAMA
 ===================================================================
 KAYNAK: GitHub main /test (MSKBS dispatch.component.html/ts, fotoğraf

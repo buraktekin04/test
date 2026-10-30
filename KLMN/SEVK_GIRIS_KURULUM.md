@@ -1,3 +1,16 @@
+## Ayrı Sevk Girişi ve Sevk Listeleme sayfaları — 30.10.2026
+
+Mevcut Sevk Giriş ve Takip tek sayfa/modal mimarisi ayrıştırıldı. İşlemler artık 2 bağımsız Angular standalone bileşeninde bulunur:
+
+- **`/app/dispatches/new` — Sevk Girişi:** `DispatchEntryComponent`. Başvuran kişi, QR okuyucu (kamera, görsel, USB/metin), kişi fotoğrafı (kamera, resim seçme, önizleme), başvuru ve askerî bilgiler, sevk dosyaları; bağımsız tam sayfa form. `Dispatches.Create` yetkisi gerekir.
+- **`/app/dispatches` — Sevk Listesi ve Sorgulama:** `DispatchListComponent`. Sevk numarası/ad/soyad arama, durum filtresi, sevk **evrak tarihi** başlangıç/bitiş aralığı, iptalleri dahil etme, PostgreSQL üzerinden sayfalama, tablo kolon sıralaması/boyutlandırma, kayıt iptali ve audit. `Dispatches.View` **veya** `Dispatches.Query` yetkisi gerekir.
+- **`/app/dispatches/:id/edit` — Sevk Düzenleme:** Aynı bağımsız kayıt formu, seçilen sevk bilgileriyle açılır. Yalnız `Dispatches.Update` ve `CurrentState=1 (Yeni)` ile düzenleme yapılabilir. Formdan çıkışta listeye dönülür (liste yetkisi yoksa ana sayfaya). Eski büyük düzenleme dialog'u kaldırılmıştır.
+- Menüde `Sevk İşlemleri > Sevk Girişi` ile `Sevk İşlemleri > Sevk Listesi ve Sorgulama` iki ayrı item'dır. Her item kendi permission'ına göre gösterilir; oluşturma rolü liste yetkisi olmadan da kayıt açabilir.
+- Kayıt başarılıysa ve liste izni varsa listeye yönlenip başarı mesajı gösterir; dosya/fotoğraf yükleme hataları ayrıca kullanıcıya bildirilir. Liste izni olmayan kayıt yetkilisi kayıt sayfasında kalır ve başarı mesajını görür.
+- GET `/api/dispatches` sorgusu opsiyonel `CurrentState`, `DocumentDateFrom` ve `DocumentDateTo` alanlarıyla genişletildi. Tarih filtreleri **DispatchDocumentDate** alanına uygulanır; tarih aralığı validator ile doğrulanır. Durum=İptal seçildiğinde `IncludeCancelled=false` olsa bile istenen iptal kayıtları görünür; diğer durumlarda mevcut iptal gizleme davranışı korunur.
+- `Frontend/tests/dispatch-pages-regression.mjs` kaynak sözleşmesi testi: `npm run test:dispatch-pages`. QR testini de `npm run test:dispatch-qr` ile çalıştırabilirsiniz.
+- Bu ayrıştırma için **yeni tablo/kolon veya veritabanı migration'ı yoktur**. Önceki Sevk Giriş/Fotoğraf migration gereksinimleri aynen geçerlidir. Frontend/Backend derlemeleri ve gerçek tarayıcı uçtan uca testleri bu ortamda çalıştırılamadı.
+
 # KLMN — Sevk Giriş ve Takip (30.10.2026)
 
 ## Kaynak ve mimari

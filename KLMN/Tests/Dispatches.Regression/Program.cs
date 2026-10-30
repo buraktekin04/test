@@ -27,6 +27,16 @@ Check(!new CancelDispatchCommandValidator().Validate(new CancelDispatchCommand(G
     "İptal kimliği ve versiyonu zorunlu");
 Check(!new GetDispatchesQueryValidator().Validate(new GetDispatchesQuery(PageSize:101)).IsValid,
     "Sevk sayfalama üst limiti");
+Check(!new GetDispatchesQueryValidator().Validate(new GetDispatchesQuery(CurrentState:8)).IsValid,
+    "Sevk listesinde geçersiz durum filtresi reddedilir");
+Check(!new GetDispatchesQueryValidator().Validate(new GetDispatchesQuery(
+    DocumentDateFrom:new DateOnly(2026,10,30),DocumentDateTo:new DateOnly(2026,10,1))).IsValid,
+    "Sevk listesinde ters evrak tarihi aralığı reddedilir");
+Check(new GetDispatchesQueryValidator().Validate(new GetDispatchesQuery(
+    CurrentState:4,DocumentDateFrom:new DateOnly(2026,10,1),
+    DocumentDateTo:new DateOnly(2026,10,30))).IsValid,
+    "Sevk listesinde geçerli durum ve evrak tarihi aralığı");
+
 Check(!new GetDispatchOptionsQueryValidator().Validate(new GetDispatchOptionsQuery("bad-type")).IsValid,
     "Tanım türü allowlist dışında sorgu reddi");
 Check(typeof(BaseEntity).IsAssignableFrom(typeof(Person)),"Kişi audit ve xmin kalıtımı");

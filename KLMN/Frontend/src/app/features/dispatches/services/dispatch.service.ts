@@ -9,10 +9,14 @@ import {DispatchPerson,DispatchDetails,DispatchResponse,DispatchSaveResponse,Dis
 export class DispatchService {
  private readonly http=inject(HttpClient);
  private readonly url=inject(API_BASE_URL)+'/dispatches';
- list(pageNumber:number,pageSize:number,search:string,includeCancelled:boolean){
+ list(pageNumber:number,pageSize:number,search:string,includeCancelled:boolean,
+  currentState:number|null=null,documentDateFrom='',documentDateTo=''){
   let params=new HttpParams().set('pageNumber',pageNumber).set('pageSize',pageSize)
     .set('includeCancelled',includeCancelled);
   if(search.trim())params=params.set('search',search.trim());
+  if(currentState!==null)params=params.set('currentState',currentState);
+  if(documentDateFrom)params=params.set('documentDateFrom',documentDateFrom);
+  if(documentDateTo)params=params.set('documentDateTo',documentDateTo);
   return this.http.get<DispatchPage>(this.url,{params});
  }
  detail(id:string){return this.http.get<DispatchResponse>(this.url+'/'+id);}
