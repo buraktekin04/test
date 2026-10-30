@@ -5,7 +5,10 @@
    <p>Başvuran kişi, sevk evrakı ve askerî bilgilerini mevcut KLMN tanımlarıyla ilişkilendirin.</p>
   </div>
   @if(canCreate()) {
-   <p-button label="Yeni Sevk Girişi" icon="pi pi-plus" (onClick)="openCreate()"/>
+   <div class="header-actions">
+    <p-button label="QR Kod Okut" icon="pi pi-qrcode" severity="secondary" [outlined]="true" (onClick)="openQr()"/>
+    <p-button label="Yeni Sevk Girişi" icon="pi pi-plus" (onClick)="openCreate()"/>
+   </div>
   }
  </header>
  <p-toast position="top-right"/>
@@ -83,10 +86,16 @@
  <form class="dispatch-form" [formGroup]="form" (ngSubmit)="save()">
   <section class="form-section" formGroupName="person">
    <div class="section-heading"><h2><i class="pi pi-user"></i> Başvuran Kişi</h2>
-    @if(canQuery()&&!editing()){
-     <p-button type="button" label="Yerel Kaydı Sorgula" icon="pi pi-search" [outlined]="true"
-      [loading]="queryingPerson()" (onClick)="lookup()"/>
-    }
+    <div class="section-actions">
+     @if(canCreate()&&!editing()){
+      <p-button type="button" label="QR Kod Okut" icon="pi pi-qrcode" [outlined]="true"
+       severity="secondary" (onClick)="openQr()"/>
+     }
+     @if(canQuery()&&!editing()){
+      <p-button type="button" label="Yerel Kaydı Sorgula" icon="pi pi-search" [outlined]="true"
+       [loading]="queryingPerson()" (onClick)="lookup()"/>
+     }
+    </div>
    </div>
    <p class="section-note">Kimlik sorgusu yalnız KLMN'ye daha önce kaydedilen kişileri bulur. MERNİS entegrasyonu değildir.</p>
    <div class="identity-switch">
@@ -126,6 +135,13 @@
         [fluid]="true" appendTo="body" placeholder="Seçiniz veya arayınız"/>
      </label>
     }
+   </div>
+   <div class="person-photo-area">
+    <h3>Başvuran Fotoğrafı</h3>
+    <app-dispatch-photo-capture [imageUrl]="photoUrl()" [disabled]="saving()"
+     [hasSavedPhoto]="!!editing()?.hasPhoto"
+     (photoSelected)="selectPhoto($event)" (photoCleared)="clearPhotoSelection()"
+     (deleteSavedPhoto)="deleteSavedPhoto()"/>
    </div>
   </section>
   <section class="form-section" formGroupName="dispatch">
@@ -220,6 +236,9 @@
   </div>
  </form>
 </p-dialog>
+@if(qrVisible()){
+ <app-dispatch-qr-reader (scanned)="applyQr($event)" (dismissed)="qrVisible.set(false)"/>
+}
 <p-confirmdialog/>
 <p-dialog header="Sevk İşlem Geçmişi" [visible]="!!auditRecord()"
  (visibleChange)="!$event&&auditRecord.set(null)" [modal]="true"
