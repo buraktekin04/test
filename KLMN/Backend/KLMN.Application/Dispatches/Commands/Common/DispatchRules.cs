@@ -48,6 +48,10 @@ internal static class DispatchRules
             ??throw new DispatchConflictException("Aktif bir başvuru grubu seçiniz.");
         if (!await db.ReasonForExaminationDefs.AnyAsync(x=>x.Id==d.ReasonForExaminationDefId&&x.IsActive,ct))
             throw new DispatchConflictException("Aktif bir muayene sebebi seçiniz.");
+        // Seçili grupta tanımlanan kullanılmayacak muayene sebepleri sevk oluştururken engellenir.
+        if(await db.ReasonForExamUnusedHcAdmissionTypes.AnyAsync(x=>x.HcAdmissionTypeDefId==d.HcAdmissionTypeDefId &&
+            x.ReasonForExaminationDefId==d.ReasonForExaminationDefId && x.IsActive,ct))
+            throw new DispatchConflictException("Bu başvuru grubunda seçilen muayene sebebi kullanılamaz.");
         if (group.NthAdmissionRequired && !d.NthAdmission.HasValue ||
             group.DispatchDocumentDateRequired && !d.DispatchDocumentDate.HasValue ||
             group.DispatchDocumentNoRequired && string.IsNullOrWhiteSpace(d.DispatchDocumentNo) ||
