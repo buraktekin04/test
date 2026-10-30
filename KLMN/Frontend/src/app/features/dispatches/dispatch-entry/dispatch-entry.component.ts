@@ -42,6 +42,7 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
  readonly canCreate=computed(()=>this.permissions.has(PermissionCodes.Dispatches.Create));
  readonly canUpdate=computed(()=>this.permissions.has(PermissionCodes.Dispatches.Update));
  readonly saving=signal(false);
+ readonly loadingEntry=signal(false);
  readonly queryingPerson=signal(false);
  readonly dialogVisible=signal(false);
  readonly editing=signal<DispatchResponse|null>(null);
@@ -223,8 +224,10 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
  }
  private loadEdit(dispatchId:string){
   const requestId=++this.editRequest;
+  this.loadingEntry.set(true);
   this.api.detail(dispatchId).subscribe({next:item=>{
    if(this.editRequest!==requestId)return;
+   this.loadingEntry.set(false);
    if(item.currentState!==1){this.message.add({severity:'warn',summary:'Sevk düzenlenemez',detail:'Yalnız Yeni durumundaki sevkler düzenlenebilir.'});void this.router.navigateByUrl('/app/dispatches');return;}
    this.editing.set(item);this.formError.set(null);this.uploadFile.set(null);
    this.resetPhoto();
@@ -241,7 +244,7 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
     const selected=(this.personForm.get(field.key)?.value||this.dispatchForm.get(field.key)?.value) as string|null;
     if(selected)this.loadOptions(field.type,'',selected);
    }
-  },error:e=>this.error(e)});
+  },error:e=>{this.loadingEntry.set(false);this.error(e);void this.router.navigateByUrl('/app/dispatches');}});
  }
  close(){if(this.saving())return;this.dialogVisible.set(false);this.qrVisible.set(false);this.resetPhoto();++this.editRequest;void this.router.navigateByUrl('/app/dispatches');}
  /** Yalnız veritabanında kayıtlı kişi aranır; harici MERNİS servisi mevcut değildir. QR alanlarını korur. */
