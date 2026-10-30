@@ -3,7 +3,7 @@ import {HttpClient,HttpParams} from '@angular/common/http';
 import {API_BASE_URL} from '../../../core/config/api.tokens';
 import {DispatchPerson,DispatchDetails,DispatchResponse,DispatchSaveResponse,DispatchItem,
  DispatchOption,OptionType,DispatchFileItem,DispatchPage,DispatchAdmissionRules,
- DispatchStatusOption,DispatchAdvancedFilters} from '../models/dispatch.model';
+ DispatchStatusOption,DispatchAdvancedFilters,DispatchPopulationResult} from '../models/dispatch.model';
 
 /** Sevk, kurumsal nüfus servisine backend üzerinden erişim ve belge API istemcisi. */
 @Injectable({providedIn:'root'})
@@ -32,7 +32,7 @@ export class DispatchService {
  }
  /** Nüfus sorgusu yalnız KLMN backend üzerinden yönlendirilir; frontend doğrudan harici servisi çağırmaz. */
  queryPopulation(person:Pick<DispatchPerson,'tcKimlikNo'|'yabanciKimlikNo'|'birthDate'>){
-  return this.http.post<{person:DispatchPerson}>(this.url+'/persons/national-registry',person);
+  return this.http.post<DispatchPopulationResult>(this.url+'/persons/national-registry',person);
  }
  options(type:OptionType,search='',selectedId?:string){
   let params=new HttpParams().set('type',type).set('search',search);
