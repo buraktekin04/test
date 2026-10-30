@@ -98,13 +98,13 @@
      <p-select [options]="scopeItems" formControlName="dispatchScope" optionLabel="label" optionValue="value" [fluid]="true" appendTo="body"/>
     </label>
     @if(dispatchForm.controls.dispatchScope.value===2){
-     <label class="field">Sevk Kapsamı Şehir *
+     <label class="field"><span class="field-caption"><span class="required-mark">*</span> Sevk Kapsamı Şehir</span>
       <p-select [options]="optionMap().cities" formControlName="dispatchScopeCityId" optionLabel="label" optionValue="id"
        [filter]="true" (onFilter)="filterOptions('cities',$event.filter)" [fluid]="true" appendTo="body"/>
      </label>
     }
     @if(dispatchForm.controls.dispatchScope.value===3){
-     <label class="field">Sevk Kapsamı Sağlık Tesisi *
+     <label class="field"><span class="field-caption"><span class="required-mark">*</span> Sevk Kapsamı Sağlık Tesisi</span>
       <p-select [options]="optionMap().hospitals" formControlName="dispatchScopeHospitalId" optionLabel="label" optionValue="id"
        [filter]="true" (onFilter)="filterOptions('hospitals',$event.filter)" [fluid]="true" appendTo="body"/>
      </label>
@@ -144,9 +144,11 @@
      <p class="selection-hint"><i class="pi pi-info-circle"></i> Başvuru grubu seçilmeden muayene sebebi seçilemez.</p>
     } @else if(rulesLoading()){
      <p class="selection-hint"><i class="pi pi-spin pi-spinner"></i> Başvuru grubunun zorunlu alanları ve muayene kuralları yükleniyor.</p>
-    } @else if(admissionRules();as rules){
-     @if(rules.unusedReasonIds.length){
-      <p class="selection-hint"><i class="pi pi-info-circle"></i> Bu başvuru grubunda {{rules.unusedReasonIds.length}} muayene sebebi kullanılamaz.</p>
+    } @else {
+     @if(admissionRules();as rules){
+      @if(rules.unusedReasonIds.length){
+       <p class="selection-hint"><i class="pi pi-info-circle"></i> Bu başvuru grubunda {{rules.unusedReasonIds.length}} muayene sebebi kullanılamaz.</p>
+      }
      }
     }
    </div>
