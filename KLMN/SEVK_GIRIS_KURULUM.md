@@ -1,3 +1,36 @@
+## Nüfus kimlik sorgusu ve açıklama alanları — 30.10.2026
+
+### Kimlik sorgusu: eski MSKBS davranışına dönüş
+- Eski MSKBS Sevk Girişi `queryPerson()` uygulaması `personService.getPerson(...)` çağırıyordu. Kimlik numarası ve doğum tarihi kurumun nüfus entegrasyonu üzerinden sorgulanıyor. KLMN içindeki önceki `Persons` yerel sorgusu bu ekranın beklentisini karşılamıyordu.
+- Artık frontend **Nüfustan Sorgula** butonu ve `DispatchService.queryPopulation()` ile `POST /api/dispatches/persons/national-registry` çağırır. Formdan T.C. veya yabancı kimlik numarası ve doğum tarihi gönderilir.
+- API `Dispatches.Create` veya `Dispatches.Query` yetkisi ile çağrılır. Yanıt için `Cache-Control: no-store` ve `Pragma: no-cache` yazılır; kişisel bilgiler loglanmamalıdır.
+- Backend entegrasyonun bağlanacağı yer:
+  `KLMN.Application/Dispatches/Queries/LookupDispatchPerson/LookupDispatchPersonQueryHandler.cs`.
+  Burada **TODO** var; siz gerçek nüfus sistemine bağlayıp `DispatchPersonResponse` üretmelisiniz.
+- DTO: `DispatchPersonResponse(Person, Military?)`. `Person` mevcut `DispatchPersonInput`; isteğe bağlı `Military` ayrı `DispatchRegistryMilitaryResponse` ile kuvvet, sınıf, rütbe, birlik, askerlik şubesi, okul, sicil, nasıp, uçuş ve başvuru grubu alanlarını destekler.
+- Kurum servisindeki kodlar (ülke, ilçe, askerî tanımlar) doğrudan `Guid` kabul edilmemeli; KLMN tanımlarının ID'leriyle map edilmeli. Alan yoksa `null` bırakın.
+- **Servis entegrasyonu şu anda BAĞLI DEĞİL.** Handler bilerek `NationalRegistryNotConfiguredException` fırlatır; API `503` döner. Başarılıymış veya kişi bulunamamış gibi sahte sonuç / yerel DB sonucu dönmez. Gerçek servis yanıtında eşleşme yoksa handler `null` döndürdüğünde `404` kullanılır. Input validator ayrı dosyadadır.
+- QR kimlik ve doğum tarihiyle aynı backend sorgu noktası kullanılabilir. Elle kişi girişini kapatmadık.
+
+### Eski MSKBS formu açıklama alanları
+- Eski Sevk Girişi HTML kontrol edildi: `Birlik Açıklama` ve `Muayeneye Gönderen Makam Açıklama` **dx-text-area**, yani çok satırlıydı. Yeni formda her ikisi 3 satırlı, tam grid genişliğinde ve yeniden boyutlandırılabilir `textarea` oldu.
+- Eski Sevk Girişi formunda bağımsız bir `Açıklama` input'u yoktu; yeni ekrandaki `description` alanı görünümden kaldırıldı, Uçuş grubunun ismi `Uçuş Bilgileri` oldu.
+- Geriye dönük uyumluluk ve mevcut sevk verisini silmemek için `Dispatch.Description` backend/DB alanı ile formun görünmeyen kontrolü **korunur**, ancak kullanıcıya genel Açıklama input'u gösterilmez. Mevcut düzenleme kaydının değeri böylece yanlışlıkla silinmez.
+- Bu revizyon **veritabanı migration'ı gerektirmez**; önceki `DispatchStatusDefs` migration gereksinimi aynen devam eder.
+
+### Yerel test
+```bash
+cd KLMN/Frontend
+npm install
+npm run test:dispatch-pages
+npm run build
+```
+```bash
+cd KLMN/Tests/Dispatches.Regression
+dotnet run
+```
+Nüfus servisini gerçek kurum ortamında bağladıktan sonra yetkiler, kimlik eşleştirme, hata/servis kesintisi senaryoları ve hassas veri günlükleme kontrolünü ayrıca yapın.
+
 ## Sevk Sorgulama ve Sevk Girişi kullanılabilirlik yenilemesi — 30.10.2026
 
 ### 1. Sevk durumları DB kaynağı
