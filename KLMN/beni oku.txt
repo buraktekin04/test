@@ -1,3 +1,29 @@
+30.10.2026 — SEVK MENÜ AKTİFLİĞİ ve LİSTE FİLTRE CSS DÜZELTMESİ
+===================================================================
+- Sevk Girişi (/app/dispatches/new) açılınca "Sevk Listesi
+  ve Sorgulama" menüsünün de seçili görünmesi düzeltildi.
+  SidebarComponent HTML içindeki RouterLinkActiveOptions,
+  /app/dispatches için exact:true kullanır. Böylece liste
+  rotası /app/dispatches/new ön ekiyle yanlış aktif olmaz.
+  Ana Sayfa için önceden var olan exact davranışı korunur.
+- Sevk Listesi filtrelerindeki evrak tarihi başlangıç/bitiş
+  input'ları gereğinden yüksek görünüyordu. Sebep:
+  dispatch-list SCSS .filter-panel input genel seçicisi
+  flex:1 1 250px değerini flex-column içindeki tarih
+  kutularına da uyguluyor, kutunun yüksekliğini büyütüyordu.
+  Yeni kural sadece formun doğrudan altındaki arama input'una
+  uygulanır: .filter-panel form > input.
+  Tarih input'larında flex:none, 38px sabit yükseklik,
+  width:100%, min-width:0, box-sizing:border-box ayarlandı.
+  Filtre label'ları 190px civarında kompakt tutulur ve mobilde
+  esnek yayılır; PrimeNG durum dropdown'u kendi satırına uyumlu.
+- Test: Frontend/tests/dispatch-pages-regression.mjs içinde
+  sidebar route exact ve tarih SCSS regresyon kontrolleri.
+  npm run test:dispatch-pages
+- Yeni tablo veya migration gerekmiyor. "beni oku" kuralına
+  göre tek commit ve push. Gerçek tarayıcıda test yapılmadan
+  tamamı E2E doğrulanmış sayılmamalı.
+
 30.10.2026 — SEVK GİRİŞİ / SEVK LİSTESİ EKRANLARININ AYRILMASI
 ===================================================================
 KURAL: Sevk girişi ile sevk listeleme/sorgulama artık aynı ekran
