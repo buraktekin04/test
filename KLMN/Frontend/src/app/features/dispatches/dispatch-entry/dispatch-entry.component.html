@@ -1,259 +1,274 @@
 <div class="dispatch-entry-page">
- <header class="page-header">
-  <div>
+ <header class="page-header entry-topline">
+  <div class="entry-title">
    <h1>{{editing() ? 'Sevk Düzenleme · #'+editing()!.dispatchNo : 'Sevk Girişi'}}</h1>
-   <p>Başvuran kişiyi ve sevk evrakını kaydedin. QR kod ve kamera işlemleri bu ekranda yapılır.</p>
+   <span class="entry-subtitle">Kimlik sorgulama, kişi ve sevk bilgileri tek çalışma ekranında.</span>
   </div>
-  <p-button [label]="canView() ? 'Sevk Listesine Dön' : 'Ana Sayfaya Dön'" icon="pi pi-list" severity="secondary"
-   [outlined]="true" [disabled]="saving()" (onClick)="close()"/>
+  <p-button type="button" [label]="canView() ? 'Sevk Listesine Dön' : 'Ana Sayfaya Dön'"
+   icon="pi pi-arrow-left" severity="secondary" [outlined]="true"
+   [disabled]="saving()" (onClick)="close()"/>
  </header>
  <p-toast position="top-right"/>
  @if(loadingEntry()){
-  <div class="form-section"><p class="muted">Sevk bilgileri yükleniyor...</p></div>
+  <section class="form-section"><p class="muted">Sevk bilgileri yükleniyor...</p></section>
  } @else {
- <form class="dispatch-form" [formGroup]="form" (ngSubmit)="save()">
-  <section class="form-section" formGroupName="person">
-   <div class="section-heading"><h2><i class="pi pi-user"></i> Başvuran Kişi</h2>
-    <div class="section-actions">
-     @if(canCreate()&&!editing()){
-      <p-button type="button" label="QR Kod Okut" icon="pi pi-qrcode" [outlined]="true"
-       severity="secondary" (onClick)="openQr()"/>
-     }
-     @if(canQuery()&&!editing()){
-      <p-button type="button" label="Nüfustan Sorgula" icon="pi pi-search" [outlined]="true"
-       [loading]="queryingPerson()" (onClick)="lookup()"/>
-     }
+ <form class="dispatch-form compact-dispatch-form" [formGroup]="form" (ngSubmit)="save()">
+  <!-- Üst bant: eski MSKBS gibi kimlik + doğum tarihi + sorgu her zaman görünür. -->
+  <section class="entry-lookup-bar" formGroupName="person" aria-label="Nüfus kimlik sorgulama">
+   <div class="lookup-heading">
+    <strong><i class="pi pi-id-card"></i> Kimlik Sorgulama</strong>
+    <span class="lookup-help">Kimlik numarası ve doğum tarihi ile sorgulayın.</span>
+   </div>
+   <div class="lookup-controls">
+    <div class="identity-switch" aria-label="Kimlik türü">
+     <button type="button" [class.active]="identityType()==='tc'" (click)="setIdentity('tc')"
+      [disabled]="!!editing()">T.C.</button>
+     <button type="button" [class.active]="identityType()==='foreign'" (click)="setIdentity('foreign')"
+      [disabled]="!!editing()">Yabancı</button>
     </div>
-   </div>
-   <p class="section-note">Nüfus sorgusu, kimlik numarası ve doğum tarihini kurum nüfus entegrasyonuna iletir. Entegrasyon henüz bağlanmadıysa alanları elle doldurabilirsiniz.</p>
-   <div class="identity-switch">
-    <button type="button" [class.active]="identityType()==='tc'" (click)="setIdentity('tc')"
-      [disabled]="!!editing()">T.C. Kimlik No</button>
-    <button type="button" [class.active]="identityType()==='foreign'" (click)="setIdentity('foreign')"
-      [disabled]="!!editing()">Yabancı Kimlik No</button>
-   </div>
-   <div class="form-grid">
     @if(identityType()==='tc'){
-     <label class="field"><span class="field-caption"><span class="required-mark">*</span> T.C. Kimlik No</span>
+     <label class="field lookup-identity">
+      <span class="field-caption"><span class="required-mark">*</span> T.C. Kimlik No</span>
       <input pInputText formControlName="tcKimlikNo" maxlength="11" inputmode="numeric"
        [readOnly]="!!editing()" placeholder="11 haneli kimlik numarası" autocomplete="off"/>
      </label>
     } @else {
-     <label class="field"><span class="field-caption"><span class="required-mark">*</span> Yabancı Kimlik No</span>
+     <label class="field lookup-identity">
+      <span class="field-caption"><span class="required-mark">*</span> Yabancı Kimlik No</span>
       <input pInputText formControlName="yabanciKimlikNo" maxlength="20" inputmode="numeric"
        [readOnly]="!!editing()" placeholder="Yabancı kimlik numarası" autocomplete="off"/>
      </label>
     }
-    <label class="field"><span class="field-caption"><span class="required-mark">*</span> Doğum Tarihi</span>
+    <label class="field lookup-date">
+     <span class="field-caption"><span class="required-mark">*</span> Doğum Tarihi</span>
      <input type="date" formControlName="birthDate" [readOnly]="!!editing()"/>
     </label>
-    @for(field of personTexts;track field.key){
-     <label class="field"><span class="field-caption">
-      @if(field.key==='name'||field.key==='surname'){<span class="required-mark">*</span>}
-      {{field.label}}</span>
-      <input pInputText [formControlName]="field.key" [attr.maxlength]="field.key==='address'?512:field.key==='phoneNumber'?20:64"
-        [attr.autocomplete]="field.key==='address'?'street-address':'off'"/>
-     </label>
-    }
-    <label class="field">Cinsiyet
-     <p-select formControlName="gender" [options]="genderItems" optionLabel="label" optionValue="value" [fluid]="true" appendTo="body"/>
-    </label>
-    @for(field of personSelections;track field.key){
-     <label class="field">{{field.label}}{{isRequired(field.key)?" *":""}}
-      <p-select [formControlName]="field.key" [options]="optionMap()[field.type]" optionLabel="label" optionValue="id"
-        [showClear]="true" [filter]="true" (onFilter)="filterOptions(field.type,$event.filter)"
-        [fluid]="true" appendTo="body" placeholder="Seçiniz veya arayınız"/>
-     </label>
-    }
-   </div>
-   @if(dialogVisible()){
-    <div class="person-photo-area">
-     <h3>Başvuran Fotoğrafı</h3>
-     <app-dispatch-photo-capture [imageUrl]="photoUrl()" [disabled]="saving()"
-      [hasSavedPhoto]="!!editing()?.hasPhoto"
-      (photoSelected)="selectPhoto($event)" (photoCleared)="clearPhotoSelection()"
-      (deleteSavedPhoto)="deleteSavedPhoto()"/>
+    <div class="lookup-actions">
+     @if(canQuery()&&!editing()){
+      <p-button type="button" label="Nüfustan Sorgula" icon="pi pi-search"
+       [loading]="queryingPerson()" (onClick)="lookup()"/>
+     }
+     @if(canCreate()&&!editing()){
+      <p-button type="button" label="QR Kod" icon="pi pi-qrcode" severity="secondary"
+       [outlined]="true" (onClick)="openQr()"/>
+     }
     </div>
-   }
-  </section>
-  <section class="form-section" formGroupName="dispatch">
-   <div class="section-heading"><h2><i class="pi pi-file-edit"></i> Sevk Bilgileri</h2></div>
-   <div class="form-grid">
-    <label class="field"><span class="field-caption">
-     @if(admissionRules()?.nthAdmissionRequired){<span class="required-mark">*</span>}
-     Kaçıncı İşlem</span>
-     <p-inputnumber formControlName="nthAdmission" [useGrouping]="false" [min]="1" [showButtons]="true" [fluid]="true"/>
-    </label>
-    <label class="field"><span class="field-caption">
-     @if(admissionRules()?.dispatchDocumentDateRequired){<span class="required-mark">*</span>}
-     Sevk Evrak Tarihi</span>
-     <input type="date" formControlName="dispatchDocumentDate"/>
-    </label>
-    <label class="field"><span class="field-caption">
-     @if(admissionRules()?.dispatchDocumentNoRequired){<span class="required-mark">*</span>}
-     Sevk Evrak Sayısı</span>
-     <input pInputText formControlName="dispatchDocumentNo" maxlength="50"/>
-    </label>
-    <label class="field">Sevk Kapsamı
-     <p-select [options]="scopeItems" formControlName="dispatchScope" optionLabel="label" optionValue="value" [fluid]="true" appendTo="body"/>
-    </label>
-    @if(dispatchForm.controls.dispatchScope.value===2){
-     <label class="field"><span class="field-caption"><span class="required-mark">*</span> Sevk Kapsamı Şehir</span>
-      <p-select [options]="optionMap().cities" formControlName="dispatchScopeCityId" optionLabel="label" optionValue="id"
-       [filter]="true" (onFilter)="filterOptions('cities',$event.filter)" [fluid]="true" appendTo="body"/>
-     </label>
-    }
-    @if(dispatchForm.controls.dispatchScope.value===3){
-     <label class="field"><span class="field-caption"><span class="required-mark">*</span> Sevk Kapsamı Sağlık Tesisi</span>
-      <p-select [options]="optionMap().hospitals" formControlName="dispatchScopeHospitalId" optionLabel="label" optionValue="id"
-       [filter]="true" (onFilter)="filterOptions('hospitals',$event.filter)" [fluid]="true" appendTo="body"/>
-     </label>
-    }
-    <label class="field">Alım ID
-     <p-inputnumber formControlName="purchaseId" [useGrouping]="false" [min]="0" [fluid]="true"/>
-    </label>
    </div>
   </section>
-  <section class="form-section admission-section" formGroupName="dispatch">
-   <div class="section-heading">
-    <h2><i class="pi pi-sitemap"></i> Başvuru ve Askerî Bilgiler</h2>
-    <span class="required-legend"><span class="required-mark">*</span> Zorunlu alan</span>
+
+  <!-- İki sütunlu yerleşim: kişi+sevk solda, askerî bilgiler sağda. -->
+  <div class="entry-workspace">
+   <div class="entry-left-column">
+    <section class="form-section compact-section" formGroupName="person">
+     <div class="section-heading"><h2><i class="pi pi-user"></i> Kişi Bilgileri</h2>
+      <span class="required-legend"><span class="required-mark">*</span> Zorunlu</span>
+     </div>
+     <div class="person-content">
+      <div class="form-grid entry-person-grid">
+       <label class="field"><span class="field-caption"><span class="required-mark">*</span> Adı</span>
+        <input pInputText formControlName="name" maxlength="64" autocomplete="off"/>
+       </label>
+       <label class="field"><span class="field-caption"><span class="required-mark">*</span> Soyadı</span>
+        <input pInputText formControlName="surname" maxlength="64" autocomplete="off"/>
+       </label>
+       <label class="field">Anne Adı
+        <input pInputText formControlName="motherName" maxlength="64" autocomplete="off"/>
+       </label>
+       <label class="field">Baba Adı
+        <input pInputText formControlName="fatherName" maxlength="64" autocomplete="off"/>
+       </label>
+       <label class="field">Uyruğu
+        <p-select formControlName="nationalityId" [options]="optionMap().countries"
+         optionLabel="label" optionValue="id" [showClear]="true" [filter]="true"
+         (onFilter)="filterOptions('countries',$event.filter)" [fluid]="true"
+         appendTo="body" placeholder="Seçiniz"/>
+       </label>
+       <label class="field">Doğum Yeri
+        <p-select formControlName="townOfBirthId" [options]="optionMap().towns"
+         optionLabel="label" optionValue="id" [showClear]="true" [filter]="true"
+         (onFilter)="filterOptions('towns',$event.filter)" [fluid]="true"
+         appendTo="body" placeholder="Seçiniz"/>
+       </label>
+       <label class="field">Cinsiyet
+        <p-select formControlName="gender" [options]="genderItems" optionLabel="label"
+         optionValue="value" [fluid]="true" appendTo="body"/>
+       </label>
+       <label class="field">Telefon No
+        <input pInputText formControlName="phoneNumber" maxlength="20" inputmode="tel"/>
+       </label>
+       <label class="field entry-address">Adres
+        <input pInputText formControlName="address" maxlength="512" autocomplete="street-address"/>
+       </label>
+      </div>
+      @if(dialogVisible()){
+       <aside class="entry-photo" aria-label="Başvuran fotoğrafı">
+        <app-dispatch-photo-capture [imageUrl]="photoUrl()" [disabled]="saving()"
+         [hasSavedPhoto]="!!editing()?.hasPhoto"
+         (photoSelected)="selectPhoto($event)" (photoCleared)="clearPhotoSelection()"
+         (deleteSavedPhoto)="deleteSavedPhoto()"/>
+       </aside>
+      }
+     </div>
+    </section>
+
+    <section class="form-section compact-section entry-dispatch-section" formGroupName="dispatch">
+     <div class="section-heading"><h2><i class="pi pi-file-edit"></i> Sevk Bilgileri</h2></div>
+     <div class="form-grid entry-dispatch-grid">
+      <label class="field">
+       <span class="field-caption">
+        @if(admissionRules()?.nthAdmissionRequired){<span class="required-mark">*</span>}
+        Kaçıncı İşlem
+       </span>
+       <p-inputnumber formControlName="nthAdmission" [useGrouping]="false" [min]="1" [fluid]="true"/>
+      </label>
+      <label class="field">
+       <span class="field-caption">
+        @if(admissionRules()?.dispatchDocumentDateRequired){<span class="required-mark">*</span>}
+        Sevk Evrak Tarihi
+       </span>
+       <input type="date" formControlName="dispatchDocumentDate"/>
+      </label>
+      <label class="field">
+       <span class="field-caption">
+        @if(admissionRules()?.dispatchDocumentNoRequired){<span class="required-mark">*</span>}
+        Sevk Evrak Sayısı
+       </span>
+       <input pInputText formControlName="dispatchDocumentNo" maxlength="50"/>
+      </label>
+      <label class="field">Sevk Kapsamı
+       <p-select formControlName="dispatchScope" [options]="scopeItems"
+        optionLabel="label" optionValue="value" [fluid]="true" appendTo="body"/>
+      </label>
+      <label class="field">Alım ID
+       <p-inputnumber formControlName="purchaseId" [useGrouping]="false" [min]="0" [fluid]="true"/>
+      </label>
+      @if(dispatchForm.controls.dispatchScope.value===2){
+       <label class="field"><span class="field-caption"><span class="required-mark">*</span> Kapsam Şehir</span>
+        <p-select formControlName="dispatchScopeCityId" [options]="optionMap().cities"
+         optionLabel="label" optionValue="id" [filter]="true"
+         (onFilter)="filterOptions('cities',$event.filter)" [fluid]="true" appendTo="body" placeholder="Şehir seçiniz"/>
+       </label>
+      }
+      @if(dispatchForm.controls.dispatchScope.value===3){
+       <label class="field"><span class="field-caption"><span class="required-mark">*</span> Kapsam Hastane</span>
+        <p-select formControlName="dispatchScopeHospitalId" [options]="optionMap().hospitals"
+         optionLabel="label" optionValue="id" [filter]="true"
+         (onFilter)="filterOptions('hospitals',$event.filter)" [fluid]="true" appendTo="body" placeholder="Sağlık tesisi seçiniz"/>
+       </label>
+      }
+     </div>
+    </section>
    </div>
 
-   <div class="entry-priority-panel">
-    <div class="entry-group-heading">
-     <strong>Başvuru Bilgileri</strong>
-     <span>Önce başvuru grubunu belirleyiniz; muayene sebebi buna göre seçilir.</span>
+   <section class="form-section compact-section entry-right-column" formGroupName="dispatch">
+    <div class="section-heading"><h2><i class="pi pi-shield"></i> Askerî ve Başvuru Bilgileri</h2>
+     <span class="required-legend"><span class="required-mark">*</span> Zorunlu</span>
     </div>
-    <div class="form-grid">
-     <label class="field"><span class="field-caption"><span class="required-mark">*</span> Başvuru Grubu</span>
+    <div class="form-grid entry-military-grid">
+     <label class="field entry-full-row"><span class="field-caption"><span class="required-mark">*</span> Başvuru Grubu</span>
       <p-select formControlName="hcAdmissionTypeDefId" [options]="optionMap().admissionTypes"
        optionLabel="label" optionValue="id" [filter]="true" [showClear]="true" [fluid]="true"
-       (onFilter)="filterOptions('admissionTypes',$event.filter)" appendTo="body"
-       placeholder="Önce başvuru grubunu seçiniz"/>
+       (onFilter)="filterOptions('admissionTypes',$event.filter)" appendTo="body" placeholder="Önce başvuru grubu seçiniz"/>
      </label>
-     <label class="field"><span class="field-caption"><span class="required-mark">*</span> Muayene Sebebi</span>
+     <label class="field entry-full-row">
+      <span class="field-caption"><span class="required-mark">*</span> Muayene Sebebi
+       @if(!dispatchForm.controls.hcAdmissionTypeDefId.value){
+        <small class="field-helper">· Önce başvuru grubu</small>
+       } @else if(rulesLoading()){
+        <small class="field-helper">· Kurallar yükleniyor</small>
+       }
+      </span>
       <p-select formControlName="reasonForExaminationDefId" [options]="optionMap().reasons"
        optionLabel="label" optionValue="id" [filter]="true" [showClear]="true" [fluid]="true"
        [disabled]="!dispatchForm.controls.hcAdmissionTypeDefId.value || rulesLoading() || !admissionRules()"
-       (onFilter)="filterOptions('reasons',$event.filter)" appendTo="body"
-       [placeholder]="!dispatchForm.controls.hcAdmissionTypeDefId.value ? 'Önce başvuru grubu seçiniz' : rulesLoading() ? 'Kurallar yükleniyor' : 'Muayene sebebi seçiniz'"/>
+       (onFilter)="filterOptions('reasons',$event.filter)" appendTo="body" placeholder="Muayene sebebi seçiniz"/>
+     </label>
+     @for(field of militarySelections;track field.key){
+      <label class="field"><span class="field-caption">
+       @if(isRequired(field.key)){<span class="required-mark">*</span>}
+       {{field.label}}
+       </span>
+       <p-select [formControlName]="field.key" [options]="optionMap()[field.type]"
+        optionLabel="label" optionValue="id" [filter]="true" [showClear]="true"
+        [fluid]="true" (onFilter)="filterOptions(field.type,$event.filter)"
+        appendTo="body" placeholder="Seçiniz"/>
+      </label>
+     }
+     <label class="field"><span class="field-caption">
+      @if(admissionRules()?.registryNumberRequired){<span class="required-mark">*</span>}
+      Sicil No</span>
+      <input pInputText formControlName="registryNumber" maxlength="50"/>
+     </label>
+     <label class="field"><span class="field-caption">
+      @if(admissionRules()?.lastNominationDateRequired){<span class="required-mark">*</span>}
+      Nasbı</span>
+      <input type="date" formControlName="lastNominationDate"/>
+     </label>
+
+     <div class="entry-inline-group entry-full-row">
+      <span class="entry-inline-title">Muayeneye Gönderen Makam
+       @if(admissionRules()?.senderChairRequired){<span class="required-mark">*</span>}
+      </span>
+      <div class="entry-two-fields">
+       @for(field of senderSelections;track field.key){
+        <label class="field">{{field.label}}
+         <p-select [formControlName]="field.key" [options]="optionMap()[field.type]"
+          optionLabel="label" optionValue="id" [filter]="true" [showClear]="true" [fluid]="true"
+          (onFilter)="filterOptions(field.type,$event.filter)" appendTo="body" placeholder="Seçiniz"/>
+        </label>
+       }
+      </div>
+     </div>
+     @for(field of flightSelections;track field.key){
+      <label class="field">{{field.label}}
+       <p-select [formControlName]="field.key" [options]="optionMap()[field.type]"
+        optionLabel="label" optionValue="id" [filter]="true" [showClear]="true"
+        [fluid]="true" (onFilter)="filterOptions(field.type,$event.filter)"
+        appendTo="body" placeholder="Seçiniz"/>
+      </label>
+     }
+     <label class="field entry-explanation">Birlik Açıklama
+      <textarea formControlName="militaryUnitDescription" rows="2" maxlength="1000"
+       placeholder="Birlik açıklaması"></textarea>
+     </label>
+     <label class="field entry-explanation">Gönderen Makam Açıklama
+      <textarea formControlName="senderChairOther" rows="2" maxlength="1000"
+       placeholder="Muayeneye gönderen makam açıklaması"></textarea>
      </label>
     </div>
-    @if(!dispatchForm.controls.hcAdmissionTypeDefId.value){
-     <p class="selection-hint"><i class="pi pi-info-circle"></i> Başvuru grubu seçilmeden muayene sebebi seçilemez.</p>
-    } @else if(rulesLoading()){
-     <p class="selection-hint"><i class="pi pi-spin pi-spinner"></i> Başvuru grubunun zorunlu alanları ve muayene kuralları yükleniyor.</p>
-    } @else {
-     @if(admissionRules();as rules){
-      @if(rules.unusedReasonIds.length){
-       <p class="selection-hint"><i class="pi pi-info-circle"></i> Bu başvuru grubunda {{rules.unusedReasonIds.length}} muayene sebebi kullanılamaz.</p>
-      }
-     }
-    }
-   </div>
-
-   <details class="entry-field-group" [open]="hasMandatoryMilitary()">
-    <summary><span><i class="pi pi-shield"></i> Askerî Kimlik ve Birlik Bilgileri</span>
-     <small>@if(hasMandatoryMilitary()){Bu başvuru grubu için zorunlu alanlar var.}@else{Rütbe, sınıf, birlik, okul ve sicil bilgileri}</small>
-    </summary>
-    <div class="entry-group-body">
-     <div class="form-grid">
-      @for(field of militarySelections;track field.key){
-       <label class="field"><span class="field-caption">
-        @if(isRequired(field.key)){<span class="required-mark">*</span>}
-        {{field.label}}</span>
-        <p-select [formControlName]="field.key" [options]="optionMap()[field.type]"
-         optionLabel="label" optionValue="id" [filter]="true" [showClear]="true" [fluid]="true"
-         (onFilter)="filterOptions(field.type,$event.filter)"
-         appendTo="body" placeholder="Seçiniz veya arayınız"/>
-       </label>
-      }
-      <label class="field"><span class="field-caption">
-       @if(admissionRules()?.registryNumberRequired){<span class="required-mark">*</span>}
-       Sicil No</span>
-       <input pInputText formControlName="registryNumber" maxlength="50"/>
-      </label>
-      <label class="field"><span class="field-caption">
-       @if(admissionRules()?.lastNominationDateRequired){<span class="required-mark">*</span>}
-       Nasbı</span>
-       <input type="date" formControlName="lastNominationDate"/>
-      </label>
-      <label class="field wide">Birlik Açıklama
-       <textarea formControlName="militaryUnitDescription" rows="3" maxlength="1000"
-        placeholder="Birlik bilgileri için ek açıklama giriniz"></textarea>
-      </label>
-     </div>
-    </div>
-   </details>
-
-   <details class="entry-field-group" [open]="!!admissionRules()?.senderChairRequired">
-    <summary><span><i class="pi pi-building"></i> Muayeneye Gönderen Makam
-     @if(admissionRules()?.senderChairRequired){<span class="required-mark">*</span>}</span>
-     <small>Gönderen birlik veya askerlik şubesinden yalnızca biri</small>
-    </summary>
-    <div class="entry-group-body">
-     <p class="selection-hint">Gönderen makam zorunluysa aşağıdaki iki seçenekten yalnızca birini doldurunuz.</p>
-     <div class="form-grid">
-      @for(field of senderSelections;track field.key){
-       <label class="field">{{field.label}}
-        <p-select [formControlName]="field.key" [options]="optionMap()[field.type]"
-         optionLabel="label" optionValue="id" [filter]="true" [showClear]="true" [fluid]="true"
-         (onFilter)="filterOptions(field.type,$event.filter)"
-         appendTo="body" placeholder="Seçiniz veya arayınız"/>
-       </label>
-      }
-      <label class="field wide">Muayeneye Gönderen Makam Açıklama
-       <textarea formControlName="senderChairOther" rows="3" maxlength="1000"
-        placeholder="Muayeneye gönderen makam için ek açıklama giriniz"></textarea>
-      </label>
-     </div>
-    </div>
-   </details>
-
-   <details class="entry-field-group">
-    <summary><span><i class="pi pi-send"></i> Uçuş Bilgileri</span>
-     <small>Uçucu görev ve uçak bilgileri</small>
-    </summary>
-    <div class="entry-group-body">
-     <div class="form-grid">
-      @for(field of flightSelections;track field.key){
-       <label class="field">{{field.label}}
-        <p-select [formControlName]="field.key" [options]="optionMap()[field.type]"
-         optionLabel="label" optionValue="id" [filter]="true" [showClear]="true" [fluid]="true"
-         (onFilter)="filterOptions(field.type,$event.filter)"
-         appendTo="body" placeholder="Seçiniz veya arayınız"/>
-       </label>
-      }
-     </div>
-    </div>
-   </details>
-  </section>
-
-  <section class="form-section">
-   <div class="section-heading"><h2><i class="pi pi-paperclip"></i> Sevk Dosyaları</h2></div>
-   <p class="section-note">İsteğe bağlı PDF, PNG veya JPEG. Dosya başına en fazla 5 MiB.
-    Dosya, sevk kaydı başarılı olduğunda yüklenir.</p>
-   <label class="field upload-field">Dosya Seç
-    <input type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg"
-     (change)="selectFile($event)"/>
-   </label>
-   @if(uploadFile()){<p class="selected-file"><i class="pi pi-file"></i> {{uploadFile()!.name}} (yüklenmeye hazır)</p>}
-   @if(editing()&&files().length){
-    <div class="attached-files">
-     @for(file of files();track file.id){
-      <button type="button" (click)="download(file)">
-       <i class="pi pi-download"></i> {{file.fileName}} · {{file.fileSize}} bayt
-      </button>
-     }
-    </div>
-   }
-  </section>
-  @if(formError()){<p role="alert" class="form-error">{{formError()}}</p>}
-  <div class="dialog-actions">
-   <p-button label="Vazgeç" type="button" severity="secondary" [outlined]="true" (onClick)="close()"/>
-   <p-button [label]="editing() ? 'Değişiklikleri Kaydet' : 'Sevki Kaydet'" type="submit" icon="pi pi-check" [loading]="saving()"/>
+   </section>
   </div>
+
+  <!-- İsteğe bağlı belge yükleme ve kayıt: iki sütunun altında tek yatay bant. -->
+  <div class="entry-footer">
+   <div class="entry-file-actions">
+    <label class="entry-file-picker">
+     <i class="pi pi-paperclip"></i> Belge Ekle
+     <input type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg"
+      (change)="selectFile($event)"/>
+    </label>
+    @if(uploadFile()){
+     <span class="entry-file-name"><i class="pi pi-file"></i> {{uploadFile()!.name}}</span>
+    }
+    @if(editing()&&files().length){
+     <div class="attached-files">
+      @for(file of files();track file.id){
+       <button type="button" (click)="download(file)">
+        <i class="pi pi-download"></i> {{file.fileName}}
+       </button>
+      }
+     </div>
+    }
+    <small class="entry-file-note">PDF/JPG/PNG · 5 MiB</small>
+   </div>
+   <div class="entry-save-actions">
+    <p-button type="button" label="Vazgeç" severity="secondary" [outlined]="true"
+     [disabled]="saving()" (onClick)="close()"/>
+    <p-button type="submit" icon="pi pi-check" [loading]="saving()"
+     [label]="editing() ? 'Değişiklikleri Kaydet' : 'Sevk Kaydet'"/>
+   </div>
+  </div>
+  @if(formError()){<p role="alert" class="form-error entry-error">{{formError()}}</p>}
  </form>
  }
  @if(qrVisible()){
