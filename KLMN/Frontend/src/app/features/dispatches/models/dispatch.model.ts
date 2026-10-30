@@ -67,3 +67,6 @@ export interface DispatchRegistryMilitary {
 export interface DispatchPopulationResult {
  person:DispatchPerson;military?:DispatchRegistryMilitary|null;
 }
+
+/** Cinsiyet seçenekleri KLMN GenderDefs tablosundan döner (eski enum kodları 1/2/3). */
+export interface DispatchGenderOption {code:number;name:string;}
