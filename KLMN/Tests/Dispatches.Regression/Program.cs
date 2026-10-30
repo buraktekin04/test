@@ -53,6 +53,10 @@ Check(new GetDispatchesQueryValidator().Validate(new GetDispatchesQuery(
     SenderMilitaryUnitDefId:Guid.NewGuid(),IncludeRelatedOrganizations:true,
     DispatchScope:2,DispatchScopeCityId:Guid.NewGuid())).IsValid,
     "Ayrıntılı sevk sorgusu geçerli parametreleri");
+Check(typeof(BaseEntity).IsAssignableFrom(typeof(GenderDef)),
+    "Cinsiyet tanımları BaseEntity audit/xmin kalıtımı");
+Check(typeof(GenderDef).GetProperty(nameof(GenderDef.Code))?.PropertyType==typeof(int),
+    "Cinsiyet enum uyumlu kodları DB sözlüğündedir");
 Check(typeof(BaseEntity).IsAssignableFrom(typeof(DispatchStatusDef)),
     "Sevk durum tanımı BaseEntity audit/soft-delete/xmin kalıtımı");
 Check(typeof(DispatchStatusDef).GetProperty(nameof(DispatchStatusDef.Code))?.PropertyType==typeof(int),
