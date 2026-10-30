@@ -1,8 +1,8 @@
-import {Component,computed,inject,OnInit,signal} from '@angular/core';
+import {Component,computed,inject,OnDestroy,OnInit,signal} from '@angular/core';
 import {DatePipe} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
 import {FormBuilder,ReactiveFormsModule,Validators} from '@angular/forms';
-import {finalize} from 'rxjs';
+import {finalize,firstValueFrom} from 'rxjs';
 import {ConfirmationService,MessageService} from 'primeng/api';
 import {ButtonModule} from 'primeng/button';
 import {CheckboxModule} from 'primeng/checkbox';
@@ -18,6 +18,9 @@ import {PermissionCodes} from '../../../core/permissions/constants/permission-co
 import {PermissionService} from '../../../core/permissions/services/permission.service';
 import {AuditHistoryComponent} from '../../../shared/audit-history/audit-history.component';
 import {DispatchService} from '../services/dispatch.service';
+import {DispatchQrReaderComponent} from '../qr/dispatch-qr-reader.component';
+import {DispatchPhotoCaptureComponent} from '../camera/dispatch-photo-capture.component';
+import {DispatchQrData,DispatchQrFormatError,parseDispatchQr} from '../qr/dispatch-qr.parser';
 import {DispatchItem,DispatchOption,DispatchPerson,DispatchDetails,DispatchResponse,
  DispatchFileItem,OptionType,DispatchSaveResponse,DispatchAdmissionRules} from '../models/dispatch.model';
 
@@ -26,12 +29,12 @@ import {DispatchItem,DispatchOption,DispatchPerson,DispatchDetails,DispatchRespo
  selector:'app-dispatch-list',standalone:true,
  imports:[DatePipe,ReactiveFormsModule,ButtonModule,CheckboxModule,ConfirmDialogModule,
   DialogModule,InputTextModule,InputNumberModule,SelectModule,TableModule,TagModule,ToastModule,
-  AuditHistoryComponent],
+  AuditHistoryComponent,DispatchQrReaderComponent,DispatchPhotoCaptureComponent],
  providers:[ConfirmationService,MessageService],
  templateUrl:'./dispatch-list.component.html',
  styleUrl:'./dispatch-list.component.scss'
 })
-export class DispatchListComponent implements OnInit {
+export class DispatchListComponent implements OnInit,OnDestroy {
  private readonly api=inject(DispatchService);
  private readonly fb=inject(FormBuilder);
  private readonly permissions=inject(PermissionService);
@@ -134,6 +137,12 @@ export class DispatchListComponent implements OnInit {
  /** Başvuru grubuna göre sunucuda tanımlanmış zorunluluklar. */
  readonly admissionRules=signal<DispatchAdmissionRules|null>(null);
  private rulesRequest=0;
+ /** Kameradan çekilen veya bilgisayardan seçilen, sevk kaydından bağımsız bekleyen fotoğraf. */
+ readonly photoFile=signal<File|null>(null);
+ readonly photoUrl=signal<string|null>(null);
+ readonly qrVisible=signal(false);
+ private photoObjectUrl:string|null=null;
+ private photoRequest=0;
  readonly uploadFile=signal<File|null>(null);
  private lastRequest=0;
  private editRequest=0;
@@ -222,6 +231,7 @@ export class DispatchListComponent implements OnInit {
   if(!this.canCreate())return;
   ++this.editRequest;this.editing.set(null);this.files.set([]);
   this.formError.set(null);this.uploadFile.set(null);this.identityType.set('tc');
+  this.resetPhoto();
   this.personForm.reset({name:'',surname:'',birthDate:'',tcKimlikNo:null,yabanciKimlikNo:null});
   this.dispatchForm.reset({dispatchScope:1,reasonForExaminationDefId:null,hcAdmissionTypeDefId:null});
   this.dialogVisible.set(true);
@@ -232,6 +242,8 @@ export class DispatchListComponent implements OnInit {
   this.api.detail(row.id).subscribe({next:item=>{
    if(this.editRequest!==id)return;
    this.editing.set(item);this.formError.set(null);this.uploadFile.set(null);
+   this.resetPhoto();
+   if(item.hasPhoto)this.loadCurrentPhoto(item.id,id);
    this.personForm.reset(item.person);
    this.dispatchForm.reset(item.dispatch);
    // Başvuru grubu değişimini dinleyen form reseti muayene sebebini temizleyebilir.
@@ -246,9 +258,9 @@ export class DispatchListComponent implements OnInit {
    }
   },error:e=>this.error(e)});
  }
- close(){if(this.saving())return;this.dialogVisible.set(false);++this.editRequest;}
+ close(){if(this.saving())return;this.dialogVisible.set(false);this.qrVisible.set(false);this.resetPhoto();++this.editRequest;}
  /** Yalnız veritabanında kayıtlı kişi aranır; harici MERNİS/QR sorgusu simüle edilmez. */
- lookup(){
+ lookup(qr?:DispatchQrData){
   if(!this.canQuery())return;
   const f=this.personForm.getRawValue();
   if(!f.birthDate||!(this.identityType()==='tc'?f.tcKimlikNo:f.yabanciKimlikNo)){
@@ -258,7 +270,10 @@ export class DispatchListComponent implements OnInit {
   this.api.lookupPerson({tcKimlikNo:this.identityType()==='tc'?f.tcKimlikNo:null,
    yabanciKimlikNo:this.identityType()==='foreign'?f.yabanciKimlikNo:null,birthDate:f.birthDate})
    .pipe(finalize(()=>this.queryingPerson.set(false))).subscribe({
-    next:r=>{this.personForm.patchValue(r.person);this.message.add({severity:'success',
+    next:r=>{this.personForm.patchValue(r.person);
+     // QR ile aktarılan iletişim alanı, eski yerel kayıt dönüşünde kaybolmaz.
+     if(qr?.telefonNo)this.personForm.controls.phoneNumber.setValue(qr.telefonNo);
+     this.message.add({severity:'success',
      summary:'Yerel kişi bulundu',detail:'Kişi bilgileri dolduruldu.'});},
     error:e=>{const h=e as HttpErrorResponse;
      if(h.status===404)this.message.add({severity:'info',summary:'Kişi bulunamadı',
