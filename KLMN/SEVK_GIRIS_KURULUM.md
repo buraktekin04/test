@@ -1,3 +1,18 @@
+## Sevk Girişi — tek bakışta kompakt çalışma ekranı (30.10.2026)
+
+Eski MSKBS Sevk Giriş ekranının kişi tarafından kolay kullanımı, KLMN Angular 21 + PrimeNG yapısına yeniden uygulandı. Önceki büyük, üst üste yığılmış kartlar ve açılır askerî bilgi panelleri kaldırıldı.
+
+**Yeni yerleşim**
+- Üstte ince **Kimlik Sorgulama bandı**: T.C./Yabancı kimlik türü, kimlik numarası, doğum tarihi, **Nüfustan Sorgula** ve QR Kod. Edit modunda kimlik alanları salt okunurdur. Nüfus handler'ı kurum servisine bağlanıncaya kadar önceki gibi 503 döner.
+- Ortadaki **iki sütun**: sol tarafta **Kişi Bilgileri** (ad/soyad, anne-baba, uyruk, doğum yeri, cinsiyet, telefon, adres) ve köşesinde **kamera/fotoğraf**; altına kompakt **Sevk Bilgileri** (kaçıncı işlem, evrak tarihi ve sayısı, kapsam, kapsam şehir/hastane, alım ID). Sağ tarafta **Askerî ve Başvuru Bilgileri**: grup ve sebep en üstte, devamında kuvvet/rütbe/sınıf/birlik/okul/şube, sicil/nasbı, gönderen makam, uçuş ve iki açıklama kutusu. **Hepsi aynı anda görünür**; gereksiz `<details>` katmanları yoktur.
+- En altta **ince işlem bandı**: belge seçme, varsa mevcut sevk dosyaları, vazgeç ve **Sevk Kaydet**. Dar ekranlarda kolonlar kademeli olarak ikiye/bire iner. Normal masaüstünde dikey uzunluk mümkün olduğunca küçüktür.
+- Zorunlu alanların **kırmızı `*` göstergeleri**, başvuru grubu ile sebebin sıraya bağlı seçimi, dinamik alan zorunlulukları, seçili tanımın API'den yüklenmesi, QR, kamera, fotoğraf silme, dosya yükleme, güncelleme ve mevcut validasyonlar korunmuştur.
+- Formun stilleri artık yalnız `dispatch-entry.component.scss` içindedir. Liste ekranının CSS dosyası forma bağlı değildir. Listeleme ve sorgulama bileşeninde herhangi bir tasarım veya filtre değişikliği yoktur.
+
+**Kontrol:** `cd KLMN/Frontend && npm run test:dispatch-pages && npm run build`. Gerçek masaüstü görüntüsü, fotoğraf/QR, ülke/şehir vb. seçenekler ve gönderim uçtan uca ayrıca test edilmelidir.
+
+**Veritabanı/migration:** Bu yalnızca frontend görünüm değişikliğidir. Yeni tablo/kolon ya da migration eklenmedi. Önceki `DispatchStatusDefs` migration gereksinimi devam eder.
+
 ## Nüfus kimlik sorgusu ve açıklama alanları — 30.10.2026
 
 ### Kimlik sorgusu: eski MSKBS davranışına dönüş

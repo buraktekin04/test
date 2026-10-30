@@ -12,6 +12,7 @@ const listTs=read('src/app/features/dispatches/dispatch-list/dispatch-list.compo
 const listHtml=read('src/app/features/dispatches/dispatch-list/dispatch-list.component.html');
 const entryTs=read('src/app/features/dispatches/dispatch-entry/dispatch-entry.component.ts');
 const entryHtml=read('src/app/features/dispatches/dispatch-entry/dispatch-entry.component.html');
+const entryScss=read('src/app/features/dispatches/dispatch-entry/dispatch-entry.component.scss');
 const service=read('src/app/features/dispatches/services/dispatch.service.ts');
 const sidebarHtml=read('src/app/layout/sidebar/sidebar.component.html');
 const listScss=read('src/app/features/dispatches/dispatch-list/dispatch-list.component.scss');
@@ -36,7 +37,7 @@ for(const key of ['dispatchNo','purchaseId','tcKimlikNo','yabanciKimlikNo',
 assert.match(listHtml,/Ayrıntılı Filtreler/);
 assert.match(listHtml,/p-table/);
 assert.doesNotMatch(listHtml,/dispatch-form|app-dispatch-qr-reader|app-dispatch-photo-capture/);
-assert.match(entryHtml,/class="dispatch-form"/);
+assert.match(entryHtml,/class="dispatch-form compact-dispatch-form"/);
 assert.match(entryHtml,/app-dispatch-qr-reader/);
 assert.match(entryHtml,/app-dispatch-photo-capture/);
 assert.doesNotMatch(entryHtml,/p-table|formControlName="search"/);
@@ -50,12 +51,12 @@ assert.doesNotMatch(listTs,/readonly statusItems=\[/);
 assert.match(listTs,/this\.api\.statuses\(\)/);
 assert.match(listTs,/senderMilitaryUnitDefId/);
 assert.match(listTs,/includeRelatedOrganizations/);
-assert.match(entryHtml,/Başvuru grubu seçilmeden muayene sebebi seçilemez/);
-assert.match(entryHtml,/class="entry-field-group"/);
+assert.match(entryHtml,/Önce başvuru grubu/);
+assert.match(entryHtml,/class="entry-workspace"/);
 assert.match(entryHtml,/class="required-mark"/);
 assert.match(entryHtml,/rulesLoading\(\)/);
 assert.match(entryTs,/readonly militarySelections=/);
-assert.match(entryTs,/hasMandatoryMilitary\(\)/);
+assert.match(entryHtml,/entry-military-grid/);
 
 // /app/dispatches/new iken /app/dispatches liste menüsü ayrıca aktif olmamalı.
 assert.match(sidebarHtml,/routerLinkActiveOptions[^\n]*item\.route === '\/app\/dispatches'/);
@@ -74,9 +75,31 @@ assert.doesNotMatch(entryHtml,/Yerel Kaydı Sorgula|MERNİS entegrasyonu değild
 assert.match(entryTs,/this\.api\.queryPopulation\(/);
 assert.match(service,/persons\/national-registry/);
 assert.doesNotMatch(service,/persons\/lookup/);
-assert.match(entryHtml,/formControlName="militaryUnitDescription" rows="3"/);
-assert.match(entryHtml,/formControlName="senderChairOther" rows="3"/);
+assert.match(entryHtml,/formControlName="militaryUnitDescription" rows="2"/);
+assert.match(entryHtml,/formControlName="senderChairOther" rows="2"/);
 assert.doesNotMatch(entryHtml,/formControlName="description"/);
 assert.doesNotMatch(entryHtml,/>Açıklama\s*</);
 
-console.log('PASS: Sevk filtreleri, nüfus sorgu bağlantısı ve açıklama alanları.');
+// Eski MSKBS'ye yakın kompakt yerleşim: kimlik üstte, kişi + sevk solda,
+ // askerî/başvuru sağda; tüm seçimler doğrudan görünür.
+assert.match(entryHtml,/class="entry-lookup-bar"/);
+assert.match(entryHtml,/class="entry-left-column"/);
+assert.match(entryHtml,/class="form-section compact-section entry-right-column"/);
+assert.match(entryHtml,/class="entry-footer"/);
+assert.match(entryHtml,/class="form-grid entry-person-grid"/);
+assert.match(entryHtml,/class="form-grid entry-dispatch-grid"/);
+assert.match(entryHtml,/class="form-grid entry-military-grid"/);
+assert.match(entryHtml,/label="Nüfustan Sorgula"/);
+assert.match(entryHtml,/label="QR Kod"/);
+assert.match(entryHtml,/app-dispatch-photo-capture/);
+assert.match(entryHtml,/formControlName="hcAdmissionTypeDefId"/);
+assert.match(entryHtml,/formControlName="reasonForExaminationDefId"/);
+assert.doesNotMatch(entryHtml,/<details|entry-field-group|entry-priority-panel/);
+assert.match(entryScss,/\.entry-workspace\{display:grid;grid-template-columns:/);
+assert.match(entryScss,/position:sticky;bottom:0/);
+assert.match(entryScss,/@media\(max-width:920px\)/);
+assert.match(entryScss,/@media\(max-width:650px\)/);
+assert.match(entryTs,/styleUrl:'\.\/dispatch-entry\.component\.scss'/);
+assert.doesNotMatch(entryTs,/dispatch-list\.component\.scss/);
+
+console.log('PASS: Sevk filtresi, nüfus sorgusu ve kompakt iki sütunlu tek sayfa form sözleşmeleri.');

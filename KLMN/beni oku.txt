@@ -1,3 +1,45 @@
+30.10.2026 — SEVK GİRİŞİ TEK EKRAN MİNİMAL YERLEŞİM
+=======================================================
+Kullanıcının fotoğrafını paylaştığı eski MSKBS Sevk Girişi
+tasarımı referans alınmıştır. Mevcut KLMN ekranının uzun
+dikey scroll ve çok sayıda açılır bölümü BEĞENİLMEDİ.
+
+İSTENEN / YAPILAN:
+1) Üst yatay dar bant: T.C. / Yabancı kimlik, kimlik no,
+   doğum tarihi, Nüfustan Sorgula, QR Kod.
+2) ALTTA İKİ SÜTUN: Solda Kişi Bilgileri, hemen altında
+   Sevk Bilgileri; kişi bölümünün sağ köşesinde fotoğraf,
+   kamera ve resim yükleme. Sağda tüm Askerî ve Başvuru
+   Bilgileri (grup, sebep, kuvvet, sınıf, rütbe, birlik,
+   okul, askerlik şubesi, sicil, nasbı, gönderen makam,
+   uçuş ve iki açıklama alanı).
+3) İşlemler her zaman görünür ve anlaşılır; çok sayıda
+   kart, alt alta uzun akordiyonlar, detay açma zorunluluğu
+   YOK. Başvuru grubu-sebep bağımlılığı, zorunlu alanların
+   kırmızı yıldızları ve tüm alan değerleri korundu.
+4) En alt dar işlem barı: Belge Ekle (PDF/JPG/PNG 5MiB),
+   ekler, Vazgeç, Sevk Kaydet. Normal masaüstünde mümkün
+   olduğunca az scroll; küçük ekranlarda responsive grid.
+5) HTML/SCSS:
+   Frontend/src/app/features/dispatches/dispatch-entry/
+     dispatch-entry.component.html
+     dispatch-entry.component.scss
+   dispatch-entry.component.ts styleUrls yerine yalnız kendi
+   styleUrl alanını kullanır; liste sayfası SCSS'ini içe
+   almaz. Bu değişiklik YALNIZCA giriş/düzenleme ekranıdır;
+   Sevk Listesi filtreleri ve backend API değişmedi.
+6) QR, nüfus lookup (servis bağlanana kadar 503), kamera,
+   fotoğraf ekleme/silme, dosya upload/download, ilk giriş
+   ve düzenleme, dinamik başvuru kuralları ve validasyon
+   KORUNDU.
+7) Frontend/tests/dispatch-pages-regression.mjs yeni
+   tasarımın tek ekran yerleşimini denetler. Angular build
+   veya tarayıcı E2E bu ortamda çalıştırılamadı.
+   Migration YOK. Önceki DispatchStatusDefs migration
+   gereksinimi halen geçerlidir.
+8) Yapılanları her zamanki gibi TEK SQUASH COMMIT ile
+   main dalına al. Yeni büyük accordion layout'a GERİ DÖNME.
+
 30.10.2026 — SEVK GİRİŞ NÜFUS SORGUSU VE AÇIKLAMA ALANLARI
 ===================================================================
 1. Eski MSKBS sevk ekranında "Sorgula", personService.getPerson(...)

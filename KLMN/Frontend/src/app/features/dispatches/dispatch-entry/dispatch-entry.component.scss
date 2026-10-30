@@ -1,43 +1,110 @@
+/* Sevk Girişi: eski MSKBS ekranındaki tek bakışta çalışma düzeni,
+   modern KLMN bileşenleri ve minimum dikey kaydırma. */
 :host{display:block;min-width:0}
-.dispatch-entry-page{display:flex;flex-direction:column;gap:1rem;min-width:0;width:100%;max-width:none;margin:0;padding-bottom:1.5rem}
-.dispatch-entry-page .page-header{padding-bottom:.8rem;border-bottom:1px solid var(--ui-border)}
-.dispatch-entry-page .dispatch-form{padding:0;gap:1rem}
-.dispatch-entry-page .form-section{padding:1.1rem 1.25rem;box-shadow:0 1px 2px #00000008}
-.dispatch-entry-page .dialog-actions{position:sticky;bottom:0;z-index:2;background:var(--ui-surface);border:1px solid var(--ui-border);border-radius:var(--ui-radius);padding:.85rem 1rem}
-@media(max-width:650px){.dispatch-entry-page .form-section{padding:.85rem}.dispatch-entry-page .dialog-actions{flex-wrap:wrap}}
+.dispatch-entry-page{width:100%;min-width:0;display:flex;flex-direction:column;gap:.6rem;padding-bottom:.65rem;color:var(--ui-text)}
+.entry-topline{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;padding:.1rem 0 .5rem;border-bottom:1px solid var(--ui-border)}
+.entry-title{display:flex;align-items:baseline;gap:.8rem;flex-wrap:wrap}
+.entry-title h1{margin:0;font-size:1.12rem;font-weight:700;line-height:1.3}
+.entry-subtitle{font-size:.77rem;color:var(--ui-muted)}
+.compact-dispatch-form{display:flex;flex-direction:column;gap:.6rem;padding:0;min-width:0}
 
-/* KLMN diğer tanım ekranları gibi tam içerik genişliği. */
-.dispatch-entry-page .form-section{width:100%;min-width:0;box-sizing:border-box}
-.dispatch-entry-page .form-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:.9rem}
-.dispatch-entry-page .field{min-width:0}
-.dispatch-entry-page .field-caption{display:inline-flex;gap:.25rem;align-items:center;flex-wrap:wrap}
-.dispatch-entry-page .required-mark{color:var(--ui-danger,#c62828);font-weight:800;font-size:.9rem}
-.dispatch-entry-page .required-legend{font-size:.78rem;color:var(--ui-muted)}
-.entry-priority-panel{padding:.95rem;background:var(--ui-surface-muted);border:1px solid var(--ui-border);border-radius:var(--ui-radius);margin-bottom:.85rem}
-.entry-group-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.8rem}
-.entry-group-heading strong{font-size:.9rem}
-.entry-group-heading span{font-size:.77rem;color:var(--ui-muted)}
-.entry-priority-panel .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.selection-hint{font-size:.77rem;color:var(--ui-muted);display:flex;align-items:center;gap:.45rem;line-height:1.5;margin:.75rem 0 0}
-.selection-hint i{color:var(--ui-primary)}
-.entry-field-group{border:1px solid var(--ui-border);border-radius:var(--ui-radius);margin-top:.65rem;overflow:hidden}
-.entry-field-group summary{display:flex;justify-content:space-between;align-items:center;gap:1rem;cursor:pointer;list-style:none;padding:.8rem 1rem;background:var(--ui-surface-muted);font-size:.86rem}
-.entry-field-group summary::-webkit-details-marker{display:none}
-.entry-field-group summary>span{display:inline-flex;align-items:center;gap:.5rem;font-weight:650}
-.entry-field-group summary i{color:var(--ui-primary)}
-.entry-field-group summary small{font-size:.74rem;font-weight:400;color:var(--ui-muted)}
-.entry-field-group[open] summary{border-bottom:1px solid var(--ui-border)}
-.entry-group-body{padding:1rem}
-.dispatch-entry-page .form-grid .field > input[type="date"]{width:100%;min-width:0;max-width:none;box-sizing:border-box;height:39px;flex:none}
-.dispatch-entry-page ::ng-deep .p-select{min-width:0}
-@media(max-width:1200px){.dispatch-entry-page .form-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:880px){.dispatch-entry-page .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.entry-field-group summary small{display:none}}
-@media(max-width:540px){.dispatch-entry-page .form-grid,.entry-priority-panel .form-grid{grid-template-columns:1fr}.entry-priority-panel,.entry-group-body{padding:.75rem}}
+.entry-lookup-bar,.compact-section,.entry-footer{background:var(--ui-surface);border:1px solid var(--ui-border);border-radius:var(--ui-radius,8px);min-width:0}
+.entry-lookup-bar{padding:.55rem .8rem;border-left:3px solid var(--ui-primary)}
+.lookup-heading{display:flex;align-items:center;gap:1rem;margin-bottom:.35rem;font-size:.85rem}
+.lookup-heading strong{display:flex;gap:.4rem;align-items:center}
+.lookup-heading i,.section-heading i{color:var(--ui-primary)}
+.lookup-help{font-size:.73rem;color:var(--ui-muted)}
+.lookup-controls{display:flex;align-items:flex-end;gap:.65rem;min-width:0;flex-wrap:wrap}
+.identity-switch{display:flex;gap:0;align-self:flex-end;border:1px solid var(--ui-border);border-radius:6px;overflow:hidden;height:34px;flex:0 0 auto}
+.identity-switch button{border:0;border-right:1px solid var(--ui-border);background:var(--ui-surface-muted);color:var(--ui-text);padding:.3rem .65rem;font-size:.75rem;cursor:pointer}
+.identity-switch button:last-child{border-right:0}
+.identity-switch button.active{background:var(--ui-primary);color:#fff;font-weight:700}
+.identity-switch button:disabled{opacity:.7;cursor:not-allowed}
+.lookup-identity{flex:1 1 220px;max-width:330px}
+.lookup-date{flex:0 1 190px;min-width:155px}
+.lookup-actions{display:flex;gap:.45rem;align-items:flex-end;flex-wrap:wrap}
 
-/* Eski MSKBS ekranındaki Birlik/Gönderen Makam açıklamaları geniş metin alanlarıdır. */
-.dispatch-entry-page .entry-field-group .field.wide{grid-column:1/-1}
-.dispatch-entry-page .entry-field-group .field.wide > textarea{
-  display:block;box-sizing:border-box;width:100%;min-width:0;min-height:108px;
-  padding:.75rem .85rem;line-height:1.55;resize:vertical;
-  font-size:.84rem;font-weight:400;
+.entry-workspace{display:grid;grid-template-columns:minmax(0,1.16fr) minmax(0,.94fr);gap:.6rem;align-items:start;min-width:0}
+.entry-left-column{display:flex;flex-direction:column;gap:.6rem;min-width:0}
+.compact-section{padding:.65rem .8rem;box-shadow:none!important}
+.section-heading{display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin:0 0 .55rem;padding:0 0 .4rem;border-bottom:1px solid var(--ui-border)}
+.section-heading h2{font-size:.87rem;font-weight:700;margin:0;display:flex;align-items:center;gap:.4rem}
+.required-legend{font-size:.69rem;color:var(--ui-muted)}
+.required-mark{color:var(--ui-danger,#c62828);font-weight:800}
+.field-caption{display:inline-flex;gap:.23rem;align-items:center}
+.field-helper{font-size:.69rem;font-weight:400;color:var(--ui-muted)}
+.field{min-width:0;display:flex;flex-direction:column;gap:.23rem;font-size:.74rem;line-height:1.12;font-weight:600;color:var(--ui-text)}
+.field > input,.field > textarea{display:block;box-sizing:border-box;width:100%;min-width:0;max-width:none;min-height:34px;height:34px;border:1px solid var(--ui-border);border-radius:5px;background:var(--ui-surface);color:var(--ui-text);padding:.36rem .55rem;font:inherit;font-size:.79rem;font-weight:400}
+.field > input:focus,.field > textarea:focus{outline:2px solid var(--ui-primary);outline-offset:0}
+.field > input[readonly]{background:var(--ui-surface-muted);color:var(--ui-muted)}
+.form-grid{display:grid;gap:.5rem .65rem;min-width:0}
+.person-content{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:.7rem;align-items:start}
+.entry-person-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.entry-address{grid-column:span 2}
+.entry-photo{min-width:0}
+.entry-dispatch-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.entry-military-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.48rem .6rem}
+.entry-full-row{grid-column:1/-1}
+.entry-inline-group{display:flex;flex-direction:column;gap:.38rem;padding-top:.45rem;border-top:1px solid var(--ui-border)}
+.entry-inline-title{font-size:.75rem;font-weight:700;display:flex;align-items:center;gap:.3rem}
+.entry-two-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem;min-width:0}
+.entry-explanation{min-width:0}
+.entry-explanation textarea{height:51px;min-height:51px;resize:vertical;line-height:1.3;padding:.4rem .55rem}
+:host ::ng-deep .compact-dispatch-form p-select{min-width:0}
+:host ::ng-deep .compact-dispatch-form .p-select{display:flex;width:100%;min-width:0;min-height:34px;height:34px;align-items:center;border-radius:5px}
+:host ::ng-deep .compact-dispatch-form .p-select-label{font-size:.79rem;padding:.35rem .5rem;white-space:nowrap;text-overflow:ellipsis}
+:host ::ng-deep .compact-dispatch-form .p-inputnumber{width:100%;height:34px}
+:host ::ng-deep .compact-dispatch-form .p-inputnumber-input{min-width:0;height:34px;padding:.35rem .55rem;font-size:.79rem}
+:host ::ng-deep .lookup-actions .p-button,
+:host ::ng-deep .entry-save-actions .p-button{height:34px;font-size:.77rem;padding:.4rem .7rem}
+:host ::ng-deep .entry-photo .person-photo{gap:.35rem}
+:host ::ng-deep .entry-photo .photo-area{width:112px;height:118px;border-radius:5px}
+:host ::ng-deep .entry-photo .photo-placeholder i{font-size:1.5rem}
+:host ::ng-deep .entry-photo .photo-placeholder{font-size:.72rem;gap:.2rem}
+:host ::ng-deep .entry-photo .camera-controls{gap:.25rem}
+:host ::ng-deep .entry-photo .camera-controls .p-button{font-size:.7rem;padding:.25rem .4rem}
+:host ::ng-deep .entry-photo .photo-upload{font-size:.7rem;padding:.32rem .45rem}
+:host ::ng-deep .entry-photo .photo-note{font-size:.67rem}
+:host ::ng-deep .entry-photo .video-box{max-width:280px}
+
+.entry-footer{display:flex;align-items:center;justify-content:space-between;gap:.7rem;flex-wrap:wrap;padding:.48rem .7rem;position:sticky;bottom:0;z-index:2;box-shadow:0 -2px 9px #00000009}
+.entry-file-actions,.entry-save-actions{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;min-width:0}
+.entry-file-picker{position:relative;display:inline-flex;align-items:center;gap:.4rem;cursor:pointer;border:1px solid var(--ui-border);border-radius:5px;background:var(--ui-surface-muted);padding:.4rem .6rem;font-size:.76rem;font-weight:650}
+.entry-file-picker input{position:absolute;opacity:0;width:0;height:0}
+.entry-file-picker:focus-within{outline:2px solid var(--ui-primary)}
+.entry-file-name,.entry-file-note{font-size:.71rem;color:var(--ui-muted);max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.attached-files{display:flex;gap:.3rem;flex-wrap:wrap}
+.attached-files button{font-size:.72rem;cursor:pointer;border:1px solid var(--ui-border);border-radius:5px;background:var(--ui-surface-muted);color:var(--ui-text);padding:.25rem .4rem}
+.entry-error{font-size:.8rem;color:var(--ui-danger);border-left:3px solid var(--ui-danger);padding:.4rem .6rem;margin:0}
+
+@media(max-width:1180px){
+ .entry-workspace{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ .entry-person-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .entry-address{grid-column:1/-1}
+}
+@media(max-width:920px){
+ .entry-workspace{grid-template-columns:1fr}
+ .entry-person-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .entry-military-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .entry-explanation{grid-column:span 1}
+ .entry-inline-group{grid-column:1/-1}
+}
+@media(max-width:650px){
+ .lookup-heading .lookup-help,.entry-subtitle{display:none}
+ .lookup-controls{gap:.45rem}
+ .lookup-identity{max-width:none;flex:1 1 100%}
+ .lookup-date{flex:1 1 130px}
+ .lookup-actions{flex:1 1 100%}
+ .person-content{grid-template-columns:minmax(0,1fr)}
+ .entry-photo{max-width:none}
+ :host ::ng-deep .entry-photo .person-photo{flex-direction:row;flex-wrap:wrap}
+ .entry-person-grid,.entry-dispatch-grid,.entry-military-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .entry-address{grid-column:1/-1}
+ .entry-footer{position:static}
+ .entry-file-note{display:none}
+}
+@media(max-width:400px){
+ .entry-person-grid,.entry-dispatch-grid,.entry-military-grid{grid-template-columns:1fr}
+ .entry-two-fields{grid-template-columns:1fr}
+ .entry-save-actions{width:100%;justify-content:flex-end}
 }

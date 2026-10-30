@@ -27,7 +27,7 @@ import {DispatchOption,DispatchPerson,DispatchDetails,DispatchResponse,
   DispatchQrReaderComponent,DispatchPhotoCaptureComponent],
  providers:[ConfirmationService,MessageService],
  templateUrl:'./dispatch-entry.component.html',
- styleUrls:['../dispatch-list/dispatch-list.component.scss','./dispatch-entry.component.scss']
+ styleUrl:'./dispatch-entry.component.scss'
 })
 export class DispatchEntryComponent implements OnInit,OnDestroy {
  private readonly api=inject(DispatchService);
