@@ -1,3 +1,70 @@
+30.10.2026 — SEVK GİRİŞ / SORGULAMA 5 MADDE REVİZYONU
+===================================================================
+KAYNAK: Kullanıcı fotoğrafı/notu, 30.10.2026
+
+1. SEVK DURUMLARI ARTIK FRONTEND'DE HARDCODE DEĞİL:
+   DispatchStatusDef : BaseEntity (Guid Id, audit, xmin).
+   Persistence Configurations/Admissions/DispatchStatusDefConfiguration:
+   DispatchStatusDefs tablosu, Code(unique) Name SortOrder ve HasData.
+   Başlangıç durumları 1 Yeni, 2 Provizyon, 3 Rapor, 4 İptal, 5 Bildirim.
+   GetDispatchStatusesQuery, Handler ve DispatchStatusOptionResponse
+   ayrı dosyalarda; GET /api/dispatches/statuses.
+   dispatch-list.component.ts statusItems computed; DB/API’den gelir.
+   Aktif/soft-delete olmayan durumlar getirilmeyerek ekrana yansır.
+   BUNUN İÇİN YÖNETİM/TANIM EKRANI EKLENMEDİ.
+
+   MIGRATION GEREKİYOR! DispatchStatusDefs yeni tablodur.
+   Migration OLUŞTURULMADI, uygulanmadı; kullanıcı oluşturup
+   veritabanını güncelleyecek. EF HasData seed, migration'a dahil.
+   BaseEntity mevcut platform standardı korunur.
+
+2. SEVK GİRİŞ SAYFA GENİŞLİĞİ:
+   dispatch-entry.component.scss içinde 1300px max-width kaldırıldı.
+   Diğer KLMN tanım ekranları gibi %100 kullanılabilir iç alan.
+   Dar ekranlarda grid kolon sayısı düşürülerek responsive yapıldı.
+
+3. BAŞVURU VE ASKERÎ BİLGİLERİN GRUPLANMASI:
+   En üstte her zaman Başvuru Grubu ve Muayene Sebebi.
+   Başvuru seçilmeden ve dinamik kurallar yüklenmeden Muayene
+   Sebebi açılamaz; küçük açıklama/hint yazısı gösterilir.
+   Gruplar: Askerî Kimlik ve Birlik Bilgileri,
+   Muayeneye Gönderen Makam, Uçuş ve Ek Açıklamalar.
+   Sadece seçili grubun zorunlu kıldığı alanlarda ve kimlik,
+   isim, doğum, Başvuru/Muayene gibi tüm zorunlu temel alanlarda
+   kırmızı yıldız etiketten ÖNCE görüntülenir.
+   Zorunlu askerî/gönderen bölümleri otomatik açılır.
+   Aynı sevkte hem gönderen birlik hem gönderen şube seçilmez.
+   QR, fotoğraf, dosya ve önceki fonksiyonlar korunur.
+
+4. TETKİK TANIMLARI MENÜ İKONU:
+   layout/services/navigation.service.ts
+   Tetkik Tanımları: pi pi-flask -> pi pi-sliders-h.
+
+5. SEVK SORGULAMA GELİŞMİŞ FİLTRELER:
+   DateFrom, DateTo (Sevk Giriş/Sistem Tarihi, UTC),
+   CurrentState (DispatchStatusDefs veri tablosu),
+   DispatchNo, PurchaseId, TcKimlikNo, YabanciKimlikNo,
+   Name, Surname, SenderMilitaryUnitDefId veya
+   SenderMilitaryOfficeDefId, IncludeRelatedOrganizations,
+   DispatchScope, DispatchScopeCityId, DispatchScopeHospitalId.
+   Sorgular GetDispatchesQuery + Handler + Validator dosyalarında
+   sunucu tarafı uygulanır; sayfalama öncesinde filtrelenir.
+   Bağlı organizasyon checkbox'ı yalnız gönderen birlik
+   seçiliyse açılır: ConnectedTopUnity üzerinden bütün alt
+   birliklerin sevkleri de sorguya dahil edilir.
+   İptalleri dahil et checkbox'ı ve hızlı arama korunur.
+   Kapsam şehir/hastane yalnız ilgili kapsamda gösterilir.
+   Filtrelerin büyüklükleri tutarlı; responsive grid.
+   T.C./yabancı kimlik numaraları liste sonuçlarında maskeli.
+
+TEST/DOKÜMAN:
+   Frontend/tests/dispatch-pages-regression.mjs güncellendi.
+   Tests/Dispatches.Regression/Program.cs validator testleri.
+   KLMN/SEVK_GIRIS_KURULUM.md ayrıntılı uygulama ve migration.
+   Migration oluşturma/uygulama YOK; sistem/DB reset YOK.
+   Yerel npm run build / dotnet build / E2E bu ajan ortamında
+   KOŞULMADI. Tek squash commit ve main push disiplini korunur.
+
 30.10.2026 — SEVK MENÜ AKTİFLİĞİ ve LİSTE FİLTRE CSS DÜZELTMESİ
 ===================================================================
 - Sevk Girişi (/app/dispatches/new) açılınca "Sevk Listesi
