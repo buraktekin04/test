@@ -84,11 +84,11 @@ assert.doesNotMatch(entryHtml,/>Açıklama\s*</);
  // askerî/başvuru sağda; tüm seçimler doğrudan görünür.
 assert.match(entryHtml,/class="entry-lookup-bar"/);
 assert.match(entryHtml,/class="entry-left-column"/);
-assert.match(entryHtml,/class="entry-right-column"/);
+assert.match(entryHtml,/class="form-section compact-section entry-right-column"/);
 assert.match(entryHtml,/class="entry-footer"/);
-assert.match(entryHtml,/class="entry-person-grid"/);
-assert.match(entryHtml,/class="entry-dispatch-grid"/);
-assert.match(entryHtml,/class="entry-military-grid"/);
+assert.match(entryHtml,/class="form-grid entry-person-grid"/);
+assert.match(entryHtml,/class="form-grid entry-dispatch-grid"/);
+assert.match(entryHtml,/class="form-grid entry-military-grid"/);
 assert.match(entryHtml,/label="Nüfustan Sorgula"/);
 assert.match(entryHtml,/label="QR Kod"/);
 assert.match(entryHtml,/app-dispatch-photo-capture/);
