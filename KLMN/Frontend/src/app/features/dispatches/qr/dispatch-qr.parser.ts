@@ -78,21 +78,21 @@ export function parseDispatchQr(raw: string): DispatchQrData {
   if(Object.keys(data).length===0)throw new DispatchQrFormatError('QR kodda bilinen sevk alanı bulunamadı.');
   const result:DispatchQrData={};
   if('tcKimlikNo' in data) {
-    if(!/^\d{11}$/.test(data.tcKimlikNo))throw new DispatchQrFormatError('T.C. kimlik no 11 rakam olmalıdır.');
-    result.tcKimlikNo=data.tcKimlikNo;
+    if(!/^\d{11}$/.test(data['tcKimlikNo']))throw new DispatchQrFormatError('T.C. kimlik no 11 rakam olmalıdır.');
+    result.tcKimlikNo=data['tcKimlikNo'];
   }
   if('yabanciKimlikNo' in data) {
-    if(!/^\d{11,20}$/.test(data.yabanciKimlikNo))
+    if(!/^\d{11,20}$/.test(data['yabanciKimlikNo']))
       throw new DispatchQrFormatError('Yabancı kimlik no 11-20 rakam olmalıdır.');
-    result.yabanciKimlikNo=data.yabanciKimlikNo;
+    result.yabanciKimlikNo=data['yabanciKimlikNo'];
   }
   if(result.tcKimlikNo && result.yabanciKimlikNo)
     throw new DispatchQrFormatError('QR içinde hem T.C. hem yabancı kimlik numarası olamaz.');
-  if(data.dogumTarihi)result.dogumTarihi=parseDate(data.dogumTarihi,'Doğum');
-  if(data.sevkEvrakTarihi)result.sevkEvrakTarihi=parseDate(data.sevkEvrakTarihi,'Sevk evrak');
-  if(data.sevkEvrakSayisi) {
-    if(data.sevkEvrakSayisi.length>50)throw new DispatchQrFormatError('Sevk evrak sayısı 50 karakteri aşamaz.');
-    result.sevkEvrakSayisi=data.sevkEvrakSayisi;
+  if(data['dogumTarihi'])result.dogumTarihi=parseDate(data['dogumTarihi'],'Doğum');
+  if(data['sevkEvrakTarihi'])result.sevkEvrakTarihi=parseDate(data['sevkEvrakTarihi'],'Sevk evrak');
+  if(data['sevkEvrakSayisi']) {
+    if(data['sevkEvrakSayisi'].length>50)throw new DispatchQrFormatError('Sevk evrak sayısı 50 karakteri aşamaz.');
+    result.sevkEvrakSayisi=data['sevkEvrakSayisi'];
   }
   for(const key of ['muayeneSebebi','sevkKapsamiHastane'] as const) {
     if(data[key]) {
@@ -108,8 +108,8 @@ export function parseDispatchQr(raw: string): DispatchQrData {
       result[key]=n;
     }
   }
-  if(data.telefonNo) {
-    const phone=data.telefonNo.replace(/\s/g,'');
+  if(data['telefonNo']) {
+    const phone=data['telefonNo'].replace(/\s/g,'');
     if(!/^\d{10}$/.test(phone))throw new DispatchQrFormatError('Telefon numarası 10 haneli olmalıdır.');
     result.telefonNo=phone;
   }
