@@ -26,8 +26,14 @@ assert.match(navigation,/label: 'Sevk Girişi'[\s\S]{0,200}route: '\/app\/dispat
 assert.match(navigation,/label: 'Sevk Listesi ve Sorgulama'[\s\S]{0,200}route: '\/app\/dispatches'/);
 
 assert.match(listHtml,/formControlName="currentState"/);
-assert.match(listHtml,/formControlName="documentDateFrom"/);
-assert.match(listHtml,/formControlName="documentDateTo"/);
+assert.match(listHtml,/formControlName="dateFrom"/);
+assert.match(listHtml,/formControlName="dateTo"/);
+for(const key of ['dispatchNo','purchaseId','tcKimlikNo','yabanciKimlikNo',
+ 'name','surname','senderAuthority','includeRelatedOrganizations','dispatchScope',
+ 'dispatchScopeCityId','dispatchScopeHospitalId']){
+ assert.match(listHtml,new RegExp('formControlName="'+key+'"'));
+}
+assert.match(listHtml,/Ayrıntılı Filtreler/);
 assert.match(listHtml,/p-table/);
 assert.doesNotMatch(listHtml,/dispatch-form|app-dispatch-qr-reader|app-dispatch-photo-capture/);
 assert.match(entryHtml,/class="dispatch-form"/);
@@ -38,6 +44,18 @@ assert.match(entryTs,/this\.router\.navigate\(\['\/app\/dispatches'/);
 assert.match(entryTs,/this\.route\.snapshot\.paramMap\.get\('id'\)/);
 assert.match(listTs,/this\.router\.navigate\(\['\/app\/dispatches',row\.id,'edit'\]\)/);
 assert.match(service,/documentDateFrom/);
+assert.match(service,/statuses\(\)/);
+assert.match(listTs,/readonly statusItems=computed\(/);
+assert.doesNotMatch(listTs,/readonly statusItems=\[/);
+assert.match(listTs,/this\.api\.statuses\(\)/);
+assert.match(listTs,/senderMilitaryUnitDefId/);
+assert.match(listTs,/includeRelatedOrganizations/);
+assert.match(entryHtml,/Başvuru grubu seçilmeden muayene sebebi seçilemez/);
+assert.match(entryHtml,/class="entry-field-group"/);
+assert.match(entryHtml,/class="required-mark"/);
+assert.match(entryHtml,/rulesLoading\(\)/);
+assert.match(entryTs,/readonly militarySelections=/);
+assert.match(entryTs,/hasMandatoryMilitary\(\)/);
 
 // /app/dispatches/new iken /app/dispatches liste menüsü ayrıca aktif olmamalı.
 assert.match(sidebarHtml,/routerLinkActiveOptions[^\n]*item\.route === '\/app\/dispatches'/);
@@ -48,5 +66,6 @@ assert.match(listScss,/\.filter-panel form > input\{flex:1 1 250px/);
 assert.doesNotMatch(listScss,/\.filter-panel input\{flex:1 1 250px/);
 assert.match(listScss,/\.filter-field > input\[type="date"\]\s*\{[\s\S]*?flex:none;/);
 assert.match(listScss,/\.filter-field > input\[type="date"\]\s*\{[\s\S]*?height:38px;/);
+assert.match(listScss,/\.filter-grid\{display:grid;/);
 
-console.log('PASS: Sevk Girişi / Sevk Listesi rotaları, seçili menü, tarih input CSS ve diğer Sevk regresyonları.');
+console.log('PASS: Sevk durumları DB, tüm arama filtreleri, menü, düzenli Sevk Girişi ve zorunlu alan sözleşmeleri.');
