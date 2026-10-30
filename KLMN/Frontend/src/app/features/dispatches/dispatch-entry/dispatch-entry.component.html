@@ -4,7 +4,7 @@
    <h1>{{editing() ? 'Sevk Düzenleme · #'+editing()!.dispatchNo : 'Sevk Girişi'}}</h1>
    <p>Başvuran kişiyi ve sevk evrakını kaydedin. QR kod ve kamera işlemleri bu ekranda yapılır.</p>
   </div>
-  <p-button label="Sevk Listesine Dön" icon="pi pi-list" severity="secondary"
+  <p-button [label]="canView() ? 'Sevk Listesine Dön' : 'Ana Sayfaya Dön'" icon="pi pi-list" severity="secondary"
    [outlined]="true" [disabled]="saving()" (onClick)="close()"/>
  </header>
  <p-toast position="top-right"/>
