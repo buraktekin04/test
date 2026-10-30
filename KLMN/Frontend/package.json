@@ -6,7 +6,8 @@
     "start": "ng serve --ssl --port 4200",
     "build": "ng build",
     "build:dev": "ng build --configuration development",
-    "typecheck": "ng build --configuration development"
+    "typecheck": "ng build --configuration development",
+    "test:dispatch-qr": "node --experimental-strip-types tests/dispatch-qr-regression.mjs"
   },
   "dependencies": {
     "@angular/animations": "^21.0.0",
