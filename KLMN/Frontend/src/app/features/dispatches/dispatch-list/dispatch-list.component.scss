@@ -67,3 +67,32 @@
 .filter-field > .p-select{width:100%;max-width:100%}
 .filter-panel .form-error{margin-top:.6rem}
 @media(max-width:720px){.filter-panel form>input{max-width:none;flex-basis:100%}.filter-field{flex:1 1 165px;max-width:none}}
+
+/* Sevk Sorgulama: kompakt, tutarlı kontrol yüksekliği ve düzenli satır geçişleri. */
+.filter-panel .dispatch-filter-form{display:flex;flex-direction:column;align-items:stretch;gap:.8rem}
+.filter-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.7rem;align-items:end;width:100%}
+.filter-grid .filter-field{display:flex;min-width:0;max-width:none;flex:initial;gap:.3rem}
+.filter-field-wide{grid-column:span 2}
+.filter-grid .filter-field > input,
+.filter-grid .filter-field > input[type="date"]{
+ display:block;flex:none;box-sizing:border-box;width:100%;height:38px;min-width:0;max-width:none;
+ border:1px solid var(--ui-border);border-radius:6px;background:var(--ui-surface);
+ color:var(--ui-text);font:inherit;font-size:.83rem;font-weight:400;padding:.45rem .55rem;
+}
+.filter-grid .filter-field > input:focus{outline:2px solid var(--ui-primary);outline-offset:0}
+.filter-grid .filter-field > p-select{width:100%;min-width:0}
+:host ::ng-deep .dispatch-filter-form .p-select{height:38px;min-height:38px;max-width:100%;width:100%;align-items:center}
+:host ::ng-deep .dispatch-filter-form .p-select-label{font-size:.83rem;padding:.48rem .55rem;overflow:hidden;text-overflow:ellipsis}
+.advanced-filter-details{border-top:1px solid var(--ui-border);padding-top:.75rem}
+.advanced-filter-details summary{display:flex;gap:.6rem;align-items:center;cursor:pointer;font-size:.85rem;font-weight:650;color:var(--ui-text);list-style:none}
+.advanced-filter-details summary::-webkit-details-marker{display:none}
+.advanced-filter-details summary i{color:var(--ui-primary)}
+.advanced-filter-details summary span{font-size:.75rem;font-weight:400;color:var(--ui-muted)}
+.filter-grid-advanced{margin-top:.85rem}
+.filter-checkbox-row{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:.85rem}
+.filter-checkbox-row small{font-size:.75rem;color:var(--ui-muted)}
+.filter-actions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem;border-top:1px solid var(--ui-border);padding-top:.8rem}
+.filter-buttons{display:flex;flex-wrap:wrap;gap:.5rem}
+@media(max-width:1200px){.filter-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.advanced-filter-details summary span{display:none}}
+@media(max-width:480px){.filter-grid{grid-template-columns:minmax(0,1fr)}.filter-field-wide{grid-column:auto}.filter-actions{align-items:stretch}.filter-buttons{justify-content:flex-end}}
