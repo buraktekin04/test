@@ -281,7 +281,125 @@ export class DispatchListComponent implements OnInit,OnDestroy {
      else this.error(e);}
    });
  }
- /** Dosya, kayıt başarılı olduktan sonra sevke bağlanır; başarısız upload ayrıca bildirilir. */
+
+ /** Sevk ekranındaki eski QR popup'ının kamera, dosya ve okuyucu karşılığı. */
+ openQr(){
+  if(this.editing()||!this.canCreate())return;
+  if(!this.dialogVisible())this.openCreate();
+  this.qrVisible.set(true);
+ }
+ /** Karekoddan yalnız doğrulanmış alanlar aktarılır; eski sistemin sabit GUID'leri kullanılmaz. */
+ applyQr(raw:string){
+  let qr:DispatchQrData;
+  try{
+   qr=parseDispatchQr(raw);
+  }catch(e){
+   const message=e instanceof DispatchQrFormatError?e.message:'QR metni okunamadı.';
+   this.message.add({severity:'error',summary:'QR kod geçersiz',detail:message,life:7000});
+   return;
+  }
+  if(!this.dialogVisible())this.openCreate();
+  if(qr.tcKimlikNo)this.identityType.set('tc');
+  if(qr.yabanciKimlikNo)this.identityType.set('foreign');
+  this.personForm.patchValue({
+   ...(qr.tcKimlikNo?{tcKimlikNo:qr.tcKimlikNo,yabanciKimlikNo:null}:{}),
+   ...(qr.yabanciKimlikNo?{yabanciKimlikNo:qr.yabanciKimlikNo,tcKimlikNo:null}:{}),
+   ...(qr.dogumTarihi?{birthDate:qr.dogumTarihi}:{}),
+   ...(qr.telefonNo?{phoneNumber:qr.telefonNo}:{})
+  });
+  this.dispatchForm.patchValue({
+   ...(qr.sevkEvrakTarihi?{dispatchDocumentDate:qr.sevkEvrakTarihi}:{}),
+   ...(qr.sevkEvrakSayisi?{dispatchDocumentNo:qr.sevkEvrakSayisi}:{}),
+   ...(qr.kacinciIslem!==undefined?{nthAdmission:qr.kacinciIslem}:{}),
+   ...(qr.alimId!==undefined?{purchaseId:qr.alimId}:{})
+  });
+  if(qr.muayeneSebebi)this.loadQrReference('reasons',qr.muayeneSebebi,'reasonForExaminationDefId');
+  if(qr.sevkKapsamiHastane)this.loadQrReference('hospitals',qr.sevkKapsamiHastane,'dispatchScopeHospitalId');
+  this.qrVisible.set(false);
+  this.message.add({severity:'success',summary:'QR bilgileri aktarıldı',
+   detail:'Sevk bilgilerini kontrol edin, başvuru grubunu ve eksik kişi alanlarını tamamlayın.'});
+  if((qr.tcKimlikNo||qr.yabanciKimlikNo)&&qr.dogumTarihi&&this.canQuery())this.lookup(qr);
+ }
+ /** QR'deki eski GUID yalnız yeni veritabanındaki aktif tanımla eşleşirse atanır. */
+ private loadQrReference(type:'reasons'|'hospitals',id:string,key:'reasonForExaminationDefId'|'dispatchScopeHospitalId'){
+  const current= this.editRequest;
+  this.api.options(type,'',id).subscribe({
+   next:items=>{
+    if(current!==this.editRequest||!this.dialogVisible())return;
+    const found=items.find(item=>item.id.toLowerCase()===id.toLowerCase());
+    if(!found){
+     this.message.add({severity:'warn',summary:'QR tanımı bulunamadı',
+      detail:(type==='reasons'?'Muayene sebebi':'Sevk hastanesi')+' kodu yeni sistemle eşleşmedi; listeden seçiniz.',life:7000});
+     return;
+    }
+    this.optionMap.update(map=>({...map,[type]:[found,...map[type].filter(x=>x.id!==found.id)]}));
+    if(key==='dispatchScopeHospitalId'){
+     this.dispatchForm.controls.dispatchScope.setValue(3);
+     this.dispatchForm.controls.dispatchScopeHospitalId.setValue(found.id);
+    } else {
+     const blocked=this.admissionRules()?.unusedReasonIds??[];
+     if(blocked.includes(found.id)){
+      this.message.add({severity:'warn',summary:'Sevk sebebi kullanılamaz',
+       detail:'Bu muayene sebebi seçilen başvuru grubunda kullanılamaz.'});return;
+     }
+     this.dispatchForm.controls.reasonForExaminationDefId.setValue(found.id);
+    }
+   },
+   error:()=>this.message.add({severity:'warn',summary:'Tanım sorgulanamadı',
+    detail:'QR seçimlerini mevcut açılır listelerden tamamlayın.'})
+  });
+ }
+ /** Önizleme URL'si belleği kullanılmadığında serbest bırakılır. */
+ private resetPhoto(){
+  ++this.photoRequest;
+  if(this.photoObjectUrl)URL.revokeObjectURL(this.photoObjectUrl);
+  this.photoObjectUrl=null;
+  this.photoUrl.set(null);
+  this.photoFile.set(null);
+ }
+ private usePhotoUrl(blob:Blob){
+  if(this.photoObjectUrl)URL.revokeObjectURL(this.photoObjectUrl);
+  this.photoObjectUrl=URL.createObjectURL(blob);
+  this.photoUrl.set(this.photoObjectUrl);
+ }
+ /** Kamera ve yüklenen fotoğraf ancak sevk kaydı gönderilince API'ye yüklenir. */
+ selectPhoto(file:File){
+  this.photoFile.set(file);
+  this.usePhotoUrl(file);
+ }
+ clearPhotoSelection(){
+  this.resetPhoto();
+  const current=this.editing();
+  if(current?.hasPhoto)this.loadCurrentPhoto(current.id,this.editRequest);
+ }
+ private loadCurrentPhoto(id:string,requestId:number){
+  const version=++this.photoRequest;
+  this.api.getPhoto(id).subscribe({
+   next:blob=>{
+    if(requestId!==this.editRequest||version!==this.photoRequest||!this.dialogVisible())return;
+    this.usePhotoUrl(blob);
+   },
+   error:e=>{if((e as HttpErrorResponse).status!==404)this.error(e);}
+  });
+ }
+ deleteSavedPhoto(){
+  const current=this.editing();
+  if(!current||!current.hasPhoto||!this.canUpdate())return;
+  this.confirm.confirm({header:'Fotoğrafı Kaldır',message:'Sevke ait kayıtlı başvuran fotoğrafı silinsin mi?',
+   acceptLabel:'Fotoğrafı Sil',rejectLabel:'Vazgeç',accept:()=>{
+    this.api.deletePhoto(current.id,current.version).subscribe({
+     next:result=>{
+      this.editing.set({...current,version:result.version,hasPhoto:false});
+      this.resetPhoto();
+      this.message.add({severity:'success',summary:'Fotoğraf kaldırıldı'});
+     },
+     error:e=>this.error(e)
+    });
+   }});
+ }
+ ngOnDestroy(){this.resetPhoto();}
+
+  /** Dosya, kayıt başarılı olduktan sonra sevke bağlanır; başarısız upload ayrıca bildirilir. */
  selectFile(event:Event){
   const input=event.target as HTMLInputElement;
   const file=input.files?.[0]??null;
