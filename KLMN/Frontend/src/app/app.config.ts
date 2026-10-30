@@ -14,6 +14,8 @@ import {
 import { provideRouter } from '@angular/router';
 
 import { providePrimeNG } from 'primeng/config';
+import { FilterService } from 'primeng/api';
+import { containsIgnoringCase } from './core/filters/case-insensitive-filter';
 import { KlmnPreset } from './core/theme/klmn.preset';
 import { firstValueFrom } from 'rxjs';
 
@@ -41,6 +43,12 @@ export const appConfig: ApplicationConfig = {
     ),
 
     provideAnimationsAsync(),
+
+    // Bütün PrimeNG p-select/p-multiselect ve "contains" filtreleri için tek
+    // uygulama seviyesi, Türkçe harflerle de büyük/küçük harfe duyarsız arama.
+    provideAppInitializer(() => {
+      inject(FilterService).register('contains', containsIgnoringCase);
+    }),
 
     providePrimeNG({
       theme: {
