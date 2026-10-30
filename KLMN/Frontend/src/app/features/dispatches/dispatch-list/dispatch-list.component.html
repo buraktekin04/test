@@ -120,7 +120,7 @@
      <p-select formControlName="gender" [options]="genderItems" optionLabel="label" optionValue="value" [fluid]="true" appendTo="body"/>
     </label>
     @for(field of personSelections;track field.key){
-     <label class="field">{{field.label}}
+     <label class="field">{{field.label}}{{isRequired(field.key)?" *":""}}
       <p-select [formControlName]="field.key" [options]="optionMap()[field.type]" optionLabel="label" optionValue="id"
         [showClear]="true" [filter]="true" (onFilter)="filterOptions(field.type,$event.filter)"
         [fluid]="true" appendTo="body" placeholder="Seçiniz veya arayınız"/>
@@ -131,13 +131,13 @@
   <section class="form-section" formGroupName="dispatch">
    <div class="section-heading"><h2><i class="pi pi-file-edit"></i> Sevk Bilgileri</h2></div>
    <div class="form-grid">
-    <label class="field">Kaçıncı İşlem
+    <label class="field">Kaçıncı İşlem{{admissionRules()?.nthAdmissionRequired?" *":""}}
      <p-inputnumber formControlName="nthAdmission" [useGrouping]="false" [min]="1" [showButtons]="true" [fluid]="true"/>
     </label>
-    <label class="field">Sevk Evrak Tarihi
+    <label class="field">Sevk Evrak Tarihi{{admissionRules()?.dispatchDocumentDateRequired?" *":""}}
      <input type="date" formControlName="dispatchDocumentDate"/>
     </label>
-    <label class="field">Sevk Evrak Sayısı
+    <label class="field">Sevk Evrak Sayısı{{admissionRules()?.dispatchDocumentNoRequired?" *":""}}
      <input pInputText formControlName="dispatchDocumentNo" maxlength="50"/>
     </label>
     <label class="field">Sevk Kapsamı
@@ -162,7 +162,12 @@
   </section>
   <section class="form-section" formGroupName="dispatch">
    <div class="section-heading"><h2><i class="pi pi-sitemap"></i> Başvuru ve Askerî Bilgiler</h2></div>
-   <p class="section-note">Başvuru grubuna bağlı zorunlu alanlar sunucuda kontrol edilir. Gönderen makam için birlik veya şubeden biri seçilebilir.</p>
+   <p class="section-note">Başvuru grubuna göre zorunlu alanlar (*) işaretlenir. Gönderen makam için birlik veya şubeden biri seçilebilir.</p>
+   @if(admissionRules();as required){
+    <p class="section-note">Seçilen grupta {{required.unusedReasonIds.length}} muayene sebebi kullanılamaz.
+      @if(required.senderChairRequired){Gönderen makam seçimi zorunludur.}
+    </p>
+   }
    <div class="form-grid">
     @for(field of dispatchSelections;track field.key){
      <label class="field">{{field.label}}
@@ -172,10 +177,10 @@
        appendTo="body" placeholder="Seçiniz veya arayınız"/>
      </label>
     }
-    <label class="field">Sicil No
+    <label class="field">Sicil No{{admissionRules()?.registryNumberRequired?" *":""}}
      <input pInputText formControlName="registryNumber" maxlength="50"/>
     </label>
-    <label class="field">Nasbı
+    <label class="field">Nasbı{{admissionRules()?.lastNominationDateRequired?" *":""}}
      <input type="date" formControlName="lastNominationDate"/>
     </label>
     <label class="field">Birlik Açıklama
