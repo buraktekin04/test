@@ -46,6 +46,14 @@ export const routes: Routes = [
             .then(component => component.HomeComponent)
       },
       {
+        path: 'dispatches',
+        canActivate: [permissionGuard],
+        data: { permissionModule: 'Dispatches' },
+        loadComponent: () =>
+          import('./features/dispatches/dispatch-list/dispatch-list.component')
+            .then(component => component.DispatchListComponent)
+      },
+      {
         path: 'users',
         canActivate: [permissionGuard],
         data: {
