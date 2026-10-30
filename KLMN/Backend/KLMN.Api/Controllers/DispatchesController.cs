@@ -14,6 +14,7 @@ using KLMN.Application.Dispatches.Queries.GetDispatchOptions;
 using KLMN.Application.Dispatches.Queries.GetDispatchFile;
 using KLMN.Application.Dispatches.Queries.GetDispatchFiles;
 using KLMN.Application.Dispatches.Queries.LookupDispatchPerson;
+using KLMN.Application.Dispatches.Exceptions;
 using KLMN.Domain.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -47,14 +48,38 @@ public sealed class DispatchesController(ISender sender):ControllerBase
         return Ok(await sender.Send(new GetDispatchByIdQuery(id),ct));
     }
 
-    /// <summary>Eski harici nüfus sorgusunun yerine yalnız yerel kayıt eşleştirmesi; sonucu cachelemeyiniz.</summary>
-    [HttpPost("persons/lookup")]
-    [HasPermission(PermissionCodes.Dispatches.Query)]
+    /// <summary>
+    /// Kurum nüfus sisteminden kimlik sorgulama. KLMN Persons tablosunda yerel arama yapmaz.
+    /// Servis handler'a bağlanana kadar 503 döner, yanlışlıkla kişi bulunamadı sonucu vermez.
+    /// </summary>
+    [HttpPost("persons/national-registry")]
+    [HasPermission(PermissionCodes.Dispatches.Create,PermissionCodes.Dispatches.Query)]
     public async Task<IActionResult> LookupPerson([FromBody] LookupDispatchPersonQuery query,CancellationToken ct)
     {
-        var response=await sender.Send(query,ct);
-        return response is null ? NotFound(new ProblemDetails{Title="Yerel kişi kaydı bulunamadı.",
-            Detail="Kişi bilgilerini elle girerek yeni sevk oluşturabilirsiniz.",Status=404}) : Ok(response);
+        Response.Headers["Cache-Control"]="no-store";
+        Response.Headers["Pragma"]="no-cache";
+        try
+        {
+            var response=await sender.Send(query,ct);
+            return response is null ? NotFound(new ProblemDetails
+            {
+                Title="Nüfus sisteminde kişi kaydı bulunamadı.",
+                Status=404
+            }) : Ok(response);
+        }
+        catch(NationalRegistryNotConfiguredException)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable,new ProblemDetails
+            {
+                Title="Nüfus servisi henüz bağlanmadı.",
+                Detail="Kurum nüfus entegrasyonu backend handler'a tanımlandıktan sonra sorgulama kullanılabilir.",
+                Status=StatusCodes.Status503ServiceUnavailable
+            });
+        }
+        catch(ArgumentException e)
+        {
+            return BadRequest(new ProblemDetails{Title="Geçersiz kimlik sorgusu.",Detail=e.Message,Status=400});
+        }
     }
 
     [HttpGet("options")]
