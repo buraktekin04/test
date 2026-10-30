@@ -9,6 +9,7 @@ using KLMN.Application.Dispatches.Commands.UploadDispatchFile;
 using KLMN.Application.Dispatches.Queries.GetDispatchById;
 using KLMN.Application.Dispatches.Queries.GetDispatchAdmissionRules;
 using KLMN.Application.Dispatches.Queries.GetDispatches;
+using KLMN.Application.Dispatches.Queries.GetDispatchStatuses;
 using KLMN.Application.Dispatches.Queries.GetDispatchOptions;
 using KLMN.Application.Dispatches.Queries.GetDispatchFile;
 using KLMN.Application.Dispatches.Queries.GetDispatchFiles;
@@ -24,6 +25,14 @@ namespace KLMN.Api.Controllers;
 [Route("api/dispatches")]
 public sealed class DispatchesController(ISender sender):ControllerBase
 {
+    /// <summary>Aktif sevk durumları veritabanı sözlüğünden okunur; tanım ekranı yoktur.</summary>
+    [HttpGet("statuses")]
+    [HasPermission(PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query,PermissionCodes.Dispatches.Create,PermissionCodes.Dispatches.Update)]
+    public async Task<IActionResult> Statuses(CancellationToken ct)
+    {
+        return Ok(await sender.Send(new GetDispatchStatusesQuery(),ct));
+    }
+
     [HttpGet]
     [HasPermission(PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query)]
     public async Task<IActionResult> List([FromQuery] GetDispatchesQuery query,CancellationToken ct)
