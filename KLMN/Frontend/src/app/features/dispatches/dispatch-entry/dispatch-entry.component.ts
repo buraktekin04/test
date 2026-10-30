@@ -96,7 +96,7 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   {label:'Şehirdeki sağlık tesisleri',value:2},{label:'Belirli sağlık tesisi',value:3}];
  readonly genderItems=[{label:'Belirtilmedi',value:null},{label:'Erkek (1)',value:1},{label:'Kadın (2)',value:2}];
  readonly personTexts=[
-  {key:'name',label:'Adı *'},{key:'surname',label:'Soyadı *'},
+  {key:'name',label:'Adı'},{key:'surname',label:'Soyadı'},
   {key:'motherName',label:'Anne Adı'},{key:'fatherName',label:'Baba Adı'},
   {key:'phoneNumber',label:'Telefon No'},{key:'address',label:'Adres'}
  ];
@@ -105,8 +105,8 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   {key:'townOfBirthId',label:'Doğum Yeri',type:'towns' as OptionType}
  ];
  readonly dispatchSelections=[
-  {key:'hcAdmissionTypeDefId',label:'Başvuru Grubu *',type:'admissionTypes' as OptionType},
-  {key:'reasonForExaminationDefId',label:'Muayene Sebebi *',type:'reasons' as OptionType},
+  {key:'hcAdmissionTypeDefId',label:'Başvuru Grubu',type:'admissionTypes' as OptionType},
+  {key:'reasonForExaminationDefId',label:'Muayene Sebebi',type:'reasons' as OptionType},
   {key:'forcesCommandDefId',label:'Kuvvet',type:'forces' as OptionType},
   {key:'rankDefId',label:'Rütbesi',type:'ranks' as OptionType},
   {key:'militaryClassDefId',label:'Sınıfı',type:'classes' as OptionType},
@@ -118,6 +118,20 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   {key:'flyingMissionDefId',label:'Uçucu Görev',type:'missions' as OptionType},
   {key:'planeTypeDefId',label:'Uçtuğu Uçak Tipi',type:'planes' as OptionType}
  ];
+
+ /** Ayrı görünen alan grupları: başvuru için kritik seçimler her zaman üstte, diğerleri katlanabilir. */
+ readonly militarySelections=this.dispatchSelections.filter(x=>[
+  'forcesCommandDefId','rankDefId','militaryClassDefId','militaryUnitDefId',
+  'militarySchoolDefId','militaryOfficeDefId'
+ ].includes(x.key));
+ readonly senderSelections=this.dispatchSelections.filter(x=>[
+  'senderMilitaryUnitDefId','senderMilitaryOfficeDefId'
+ ].includes(x.key));
+ readonly flightSelections=this.dispatchSelections.filter(x=>[
+  'flyingMissionDefId','planeTypeDefId'
+ ].includes(x.key));
+ readonly rulesLoading=signal(false);
+ hasMandatoryMilitary():boolean{return this.militarySelections.some(x=>this.isRequired(x.key));}
  readonly optionMap=signal<Record<OptionType,DispatchOption[]>>({
   countries:[],towns:[],cities:[],hospitals:[],admissionTypes:[],reasons:[],
   forces:[],ranks:[],classes:[],units:[],schools:[],offices:[],missions:[],planes:[]
@@ -139,7 +153,8 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
  ngOnInit(){
   this.dispatchForm.controls.hcAdmissionTypeDefId.valueChanges.subscribe(id=>{
    this.dispatchForm.controls.reasonForExaminationDefId.setValue(null);
-   if(!id){++this.rulesRequest;this.admissionRules.set(null);return;}
+   if(!id){++this.rulesRequest;this.admissionRules.set(null);this.rulesLoading.set(false);return;}
+   this.admissionRules.set(null);
    this.loadAdmissionRules(id);
   });
   this.dispatchForm.controls.dispatchScope.valueChanges.subscribe(scope=>{
@@ -174,9 +189,10 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
  /** Değişen başvuru grubu için eski seçimi doğrular ve yasaklanan muayene sebeplerini eler. */
  private loadAdmissionRules(id:string){
   const request=++this.rulesRequest;
+  this.rulesLoading.set(true);
   this.api.admissionRules(id).subscribe({
    next:rules=>{if(this.rulesRequest!==request)return;
-    this.admissionRules.set(rules);
+    this.admissionRules.set(rules);this.rulesLoading.set(false);
     const qrReason=this.pendingQrReasonId;
     if(qrReason){
      this.pendingQrReasonId=null;
@@ -186,7 +202,7 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
     if(selected&&rules.unusedReasonIds.includes(selected))this.dispatchForm.controls.reasonForExaminationDefId.setValue(null);
     this.loadOptions('reasons');
    },
-   error:e=>{if(this.rulesRequest!==request)return;this.admissionRules.set(null);this.error(e);}
+   error:e=>{if(this.rulesRequest!==request)return;this.admissionRules.set(null);this.rulesLoading.set(false);this.error(e);}
   });
  }
  /** Kaynağın zorunlu bayraklarını UI üzerinde alan etiketine yansıtır. */
@@ -417,6 +433,10 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
    this.form.markAllAsTouched();this.formError.set('Ad, soyad, kimlik numarası, doğum tarihi, başvuru grubu ve muayene sebebi gereklidir.');return;
   }
   const rules=this.admissionRules();
+  if(!rules){
+   this.formError.set('Başvuru grubu kuralları henüz yüklenmedi. Muayene sebebini seçebilmek için bekleyen kuralları yeniden kontrol ediniz.');
+   return;
+  }
   if(rules && (rules.nthAdmissionRequired&&!dispatch.nthAdmission ||
    rules.dispatchDocumentDateRequired&&!dispatch.dispatchDocumentDate ||
    rules.dispatchDocumentNoRequired&&!dispatch.dispatchDocumentNo?.trim() ||
