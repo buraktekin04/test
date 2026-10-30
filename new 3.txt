@@ -1,0 +1,180 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
+namespace MSKBSServer.v1.Models
+{
+    /// <summary>
+    /// Hakkında karar verilmek üzere görevdeki personel, askeri öğrenci ve bunların adaylarının yetkili hastanelere sağlık kurulu rapor işlemleri isteğinin gönderilmesi için kullanılacak çağrıdır.
+    /// </summary>
+    public class SevkYeniGiris
+    {
+        /// <summary>
+        /// Başvuran kişiye ait T.C. Kimlik numarası.
+        /// </summary>
+        public long? TCKimlikNo { get; set; }
+        /// <summary>
+        /// Başvuran kişi yabancı ise "Yabancı Kimlik Numarası" gönderilmeli.
+        /// </summary>
+        public long? YabanciKimlikNo { get; set; }
+        /// <summary>
+        /// Başvuran kişinin adı.
+        /// </summary>
+        [MaxLength(64)]
+        public string Adi { get; set; }
+        /// <summary>
+        /// Başvuran kişinin soyadı.
+        /// </summary>
+        [MaxLength(50)]
+        public string Soyadi { get; set; }
+        /// <summary>
+        /// Başvuran kişinin anne adı.
+        /// </summary>
+        [MaxLength(64)]
+        public string AnneAdi { get; set; }
+        /// <summary>
+        /// Başvuran kişinin baba adı.
+        /// </summary>
+        [MaxLength(50)]
+        public string BabaAdi { get; set; }
+        /// <summary>
+        /// MERNİS ülke kodları girilmelidir.
+        /// </summary>
+        public string Uyrugu { get; set; }
+        /// <summary>
+        /// Başvuran kişinin doğum tarihi.
+        /// </summary>
+        public DateTime DogumTarihi { get; set; }
+        /// <summary>
+        /// Başvuran kişinin doğum yeri il/ilçe bilgisi gönderilmelidir.
+        /// </summary>
+        public string DogumYeri { get; set; }
+        /// <summary>
+        /// Başvuran kişinin doğum yeri il/ilçe kodu bilgisi gönderilmelidir.
+        /// </summary>
+        public string DogumYeriKodu { get; set; }
+        /// <summary>
+        /// Cinsiyet bilgisi için;
+        ///     1: Erkek 
+        ///     2: Kadın 
+        /// kodları gönderilmelidir.
+        /// </summary>
+        public int Cinsiyet { get; set; }
+
+        ///<summary>
+        ///Sevklinin Telefon Numarası
+        /// </summary>
+        /// 
+        public long? TelefonNo { get; set; }
+
+        /// <summary>
+        /// Başvuran kişinin adres bilgisi gönderilmelidir.
+        /// </summary>
+        public string Adres { get; set; }
+        /// <summary>
+        /// Sağlık Kurulu raporu almak için başvuran kişilerin grup bilgisi Yardimci Servisler "SkBasvuruGrubuListesi" ile paylaşılmaktadır.
+        /// </summary>
+        public string SKBasvuruGrubu { get; set; }
+        /// <summary>
+        /// Kişinin bağlı olduğu kuvvet bilgisi Yardimci Servisler "KuvvetListesi" ile paylaşılmaktadır.
+        /// </summary>
+        public string Kuvvet { get; set; }
+        /// <summary>
+        /// Görevdeki personelin askeri rütbe bilgisi kodu gönderilmelidir."YardimciServislerRutbeListesi" ile paylaşılmaktadır.
+        /// </summary>
+        public string Rutbe { get; set; }
+        /// <summary>
+        /// Görevdeki personelin askeri sınıf bilgisi kodu gönderilmelidir. "YardimciServislerAskeriSinifListesi" ile paylaşılmaktadır.
+        /// </summary>
+        public string Sinif { get; set; }
+        /// <summary>
+        /// Görevdeki personelin görevli olduğu birlik bilgisi kodu gönderilmelidir. Yardımcı Servisler "BirlikListesi" ile paylaşılmaktadır.
+        /// </summary>
+        public string Birlik { get; set; }
+        /// <summary>
+        /// Sevk belgesini gönderen  muayeneye gönderen makam bilgisi kodu gönderilmelidir.
+        /// </summary>
+        public string MuayeneyeGonderenMakam { get; set; }
+        /// <summary>
+        /// Sevk belgesini muayeneye gönderen makam bilgisi açıklaması gönderilmedir.
+        /// </summary>
+        public string MuayeneyeGonderenMakamAciklama { get; set; }
+        /// <summary>
+        /// Kişinin kayıtlı olduğu askerlik şubesi kodu gönderilmelidir. Yardımcı Servisler "AskerlikSubeleriListesi" ile paylaşılmaktadır.
+        /// </summary>
+        public string KayitliOlduguAskerlikSubesi { get; set; }
+        /// <summary>
+        /// Görevdeki personelin sicil numarası gönderilmelidir.
+        /// </summary>
+        [MaxLength(50)]
+        public string SicilNo { get; set; }
+        /// <summary>
+        /// Görevdeki personelin göreve giriş tarihi gönderilmelidir.
+        /// </summary>
+        public DateTime? Nasbi { get; set; }
+        /// <summary>
+        /// Başvuran kişinin kaçıncı sağlık kurulu işlemi olduğu bilgisi gönderilmelidir.
+        /// </summary>
+        public int? KacinciIslem { get; set; }
+        /// <summary>
+        /// Başvuran kişinin sevk evrak belgesinde yer alan sevk evrak tarihi gönderilmelidir.
+        /// </summary>
+        public DateTime? SevkEvrakTarihi { get; set; }
+        /// <summary>
+        /// Başvuran kişinin sevk evrak belgesinde yer alan sevk numarası gönderilmelidir.
+        /// </summary>
+        [MaxLength(50)]
+        public string SevkEvrakSayisi { get; set; }
+        /// <summary>
+        /// Sağlık kurulu raporu almak için başvuran kişinin hangi sebeple başvurduğu bilgisi (Örnek; Askeri Öğrenci Adayı, Periyodik Muayene, Kesin İşlem vb.) kodu gönderilecektir. Yardımcı Servisler "MuayeneSebebiListesi." ile paylaşılmaktadır.
+        /// (Seçilen başvuru sebebine göre Sağlık Yeteneği Yönetmeliği'nde tanımlı kriterlere uygun muayene ve işlem basamaklarınıda içermektedir.)
+        /// </summary>
+        public string MuayeneSebebi { get; set; }
+        /// <summary>
+        /// Sağlık Kurulu için gidilebilecek hastane veya şehir sınırlamaları
+        ///     1. Kapsam belirtilmemiş
+        ///     2. Belirlenmiş bir şehirdeki hastaneler
+        ///     3. Belirli bir hastane
+        /// </summary>
+        public int SevkKapsami { get; set; }
+        /// <summary>
+        /// Sevk kapsamında gidilebilecek hastane
+        /// </summary>
+        public string SevkKapsamiHastane { get; set; }
+        /// <summary>
+        /// Sevk kapsamında belirtilen şehirdeki yetkili tüm hastaneler
+        /// </summary>
+        public string SevkKapsamiSehir { get; set; }
+        /// <summary>
+        /// Uçucu Sağlık Kurulu raporu almak için başvuran kişinin "Görevi" bilgisi Yardimci Servisler "UcucuGoreviListesi" ile paylaşılmaktadır.
+        /// </summary>
+        public string UcucuGorevi { get; set; }
+        /// <summary>
+        /// Uçucu Sağlık Kurulu raporu almak için başvuran kişinin "Uçtuğu Uçak Tipi" bilgisi Yardimci Servisler "UctuguUcakTipiListesi" ile paylaşılmaktadır.
+        /// </summary>
+        public string UctuguUcakTipi { get; set; }
+        /// <summary>
+        /// Başvuranın resmi gönderilmelidir.
+        /// </summary>
+        public byte[] Fotografi { get; set; }
+        /// <summary>
+        /// Başvuru grubu Askeri Öğrenci ise öğrencinin okul bilgisi gönderilmelidir.
+        /// </summary>
+        public string Okulu { get; set; }
+        /// <summary>
+        /// Birliği "DİĞER" ise birlik açıklaması bilgisi gönderilmelidir.
+        /// </summary>
+        public string BirlikAciklama { get; set; }
+        /// <summary>
+        /// Alım ID'si bilgisi gönderilmelidir.
+        /// </summary>
+        public int? AlimId { get; set; }
+        /// <summary>
+        /// Tempbinarydata kayıtlaırndan dönen guidleri kaydedecek
+        /// </summary>
+       // public List<Guid> DispatchFiles { get; set; }
+	}
+}
+
+
+
