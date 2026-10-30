@@ -80,18 +80,20 @@ export class DispatchQrReaderComponent implements OnDestroy {
    this.errorText.set('QR görüntüsü JPEG, PNG veya WebP ve en fazla 5 MiB olmalıdır.');return;
   }
   this.stopCamera();
+  const request=this.token;
   this.errorText.set(null);
   this.decodingImage.set(true);
   const url=URL.createObjectURL(file);
   try{
    const decoded=await this.reader.decodeFromImageUrl(url);
+   if(request!==this.token)return;
    this.qrText.set(decoded.getText());
    this.infoText.set('Görüntüdeki QR kod çözüldü. Forma aktarabilirsiniz.');
   }catch{
-   this.errorText.set('Seçilen görüntüde okunabilir bir QR kod bulunamadı.');
+   if(request===this.token)this.errorText.set('Seçilen görüntüde okunabilir bir QR kod bulunamadı.');
   }finally{
    URL.revokeObjectURL(url);
-   this.decodingImage.set(false);
+   if(request===this.token)this.decodingImage.set(false);
   }
  }
  updateText(event:Event){this.qrText.set((event.target as HTMLTextAreaElement).value);}
