@@ -38,6 +38,7 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
  private readonly message=inject(MessageService);
  private readonly router=inject(Router);
  private readonly route=inject(ActivatedRoute);
+ readonly canView=computed(()=>this.permissions.hasAny(PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query));
  readonly canQuery=computed(()=>this.permissions.has(PermissionCodes.Dispatches.Query));
  readonly canCreate=computed(()=>this.permissions.has(PermissionCodes.Dispatches.Create));
  readonly canUpdate=computed(()=>this.permissions.has(PermissionCodes.Dispatches.Update));
@@ -246,7 +247,7 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
    }
   },error:e=>{this.loadingEntry.set(false);this.error(e);void this.router.navigateByUrl('/app/dispatches');}});
  }
- close(){if(this.saving())return;this.dialogVisible.set(false);this.qrVisible.set(false);this.resetPhoto();++this.editRequest;void this.router.navigateByUrl('/app/dispatches');}
+ close(){if(this.saving())return;this.dialogVisible.set(false);this.qrVisible.set(false);this.resetPhoto();++this.editRequest;void this.router.navigateByUrl(this.canView()?'/app/dispatches':'/app');}
  /** Yalnız veritabanında kayıtlı kişi aranır; harici MERNİS servisi mevcut değildir. QR alanlarını korur. */
  lookup(qr?:DispatchQrData){
   if(!this.canQuery())return;
@@ -459,11 +460,19 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   this.dialogVisible.set(false);
   this.uploadFile.set(null);
   this.resetPhoto();
-  // Liste ekranı başarılı sevk bilgisini yeni route üzerinden bildirir.
-  // Dosya hataları veri kaybına sebep olmaz; sonuç ayrıca işaretlenir.
-  void this.router.navigate(['/app/dispatches'],{
-   queryParams:{saved:result.dispatchNo,attachmentsFailed:failures.length||null}
-  });
+  // Query/View olmadan yalnız Create yetkisi bulunan kullanıcı listeye yönlendirilmez.
+  if(this.canView()){
+   void this.router.navigate(['/app/dispatches'],{
+    queryParams:{saved:result.dispatchNo,attachmentsFailed:failures.length||null}
+   });
+  }else{
+   this.openCreate();
+   this.message.add({severity:failures.length?'warn':'success',
+    summary:failures.length?'Sevk kaydedildi, ekler kontrol edilmeli':'Sevk kaydedildi',
+    detail:result.dispatchNo+' numaralı sevk kaydedildi.'+
+      (failures.length?' '+failures.join(' '):''),
+    life:9000});
+  }
  }
   private loadFiles(id:string){
   this.api.files(id).subscribe({next:items=>this.files.set(items),error:e=>this.error(e)});
