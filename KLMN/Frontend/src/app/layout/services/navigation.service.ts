@@ -237,7 +237,7 @@ export class NavigationService {
         },
         {
           label: 'Tetkik Tanımları',
-          icon: 'pi pi-flask',
+          icon: 'pi pi-sliders-h',
           children: [
             {label:'Tetkik Türü Tanımları',icon:'pi pi-tags',route:'/app/procedure-types',permissionModule:'ProcedureTypes'},
             {label:'Tetkik Tanımları',icon:'pi pi-list-check',route:'/app/procedures',permissionModule:'Procedures'},
