@@ -159,6 +159,7 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     /// <summary>Sevk işlem tablosu ve kişiye ait doküman verileri.</summary>
     public DbSet<Person> Persons => Set<Person>();
     public DbSet<Dispatch> Dispatches => Set<Dispatch>();
+    public DbSet<DispatchStatusDef> DispatchStatusDefs => Set<DispatchStatusDef>();
     public DbSet<DispatchFile> DispatchFiles => Set<DispatchFile>();
 
     /// <summary>
