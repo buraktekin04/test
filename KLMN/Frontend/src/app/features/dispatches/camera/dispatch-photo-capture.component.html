@@ -1,0 +1,36 @@
+<div class="person-photo">
+ <div class="photo-area">
+  @if(imageUrl){
+   <img [src]="imageUrl" alt="Başvuran kişi fotoğrafı önizlemesi" referrerpolicy="no-referrer"/>
+  } @else {
+   <div class="photo-placeholder"><i class="pi pi-user"></i><span>Fotoğraf yok</span></div>
+  }
+ </div>
+ <div class="camera-controls">
+  @if(cameraOpen()){
+   <div class="video-box">
+    <video #photoVideo autoplay muted playsinline aria-label="Kişi fotoğrafı kamerası"></video>
+   </div>
+   <p-button type="button" label="Fotoğraf Çek" icon="pi pi-camera" [loading]="capturing()"
+    [disabled]="disabled" (onClick)="capture()"/>
+   <p-button type="button" label="Kamerayı Kapat" icon="pi pi-times" severity="secondary"
+    [outlined]="true" (onClick)="closeCamera()"/>
+  } @else {
+   <p-button type="button" label="Kamera" icon="pi pi-camera" size="small"
+    [loading]="cameraBusy()" [disabled]="disabled" (onClick)="openCamera()"/>
+   <label class="photo-upload">Resim
+    <input type="file" accept="image/png,image/jpeg" [disabled]="disabled" (change)="chooseImage($event)"/>
+   </label>
+   @if(imageUrl&&!disabled){
+    <p-button type="button" label="Seçimi Temizle" icon="pi pi-times" size="small"
+     severity="secondary" [outlined]="true" (onClick)="clearImage()"/>
+   }
+   @if(hasSavedPhoto&&!disabled){
+    <p-button type="button" label="Kayıtlı Fotoğrafı Sil" icon="pi pi-trash" size="small"
+     severity="danger" [outlined]="true" (onClick)="removeExisting()"/>
+   }
+  }
+ </div>
+ <p class="photo-note">JPEG/PNG, en fazla 2 MiB · Kamera veya dosyadan resim</p>
+ @if(photoError()){<p class="photo-error" role="alert">{{photoError()}}</p>}
+</div>
