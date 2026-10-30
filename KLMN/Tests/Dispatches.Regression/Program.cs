@@ -36,6 +36,26 @@ Check(new GetDispatchesQueryValidator().Validate(new GetDispatchesQuery(
     CurrentState:4,DocumentDateFrom:new DateOnly(2026,10,1),
     DocumentDateTo:new DateOnly(2026,10,30))).IsValid,
     "Sevk listesinde geçerli durum ve evrak tarihi aralığı");
+Check(!new GetDispatchesQueryValidator().Validate(new GetDispatchesQuery(
+    DateFrom:new DateOnly(2026,10,30),DateTo:new DateOnly(2026,10,1))).IsValid,
+    "Sevk başlangıç/bitiş tarih filtrelerinde ters aralık reddi");
+Check(!new GetDispatchesQueryValidator().Validate(new GetDispatchesQuery(
+    DispatchNo:-1,PurchaseId:-2)).IsValid,
+    "Sevk sıra no ve alım ID negatif olamaz");
+Check(!new GetDispatchesQueryValidator().Validate(new GetDispatchesQuery(
+    IncludeRelatedOrganizations:true)).IsValid,
+    "Alt organizasyon araması için gönderen birliğin seçilmesi zorunlu");
+Check(new GetDispatchesQueryValidator().Validate(new GetDispatchesQuery(
+    DateFrom:new DateOnly(2026,10,1),DateTo:new DateOnly(2026,10,30),
+    DispatchNo:13,PurchaseId:2,TcKimlikNo:"12345678901",
+    SenderMilitaryUnitDefId:Guid.NewGuid(),IncludeRelatedOrganizations:true,
+    DispatchScope:2,DispatchScopeCityId:Guid.NewGuid())).IsValid,
+    "Ayrıntılı sevk sorgusu geçerli parametreleri");
+Check(typeof(BaseEntity).IsAssignableFrom(typeof(DispatchStatusDef)),
+    "Sevk durum tanımı BaseEntity audit/soft-delete/xmin kalıtımı");
+Check(typeof(DispatchStatusDef).GetProperty(nameof(DispatchStatusDef.Code))?.PropertyType==typeof(int),
+    "Sevk durumu integer DB kodu");
+
 
 Check(!new GetDispatchOptionsQueryValidator().Validate(new GetDispatchOptionsQuery("bad-type")).IsValid,
     "Tanım türü allowlist dışında sorgu reddi");
