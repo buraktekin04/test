@@ -6,7 +6,6 @@ import {finalize,firstValueFrom} from 'rxjs';
 import {ConfirmationService,MessageService} from 'primeng/api';
 import {ButtonModule} from 'primeng/button';
 import {ConfirmDialogModule} from 'primeng/confirmdialog';
-import {DialogModule} from 'primeng/dialog';
 import {InputTextModule} from 'primeng/inputtext';
 import {InputNumberModule} from 'primeng/inputnumber';
 import {SelectModule} from 'primeng/select';
