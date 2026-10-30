@@ -234,6 +234,9 @@ export class DispatchListComponent implements OnInit {
    this.editing.set(item);this.formError.set(null);this.uploadFile.set(null);
    this.personForm.reset(item.person);
    this.dispatchForm.reset(item.dispatch);
+   // Başvuru grubu değişimini dinleyen form reseti muayene sebebini temizleyebilir.
+   // Kayıt detayı yüklendiğinde seçili sebebi tekrar koru.
+   this.dispatchForm.controls.reasonForExaminationDefId.setValue(item.dispatch.reasonForExaminationDefId,{emitEvent:false});
    this.identityType.set(item.person.tcKimlikNo?'tc':'foreign');
    this.dialogVisible.set(true);
    this.loadFiles(item.id);
