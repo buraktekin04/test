@@ -136,13 +136,15 @@
      </label>
     }
    </div>
-   <div class="person-photo-area">
-    <h3>Başvuran Fotoğrafı</h3>
-    <app-dispatch-photo-capture [imageUrl]="photoUrl()" [disabled]="saving()"
-     [hasSavedPhoto]="!!editing()?.hasPhoto"
-     (photoSelected)="selectPhoto($event)" (photoCleared)="clearPhotoSelection()"
-     (deleteSavedPhoto)="deleteSavedPhoto()"/>
-   </div>
+   @if(dialogVisible()){
+    <div class="person-photo-area">
+     <h3>Başvuran Fotoğrafı</h3>
+     <app-dispatch-photo-capture [imageUrl]="photoUrl()" [disabled]="saving()"
+      [hasSavedPhoto]="!!editing()?.hasPhoto"
+      (photoSelected)="selectPhoto($event)" (photoCleared)="clearPhotoSelection()"
+      (deleteSavedPhoto)="deleteSavedPhoto()"/>
+    </div>
+   }
   </section>
   <section class="form-section" formGroupName="dispatch">
    <div class="section-heading"><h2><i class="pi pi-file-edit"></i> Sevk Bilgileri</h2></div>
