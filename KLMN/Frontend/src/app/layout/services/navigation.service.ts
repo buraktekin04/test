@@ -24,10 +24,17 @@ export class NavigationService {
       icon: 'pi pi-send',
       children: [
         {
-          label: 'Sevk Giriş ve Takip',
+          label: 'Sevk Girişi',
           icon: 'pi pi-file-edit',
+          route: '/app/dispatches/new',
+          requiredPermissions: [PermissionCodes.Dispatches.Create]
+        },
+        {
+          label: 'Sevk Listesi ve Sorgulama',
+          icon: 'pi pi-list',
           route: '/app/dispatches',
-          permissionModule: 'Dispatches'
+          requiredPermissions: [PermissionCodes.Dispatches.View, PermissionCodes.Dispatches.Query],
+          permissionMode: 'any'
         }
       ]
     },
