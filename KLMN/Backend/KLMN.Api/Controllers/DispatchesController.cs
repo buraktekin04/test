@@ -10,6 +10,7 @@ using KLMN.Application.Dispatches.Queries.GetDispatchById;
 using KLMN.Application.Dispatches.Queries.GetDispatchAdmissionRules;
 using KLMN.Application.Dispatches.Queries.GetDispatches;
 using KLMN.Application.Dispatches.Queries.GetDispatchStatuses;
+using KLMN.Application.Dispatches.Queries.GetDispatchGenders;
 using KLMN.Application.Dispatches.Queries.GetDispatchOptions;
 using KLMN.Application.Dispatches.Queries.GetDispatchFile;
 using KLMN.Application.Dispatches.Queries.GetDispatchFiles;
