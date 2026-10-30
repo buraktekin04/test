@@ -112,7 +112,12 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
  loadOptions(type:'units'|'offices'|'cities'|'hospitals',search=''){
   const request=(this.optionRequest[type]??0)+1;
   this.optionRequest[type]=request;
-  this.api.options(type,search).subscribe({
+  const sender=this.searchForm.controls.senderAuthority.value;
+  const selectedId=type==='units'&&sender?.startsWith('unit:')?sender.slice(5):
+   type==='offices'&&sender?.startsWith('office:')?sender.slice(7):
+   type==='cities'?this.searchForm.controls.dispatchScopeCityId.value??undefined:
+   type==='hospitals'?this.searchForm.controls.dispatchScopeHospitalId.value??undefined:undefined;
+  this.api.options(type,search,selectedId).subscribe({
    next:values=>{if(this.optionRequest[type]===request)
     this.optionMap.update(map=>({...map,[type]:values}));},
    error:e=>{if(this.optionRequest[type]===request)this.error(e);}
