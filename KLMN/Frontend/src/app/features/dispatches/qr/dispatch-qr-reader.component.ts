@@ -1,5 +1,6 @@
 import {ChangeDetectorRef,Component,ElementRef,EventEmitter,OnDestroy,Output,ViewChild,inject,signal} from '@angular/core';
-import {BrowserQRCodeReader,IScannerControls} from '@zxing/browser';
+import {BrowserQRCodeReader} from '@zxing/browser';
+import type {IScannerControls} from '@zxing/browser';
 import {ButtonModule} from 'primeng/button';
 import {DialogModule} from 'primeng/dialog';
 
