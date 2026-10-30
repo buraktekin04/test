@@ -1,6 +1,6 @@
 import {DatePipe} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
-import {Component,computed,inject,OnInit,signal} from '@angular/core';
+import {AfterViewInit,Component,computed,inject,OnInit,signal} from '@angular/core';
 import {FormBuilder,ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute,Router} from '@angular/router';
 import {finalize} from 'rxjs';
@@ -29,7 +29,7 @@ import {DispatchService} from '../services/dispatch.service';
  templateUrl:'./dispatch-list.component.html',
  styleUrl:'./dispatch-list.component.scss'
 })
-export class DispatchListComponent implements OnInit {
+export class DispatchListComponent implements OnInit,AfterViewInit {
  private readonly api=inject(DispatchService);
  private readonly fb=inject(FormBuilder);
  private readonly permissions=inject(PermissionService);
@@ -70,18 +70,21 @@ export class DispatchListComponent implements OnInit {
  readonly filterError=signal<string|null>(null);
 
  ngOnInit(){
-  const saved=this.route.snapshot.queryParamMap.get('saved');
-  if(saved && /^\d+$/.test(saved)){
-   const hasFailures=this.route.snapshot.queryParamMap.get('attachmentsFailed');
-   this.message.add({
-    severity:hasFailures&&Number(hasFailures)>0?'warn':'success',
-    summary:hasFailures&&Number(hasFailures)>0?'Sevk kaydedildi; ekleri kontrol edin':'Sevk başarıyla kaydedildi',
-    detail:saved+' numaralı sevkin kayıt işlemi tamamlandı.'+
-     (hasFailures&&Number(hasFailures)>0?' Bazı dosyalar yüklenememiş olabilir.':''),
-    life:7500
-   });
-  }
   if(this.canView())this.load();
+ }
+
+ /** PrimeNG toast view hazır olduktan sonra kayıt sonucu gösterilir. */
+ ngAfterViewInit(){
+  const saved=this.route.snapshot.queryParamMap.get('saved');
+  if(!saved||!/^\d+$/.test(saved))return;
+  const hasFailures=this.route.snapshot.queryParamMap.get('attachmentsFailed');
+  this.message.add({
+   severity:hasFailures&&Number(hasFailures)>0?'warn':'success',
+   summary:hasFailures&&Number(hasFailures)>0?'Sevk kaydedildi; ekleri kontrol edin':'Sevk başarıyla kaydedildi',
+   detail:saved+' numaralı sevkin kayıt işlemi tamamlandı.'+
+    (hasFailures&&Number(hasFailures)>0?' Bazı dosyalar yüklenememiş olabilir.':''),
+   life:7500
+  });
  }
 
  /** Yalnız backend üzerinde filtrelenmiş sayfayı çağırır; sayfalar arası sonuç kaybetmez. */
