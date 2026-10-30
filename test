@@ -1,0 +1,1727 @@
+dispatch.component.html
+
+<!--Başvuran Kişi Bilgileri-->
+<div class="row">
+  <div class="col-md-12">
+    <nb-card class="inline-form-card">
+      <nb-card-header id="header">Başvuran Kişi</nb-card-header>
+      <nb-card-body style="padding-bottom:0px">
+        <div class="row">
+          <div class="col-sm-2">
+            <div class="form-group">
+              <dx-radio-group layout="horizontal" [items]="identificationnumbers" [value]="identificationnumbers[0]"
+                [(value)]="isTcOrForeign" [ngClass]="isTcOrForeign" (onValueChanged)="refNoChanged($event)">
+                <div *dxTemplate="let isTcOrForeign of 'item'">
+                  <div>{{isTcOrForeign}}</div>
+                </div>
+              </dx-radio-group>
+            </div>
+          </div>
+          <div class="col-sm-2">
+            <div class="form-group">
+              <dx-text-box [(value)]="uniqueRefno" [showClearButton]="true" placeholder="T.C. Kimlik No"
+                mask="00000000000" showMaskMode="onFocus" maskInvalidMessage="" maskChar="#" [disabled]="showTcNoInput"
+                (keypress)="tc_KeyPress($event)">
+              </dx-text-box>
+            </div>
+          </div>
+          <div class="col-sm-2">
+            <div class="form-group">
+              <dx-number-box [(value)]="foreignUniqueRefno" [showClearButton]="true" placeholder="Yabancı Kimlik No"
+                [disabled]="showForeignNoInput">
+              </dx-number-box>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="form-group">
+              <dx-date-box dateSerializationFormat="yyyy-MM-ddTHH:mm:ss" name="birthdate" 
+                placeholder="Doğum Tarihi" [showClearButton]="true" width="%100" type="date"
+                [(value)]="dogumTarihi" required="true"></dx-date-box>
+            </div>
+          </div>
+          <div class="col-sm-2" [hidden]="isQueryPerson">
+            <div class="form-group">
+              <dx-button id="btnStyle" (onClick)="queryPerson()" type="Default" text="Sorgula"
+                [disabled]="isQueryPerson"></dx-button>
+            </div>
+          </div>
+
+
+          <div class="col-sm-2" [hidden]="isQueryPerson">
+            <div class="form-group">
+              <dx-button id="btnStyle" (onClick)="qrCodeRead()" type="Default" text="QR Kod Okut"></dx-button>
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <nb-card class="inline-form-card">
+      <nb-card-header id="header">Sevk Giriş</nb-card-header>
+      <nb-card-body>
+        <form #form="ngForm" novalidate (ngSubmit)="save()">
+          <div class="row">
+            <!--Kişi ve Sevk Bilgileri-->
+            <div class="col-sm-6">
+              <p style="font-weight: bold;font-size: large; margin-bottom: -1%;margin-top: -1%;">Kişi Bilgileri</p>
+              <hr style="width:100%;text-align:left;margin-left:0">
+              <div class="row">
+                <div class="col-sm-9">
+                  <div class="row">
+                    <div class="col-sm-6" style="padding-right: 8%;">
+                      <div class="form-group">
+                        <label for="tcKimlikNo">T.C. Kimlik No</label>
+                        <dx-text-box name="tcKimlikNo" [showClearButton]="true" placeholder="T.C. Kimlik No" 
+                         maskInvalidMessage="11 karakter giriniz"
+                          [ngModel]="viewModel?.tcKimlikNo" digit="11"
+                          (ngModelChange)="viewModel ? viewModel.tcKimlikNo = $event : null ">
+                        </dx-text-box>
+                      </div>
+                    </div>
+                    <div class="col-sm-6" style="padding-right: 8%;margin-left: -6%;">
+                      <div class="form-group">
+                        <label for="yabanciKimlikNo">Yabancı Kimlik No</label>
+                        <dx-number-box name="yabanciKimlikNo" [showClearButton]="true" placeholder="Yabancı Kimlik No"
+                          [ngModel]="viewModel?.yabanciKimlikNo"
+                          (ngModelChange)="viewModel ? viewModel.yabanciKimlikNo = $event : null">
+                        </dx-number-box>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-sm-6" style="padding-right: 8%;">
+                      <div class="form-group">
+                        <label for="adi">Adı</label>
+                        <dx-text-box name="adi" [showClearButton]="true" placeholder="Adı" [ngModel]="viewModel?.adi"
+                          (ngModelChange)="viewModel ? viewModel.adi = $event : null" required></dx-text-box>
+                      </div>
+                    </div>
+                    <div class="col-sm-6" style="padding-right: 8%;margin-left: -6%;">
+                      <div class="form-group">
+                        <label for="soyadi">Soyadı</label>
+                        <dx-text-box name="soyadi" [showClearButton]="true" placeholder="Soyadı"
+                          [ngModel]="viewModel?.soyadi" (ngModelChange)="viewModel ? viewModel.soyadi = $event : null"
+                          required></dx-text-box>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-3">
+
+                  <dx-button text="Kamera" [(disabled)]="camDisable" rtlEnabled="true" icon="photo"
+                    (onClick)="openCam()" style="margin-left: -60px;margin-bottom: 5px;">
+                  </dx-button>
+                  <dx-button text="Resim" [(disabled)]="pictureDisable" rtlEnabled="true" icon="image"
+                    (onClick)="closeCam()" style="margin-bottom: 5px;">
+                  </dx-button>
+
+
+                  <div *ngIf="!camOpen" style="height: 100px;">
+                    <fancy-image-uploader #imageUploader [options]="options" (onUpload)="onUpload($event)">
+                    </fancy-image-uploader>
+                  </div>
+                  <div *ngIf="camOpen" style="height: 100px;" style="margin-left: -120px;">
+                    <photo-capture (CapturedPhotoChange)="photoCaptured($event)" [options]="options">
+                    </photo-capture>
+                  </div>
+
+
+
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-4">
+                  <div class="form-group">
+                    <label for="anneAdi">Ana Adı</label>
+                    <dx-text-box name="anneAdi" [showClearButton]="true" placeholder="Ana Adı"
+                      [ngModel]="viewModel?.anneAdi" (ngModelChange)="viewModel ? viewModel.anneAdi = $event : null"
+                      required></dx-text-box>
+                  </div>
+                </div>
+                <div class="col-sm-4">
+                  <div class="form-group">
+                    <label for="babaAdi">Baba Adı</label>
+                    <dx-text-box name="babaAdi" [showClearButton]="true" placeholder="Baba Adı"
+                      [ngModel]="viewModel?.babaAdi" (ngModelChange)="viewModel ? viewModel.babaAdi = $event : null"
+                      required></dx-text-box>
+                  </div>
+                </div>
+                <div class="col-sm-4">
+                  <div class="form-group">
+                    <label for="uyrugu">Uyruğu</label>
+                    <dx-select-box name="uyrugu" placeholder="Uyruğu" [mskbsSelectDefinition]="'countryCode'"
+                      [ngModel]="viewModel?.uyrugu" (ngModelChange)="viewModel ? viewModel.uyrugu = $event : null"
+                      required>
+                    </dx-select-box>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-4">
+                  <div class="form-group">
+                    <label for="dogumYeri">Doğum Yeri</label>
+                    <dx-select-box name="dogumYeri" placeholder="Doğum Yeri" [mskbsSelectDefinition]="'town'"
+                      [ngModel]="viewModel?.dogumYeri" (ngModelChange)="viewModel ? viewModel.dogumYeri = $event : null">
+                    </dx-select-box>
+                  </div>
+                </div>
+                <div class="col-sm-4">
+                  <div class="form-group">
+                    <label for="dogumTarihi">Doğum Tarihi</label>
+                    <dx-date-box dateSerializationFormat="yyyy-MM-ddTHH:mm:ss" name="dogumTarihi" [min]="min"
+                      [max]="now" [showClearButton]="true" placeholder="Doğum Tarihi" [style.width]="'100%'"
+                      [ngModel]="viewModel?.dogumTarihi" type="date"
+                      (ngModelChange)="viewModel ? viewModel.dogumTarihi = $event : null" required></dx-date-box>
+                  </div>
+                </div>
+                <div class="col-sm-4">
+                  <div class="form-group">
+                    <label for="cinsiyet">Cinsiyet</label>
+                    <dx-select-box name="cinsiyet" placeholder="Cinsiyet" [mskbsSelectDefinition]="'gender'"
+                      [ngModel]="viewModel?.cinsiyet" (ngModelChange)="viewModel ? viewModel.cinsiyet = $event : null"
+                      required>
+                    </dx-select-box>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-4">
+                  <div class="form-group">
+                    <label for="phoneNumber">Telefon No</label>
+                    <dx-number-box name="phoneNumber" placeholder="Telefon No"  [inputAttr]="{ 'maxlength': 10 }"
+                      [ngModel]="viewModel?.telefonNo"
+                      (ngModelChange)="viewModel ? viewModel.telefonNo = $event : null">
+                    </dx-number-box>
+                  </div> 
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                    <label for="address">Adres</label>
+                    <dx-text-area name="address" placeholder="Adres" [ngModel]="viewModel?.adres"
+                      (ngModelChange)="viewModel ? viewModel.adres = $event : null" required>
+                    </dx-text-area>
+                  </div>
+                </div>
+              </div>
+              <br />
+              <br />
+              <p style="font-weight: bold;font-size: large; margin-bottom: -1%;">Sevk Bilgileri</p>
+              <hr style="width:100%;text-align:left;margin-left:0">
+              <div class="row">
+                <div class="col-sm-4">
+                  <div class="form-group">
+                    <label for="nthadmission">Kaçıncı İşlem</label>
+                    <dx-number-box name="nthadmission" [showClearButton]="true" placeholder="Kaçıncı İşlem"
+                      [ngModel]="viewModel?.kacinciIslem"
+                      (ngModelChange)="viewModel ? viewModel.kacinciIslem = $event : null"></dx-number-box>
+                  </div>
+                </div>
+                <div class="col-sm-4">
+                  <div class="form-group">
+                    <label for="dispatchdocumentdate">Sevk Evrak Tarihi</label>
+                    <dx-date-box dateSerializationFormat="yyyy-MM-ddTHH:mm:ss" name="dispatchdocumentdate" [min]="min"
+                      [max]="now" [showClearButton]="true" placeholder="Sevk Evrak Tarihi" [style.width]="'100%'"
+                      type="date" [ngModel]="viewModel?.sevkEvrakTarihi"
+                      (ngModelChange)="viewModel ? viewModel.sevkEvrakTarihi = $event : null" required></dx-date-box>
+                  </div>
+                </div>
+                <div class="col-sm-4">
+                  <div class="form-group">
+                    <label for="dispatchdocumentno">Sevk Evrak Sayısı</label>
+                    <dx-text-box name="dispatchdocumentno" [showClearButton]="true" placeholder="Sevk Evrak Sayısı"
+                      [ngModel]="viewModel?.sevkEvrakSayisi"
+                      (ngModelChange)="viewModel ? viewModel.sevkEvrakSayisi = $event : null" required></dx-text-box>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-4">
+                  <div class="form-group">
+                    <label for="dispatchscope">Sevk Kapsamı</label>
+                    <dx-select-box name="dispatchscope" placeholder="Sevk Kapsamı"
+                      [mskbsSelectDefinition]="'dispatchscope'" [ngModel]="viewModel?.sevkKapsami"
+                      (ngModelChange)="viewModel ? viewModel.sevkKapsami = $event : null" required
+                      (onValueChanged)="onSevkKapsamiChanged($event)">
+                    </dx-select-box>
+                  </div>
+                </div>
+                <div class="col-sm-4">
+                  <div class="form-group">
+                    <label for="dispatchscopeprovince">Sevk Kapsamı Şehir</label>
+                    <dx-select-box [disabled]="showSevkKapsamiSehir" name="dispatchscopeprovince"
+                      placeholder="Sevk Kapsamı Şehir" [mskbsSelectDefinition]="'city'"
+                      [ngModel]="viewModel?.sevkKapsamiSehir"
+                      (ngModelChange)="viewModel ? viewModel.sevkKapsamiSehir = $event : null" required>
+                    </dx-select-box>
+                  </div>
+                </div>
+                <div class="col-sm-4">
+                  <div class="form-group">
+                    <label for="dispatchspurchaseid">Alım ID</label>
+                    <dx-number-box name="dispatchspurchaseid" [showClearButton]="true" placeholder="Sevk Alım ID"
+                      [ngModel]="viewModel?.alimId" (ngModelChange)="viewModel ? viewModel.alimId = $event : null">
+                    </dx-number-box>
+                  </div>
+                </div>
+           
+              </div>
+              <div class="row">
+                <div class="col-sm-12">
+                  <div class="form-group">
+                    <label for="dispatchscopehospital">Sevk Kapsamı Hastane</label>
+                    <dx-select-box [disabled]="showSevkKapsamiHastane" name="dispatchscopehospital"
+                      placeholder="Sevk Kapsamı Hastane" [mskbsSelectDefinition]="'hospitalCode'"
+                      [ngModel]="viewModel?.sevkKapsamiHastane"
+                      (ngModelChange)="viewModel ? viewModel.sevkKapsamiHastane = $event : null" required>
+                    </dx-select-box>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+            <!--Askeri Bilgileri-->
+            <div class="col-sm-6">
+              <p style="font-weight: bold;font-size: large; margin-bottom: -1%;margin-top: -1%;">Askeri Bilgileri</p>
+              <hr style="width:100%;text-align:left;margin-left:0">
+              <div class="row">
+                <div class="col-sm-12">
+                  <div class="form-group">
+                    <label for="hcadmissiontype">Başvuru Grubu</label>
+                    <dx-select-box name="hcadmissiontype" placeholder="Başvuru Grubu"
+                      [mskbsSelectDefinition]="'admissiontype'" [ngModel]="viewModel?.skBasvuruGrubu"
+                      (onValueChanged)="onHcAdmissinTypeValueChanged($event)"
+                      (ngModelChange)="viewModel ? viewModel.skBasvuruGrubu = $event : null" required>
+                    </dx-select-box>
+                  </div>
+                </div>
+                <div class="col-sm-12">
+                  <div class="form-group">
+                    <label for="reasonforexamination">Muayene Sebebi</label>
+                    <dx-select-box name="reasonforexamination" placeholder="Muayene Sebebi"
+                      [(dataSource)]="reasonforexaminationDataSource" [(disabled)]="reasonforexaminationDisable"
+                      [mskbsSelectDefinition]="'reasonforexaminationforhcaddmision'"
+                      [ngModel]="viewModel?.muayeneSebebi"
+                      (ngModelChange)="viewModel ? viewModel.muayeneSebebi = $event : null" 
+                      required>
+                    </dx-select-box>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label for="forcescommand">Kuvvet</label>
+                    <dx-select-box name="forcescommand" placeholder="Kuvvet" [mskbsSelectDefinition]="'forcescommand'"
+                      [(dataSource)]="forcesCommandDefDataSource" [ngModel]="viewModel?.kuvvet"
+                      [(disabled)]="ForcesCommoandRequired" [ngModel]="viewModel?.kuvvet"
+                      (ngModelChange)="viewModel ? viewModel.kuvvet = $event : null" required>
+                    </dx-select-box>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label for="militaryclass">Sınıfı</label>
+                    <dx-select-box name="militaryclass" placeholder="Sınıfı" [mskbsSelectDefinition]="'militaryclass'"
+                      [(disabled)]="MilitaryClassRequired" [ngModel]="viewModel?.sinif"
+                      (ngModelChange)="viewModel ? viewModel.sinif = $event : null" required>
+                    </dx-select-box>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label for="rank">Rütbesi</label>
+                    <dx-select-box name="rank" placeholder="Rütbesi" [mskbsSelectDefinition]="'rank'"
+                      [(disabled)]="RankRequired" [ngModel]="viewModel?.rutbe"
+                      (ngModelChange)="viewModel ? viewModel.rutbe = $event : null" required>
+                    </dx-select-box>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label for="registrynumber">Sicil No</label>
+                    <dx-text-box name="registrynumber" [showClearButton]="true" placeholder="Sicil No"
+                      [(disabled)]="RegistryNumberRequired" [ngModel]="viewModel?.sicilNo"
+                      (ngModelChange)="viewModel ? viewModel.sicilNo = $event : null" required>
+                    </dx-text-box>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-12">
+                  <div class="form-group">
+                    <label for="militaryunit">Birliği</label>
+                    <dx-select-box name="militaryunit" placeholder="Birliği" [mskbsSelectDefinition]="'militaryunit'"
+                      [(disabled)]="MilitaryUnitRequired" [ngModel]="viewModel?.birlik"
+                      (onSelectionChanged)="onSelectionChangedMilitaryUnit($event)"
+                      (ngModelChange)="viewModel ? viewModel.birlik = $event : null" required>
+                    </dx-select-box>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-12">
+                  <div class="form-group">
+                    <label for="senderchair">Muayeneye Gönderen Makam</label>
+                    <dx-select-box name="senderchair" placeholder="Muayeneye Gönderen Makam"
+                      (onSelectionChanged)="onSelectionChanged($event)"
+                      [mskbsSelectDefinition]="'militaryunitandoffice'" [ngModel]="viewModel?.muayeneyeGonderenMakam"
+                      (ngModelChange)="viewModel ? viewModel.muayeneyeGonderenMakam = $event : null" required>
+                      <!-- [(disabled)]="SenderChaireRequired"  -->
+                    </dx-select-box>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-12">
+                  <div class="form-group">
+                    <label for="school">Okulu</label>
+                    <dx-select-box name="school" placeholder="Okulu" [mskbsSelectDefinition]="'militaryschool'"
+                      [(disabled)]="MilitarySchoolRequired" [ngModel]="viewModel?.okulu"
+                      (ngModelChange)="viewModel ? viewModel.okulu = $event : null" required>
+                    </dx-select-box>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label for="militaryoffice">Askerlik Şubesi</label>
+                    <dx-select-box name="militaryoffice" placeholder="Askerlik Şubesi"
+                      [(disabled)]="MilitaryOfficeRequired" [mskbsSelectDefinition]="'militaryoffice'"
+                      [ngModel]="viewModel?.kayitliOlduguAskerlikSubesi"
+                      (ngModelChange)="viewModel ? viewModel.kayitliOlduguAskerlikSubesi = $event : null" required>
+                    </dx-select-box>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label for="lastnominationdate">Nasbı</label>
+                    <dx-date-box dateSerializationFormat="yyyy-MM-ddTHH:mm:ss" name="lastnominationdate" [min]="min"
+                      [max]="now" [showClearButton]="true" placeholder="Nasbı" type="date" [style.width]="'100%'"
+                      [(disabled)]="LastNominationDateRequired" [ngModel]="viewModel?.nasbi"
+                      (ngModelChange)="viewModel ? viewModel.nasbi = $event : null" required>
+                    </dx-date-box>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label for="flyingmission">Uçucu Görev</label>
+                    <dx-select-box name="flyingmission" placeholder="Uçucu Görev"
+                      [mskbsSelectDefinition]="'flyingmission'" [ngModel]="viewModel?.ucucuGorevi"
+                      (ngModelChange)="viewModel ? viewModel.ucucuGorevi = $event : null">
+                    </dx-select-box>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label for="planetype">Uçtuğu Uçak Tipi</label>
+                    <dx-select-box name="planetype" placeholder="Uçtuğu Uçak Tipi" [mskbsSelectDefinition]="'planetype'"
+                      [ngModel]="viewModel?.uctuguUcakTipi"
+                      (ngModelChange)="viewModel ? viewModel.uctuguUcakTipi = $event : null">
+                    </dx-select-box>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                    <label>Birlik Açıklama</label>
+                    <dx-text-area placeholder="Birlik Açıklama" [(ngModel)]="viewModel.birlikAciklama"
+                      [(disabled)]="MilitaryUnitRequired" name="birlikAciklama">
+                    </dx-text-area>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-12 col-sm-12">
+                  <div class="form-group">
+                    <label for="description">Muayeneye Gönderen Makam Açıklama</label>
+                    <dx-text-area name="description" placeholder="Muayeneye Gönderen Makam Açıklama"
+                      [ngModel]="viewModel?.muayeneyeGonderenMakamAciklama" 
+                      (ngModelChange)="viewModel ? viewModel.muayeneyeGonderenMakamAciklama = $event : null">
+                      <!-- [(disabled)]="SenderChaireRequired" -->
+                    </dx-text-area>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </nb-card-body>
+    </nb-card>
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-2" [hidden]="isSaveDispatch">
+    <div class="form-group">
+      <dx-button id="btnStyle" (onClick)="save()" type="Default" text="Sevk Kayıt" [disabled]="isSaveDispatch">
+      </dx-button>
+    </div>
+  </div>
+</div>
+
+<!--QR Kodu Popup-->
+<dx-popup width="950px" height="320px" [(visible)]="qrcodepopup" title="QR Kod Okutma Ekranı">
+  <div *dxTemplate="let data of 'content'">
+    <div class="row">
+      <div class="col-md-12">
+        <nb-card class="inline-form-card">
+          <nb-card-body>
+            <dx-text-area name="qrcode" placeholder="QR kodunu buraya giriniz" [(ngModel)]="qrcode" [(readOnly)]="qrcodeReadOnly"
+              style="height: 200px;" (keydown)="onAsiKarekoduChanged($event)" required>
+            </dx-text-area>
+
+
+            <br />
+            <dx-button id="btnStyle" (onClick)="send2qrCode()" type="Default" text="Sevk Oluştur">
+            </dx-button>
+          </nb-card-body>
+        </nb-card>
+      </div>
+    </div>
+  </div>
+</dx-popup>
+
+
+dispatch.component.ts
+
+import { Component, OnInit, ViewChild, AfterViewInit, AfterViewChecked } from '@angular/core';
+import { Person } from '../../model/person';
+import { IDispatchService } from '../../services/idispatch.service';
+import { IDefinitionService } from '../../services/idefinition.service';
+import { ForcesCommandDef } from '../../model/forcescommanddef';
+import { ReasonForExaminationDef } from '../../model/reasonforexaminationdef';
+import { NgForm, FormGroup, FormControl } from '@angular/forms';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { IMessageService } from '../../services/imessageservice';
+import { MSKBSResultCodes } from '../../model/mskbsresultcodes';
+import { IPersonService } from '../../services/ipersonservice';
+import { PersonResult } from '../../model/personresult';
+import { UploadedFile } from '../../imageuploader/uploaded-file';
+import { FancyImageUploaderOptions } from '../../imageuploader/interfaces';
+import { IFileUploadService } from '../../services/ifileuploadservice';
+import { FancyImageUploaderComponent, Status } from '../../imageuploader/fancy-image-uploader.component';
+import { SevkYeniGirisFoto } from '../../apimodel/sevkyenigirisfoto';
+import { PersonGetInput } from '../../model/persongetinput';
+import { AuthService } from '../../auth/services/auth.service';
+import { Guid } from '../../lib/guid';
+import { PhotoCaptureComponent } from '../../imageuploader/photoCapture';
+import { DxFileUploaderComponent } from 'devextreme-angular';
+
+
+
+
+@Component({
+  selector: 'mskbs-newdispatch',
+  templateUrl: './newdispatch.component.html',
+  styleUrls: ['./newdispatch.component.scss']
+})
+export class NewDispatchComponent implements OnInit, AfterViewInit {
+
+  public viewModel: SevkYeniGirisFoto;
+  public uniqueRefno: string;
+  public foreignUniqueRefno: number;
+  public birthDate: Date;
+  public dogumTarihi: Date;
+  public isTcOrForeign: string;
+  public personGetInput: PersonGetInput;
+  public person: Person;
+  public selectedId: string;
+  public fileValue: any[] = [];
+  public options: FancyImageUploaderOptions;
+  public isQueryPerson: boolean = false;
+  public isSaveDispatch: boolean = false;
+  showSevkKapsamiSehir: boolean = true;
+  showSevkKapsamiHastane: boolean = true;
+  identificationnumbers: string[];
+  showTcNoInput: boolean = false;
+  showForeignNoInput: boolean = true;
+  senderOtherReq: boolean = false;
+  senderOtherMilitaryReq: boolean = false;
+  reasonforexaminationDisable: boolean = true;
+  reasonforexaminationDataSource: Array<ReasonForExaminationDef> = new Array<ReasonForExaminationDef>();
+  forcesCommandDefDataSource: Array<ForcesCommandDef> = new Array<ForcesCommandDef>();
+  public ForcesCommoandRequired: boolean = true;
+  public LastNominationDateRequired: boolean = true;
+  public MilitaryClassRequired: boolean = true;
+  public MilitaryOfficeRequired: boolean = true;
+  public MilitarySchoolRequired: boolean = true;
+  public MilitaryUnitRequired: boolean = true;
+  public RankRequired: boolean = true;
+  public RegistryNumberRequired: boolean = true;
+
+  public NthAdmissionRequired: boolean = true;
+  public DispatchDocumentDateRequired: boolean = true;
+  public DispatchDocumentNoRequired: boolean = true;
+  //public SenderChaireRequired: boolean = true;
+  public controlOfRequired: boolean = false;
+  public controlOfRequiredMessage: string = "";
+  
+  //DOküman yükleme ve görüntüleme işlemleri
+  public uploadHeaders: any;
+  public dispatchFileValue: any[] = [];
+  public dispatchFileUploadUrl: string;
+  public gridDataSourceDispatchFile: any[] = [];
+
+  now: Date = new Date();
+  min: Date = new Date(1900, 0, 1);
+
+  @ViewChild('form') form: NgForm;
+  @ViewChild('imageUploader') imageUploader: FancyImageUploaderComponent;
+  @ViewChild('fileUploader') fileUploader: DxFileUploaderComponent;
+  @ViewChild('photoCapture') photoCapture: PhotoCaptureComponent;
+
+  constructor(private router: Router, private route: ActivatedRoute,
+    private personService: IPersonService,
+    private dispatchService: IDispatchService,
+    private authService: AuthService,
+    private messageService: IMessageService,
+    private definitionService: IDefinitionService,
+    private fileUploadService: IFileUploadService) {
+    this.viewModel = new SevkYeniGirisFoto();
+    this.personGetInput = new PersonGetInput();
+    this.identificationnumbers = ['T.C. Kimlik No', 'Yabancı Kimlik No'];
+    this.dispatchFileUploadUrl = this.fileUploadService.getUploadFileUrl();
+  }
+
+  ngOnInit() {
+    const that = this;
+    this.options = {
+      thumbnailHeight: 100,
+      thumbnailWidth: 100,
+      uploadUrl: this.fileUploadService.getUploadImageUrl(),
+      allowedImageTypes: ['image/png', 'image/jpeg'],
+      maxImageSize: 1,
+      autoUpload: true,
+      authTokenPrefix: 'Bearer',
+      authToken: sessionStorage.getItem('token')
+    };
+    this.fileUploadService.getImageSettings().subscribe(result => {
+      that.options.thumbnailHeight = result.pictureHeight;
+      that.options.thumbnailWidth = result.pictureWidth;
+    });
+    this.route.paramMap.subscribe((params: ParamMap) => {
+      // seçilen sevk ObjectId si route yoluyla buraya gönderildi
+      // dispatch bilgileri yüklenecek
+      this.selectedId = params.get('id');
+    });
+    const isSuperUser = this.authService.isSuperUser();
+    if (!isSuperUser) {
+      this.isQueryPerson = !this.authService.isQueryPerson();
+      this.isSaveDispatch = !this.authService.isSaveDispatch();
+    }
+    this.isTcOrForeign = this.identificationnumbers[0];
+
+
+    this.authService.getUserMilitaryUnit().subscribe(result => {
+      this.viewModel.muayeneyeGonderenMakam = result.organization;
+    });
+
+     const token = sessionStorage.getItem('token');
+
+    if (token) {
+        this.uploadHeaders = {
+            Authorization: `Bearer ${token}`,
+        };
+    }
+  }
+
+  async tc_KeyPress(event: KeyboardEvent) {
+    if (event.charCode === 13) {
+      this.queryPerson();
+    }
+  }
+
+  camDisable: boolean = false;
+  pictureDisable: boolean = true;
+  camOpen: boolean = false;
+
+  openCam() {
+    this.camOpen = true;
+    this.camDisable = true;
+    this.pictureDisable = false;
+    if (this.viewModel.TempBinaryDataObjectId) {
+      this.viewModel.TempBinaryDataObjectId = null;
+    }
+  }
+
+  cameraoff() {
+    const videoElem = <any>document.getElementsByTagName("video")[0];
+    if (videoElem) {
+      const stream = videoElem.srcObject;
+      if (stream) {
+
+        stream.getTracks().forEach((track) => {
+          track.stop();
+        });
+
+        videoElem.srcObject = null;
+      }
+    }
+    if (this.viewModel.TempBinaryDataObjectId) {
+      this.viewModel.TempBinaryDataObjectId = null;
+    }
+  }
+
+
+  closeCam() {
+    let that = this;
+    this.camOpen = false;
+    this.camDisable = false;
+    this.pictureDisable = true;
+    this.cameraoff();
+    this.options = {
+      thumbnailHeight: 100,
+      thumbnailWidth: 100,
+      uploadUrl: this.fileUploadService.getUploadImageUrl(),
+      allowedImageTypes: ['image/png', 'image/jpeg'],
+      maxImageSize: 1,
+      autoUpload: true,
+      authTokenPrefix: 'Bearer',
+      authToken: sessionStorage.getItem('token')
+    };
+    this.fileUploadService.getImageSettings().subscribe(result => {
+      that.options.thumbnailHeight = result.pictureHeight;
+      that.options.thumbnailWidth = result.pictureWidth;
+    });
+
+  }
+
+  onSelectionChanged(event: any) {
+    if (event.selectedItem != null) {
+      if (event.selectedItem.code == "DIGER" || event.selectedItem.name == "DİĞER") {
+        this.senderOtherReq = true;
+      }
+    } else {
+      this.senderOtherReq = false;
+    }
+  }
+
+  onSelectionChangedMilitaryUnit(event: any) {
+    if (event.selectedItem != null) {
+      if (event.selectedItem.code == "DIGER" || event.selectedItem.name == "DİĞER") {
+        this.senderOtherMilitaryReq = true;
+      }
+      else {
+        this.senderOtherMilitaryReq = false;
+      }
+    }
+    else {
+      this.senderOtherMilitaryReq = false;
+    }
+  }
+
+  onHcAdmissinTypeValueChanged(e) {
+    const newValue = e.value;
+    if (newValue != null) {
+      this.definitionService.getReasonForExaminationListByHcAdmissionType(newValue).toPromise().then(result => {
+        this.reasonforexaminationDataSource = result.reasonForExaminationDefs;
+        this.forcesCommandDefDataSource = result.forcesCommandDefs;
+        this.ForcesCommoandRequired = !result.forcesCommoandRequired;
+        this.LastNominationDateRequired = !result.lastNominationDateRequired;
+        this.MilitaryClassRequired = !result.militaryClassRequired;
+        this.MilitaryOfficeRequired = !result.militaryOfficeRequired;
+        this.MilitarySchoolRequired = !result.militarySchoolRequired;
+        this.MilitaryUnitRequired = !result.militaryUnitRequired;
+        this.RankRequired = !result.rankRequired;
+        this.RegistryNumberRequired = !result.registryNumberRequired;
+        //this.SenderChaireRequired = !result.senderChaireRequired;
+        this.NthAdmissionRequired = !result.nthAdmissionRequired;
+        this.DispatchDocumentDateRequired = !result.dispatchDocumentDateRequired;
+        this.DispatchDocumentNoRequired = !result.dispatchDocumentNoRequired;
+        this.reasonforexaminationDisable = false;
+      });
+    } else {
+      this.viewModel.muayeneSebebi = null;
+      this.reasonforexaminationDisable = true;
+      this.ForcesCommoandRequired = true;
+      this.LastNominationDateRequired = true;
+      this.MilitaryClassRequired = true;
+      this.MilitaryOfficeRequired = true;
+      this.MilitarySchoolRequired = true;
+      this.MilitaryUnitRequired = true;
+      this.RankRequired = true;
+      this.RegistryNumberRequired = true;
+      //this.SenderChaireRequired = true;
+      this.NthAdmissionRequired = true;
+      this.DispatchDocumentDateRequired = true;
+      this.DispatchDocumentNoRequired = true;
+    }
+    this.changeByHcAdmissionType();
+  }
+
+
+  changeByHcAdmissionType() {
+    if (this.ForcesCommoandRequired == false && this.viewModel.kuvvet != null) {
+      this.viewModel.kuvvet = null;
+    }
+    if (this.LastNominationDateRequired == false && this.viewModel.nasbi != null) {
+      this.viewModel.nasbi = null;
+    }
+    if (this.MilitaryClassRequired == false && this.viewModel.sinif != null) {
+      this.viewModel.sinif = null;
+    }
+    if (this.MilitaryOfficeRequired == false && this.viewModel.kayitliOlduguAskerlikSubesi != null) {
+      this.viewModel.kayitliOlduguAskerlikSubesi = null;
+    }
+    if (this.MilitarySchoolRequired == false && this.viewModel.okulu != null) {
+      this.viewModel.okulu = null;
+    }
+    if (this.MilitaryUnitRequired == false && this.viewModel.birlik != null) {
+      this.viewModel.birlik = null;
+    }
+    if (this.RankRequired == false && this.viewModel.rutbe != null) {
+      this.viewModel.rutbe = null;
+    }
+    if (this.RegistryNumberRequired == false && this.viewModel.sicilNo != null) {
+      this.viewModel.sicilNo = null;
+    }
+    /* if (this.SenderChaireRequired == false && this.viewModel.muayeneyeGonderenMakam != null) {
+      this.viewModel.muayeneyeGonderenMakam = null;
+    } */
+    if (this.MilitaryUnitRequired == false && this.viewModel.birlikAciklama != null) {
+      this.viewModel.birlikAciklama = null;
+    }
+    /* if (this.SenderChaireRequired == false && this.viewModel.muayeneyeGonderenMakamAciklama != null) {
+      this.viewModel.muayeneyeGonderenMakamAciklama = null;
+    } */
+  }
+
+  controlOfRequiredFiles() {
+    this.controlOfRequiredMessage = "";
+    this.controlOfRequired = false;
+    if (this.ForcesCommoandRequired == false && this.viewModel.kuvvet == null) {
+      this.controlOfRequiredMessage += "Kuvvet bilgisi boş geçilemez.";
+      this.controlOfRequired = true;
+    }
+    if (this.LastNominationDateRequired == false && this.viewModel.nasbi == null) {
+      this.controlOfRequiredMessage += "Nasbi bilgisi boş geçilemez.";
+      this.controlOfRequired = true;
+    }
+    if (this.MilitaryClassRequired == false && this.viewModel.sinif == null) {
+      this.controlOfRequiredMessage += "Sınıf bilgisi boş geçilemez.";
+      this.controlOfRequired = true;
+    }
+    if (this.MilitaryOfficeRequired == false && this.viewModel.kayitliOlduguAskerlikSubesi == null) {
+      this.controlOfRequiredMessage += "Askerlik Şubesi bilgisi boş geçilemez.";
+      this.controlOfRequired = true;
+    }
+    if (this.MilitarySchoolRequired == false && this.viewModel.okulu == null) {
+      this.controlOfRequiredMessage += "Okulu bilgisi boş geçilemez.";
+      this.controlOfRequired = true;
+    }
+    if (this.MilitaryUnitRequired == false && this.viewModel.birlik == null) {
+      this.controlOfRequiredMessage += "Birlik bilgisi boş geçilemez.";
+      this.controlOfRequired = true;
+    }
+    if (this.RankRequired == false && this.viewModel.rutbe == null) {
+      this.controlOfRequiredMessage += "Rütbe bilgisi boş geçilemez.";
+      this.controlOfRequired = true;
+    }
+    if (this.RegistryNumberRequired == false && this.viewModel.sicilNo == null) {
+      this.controlOfRequiredMessage += "Sicil Numarası bilgisi boş geçilemez.";
+      this.controlOfRequired = true;
+    }
+    if (this.viewModel.muayeneyeGonderenMakam == null) //this.SenderChaireRequired == false && 
+    {
+      this.controlOfRequiredMessage += "Muayeneye Gönderen Makam bilgisi boş geçilemez.";
+      this.controlOfRequired = true;
+    }
+
+    if (this.NthAdmissionRequired == false && this.viewModel.kacinciIslem == null) {
+      this.controlOfRequiredMessage += "Kaçıncı işlem bilgisi boş geçilemez.";
+      this.controlOfRequired = true;
+    }
+    if (this.DispatchDocumentDateRequired == false && this.viewModel.sevkEvrakTarihi == null) {
+      this.controlOfRequiredMessage += "Sevk evrak tarihi bilgisi boş geçilemez.";
+      this.controlOfRequired = true;
+    }
+    if (this.DispatchDocumentNoRequired == false && this.viewModel.sevkEvrakSayisi == null) {
+      this.controlOfRequiredMessage += "Sevk evrak sayısı bilgisi boş geçilemez.";
+      this.controlOfRequired = true;
+    }
+  }
+
+  save() {
+
+    if (!this.form.valid) {
+      if (this.form) {
+        this.messageService.showError('Zorunlu (kırmızı) alanlar boş geçilemez');
+        return;
+      }
+    }
+
+    this.controlOfRequiredFiles();
+    if (this.controlOfRequired) {
+      this.messageService.showError(this.controlOfRequiredMessage);
+      return;
+    }
+
+
+    if (this.senderOtherReq) {
+      if (this.viewModel.muayeneyeGonderenMakamAciklama == null || this.viewModel.muayeneyeGonderenMakamAciklama == "") {
+        this.messageService.showError('Muayeneye gönderen makam diğer için açıklama boş geçilemez.');
+        return;
+      }
+    }
+
+    if (this.senderOtherMilitaryReq) {
+      if (this.viewModel.birlikAciklama == null || this.viewModel.birlikAciklama == "") {
+        this.messageService.showError('Birlik açıklama diğer için açıklama boş geçilemez.');
+        return;
+      }
+    }
+
+    const that = this;
+
+     //this.viewModel.telefonNo = 5415821575;
+    this.dispatchService.newDispatchPhoto(this.viewModel).toPromise().then(result => {
+
+      if (result.sonucKodu === MSKBSResultCodes.SuccessResultCode) {
+
+    const message =
+        `${result.sonucKodu}-${result.sonucMesaji}. ` +
+        `${result.sevkSiraNo} sevk numarası ile işlem kaydedilmiştir.`;
+
+    that.messageService.showInfo(message);
+
+    // DispatchFile GUID'lerini grid'e bas
+    //this.gridDataSourceDispatchFile = (result.dispatchFileIds || []).map(id => ({
+    //dispatchFileId: id}));
+
+    this.viewModel = new SevkYeniGirisFoto();
+    //this.viewModel.dispatchFiles = [];
+    this.gridDataSourceDispatchFile = [];
+    this.dispatchFileValue = [];
+   
+}else {
+        const message = `${result.sonucKodu}-${result.sonucMesaji}.`;
+        that.messageService.showError(message);
+      }
+    },
+      error => {
+        if (error && error.message) {
+          that.messageService.showError(error.message);
+          if (error.status == 401 || error.status == 0) {
+            const uri = `/kimlik/giris`;
+            this.router.navigate([uri]);
+          }
+        } else {
+          if (error) {
+            that.messageService.showError(error.toString());
+          }
+        }
+      });
+  }
+
+  public queryPerson() {
+    this.sevkBilgileriniBosalt();
+    const that = this;
+    if (this.isTcOrForeign === this.identificationnumbers[0]) {
+      if (that.uniqueRefno === "" || typeof that.uniqueRefno === 'undefined' || that.uniqueRefno.length != 11) {
+        this.messageService.showWarning(`Geçerli T.C. kimlik numarası girmelisiniz!`);
+        //confirm(`Geçerli T.C. kimlik numarası girmelisiniz!`);
+        that.uniqueRefno = undefined;
+      }
+      if (that.uniqueRefno !== "" && typeof that.uniqueRefno !== 'undefined' && that.uniqueRefno.length === 11) {
+        this.personGetInput.uniqueRefno = Number(that.uniqueRefno);
+        this.personGetInput.birthDate = that.dogumTarihi;//this.viewModel.dogumTarihi;
+        this.personService.getPerson(this.personGetInput).toPromise().then((personRes: PersonResult) => {
+          if (personRes && personRes.person) {
+            const person = personRes.person;
+            that.viewModel.tcKimlikNo = person.uniqueRefno;
+            that.viewModel.adi = person.name;
+            that.viewModel.soyadi = person.surname;
+            that.viewModel.anneAdi = person.motherName;
+            that.viewModel.babaAdi = person.fatherName;
+            that.viewModel.cinsiyet = person.gender;
+            that.viewModel.dogumTarihi = person.birthDate;
+            that.viewModel.adres = person.address;
+
+            that.viewModel.kuvvet = person.forcesCommand;
+            that.viewModel.sinif = person.militaryClass;
+            that.viewModel.rutbe = person.rank;
+            that.viewModel.birlik = person.militaryUnit;
+            that.viewModel.birlikAciklama = person.militaryUnitDescription;
+            that.viewModel.okulu = person.militarySchool;
+            that.viewModel.sicilNo = person.registryNumber;
+            that.viewModel.nasbi = person.lastNominationDate;
+            that.viewModel.kayitliOlduguAskerlikSubesi = person.militaryOffice;
+            that.viewModel.ucucuGorevi = person.flyingMission;
+            that.viewModel.uctuguUcakTipi = person.flyingPlaneType;
+
+            if (person.hcAdmissionTypeDef == Guid.empty().valueOf().toString()) {
+              that.viewModel.skBasvuruGrubu = null;
+            } else {
+              that.viewModel.skBasvuruGrubu = person.hcAdmissionTypeDef;
+            }
+
+
+            if (personRes.townOfBirthCode) {
+              that.viewModel.dogumYeri = personRes.townOfBirthCode.toString();
+            }
+            if (personRes.nationalityCode) {
+              that.viewModel.uyrugu = personRes.nationalityCode;
+            }
+          } 
+         
+          else {
+            that.messageService.showError(personRes.sonucKodu + " - " + personRes.sonucMesaji);
+
+            //Eğer Model Dolu ise boşaltsın
+             this.viewModel = new SevkYeniGirisFoto();
+            //this.messageService.showError(`${that.uniqueRefno} - T.C. kimlik numarası ile kişi kaydı bulunamadı.`);
+          }
+        });
+      }
+      this.personGetInput.uniqueRefno = undefined;
+    }
+    if (this.isTcOrForeign === this.identificationnumbers[1]) {
+      if (that.foreignUniqueRefno === null || that.foreignUniqueRefno === undefined) {
+        this.messageService.showWarning(`Geçerli yabancı kimlik numarası girmelisiniz!`);
+       // confirm(`Geçerli yabancı kimlik numarası girmelisiniz!`);
+        that.foreignUniqueRefno = undefined;
+      }
+      if (that.foreignUniqueRefno !== null && that.foreignUniqueRefno !== undefined) {
+        this.personGetInput.foreignUniqueRefno = that.foreignUniqueRefno;
+        this.personService.getPerson(this.personGetInput).toPromise().then((personRes: PersonResult) => {
+          if (personRes && personRes.person) {
+            const person = personRes.person;
+            that.viewModel.yabanciKimlikNo = person.foreignUniqueRefno;
+            that.viewModel.adi = person.name;
+            that.viewModel.soyadi = person.surname;
+            that.viewModel.anneAdi = person.motherName;
+            that.viewModel.babaAdi = person.fatherName;
+            that.viewModel.cinsiyet = person.gender;
+            that.viewModel.dogumTarihi = person.birthDate;
+            that.viewModel.adres = person.address;
+            that.viewModel.skBasvuruGrubu = person.hcAdmissionTypeDef;
+            that.viewModel.kuvvet = person.forcesCommand;
+            that.viewModel.sinif = person.militaryClass;
+            that.viewModel.rutbe = person.rank;
+            that.viewModel.birlik = person.militaryUnit;
+            that.viewModel.birlikAciklama = person.militaryUnitDescription;
+            that.viewModel.okulu = person.militarySchool;
+            that.viewModel.sicilNo = person.registryNumber;
+            that.viewModel.nasbi = person.lastNominationDate;
+            that.viewModel.kayitliOlduguAskerlikSubesi = person.militaryOffice;
+            that.viewModel.ucucuGorevi = person.flyingMission;
+            that.viewModel.uctuguUcakTipi = person.flyingPlaneType;
+            if (personRes.townOfBirthCode) {
+              that.viewModel.dogumYeri = personRes.townOfBirthCode.toString();
+            }
+            if (personRes.nationalityCode) {
+              that.viewModel.uyrugu = personRes.nationalityCode;
+            }
+          } else {
+            this.messageService.showError(`Yabancı kimlik numarası ile kişi kaydı bulunamadı.`);
+          }
+        });
+      }
+      this.personGetInput.foreignUniqueRefno = undefined;
+    }
+  }
+
+  onSevkKapsamiChanged(data) {
+    if (data.value !== undefined) {
+      if (data.value === 1) {
+        this.showSevkKapsamiSehir = true;
+        this.showSevkKapsamiHastane = true;
+      } if (data.value === 2) {
+        this.showSevkKapsamiSehir = false;
+        this.showSevkKapsamiHastane = true;
+      } if (data.value === 3) {
+        this.showSevkKapsamiSehir = true;
+        this.showSevkKapsamiHastane = false;
+      }
+    }
+  }
+
+  public ngAfterViewInit(): void {
+    const that = this;
+    if (this.form) {
+      setTimeout(function () {
+        that.validateAllFields(that.form.control);
+      }, 10);
+    }
+  }
+
+  private validateAllFields(formGroup: FormGroup) {
+    const keys = Object.keys(formGroup.controls);
+    for (const key of keys) {
+      const control = formGroup.get(key);
+      if (control instanceof FormControl) {
+        control.markAsTouched({ onlySelf: true });
+      } else if (control instanceof FormGroup) {
+        this.validateAllFields(control);
+      }
+    }
+  }
+
+  public onUpload(file: UploadedFile) {
+    this.viewModel.TempBinaryDataObjectId = file.response.replace(/"/g, '');
+  }
+
+  public refNoChanged($event) {
+    if ($event.value && $event.value === this.identificationnumbers[0]) {
+      this.showTcNoInput = false;
+      this.showForeignNoInput = true;
+      this.foreignUniqueRefno = undefined;
+    }
+    if ($event.value && $event.value === this.identificationnumbers[1]) {
+      this.showTcNoInput = true;
+      this.showForeignNoInput = false;
+      this.uniqueRefno = undefined;
+    }
+  }
+
+  public qrcodepopup: boolean = false;
+  public qrcodeReadOnly: boolean = false;
+  public qrcode: string;
+
+  public onAsiKarekoduChanged(event): void {
+    let keyCode: any = event.keyCode;
+    if (keyCode == 13) {
+      this.qrcodeReadOnly = true;
+    }
+  }
+
+  public qrCodeRead() {
+    this.qrcodepopup = true;
+    this.qrcode = "";
+    this.qrcodeReadOnly = false;
+  }
+
+  photoCaptured(file: UploadedFile) {
+    this.viewModel.TempBinaryDataObjectId = file.response.replace(/"/g, '');
+  }
+
+  public send2qrCode() {
+    this.closeCam();
+    const that = this;
+    //yeni qr okutuldugunda silme işlemi yapılması için eklendi.
+    if (this.imageUploader) {
+      this.imageUploader.removeImage();
+    }
+    if (this.viewModel.TempBinaryDataObjectId)
+      this.viewModel.TempBinaryDataObjectId = null;
+
+    if (this.qrcode == null || this.qrcode == "") {
+      this.messageService.showError('QR kod Boş olamaz');
+      return;
+    }
+    if(!this.qrcode.includes(',')){
+      this.messageService.showError('QR kodu hatalı');
+    }
+    else {
+      let re = /\"/gi;
+      this.qrcode = this.qrcode.replace(re, '');
+      const qrCodeConvert2Json = this.qrcode.split(',').map(keyVal => {
+        return keyVal
+          .split(':')
+          .map(_ => _.trim())
+      })
+        .reduce((accumulator, currentValue) => {
+          accumulator[currentValue[0]] = currentValue[1]
+          return accumulator
+        }, {});
+
+        if(qrCodeConvert2Json["telefonNo"].length != 10){
+          this.messageService.showError(`Telefon Numarası 10 haneli olmalı`);
+          return
+        }
+      //for (let item in qrCodeConvert2Json) {
+        this.personGetInput.uniqueRefno = qrCodeConvert2Json["tcKimlikNo"];
+        var stringDate = qrCodeConvert2Json["dogumTarihi"].split(' ')[0];
+        var stringDateParse = stringDate.split('.');
+        var date = new Date(Number.parseInt(stringDateParse[2]), Number.parseInt(stringDateParse[1]) - 1, Number.parseInt(stringDateParse[0]), 10, 0);
+        this.personGetInput.birthDate = date//new Date(temp);
+        this.personService.getPerson(this.personGetInput).toPromise().then((personRes: PersonResult) => {
+          if (personRes && personRes.person) {
+            const person = personRes.person;
+            that.viewModel.tcKimlikNo = person.uniqueRefno;
+            that.viewModel.yabanciKimlikNo = person.foreignUniqueRefno;
+            that.viewModel.adi = person.name;
+            that.viewModel.soyadi = person.surname;
+            that.viewModel.anneAdi = person.motherName;
+            that.viewModel.babaAdi = person.fatherName;
+            that.viewModel.cinsiyet = person.gender;
+            that.viewModel.dogumTarihi = person.birthDate;
+            that.viewModel.adres = person.address;
+
+            that.viewModel.kuvvet = person.forcesCommand;
+            that.viewModel.sinif = person.militaryClass;
+            that.viewModel.rutbe = person.rank;
+            that.viewModel.birlik = person.militaryUnit;
+            that.viewModel.birlikAciklama = person.militaryUnitDescription;
+            that.viewModel.okulu = person.militarySchool;
+            that.viewModel.sicilNo = person.registryNumber;
+            that.viewModel.nasbi = person.lastNominationDate;
+            that.viewModel.kayitliOlduguAskerlikSubesi = person.militaryOffice;
+            that.viewModel.ucucuGorevi = person.flyingMission;
+            that.viewModel.uctuguUcakTipi = person.flyingPlaneType;
+            var stringDate = qrCodeConvert2Json["sevkEvrakTarihi"].split(' ')[0];
+            var stringDateParse = stringDate.split('.');
+            var sevkEvrakTarihi = new Date(Number.parseInt(stringDateParse[2]), Number.parseInt(stringDateParse[1]) - 1, Number.parseInt(stringDateParse[0]), 10, 0);
+            that.viewModel.sevkEvrakTarihi = sevkEvrakTarihi;
+            //this.viewModel.cinsiyet = Number(qrCodeConvert2Json["cinsiyet"]);
+            that.viewModel.muayeneSebebi = qrCodeConvert2Json["muayeneSebebi"];
+            that.viewModel.sevkKapsamiHastane = qrCodeConvert2Json["sevkKapsamiHastane"];
+            that.viewModel.alimId = qrCodeConvert2Json["alimId"];
+            that.viewModel.kacinciIslem = qrCodeConvert2Json["kacinciIslem"];
+            that.viewModel.sevkEvrakSayisi = qrCodeConvert2Json["sevkEvrakSayisi"];
+            that.viewModel.telefonNo = qrCodeConvert2Json["telefonNo"];
+
+            if (personRes.townOfBirthCode) {
+              that.viewModel.dogumYeri = personRes.townOfBirthCode.toString();
+            }
+            if (personRes.nationalityCode) {
+              that.viewModel.uyrugu = personRes.nationalityCode;
+            }
+          } else {
+            this.messageService.showError(`Yabancı kimlik numarası ile kişi kaydı bulunamadı.`);
+            return
+          }
+        });
+    
+
+        
+
+      this.viewModel.uyrugu = "9980";
+      this.viewModel.skBasvuruGrubu = "d03a4967-40a3-47a9-a846-a8dd008c2ba6";
+      this.viewModel.sevkKapsami = 3;
+      this.viewModel.muayeneyeGonderenMakam = "fa18aeca-e514-4591-a5ac-acd000c0dd6f";
+      this.qrcode = null;
+      this.qrcodepopup = false;
+    }
+  }
+
+  sevkBilgileriniBosalt(){
+    this.viewModel.kacinciIslem = null;
+    this.viewModel.sevkEvrakTarihi = null;
+    this.viewModel.sevkEvrakSayisi = null;
+    this.viewModel.sevkKapsami = null;
+    this.viewModel.alimId = null;
+    this.viewModel.telefonNo = null;
+    this.viewModel.sevkKapsamiHastane = null;
+   // this.viewModel.dispatchFiles = [];
+    this.gridDataSourceDispatchFile = [];
+    this.dispatchFileValue = [];
+  }
+
+//   public dispatchFileUploaded(data: any) {
+//     const fileId = data.request.response.replace(/"/g, '');
+
+//     if (fileId) {
+//         this.viewModel.dispatchFiles.push(fileId);
+//         this.gridDataSourceDispatchFile.push({ dispatchFileId: fileId });
+//     }
+// }
+
+private previewFile(
+    responseBody: any,
+    contentType: string,
+    fileName: string
+) {
+    const blob = new Blob(
+        [responseBody],
+        { type: contentType }
+    );
+
+    const url = window.URL.createObjectURL(blob);
+
+    window.open(url, '_blank');
+}
+
+public dispatchFileSelectionChanged(e: any) {
+
+    if (e.rowType !== 'data') {
+        return;
+    }
+
+    const dispatchFileId = e.data.dispatchFileId;
+
+    if (!dispatchFileId) {
+        return;
+    }
+
+    console.log('Tıklanan dosya:', dispatchFileId);
+
+    this.fileUploadService
+        .downloadDispatchFile(dispatchFileId)
+        .toPromise()
+        .then(response => {
+
+            const contentType =
+                response.headers.get('content-type') ||
+                'application/octet-stream';
+
+            console.log('Gelen dosya tipi:', contentType);
+
+            this.previewFile(
+                response.body,
+                contentType,
+                dispatchFileId
+            );
+
+        })
+        .catch(error => {
+            console.error('Dosya getirilemedi:', error);
+        });
+}
+}
+
+
+
+
+
+
+using System;
+using System.Collections.Generic;
+using TCHInfrastructure.Interface;
+
+namespace MSKBSModel
+{
+    /// <summary>
+    /// Sevk bilgileri
+    /// </summary>
+    public partial class Dispatch : ITCHEntity, ITCHAuditEntity<Guid>, ITCHConcurrencyToken
+    {
+        public Guid ObjectId { get; set; }
+        public Guid Person { get; set; }
+
+		//DispatchPdf
+		//public Guid DispatchPdf { get; set; }
+		//public ICollection<DispatchFile> DispatchFiles { get; set; }
+
+		public DateTime DispatchDate { get; set; }
+        /// <summary>
+        /// Kaçıncı İşlem
+        /// </summary>
+        public int? NthAdmission { get; set; }
+        public DateTime DispatchDocumentDate { get; set; }
+        public string DispatchDocumentNo { get; set; }
+        /// <summary>
+        /// Muayene Sebebi
+        /// </summary>
+        public Guid ReasonForExamination { get; set; }        
+        /// <summary>
+        /// Sevk Kapsamı
+        /// </summary>
+        public DispatchScope DispatchScope { get; set; }
+        /// <summary>
+        /// Sevk Kapsamı Hastane
+        /// </summary>
+        public Guid? DispatchScopeHospital { get; set; }
+        /// <summary>
+        /// Sevk Kapsamı Şehir
+        /// </summary>
+        public Guid? DispatchScopeProvince { get; set; }
+        public long DispatchNo { get; set; }
+        public States CurrentState { get; set; }
+        public DateTime CreationDate { get; set; }
+        public Guid CreatedBy { get; set; }
+        public DateTime LastUpdate { get; set; }
+        public Guid UpdatedBy { get; set; }
+        public long ConcurrencyToken { get; set; }
+        public Guid? PhotoObjectId { get; set; }
+        public byte[] Photo { get; set; }
+        public bool? AutomaticDispatch { get; set; }
+
+        // person
+        public long? UniqueRefno { get; set; }
+        public long? ForeignUniqueRefno { get; set; }
+        public string Name { get; set; }
+        public string Surname { get; set; }
+        public string MotherName { get; set; }
+        public string FatherName { get; set; }
+        public Guid? Nationality { get; set; }
+        public bool? BdYearOnly { get; set; }
+        public DateTime BirthDate { get; set; }
+        public Guid? TownOfBirth { get; set; }
+        public Gender Gender { get; set; }
+        public long? PhoneNumber { get; set; }
+        public string Address { get; set; }
+        /// <summary>
+        /// Sağlık Kurulu Başvuru Grubu
+        /// </summary>
+        public Guid HcAdmissionTypeDef { get; set; }
+        /// <summary>
+        /// Kuvvet
+        /// </summary>
+        public Guid? ForcesCommand { get; set; }
+        /// <summary>
+        /// Rütbe
+        /// </summary>
+        public Guid? Rank { get; set; }
+        /// <summary>
+        /// Sınıf
+        /// </summary>
+        public Guid? MilitaryClass { get; set; }
+        /// <summary>
+        /// Birlik
+        /// </summary>
+        public Guid? MilitaryUnit { get; set; }
+        public Guid? MilitarySchool { get; set; }
+        
+        //Muayeneye Gönderen Makam
+        public Guid? SenderChair { get; set; }
+        
+        public string SenderChairOther { get; set; }
+        public Guid? MilitaryOffice { get; set; }
+        /// <summary>
+        /// Uçucu Görev
+        /// </summary>
+        public Guid? FlyingMission { get; set; }
+        /// <summary>
+        /// Uçtuğu Uçak Tipi
+        /// </summary>
+        public Guid? FlyingPlaneType { get; set; }
+        public string RegistryNumber { get; set; }
+
+        //Nasbı
+        public DateTime? LastNominationDate { get; set; }
+
+        /// <summary>
+        /// Birlik Açıklama
+        /// </summary>
+        public string MilitaryUnitDescription { get; set; }
+
+        public string BdPlace { get; set; }
+        public string BdCode { get; set; }
+
+        public int? PurchaseId { get; set; }
+
+        public string Desciption { get; set; }
+
+
+		public enum States
+        {
+            NEW = 1,
+            PROVISION = 2,
+            REPORT = 3,
+            CANCEL = 4,
+            NOTIFY = 5,
+        }
+    }
+}
+
+
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using MSKBSModel;
+using System;
+using System.Linq.Expressions;
+
+namespace MSKBSDataModel.Configurations
+{
+    public class DispatchConfig : IEntityTypeConfiguration<Dispatch>
+    {
+        public void Configure(EntityTypeBuilder<Dispatch> builder)
+        {
+            builder.HasKey(e => e.ObjectId);
+
+            builder.ToTable("DISPATCH");
+
+            builder.Property(e => e.ObjectId)
+                .HasColumnName("OBJECTID")
+                .ValueGeneratedNever();
+
+            builder.Property(e => e.DispatchDate).HasColumnName("DISPATCHDATE");
+
+            builder.Property(e => e.CurrentState).HasColumnName("CURRENTSTATE");
+
+            builder.Property(e => e.DispatchDocumentDate)
+                .HasColumnName("DISPATCHDOCUMENTDATE");
+
+            builder.Property(e => e.DispatchDocumentNo)
+                .HasColumnName("DISPATCHDOCUMENTNO")
+                .HasMaxLength(50);
+
+            builder.Property(e => e.DispatchScope).HasColumnName("DISPATCHSCOPE");
+
+            builder.Property(e => e.DispatchScopeHospital).HasColumnName("DISPATCHSCOPEHOSPITAL");
+
+            builder.Property(e => e.DispatchScopeProvince).HasColumnName("DISPATCHSCOPEPROVINCE");
+
+            builder.Property(e => e.NthAdmission).HasColumnName("NTHADMISSION");
+
+            builder.Property(e => e.DispatchNo).HasColumnName("DISPATCHNO");
+
+            builder.Property(e => e.Person).HasColumnName("PERSON");
+
+            builder.Property(e => e.ReasonForExamination).HasColumnName("REASONFOREXAMINATION");
+
+            builder.HasOne<Person>().WithMany().HasForeignKey(e => e.Person).OnDelete(DeleteBehavior.Restrict);
+            
+            builder.Property(e => e.CreationDate)
+                .HasColumnName("CREATIONDATE");
+
+            builder.Property(e => e.CreatedBy)
+                .HasColumnName("CREATEDBY");
+
+            builder.Property(e => e.LastUpdate)
+                .HasColumnName("LASTUPDATE");
+
+            builder.Property(e => e.UpdatedBy)
+                .HasColumnName("UPDATEDBY");
+
+            builder.Property(e => e.ConcurrencyToken)
+                .HasColumnName("CONCURRENCYTOKEN")
+                .ValueGeneratedNever()
+                ; // .IsConcurrencyToken();
+
+
+
+            // Person
+
+            builder.Property(e => e.UniqueRefno)
+                .HasColumnName("UNIQUEREFNO");
+
+            builder.Property(e => e.ForeignUniqueRefno)
+                .HasColumnName("FOREIGNUNIQUEREFNO");
+
+            builder.Property(e => e.Name).IsRequired()
+                .HasColumnName("NAME").HasMaxLength(64);
+
+            builder.Property(e => e.Surname).IsRequired()
+                .HasColumnName("SURNAME").HasMaxLength(50);
+
+            builder.Property(e => e.FatherName).IsRequired()
+                .HasColumnName("FATHERNAME").HasMaxLength(50);
+
+            builder.Property(e => e.MotherName).IsRequired()
+                .HasColumnName("MOTHERNAME").HasMaxLength(64);
+
+            builder.Property(e => e.Nationality).HasColumnName("NATIONALITY");
+
+            builder.Property(e => e.TownOfBirth).HasColumnName("TOWNOFBIRTH");
+
+            builder.Property(e => e.BirthDate).HasColumnName("BIRTHDATE");
+                        
+            builder.Property(e => e.BdYearOnly).HasColumnName("BDYEARONLY").HasColumnType("NUMBER(1)");
+
+            builder.Property(e => e.Gender).HasColumnName("GENDER");
+
+            builder.Property(e => e.Address).HasColumnName("ADDRESS").HasMaxLength(512);
+
+            builder.Property(e => e.HcAdmissionTypeDef).HasColumnName("HCADMISSIONTYPE");
+
+            builder.Property(e => e.ForcesCommand).HasColumnName("FORCESCOMMAND");
+
+            builder.Property(e => e.Rank).HasColumnName("RANK");
+
+            builder.Property(e => e.MilitaryClass).HasColumnName("MILITARYCLASS");
+
+            builder.Property(e => e.MilitaryOffice).HasColumnName("MILITARYOFFICE");
+
+            builder.Property(e => e.MilitaryUnit).HasColumnName("MILITARYUNIT");
+
+            builder.Property(e => e.MilitarySchool).HasColumnName("MILITARYSCHOOL");
+
+            builder.Property(e => e.LastNominationDate).HasColumnName("LASTNOMINATIONDATE");
+
+            builder.Property(e => e.SenderChair).HasColumnName("SENDERCHAIR");
+            builder.Property(e => e.SenderChairOther).HasColumnName("SENDERCHAIROTHER").HasMaxLength(1000);
+
+            builder.Property(e => e.RegistryNumber).HasColumnName("REGISTRYNUMBER").HasMaxLength(50);
+
+            builder.Property(e => e.MilitaryUnitDescription).HasColumnName("MILITARYUNITDESCRIPTION").HasMaxLength(1000);
+
+            builder.Property(e => e.FlyingMission).HasColumnName("FLYINGMISSION");
+            builder.HasOne<FlyingMissionDef>().WithMany().HasForeignKey(e => e.FlyingMission).OnDelete(DeleteBehavior.Restrict);
+
+            builder.Property(e => e.FlyingPlaneType).HasColumnName("FLYINGPLANETYPE");
+            builder.HasOne<PlaneTypeDef>().WithMany().HasForeignKey(e => e.FlyingPlaneType).OnDelete(DeleteBehavior.Restrict);
+
+            builder.Property(e => e.BdPlace).HasColumnName("BDPLACE").HasMaxLength(500);
+            builder.Property(e => e.BdCode).HasColumnName("BDCODE").HasMaxLength(250);
+
+            builder.Property(e => e.PurchaseId).HasColumnName("PURCHASEID");
+            builder.Property(e => e.AutomaticDispatch).HasColumnName("AUTOMATICDISPATCH").HasColumnType("NUMBER(1)");
+            builder.Property(e => e.Desciption).HasColumnName("DESCIPTION").HasMaxLength(500);
+			builder.Property(x => x.Photo).HasColumnName("PHOTO").HasColumnType("blob");
+
+
+		}
+    }
+}
+
+
+
+
+
+
+
+using System;
+using System.Collections.Generic;
+using TCHInfrastructure.Interface;
+
+namespace MSKBSModel
+{
+    /// <summary>
+    /// Kişi
+    /// </summary>
+    public partial class Person : ITCHEntity, ITCHAuditEntity<Guid>, ITCHConcurrencyToken
+    {
+        public Guid ObjectId { get; set; }
+        public long? UniqueRefno { get; set; }
+        public long? ForeignUniqueRefno { get; set; }
+        public string Name { get; set; }
+        public string Surname { get; set; }
+        public string MotherName { get; set; }
+        public string FatherName { get; set; }
+        public Guid? Nationality { get; set; }
+        public bool? BdYearOnly { get; set; }
+        public DateTime BirthDate { get; set; }
+        public Guid? TownOfBirth { get; set; }
+        public Gender Gender { get; set; }
+        public string Address { get; set; }
+        /// <summary>
+        /// Sağlık Kurulu Başvuru Grubu
+        /// </summary>
+        public Guid HcAdmissionTypeDef { get; set; }
+        /// <summary>
+        /// Kuvvet
+        /// </summary>
+        public Guid? ForcesCommand { get; set; }
+        /// <summary>
+        /// Rütbe
+        /// </summary>
+        public Guid? Rank { get; set; }
+        /// <summary>
+        /// Sınıf
+        /// </summary>
+        public Guid? MilitaryClass { get; set; }
+        /// <summary>
+        /// Birlik
+        /// </summary>
+        public Guid? MilitaryUnit { get; set; }
+        public Guid? MilitarySchool { get; set; }
+        public Guid? SenderChair { get; set; }
+        public string SenderChairOther { get; set; }
+        public Guid? MilitaryOffice { get; set; }
+        /// <summary>
+        /// Uçucu Görev
+        /// </summary>
+        public Guid? FlyingMission { get; set; }
+        /// <summary>
+        /// Uçtuğu Uçak Tipi
+        /// </summary>
+        public Guid? FlyingPlaneType { get; set; }
+        public string RegistryNumber { get; set; }
+        public DateTime? LastNominationDate { get; set; }
+        /// <summary>
+        /// Birlik Açıklama
+        /// </summary>
+        public string MilitaryUnitDescription { get; set; }
+
+        public DateTime CreationDate { get; set; }
+        public Guid CreatedBy { get; set; }
+        public DateTime LastUpdate { get; set; }
+        public Guid UpdatedBy { get; set; }
+        public long ConcurrencyToken { get; set; }
+        public string BdPlace { get; set; }
+        public string BdCode { get; set; }
+    }
+}
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace MSKBSModel
+{
+    /// <summary>
+    /// Sevk kapsamı
+    /// </summary>
+    public enum DispatchScope
+    {
+        /// <summary>
+        /// Kapsam belirtilmemiş
+        /// </summary>
+        NoScope = 1,
+        /// <summary>
+        /// Belirlenmiş bir şehirdeki hastaneler
+        /// </summary>
+        Province = 2,
+        /// <summary>
+        /// Belirli bir hastane
+        /// </summary>
+        Hospital = 3
+    }
+}
+
+
+
+using System;
+using TCHInfrastructure.Interface;
+
+namespace MSKBSModel
+{
+    public class DocumentDef : ITCHEntity, ITCHAuditEntity<Guid>, ITCHConcurrencyToken
+    {
+        public Guid ObjectId { get; set; }
+        public string Code { get; set; }
+        public string Name { get; set; }
+        public DateTime CreationDate { get; set; }
+        public Guid CreatedBy { get; set; }
+        public DateTime LastUpdate { get; set; }
+        public Guid UpdatedBy { get; set; }
+        public long ConcurrencyToken { get; set; }
+    }
+}
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using TCHInfrastructure.Interface;
+
+namespace MSKBSModel
+{
+    public class DispatchFile :  ITCHEntity, ITCHAuditEntity<Guid>, ITCHConcurrencyToken
+	{
+		public Guid ObjectId { get; set; }
+		public DateTime CreationDate { get; set; }
+		public Guid CreatedBy { get; set; }
+		public DateTime LastUpdate { get; set; }
+		public Guid UpdatedBy { get; set; }
+		public long ConcurrencyToken { get; set; }
+		public string Description { get; set; }
+		public byte[] DataContent { get; set; }
+
+		public string FileName { get; set; }
+
+		public string FileType { get; set; }
+			
+		public Guid DispatchLaw3713{ get; set; }
+		// Navigation
+		//public Dispatch DispatchNavigation { get; set; }
+        //Navigation
+        public DispatchLaw3713 DispatchNavigation { get; set; }
+
+    }
+
+}
+
+
+
+
