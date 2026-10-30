@@ -36,6 +36,16 @@ export class DispatchService {
  cancel(item:Pick<DispatchItem,'id'|'version'>){
   return this.http.patch<DispatchSaveResponse>(this.url+'/'+item.id+'/cancel',{id:item.id,version:item.version});
  }
+ /** Fotoğraf için ayrı endpoint; kimlik görseli belge olarak karıştırılmaz. */
+ getPhoto(id:string){return this.http.get(this.url+'/'+id+'/photo',{responseType:'blob'});}
+ uploadPhoto(id:string,file:File){
+  const body=new FormData();body.append('file',file,file.name);
+  return this.http.post<DispatchSaveResponse>(this.url+'/'+id+'/photo',body);
+ }
+ deletePhoto(id:string,version:number){
+  return this.http.delete<DispatchSaveResponse>(this.url+'/'+id+'/photo',
+   {params:new HttpParams().set('version',version)});
+ }
  files(id:string){return this.http.get<DispatchFileItem[]>(this.url+'/'+id+'/files');}
  uploadFile(id:string,file:File){
   const body=new FormData();body.append('file',file,file.name);
