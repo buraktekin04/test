@@ -1,0 +1,16 @@
+using Microsoft.AspNetCore.Http;
+using System;
+
+namespace MSKBSServer.v1.Models
+{
+    /// <summary>
+    /// SevkYeniGirisFoto
+    /// </summary>
+    public class SevkYeniGirisFoto : SevkYeniGiris
+    {
+        /// <summary>
+        /// TempBinaryDataObjectId
+        /// </summary>
+        public string TempBinaryDataObjectId { get; set; }
+    }
+}
