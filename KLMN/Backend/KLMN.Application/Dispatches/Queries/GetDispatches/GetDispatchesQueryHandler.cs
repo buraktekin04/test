@@ -77,15 +77,19 @@ public sealed class GetDispatchesQueryHandler(IKLMNDbContext db)
                     .Where(x=>!x.IsDeleted)
                     .Select(x=>new {x.Id,x.ConnectedTopUnity})
                     .ToListAsync(ct);
+                var childrenByParent=relations.Where(x=>x.ConnectedTopUnity.HasValue)
+                    .GroupBy(x=>x.ConnectedTopUnity!.Value)
+                    .ToDictionary(x=>x.Key,x=>x.Select(child=>child.Id).ToArray());
                 var related=new HashSet<Guid>{senderUnitId};
                 var frontier=new Queue<Guid>();
                 frontier.Enqueue(senderUnitId);
                 while(frontier.Count>0)
                 {
                     var parent=frontier.Dequeue();
-                    foreach(var child in relations.Where(x=>x.ConnectedTopUnity==parent))
+                    if(!childrenByParent.TryGetValue(parent,out var children))continue;
+                    foreach(var childId in children)
                     {
-                        if(related.Add(child.Id))frontier.Enqueue(child.Id);
+                        if(related.Add(childId))frontier.Enqueue(childId);
                     }
                 }
                 var unitIds=related.ToArray();
