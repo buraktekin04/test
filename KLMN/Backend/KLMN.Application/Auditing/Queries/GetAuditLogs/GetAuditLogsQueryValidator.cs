@@ -6,7 +6,7 @@ namespace KLMN.Application.Auditing.Queries.GetAuditLogs;
 public sealed class GetAuditLogsQueryValidator : AbstractValidator<GetAuditLogsQuery>
 {
     private static readonly string[] Types =
-        ["User", "Role", "MilitaryUnitDef", "ForcesCommandDef",
+        ["User", "Role", "Dispatch", "MilitaryUnitDef", "ForcesCommandDef",
          "MilitarySchoolDef", "MilitaryOfficeDef", "HcAdmissionTypeDef", "HcConnectedDecisionDef", "BranchDef", "HospitalDef", "HospitalReportType", "ReportTypeDef", "RankGroupDef", "RankDef", "MilitaryClassDef", "MilitaryClassGroupDef",
          "MilitaryClassGroupRelation", "CountryDef", "CityDef", "TownDef",
          "HcDecisionDef", "HcUnusedReasonForExam", "HcUnusedAdmissionType", "HcUnusedDecision", "HcConnectedDecision",
