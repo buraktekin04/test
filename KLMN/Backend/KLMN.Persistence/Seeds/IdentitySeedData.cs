@@ -267,6 +267,11 @@ internal static class IdentitySeedData
         new("Şehir Silme", PermissionCodes.Cities.Delete, "Cities", 50),
 
 
+        new("Sevkleri Görüntüleme", PermissionCodes.Dispatches.View, "Dispatches", 10),
+        new("Sevk Sorgulama ve Yerel Kişi Arama", PermissionCodes.Dispatches.Query, "Dispatches", 20),
+        new("Sevk Oluşturma", PermissionCodes.Dispatches.Create, "Dispatches", 30),
+        new("Sevk Düzenleme ve İptal", PermissionCodes.Dispatches.Update, "Dispatches", 40),
+
         new("Raporları Görüntüleme", PermissionCodes.Reports.View, "Reports", 10),
         new("Rapor Sorgulama", PermissionCodes.Reports.Query, "Reports", 20),
         new("Rapor Dışa Aktarma", PermissionCodes.Reports.Export, "Reports", 30),
