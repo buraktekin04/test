@@ -13,20 +13,85 @@
  <p-toast position="top-right"/>
  @if(canView()) {
   <section class="filter-panel">
-   <form [formGroup]="searchForm" (ngSubmit)="search()">
-    <input pInputText formControlName="search" aria-label="Sevk ara" placeholder="Sevk no, ad veya soyad ile ara..."/>
-    <label class="filter-field">Durum
-     <p-select formControlName="currentState" [options]="statusItems" optionLabel="label" optionValue="value" [fluid]="true" appendTo="body"/>
-    </label>
-    <label class="filter-field">Evrak Tarihi Başlangıç
-     <input type="date" formControlName="documentDateFrom"/>
-    </label>
-    <label class="filter-field">Evrak Tarihi Bitiş
-     <input type="date" formControlName="documentDateTo"/>
-    </label>
-    <label class="check"><p-checkbox formControlName="includeCancelled" [binary]="true"/> İptal edilenleri dahil et</label>
-    <p-button type="submit" icon="pi pi-search" label="Ara" [loading]="loading()"/>
-    <p-button type="button" icon="pi pi-times" label="Temizle" [outlined]="true" severity="secondary" (onClick)="resetSearch()"/>
+   <form [formGroup]="searchForm" (ngSubmit)="search()" class="dispatch-filter-form">
+    <div class="filter-grid">
+     <label class="filter-field">Başlangıç Tarihi
+      <input type="date" formControlName="dateFrom"/>
+     </label>
+     <label class="filter-field">Bitiş Tarihi
+      <input type="date" formControlName="dateTo"/>
+     </label>
+     <label class="filter-field">Sevk Durumu
+      <p-select formControlName="currentState" [options]="statusItems()" optionLabel="label"
+       optionValue="value" [fluid]="true" appendTo="body" placeholder="Tüm durumlar"/>
+     </label>
+     <label class="filter-field">Sevk Sıra No
+      <input type="number" min="1" step="1" formControlName="dispatchNo" placeholder="Sevk numarası"/>
+     </label>
+     <label class="filter-field">Alım ID
+      <input type="number" min="0" step="1" formControlName="purchaseId" placeholder="Alım ID"/>
+     </label>
+     <label class="filter-field filter-field-wide">Hızlı Arama
+      <input pInputText formControlName="search" placeholder="Sevk no, ad veya soyad"/>
+     </label>
+    </div>
+    <details class="advanced-filter-details">
+     <summary><i class="pi pi-sliders-h"></i> Ayrıntılı Filtreler <span>Kimlik, gönderen makam ve sevk kapsamı</span></summary>
+     <div class="filter-grid filter-grid-advanced">
+      <label class="filter-field">T.C. Kimlik No
+       <input pInputText formControlName="tcKimlikNo" maxlength="11" inputmode="numeric" placeholder="T.C. kimlik numarası"/>
+      </label>
+      <label class="filter-field">Yabancı Kimlik No
+       <input pInputText formControlName="yabanciKimlikNo" maxlength="20" inputmode="numeric" placeholder="Yabancı kimlik numarası"/>
+      </label>
+      <label class="filter-field">Adı
+       <input pInputText formControlName="name" maxlength="64" placeholder="Adı"/>
+      </label>
+      <label class="filter-field">Soyadı
+       <input pInputText formControlName="surname" maxlength="64" placeholder="Soyadı"/>
+      </label>
+      <label class="filter-field filter-field-wide">Muayeneye Gönderen Makam
+       <p-select formControlName="senderAuthority" [options]="senderItems()" optionLabel="label"
+        optionValue="value" [fluid]="true" appendTo="body" [showClear]="true" [filter]="true"
+        (onFilter)="filterSenderOptions($event.filter)" placeholder="Birlik veya askerlik şubesi seçiniz"/>
+      </label>
+      <label class="filter-field">Sevk Kapsamı
+       <p-select formControlName="dispatchScope" [options]="scopeItems" optionLabel="label" optionValue="value"
+        [showClear]="true" [fluid]="true" appendTo="body"/>
+      </label>
+      @if(searchForm.controls.dispatchScope.value===2){
+       <label class="filter-field">Sevk Kapsamı Şehir
+        <p-select formControlName="dispatchScopeCityId" [options]="optionMap().cities" optionLabel="label"
+         optionValue="id" [fluid]="true" appendTo="body" [showClear]="true" [filter]="true"
+         (onFilter)="loadOptions('cities',$event.filter)" placeholder="Şehir seçiniz"/>
+       </label>
+      }
+      @if(searchForm.controls.dispatchScope.value===3){
+       <label class="filter-field">Sevk Kapsamı Hastane
+        <p-select formControlName="dispatchScopeHospitalId" [options]="optionMap().hospitals"
+         optionLabel="label" optionValue="id" [fluid]="true" appendTo="body" [showClear]="true"
+         [filter]="true" (onFilter)="loadOptions('hospitals',$event.filter)" placeholder="Sağlık tesisi seçiniz"/>
+       </label>
+      }
+     </div>
+     <div class="filter-checkbox-row">
+      <label class="check">
+       <p-checkbox formControlName="includeRelatedOrganizations" [binary]="true" [disabled]="!canIncludeRelated()"/>
+       Bağlı organizasyonlarda listele
+      </label>
+      <small>Bu seçenek, seçilen gönderen birliğe bağlı tüm alt birlikleri de aramaya katar.</small>
+     </div>
+    </details>
+    <div class="filter-actions">
+     <label class="check">
+      <p-checkbox formControlName="includeCancelled" [binary]="true"/>
+      İptal edilenleri dahil et
+     </label>
+     <div class="filter-buttons">
+      <p-button type="submit" icon="pi pi-search" label="Sorgula" [loading]="loading()"/>
+      <p-button type="button" icon="pi pi-times" label="Temizle" [outlined]="true" severity="secondary" (onClick)="resetSearch()"/>
+     </div>
+    </div>
    </form>
    @if(filterError()){<p class="form-error" role="alert">{{filterError()}}</p>}
   </section>
