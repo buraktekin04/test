@@ -20,6 +20,18 @@ export class NavigationService {
       route: '/app'
     },
     {
+      label: 'Sevk İşlemleri',
+      icon: 'pi pi-send',
+      children: [
+        {
+          label: 'Sevk Giriş ve Takip',
+          icon: 'pi pi-file-edit',
+          route: '/app/dispatches',
+          permissionModule: 'Dispatches'
+        }
+      ]
+    },
+    {
       label: 'Tanımlamalar',
       icon: 'pi pi-cog',
       children: [
