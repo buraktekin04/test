@@ -68,4 +68,15 @@ assert.match(listScss,/\.filter-field > input\[type="date"\]\s*\{[\s\S]*?flex:no
 assert.match(listScss,/\.filter-field > input\[type="date"\]\s*\{[\s\S]*?height:38px;/);
 assert.match(listScss,/\.filter-grid\{display:grid;/);
 
-console.log('PASS: Sevk durumları DB, tüm arama filtreleri, menü, düzenli Sevk Girişi ve zorunlu alan sözleşmeleri.');
+// Kişi sorgusu artık yerel Persons veritabanını değil, nüfus entegrasyonu endpoint'ini çağırır.
+assert.match(entryHtml,/label="Nüfustan Sorgula"/);
+assert.doesNotMatch(entryHtml,/Yerel Kaydı Sorgula|MERNİS entegrasyonu değildir|Yerel Kaydı/);
+assert.match(entryTs,/this\.api\.queryPopulation\(/);
+assert.match(service,/persons\/national-registry/);
+assert.doesNotMatch(service,/persons\/lookup/);
+assert.match(entryHtml,/formControlName="militaryUnitDescription" rows="3"/);
+assert.match(entryHtml,/formControlName="senderChairOther" rows="3"/);
+assert.doesNotMatch(entryHtml,/formControlName="description"/);
+assert.doesNotMatch(entryHtml,/>Açıklama\s*</);
+
+console.log('PASS: Sevk filtreleri, nüfus sorgu bağlantısı ve açıklama alanları.');
