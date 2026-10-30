@@ -2,7 +2,8 @@ import {inject,Injectable} from '@angular/core';
 import {HttpClient,HttpParams} from '@angular/common/http';
 import {API_BASE_URL} from '../../../core/config/api.tokens';
 import {DispatchPerson,DispatchDetails,DispatchResponse,DispatchSaveResponse,DispatchItem,
- DispatchOption,OptionType,DispatchFileItem,DispatchPage,DispatchAdmissionRules} from '../models/dispatch.model';
+ DispatchOption,OptionType,DispatchFileItem,DispatchPage,DispatchAdmissionRules,
+ DispatchStatusOption,DispatchAdvancedFilters} from '../models/dispatch.model';
 
 /** Sevk, yerel kişi eşleştirme ve belge API istemcisi; doğrudan nüfus sistemi çağrısı içermez. */
 @Injectable({providedIn:'root'})
@@ -10,15 +11,21 @@ export class DispatchService {
  private readonly http=inject(HttpClient);
  private readonly url=inject(API_BASE_URL)+'/dispatches';
  list(pageNumber:number,pageSize:number,search:string,includeCancelled:boolean,
-  currentState:number|null=null,documentDateFrom='',documentDateTo=''){
+  currentState:number|null=null,documentDateFrom='',documentDateTo='',
+  filters:DispatchAdvancedFilters={}){
   let params=new HttpParams().set('pageNumber',pageNumber).set('pageSize',pageSize)
     .set('includeCancelled',includeCancelled);
   if(search.trim())params=params.set('search',search.trim());
   if(currentState!==null)params=params.set('currentState',currentState);
   if(documentDateFrom)params=params.set('documentDateFrom',documentDateFrom);
   if(documentDateTo)params=params.set('documentDateTo',documentDateTo);
+  for(const [key,value] of Object.entries(filters)){
+   if(value!==null&&value!==undefined&&value!=='')params=params.set(key,String(value));
+  }
   return this.http.get<DispatchPage>(this.url,{params});
  }
+ /** Durum adları frontend içine yazılmaz, PostgreSQL sözlük tablosundan gelir. */
+ statuses(){return this.http.get<DispatchStatusOption[]>(this.url+'/statuses');}
  detail(id:string){return this.http.get<DispatchResponse>(this.url+'/'+id);}
  admissionRules(admissionTypeId:string){
   return this.http.get<DispatchAdmissionRules>(this.url+'/admission-rules/'+admissionTypeId);

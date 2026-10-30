@@ -1,3 +1,40 @@
+## Sevk Sorgulama ve Sevk Girişi kullanılabilirlik yenilemesi — 30.10.2026
+
+### 1. Sevk durumları DB kaynağı
+- `DispatchStatusDef : BaseEntity` entity, `DispatchStatusDefs` tablosu, unique `Code`, `Name`, `SortOrder`, `IsActive/IsDeleted/xmin`. Kullanıcı yönetim ekranı **yoktur**.
+- EF Core `HasData` ile değişmeyen GUID'lerle 1=Yeni, 2=Provizyon, 3=Rapor, 4=İptal, 5=Bildirim başlangıç değerleri **migration oluşturulduğunda** eklenir.
+- `GET /api/dispatches/statuses`: `GetDispatchStatusesQuery/Handler` ile doğrudan tablodan `code/name` listesi. Listede `statusItems` ve durum etiketi artık Angular kodunda sabit yazılmaz. Yeni seferde sunucudan yüklenir.
+- **MIGRATION GEREKİR**: Yeni `DispatchStatusDefs` tablosu ve seed kayıtları mevcut DB'de henüz yoksa frontend durum seçenekleri yüklenemez. Migration'ı kullanıcının uygulaması gerekir. Projede migration veya DB reset yapılmadı.
+
+### 2. Sevk Listeleme ve Sorgulama filtreleri
+- `GET /api/dispatches`: `DateFrom/DateTo` (sevkin `DispatchDate` kayıt tarihi, UTC tarih aralığı), `CurrentState` (DB'deki durum), `DispatchNo`, `PurchaseId`, `TcKimlikNo`, `YabanciKimlikNo`, `Name`, `Surname`, `SenderMilitaryUnitDefId`, `SenderMilitaryOfficeDefId`, `IncludeRelatedOrganizations`, `DispatchScope`, `DispatchScopeCityId`, `DispatchScopeHospitalId`.
+- `IncludeCancelled` ve eski `DocumentDateFrom/To` API parametreleri geriye dönük uyumluluk için korunur. Ekranda Başlangıç/Bitiş Tarihi **evrak değil sevkin sisteme giriş tarihi** bazındadır.
+- Gönderen Makam seçiminde birlik/askerlik şubesi dropdown'dan seçilir. "Bağlı organizasyonlarda listele" checkbox'ı **yalnız birlik seçiliyken** kullanılabilir; `ConnectedTopUnity` hiyerarşisindeki tüm alt birlikler SQL filtrelemesine dahil edilir. Makam seçilmeden işaretlenemez. Başka kullanıcıya ait birliğin kapsamını filtrelemez; seçilen gönderen birliği genişletir.
+- Kapsam Şehir yalnız `DispatchScope=2`, Sağlık Tesisi yalnız `DispatchScope=3` iken görünür. Seçim temizlenince ilgili alt filtreler de sıfırlanır. Sorgu tüm koşulları sayfalamadan önce SQL'de uygular; T.C. ve yabancı kimlik sonucu maskeli gösterilir.
+- Görüntü: üstte tarih, durum, sıra no, alım ID ve hızlı arama; açılır "Ayrıntılı Filtreler" altında kimlik/ad-soyad/makam/kapsam/organizasyon.
+
+### 3. Sevk Girişi formu
+- `dispatch-entry-page` artık `max-width:1300px` ile ortalanmaz; diğer ekranlar gibi çalışma alanını doldurur.
+- Başvuru Grubu ve Muayene Sebebi her zaman önce gösterilir; grup seçilmeden/kurallar yüklenmeden sebep dropdown'u kilitli ve açıklamalıdır. Başvuru grubu zorunluluk bayrakları alınmadan kayıt gönderilmez.
+- Askerî kimlik/birlik, gönderen makam ve uçuş/ek açıklamalar ayrı katlanabilir gruplardır; grup zorunlu alan içeriyorsa otomatik açık gösterilir. Gönderen birlik ve gönderen askerlik şubesi aynı anda seçilmez.
+- T.C./Yabancı kimlik, doğum tarihi, ad, soyad, başvuru grubu, muayene sebebi ve seçili gruba göre zorunlu diğer alanların etiket başında kırmızı `*` kullanılır. Bu ekranın veritabanı alanları değişmedi.
+- Sol menü `Tetkik Tanımları` ikonu `pi pi-sliders-h` olarak güncellendi.
+
+### Yerel kontrol
+```bash
+cd KLMN/Frontend
+npm install
+npm run test:dispatch-pages
+npm run test:dispatch-qr
+npm run build
+```
+`KLMN/Backend` içerisinden mevcut Migration kurulumunuza uygun örnek:
+```bash
+dotnet ef migrations add AddDispatchStatusDefs --project KLMN.Persistence --startup-project KLMN.Api --context KLMNDbContext
+dotnet ef database update --project KLMN.Persistence --startup-project KLMN.Api --context KLMNDbContext
+```
+**Uyarı:** Var olan sevk/fotoğraf migration'ı henüz yapılmadıysa bunları da kapsayacak şekilde mevcut ModelSnapshot'a göre migration hazırlayın. Migration'ı bu çalışma sırasında otomatik oluşturmadım/uygulamadım. PostgreSQL, Angular ve kamera/QR entegrasyon testleri yerel ortamda ayrıca yapılmalıdır.
+
 ## Ayrı Sevk Girişi ve Sevk Listeleme sayfaları — 30.10.2026
 
 Mevcut Sevk Giriş ve Takip tek sayfa/modal mimarisi ayrıştırıldı. İşlemler artık 2 bağımsız Angular standalone bileşeninde bulunur:
