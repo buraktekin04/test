@@ -33,3 +33,11 @@
 @media(max-width:1200px){.dispatch-entry-page .form-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:880px){.dispatch-entry-page .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.entry-field-group summary small{display:none}}
 @media(max-width:540px){.dispatch-entry-page .form-grid,.entry-priority-panel .form-grid{grid-template-columns:1fr}.entry-priority-panel,.entry-group-body{padding:.75rem}}
+
+/* Eski MSKBS ekranındaki Birlik/Gönderen Makam açıklamaları geniş metin alanlarıdır. */
+.dispatch-entry-page .entry-field-group .field.wide{grid-column:1/-1}
+.dispatch-entry-page .entry-field-group .field.wide > textarea{
+  display:block;box-sizing:border-box;width:100%;min-width:0;min-height:108px;
+  padding:.75rem .85rem;line-height:1.55;resize:vertical;
+  font-size:.84rem;font-weight:400;
+}

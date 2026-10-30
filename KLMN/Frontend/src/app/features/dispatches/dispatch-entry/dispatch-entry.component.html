@@ -20,12 +20,12 @@
        severity="secondary" (onClick)="openQr()"/>
      }
      @if(canQuery()&&!editing()){
-      <p-button type="button" label="Yerel Kaydı Sorgula" icon="pi pi-search" [outlined]="true"
+      <p-button type="button" label="Nüfustan Sorgula" icon="pi pi-search" [outlined]="true"
        [loading]="queryingPerson()" (onClick)="lookup()"/>
      }
     </div>
    </div>
-   <p class="section-note">Kimlik sorgusu yalnız KLMN'ye daha önce kaydedilen kişileri bulur. MERNİS entegrasyonu değildir.</p>
+   <p class="section-note">Nüfus sorgusu, kimlik numarası ve doğum tarihini kurum nüfus entegrasyonuna iletir. Entegrasyon henüz bağlanmadıysa alanları elle doldurabilirsiniz.</p>
    <div class="identity-switch">
     <button type="button" [class.active]="identityType()==='tc'" (click)="setIdentity('tc')"
       [disabled]="!!editing()">T.C. Kimlik No</button>
@@ -179,8 +179,9 @@
        Nasbı</span>
        <input type="date" formControlName="lastNominationDate"/>
       </label>
-      <label class="field">Birlik Açıklama
-       <input pInputText formControlName="militaryUnitDescription" maxlength="1000"/>
+      <label class="field wide">Birlik Açıklama
+       <textarea formControlName="militaryUnitDescription" rows="3" maxlength="1000"
+        placeholder="Birlik bilgileri için ek açıklama giriniz"></textarea>
       </label>
      </div>
     </div>
@@ -202,15 +203,16 @@
          appendTo="body" placeholder="Seçiniz veya arayınız"/>
        </label>
       }
-      <label class="field">Gönderen Makam Açıklama
-       <input pInputText formControlName="senderChairOther" maxlength="1000"/>
+      <label class="field wide">Muayeneye Gönderen Makam Açıklama
+       <textarea formControlName="senderChairOther" rows="3" maxlength="1000"
+        placeholder="Muayeneye gönderen makam için ek açıklama giriniz"></textarea>
       </label>
      </div>
     </div>
    </details>
 
    <details class="entry-field-group">
-    <summary><span><i class="pi pi-send"></i> Uçuş ve Ek Açıklamalar</span>
+    <summary><span><i class="pi pi-send"></i> Uçuş Bilgileri</span>
      <small>Uçucu görev ve uçak bilgileri</small>
     </summary>
     <div class="entry-group-body">
@@ -223,9 +225,6 @@
          appendTo="body" placeholder="Seçiniz veya arayınız"/>
        </label>
       }
-      <label class="field wide">Açıklama
-       <textarea formControlName="description" rows="2" maxlength="500"></textarea>
-      </label>
      </div>
     </div>
    </details>

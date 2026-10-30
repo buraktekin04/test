@@ -1,6 +1,6 @@
 namespace KLMN.Application.Dispatches.Models;
 
-/// <summary>Sevk girişinde elle girilen/yerel kayıttan doldurulan kişi alanları.</summary>
+/// <summary>Sevk girişinde kullanıcı tarafından veya kurum nüfus entegrasyonu ile doldurulan kişi alanları.</summary>
 public sealed class DispatchPersonInput
 {
     public string? TcKimlikNo { get; set; }

@@ -54,3 +54,16 @@ export interface DispatchAdvancedFilters {
  includeRelatedOrganizations?:boolean;
  dispatchScope?:number|null;dispatchScopeCityId?:string;dispatchScopeHospitalId?:string;
 }
+
+/** Nüfus servisi askerî alanları dönerse KLMN tanım GUID'lerine map edilmiş seçenekler. */
+export interface DispatchRegistryMilitary {
+ forcesCommandDefId?:string|null;militaryClassDefId?:string|null;rankDefId?:string|null;
+ militaryUnitDefId?:string|null;militaryUnitDescription?:string|null;
+ militarySchoolDefId?:string|null;registryNumber?:string|null;
+ lastNominationDate?:string|null;militaryOfficeDefId?:string|null;
+ flyingMissionDefId?:string|null;planeTypeDefId?:string|null;
+ hcAdmissionTypeDefId?:string|null;
+}
+export interface DispatchPopulationResult {
+ person:DispatchPerson;military?:DispatchRegistryMilitary|null;
+}

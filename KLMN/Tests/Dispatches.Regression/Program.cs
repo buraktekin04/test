@@ -1,3 +1,5 @@
+using KLMN.Application.Dispatches.Queries.LookupDispatchPerson;
+using KLMN.Application.Dispatches.Exceptions;
 using KLMN.Application.Dispatches.Commands.SetDispatchPhoto;
 using KLMN.Application.Dispatches.Commands.DeleteDispatchPhoto;
 using KLMN.Application.Dispatches.Commands.CreateDispatch;
@@ -59,6 +61,25 @@ Check(typeof(DispatchStatusDef).GetProperty(nameof(DispatchStatusDef.Code))?.Pro
 
 Check(!new GetDispatchOptionsQueryValidator().Validate(new GetDispatchOptionsQuery("bad-type")).IsValid,
     "Tanım türü allowlist dışında sorgu reddi");
+var registryValidator=new LookupDispatchPersonQueryValidator();
+Check(registryValidator.Validate(new LookupDispatchPersonQuery("12345678901",null,new DateOnly(1990,1,1))).IsValid,
+    "Nüfus sorgusu geçerli kimlik ve doğum tarihi");
+Check(!registryValidator.Validate(new LookupDispatchPersonQuery(null,null,new DateOnly(1990,1,1))).IsValid,
+    "Nüfus sorgusunda kimlik alanı zorunlu");
+Check(!registryValidator.Validate(new LookupDispatchPersonQuery("12345678901","12345678901",new DateOnly(1990,1,1))).IsValid,
+    "Nüfus sorgusunda iki kimlik türü birlikte gönderilemez");
+var unavailable=false;
+try
+{
+    await new LookupDispatchPersonQueryHandler().Handle(
+        new LookupDispatchPersonQuery("12345678901",null,new DateOnly(1990,1,1)),CancellationToken.None);
+}
+catch(NationalRegistryNotConfiguredException)
+{
+    unavailable=true;
+}
+Check(unavailable,"Bağlanmamış nüfus entegrasyonu sahte/yerel kişi döndürmez");
+
 Check(typeof(BaseEntity).IsAssignableFrom(typeof(Person)),"Kişi audit ve xmin kalıtımı");
 Check(typeof(BaseEntity).IsAssignableFrom(typeof(Dispatch)),"Sevk audit ve xmin kalıtımı");
 Check(typeof(BaseEntity).IsAssignableFrom(typeof(DispatchFile)),"Sevk dosyası audit ve xmin kalıtımı");
