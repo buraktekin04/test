@@ -23,6 +23,10 @@ internal static class DispatchRules
             throw new DispatchConflictException("Geçerli bir doğum tarihi giriniz.");
         if (string.IsNullOrWhiteSpace(p.Name)||string.IsNullOrWhiteSpace(p.Surname))
             throw new DispatchConflictException("Ad ve soyad zorunludur.");
+        // Cinsiyet kodu eski enum'dan değil aktif GenderDefs sözlüğünden doğrulanır.
+        if(p.Gender.HasValue && !await db.GenderDefs.AsNoTracking()
+            .AnyAsync(x=>x.Code==p.Gender.Value&&x.IsActive&&!x.IsDeleted,ct))
+            throw new DispatchConflictException("Seçilen cinsiyet tanımı bulunamadı veya pasif.");
         if (p.Name.Length>64||p.Surname.Length>64||p.MotherName?.Length>64||p.FatherName?.Length>64||
             p.PhoneNumber?.Length>20||p.Address?.Length>512||p.BirthPlaceText?.Length>500||
             p.BirthPlaceCode?.Length>250)
