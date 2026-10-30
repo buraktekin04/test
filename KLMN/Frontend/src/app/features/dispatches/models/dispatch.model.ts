@@ -25,7 +25,7 @@ export interface DispatchItem {
 }
 export interface DispatchResponse {
  id:string; dispatchNo:number; dispatchDate:string; currentState:number;
- isActive:boolean; version:number; person:DispatchPerson; dispatch:DispatchDetails;
+ isActive:boolean; version:number; hasPhoto:boolean; person:DispatchPerson; dispatch:DispatchDetails;
 }
 export interface DispatchSaveResponse{id:string;dispatchNo:number;version:number;}
 export interface DispatchOption{id:string;label:string;}
