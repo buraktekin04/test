@@ -2,7 +2,7 @@ import {inject,Injectable} from '@angular/core';
 import {HttpClient,HttpParams} from '@angular/common/http';
 import {API_BASE_URL} from '../../../core/config/api.tokens';
 import {DispatchPerson,DispatchDetails,DispatchResponse,DispatchSaveResponse,DispatchItem,
- DispatchOption,OptionType,DispatchFileItem,DispatchPage} from '../models/dispatch.model';
+ DispatchOption,OptionType,DispatchFileItem,DispatchPage,DispatchAdmissionRules} from '../models/dispatch.model';
 
 /** Sevk, yerel kişi eşleştirme ve belge API istemcisi; doğrudan nüfus sistemi çağrısı içermez. */
 @Injectable({providedIn:'root'})
@@ -16,6 +16,9 @@ export class DispatchService {
   return this.http.get<DispatchPage>(this.url,{params});
  }
  detail(id:string){return this.http.get<DispatchResponse>(this.url+'/'+id);}
+ admissionRules(admissionTypeId:string){
+  return this.http.get<DispatchAdmissionRules>(this.url+'/admission-rules/'+admissionTypeId);
+ }
  lookupPerson(person:Pick<DispatchPerson,'tcKimlikNo'|'yabanciKimlikNo'|'birthDate'>){
   return this.http.post<{person:DispatchPerson}>(this.url+'/persons/lookup',person);
  }
