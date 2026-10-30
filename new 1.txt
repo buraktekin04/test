@@ -2,7 +2,7 @@
 MSKBS.Domain/Common/BaseEntity.cs
 
 namespace MSKBS.Domain.Common;
-
+test
 /// <summary>
 /// Sistemde kalıcı olarak saklanan entity'lerin ortak temel sınıfıdır.
 /// Kimlik, audit, aktiflik, soft delete ve optimistic concurrency
