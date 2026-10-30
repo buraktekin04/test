@@ -4,7 +4,7 @@ using KLMN.Application.Common.Interfaces.Persistence;
  
  using MediatR;
  namespace KLMN.Application.AnnotationReasons.Commands.DeleteAnnotationReasonDef;
- /// <summary>Sevk Sebebi Tanımları Delete iş akışı; BaseEntity audit/soft-delete/xmin kullanılır.</summary>
+ /// <summary>Zeyil Sebebi Tanımları Delete iş akışı; BaseEntity audit/soft-delete/xmin kullanılır.</summary>
  public sealed class DeleteAnnotationReasonDefCommandHandler(IKLMNDbContext db):
  IRequestHandler<DeleteAnnotationReasonDefCommand>
  {

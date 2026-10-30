@@ -2,7 +2,7 @@
 
 ## Kaynak fotoğraf yorumları / ekranlar
 - `SYYDiagnosisDef` → **SYY Tanı Listesi (M/D/F)** (`/app/syy-diagnoses`)
-- `AnnotationReasonDef` → **Sevk Sebebi Tanımları** (`/app/annotation-reasons`)
+- `AnnotationReasonDef` → **Zeyil Sebebi Tanımları** (`/app/annotation-reasons`)
 - `PlaneTypeDef` → **Uçuşa Uçak Tipi Tanımları** (`/app/plane-types`)
 - `FlyingMissionDef` → **Uçucu Görev Tanımları** (`/app/flying-missions`)
 - `SYYDiagnosisTypeDef` → **SYY Tanı Türü Tanımları** (`/app/syy-diagnosis-types`)
@@ -74,7 +74,7 @@ silindi. Artık **SYY Tanı Listesi**, **SYY Tanı Türü** ve **SYY Dilim**
 - `features/syy-diagnosis-types/syy-diagnosis-type-list/`
 - `features/syy-diagnosis-slices/syy-diagnosis-slice-list/`
 
-Buna ek olarak Sevk Sebebi, Uçak Tipi ve Uçucu Görev de ayrı ekranlara
+Buna ek olarak Zeyil Sebebi, Uçak Tipi ve Uçucu Görev de ayrı ekranlara
 taşındı. Tanı türü ve dilim yalnız sayısal Kod/Ad alanlarını düzenler,
 SYY Tanı Listesi ise tanı bağlantıları ve geçerlilik aralığını düzenler.
 Yeni modüllerde route-data ile değiştirilen tek generic liste/form

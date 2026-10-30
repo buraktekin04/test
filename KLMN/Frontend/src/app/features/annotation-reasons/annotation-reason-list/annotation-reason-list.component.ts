@@ -18,7 +18,7 @@ import {AuditHistoryComponent} from '../../../shared/audit-history/audit-history
 import {ValidityPeriodUtils} from '../../../core/utils/validity-period.utils';
 import {AnnotationReasonService} from '../services/annotation-reason.service';
 import {AnnotationReasonItem,DefinitionQuery} from '../models/annotation-reason.model';
-/** Sevk Sebebi Tanımları — bağımsız ekran, kendi formu/template'i ve permission'ları. */
+/** Zeyil Sebebi Tanımları — bağımsız ekran, kendi formu/template'i ve permission'ları. */
 @Component({
  selector:'app-annotation-reason-list',standalone:true,
  imports:[DatePipe,ReactiveFormsModule,ButtonModule,CheckboxModule,ConfirmDialogModule,
@@ -33,7 +33,7 @@ export class AnnotationReasonListComponent implements OnInit {
  private readonly permissions=inject(PermissionService);
  private readonly confirm=inject(ConfirmationService);
  private readonly message=inject(MessageService);
- readonly config = { module:'AnnotationReasons' as const, path:'annotation-reasons', title:'Sevk Sebebi Tanımları', entity:'AnnotationReasonDef' };
+ readonly config = { module:'AnnotationReasons' as const, path:'annotation-reasons', title:'Zeyil Sebebi Tanımları', entity:'AnnotationReasonDef' };
  readonly canCreate=computed(()=>this.permissions.has(PermissionCodes[this.config.module].Create));
  readonly canUpdate=computed(()=>this.permissions.has(PermissionCodes[this.config.module].Update));
  readonly canDelete=computed(()=>this.permissions.has(PermissionCodes[this.config.module].Delete));

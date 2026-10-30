@@ -155,7 +155,7 @@ export const PermissionCodes = {
     View:'SYYDiagnosisSlices.View',Query:'SYYDiagnosisSlices.Query',Create:'SYYDiagnosisSlices.Create',
     Update:'SYYDiagnosisSlices.Update',Delete:'SYYDiagnosisSlices.Delete'
   },
-  /** Sevk Sebebi Tanımları yetkileri. */
+  /** Zeyil Sebebi Tanımları yetkileri. */
   AnnotationReasons:{
     View:'AnnotationReasons.View',Query:'AnnotationReasons.Query',Create:'AnnotationReasons.Create',
     Update:'AnnotationReasons.Update',Delete:'AnnotationReasons.Delete'

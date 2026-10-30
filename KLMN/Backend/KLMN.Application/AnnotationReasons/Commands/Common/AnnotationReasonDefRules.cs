@@ -3,7 +3,7 @@ using KLMN.Application.AnnotationReasons.Exceptions;
 using KLMN.Domain.Entities.Admissions;
 using Microsoft.EntityFrameworkCore;
 namespace KLMN.Application.AnnotationReasons.Commands.Common;
-/// <summary>Sevk Sebebi Tanımları: benzersizlik, concurrency ve FK doğrulama kuralları.</summary>
+/// <summary>Zeyil Sebebi Tanımları: benzersizlik, concurrency ve FK doğrulama kuralları.</summary>
 internal static class AnnotationReasonDefRules
 {
  public static async Task EnsureUniqueAsync(IKLMNDbContext db,string code,Guid? ignored,CancellationToken ct)

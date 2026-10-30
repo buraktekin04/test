@@ -1,7 +1,7 @@
 using FluentValidation;
  using KLMN.Domain.Common;
  namespace KLMN.Application.AnnotationReasons.Commands.DeleteAnnotationReasonDef;
- /// <summary>Sevk Sebebi Tanımları Delete doğrulaması.</summary>
+ /// <summary>Zeyil Sebebi Tanımları Delete doğrulaması.</summary>
  public sealed class DeleteAnnotationReasonDefCommandValidator:AbstractValidator<DeleteAnnotationReasonDefCommand>
  {
  public DeleteAnnotationReasonDefCommandValidator(){

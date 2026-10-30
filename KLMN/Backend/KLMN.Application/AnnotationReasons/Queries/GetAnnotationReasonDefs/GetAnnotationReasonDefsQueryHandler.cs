@@ -4,7 +4,7 @@ using KLMN.Application.AnnotationReasons.Responses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 namespace KLMN.Application.AnnotationReasons.Queries.GetAnnotationReasonDefs;
-/// <summary>Sevk Sebebi Tanımları verilerini filtreler, sadece mevcut sayfayı EF Core ile getirir.</summary>
+/// <summary>Zeyil Sebebi Tanımları verilerini filtreler, sadece mevcut sayfayı EF Core ile getirir.</summary>
 public sealed class GetAnnotationReasonDefsQueryHandler(IKLMNDbContext db):
 IRequestHandler<GetAnnotationReasonDefsQuery,PagedResult<AnnotationReasonDefResponse>>
 {

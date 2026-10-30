@@ -45,7 +45,7 @@ const ENTITY_NAMES: Readonly<Record<string,string>> = {
   "SYYDiagnosisRequiredDetail": "SYY Onay Gerektiren Madde Detayı",
   "ICD10Def": "ICD10 Tanımları",
   "ICD10Diagnostic": "ICD10 İstatistik Tanımları",
-  "AnnotationReasonDef": "Sevk Sebebi Tanımları",
+  "AnnotationReasonDef": "Zeyil Sebebi Tanımları",
   "PlaneTypeDef": "Uçtuğu Uçak Tipi Tanımları",
   "FlyingMissionDef": "Uçucu Görev Tanımları",
   "PurchaseNumberDef": "Alım Numarası Tanımları (Arşiv)",

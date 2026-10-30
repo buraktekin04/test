@@ -1,3 +1,9 @@
+30.10.2026 — ZEYİL SEBEBİ TANIMLARI ADLANDIRMA DÜZELTMESİ
+============================================================
+- Mevcut AnnotationReasonDef CRUD API, Angular ekranı, menü, yetki adları, audit etiketi ve Excel başlığı "Zeyil Sebebi Tanımları" olacak şekilde düzeltildi.
+- Teknik entity, API route, permission kodları, tablo adı ve veritabanı şeması değiştirilmedi; migration gerekmez.
+- Değişiklikler tek commit olarak yayınlandı; .NET/Angular derlemesi bu ortamda çalıştırılmadı.
+
 28.10.2026 — MIGRATIONSUPPORT KALDIRILDI
 ===========================================
 - Kullanıcı eski geliştirme veritabanını DROP DATABASE ile sıfırladı,
@@ -444,7 +450,7 @@ Bu kural mevcut ve BUNDAN SONRA EKLENECEK TÜM EKRANLARDA GEÇERLİDİR.
 SON GELİŞTİRME (22.10.2026) — SYY TANI, SEVK VE UÇUŞ TANIMLARI
 ============================================================
 - Fotoğraf üstü yorumlardan UI ekran adları: SYY Tanı Listesi (M/D/F)
-  (SYYDiagnosisDef), Sevk Sebebi Tanımları (AnnotationReasonDef),
+  (SYYDiagnosisDef), Zeyil Sebebi Tanımları (AnnotationReasonDef),
   Uçuşa Uçak Tipi Tanımları (PlaneTypeDef), Uçucu Görev Tanımları
   (FlyingMissionDef). Ek iki ekran: SYY Tanı Türü Tanımları
   (SYYDiagnosisTypeDef) ve SYY Dilim Tanımları (SYYDiagnosisSliceDef).

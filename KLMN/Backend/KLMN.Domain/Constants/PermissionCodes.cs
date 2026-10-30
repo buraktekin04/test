@@ -503,7 +503,7 @@ public static class PermissionCodes
        public const string Delete="SYYDiagnosisSlices.Delete";
     }
 
-    /// <summary>Sevk Sebebi Tanımları yetkileri.</summary>
+    /// <summary>Zeyil Sebebi Tanımları yetkileri.</summary>
     public static class AnnotationReasons
     {
        public const string View="AnnotationReasons.View";

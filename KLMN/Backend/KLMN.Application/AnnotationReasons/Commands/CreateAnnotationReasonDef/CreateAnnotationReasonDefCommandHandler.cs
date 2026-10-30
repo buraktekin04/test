@@ -4,7 +4,7 @@ using KLMN.Application.Common.Interfaces.Persistence;
  using KLMN.Domain.Entities.Admissions;
  using MediatR;
  namespace KLMN.Application.AnnotationReasons.Commands.CreateAnnotationReasonDef;
- /// <summary>Sevk Sebebi Tanımları Create iş akışı; BaseEntity audit/soft-delete/xmin kullanılır.</summary>
+ /// <summary>Zeyil Sebebi Tanımları Create iş akışı; BaseEntity audit/soft-delete/xmin kullanılır.</summary>
  public sealed class CreateAnnotationReasonDefCommandHandler(IKLMNDbContext db):
  IRequestHandler<CreateAnnotationReasonDefCommand,AnnotationReasonDefMutationResponse>
  {

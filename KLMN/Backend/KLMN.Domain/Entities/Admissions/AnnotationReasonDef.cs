@@ -1,6 +1,6 @@
 using KLMN.Domain.Common;
 namespace KLMN.Domain.Entities.Admissions;
-/// <summary>Sevk Sebebi Tanımları ekranının tanım kaydı; ortak audit ve geçerlilik alanları kalıtımdadır.</summary>
+/// <summary>Zeyil Sebebi Tanımları ekranının tanım kaydı; ortak audit ve geçerlilik alanları kalıtımdadır.</summary>
 public sealed class AnnotationReasonDef : EffectiveDatedEntity
 {
     /// <summary>Kod.</summary>

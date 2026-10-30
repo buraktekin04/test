@@ -1,17 +1,17 @@
 <div class="annotation-reason-list-page">
  <div class="page-header">
   <div>
-   <h1>Sevk Sebebi Tanımları</h1>
+   <h1>Zeyil Sebebi Tanımları</h1>
    <p>Bu tanımın kod, ad, durum ve kayıt bilgilerini yönetin.</p>
    
   </div>
-  @if(canCreate()){<p-button type="button" label="Yeni Sevk Sebebi" icon="pi pi-plus" (onClick)="openCreate()"/>}
+  @if(canCreate()){<p-button type="button" label="Yeni Zeyil Sebebi" icon="pi pi-plus" (onClick)="openCreate()"/>}
  </div>
  <p-toast position="top-right"/>
- <section class="filter-panel" aria-label="Sevk Sebebi Tanımları arama">
+ <section class="filter-panel" aria-label="Zeyil Sebebi Tanımları arama">
   <form [formGroup]="searchForm" (ngSubmit)="search()">
    <div class="search-field"><i class="pi pi-search" aria-hidden="true"></i>
-    <input pInputText formControlName="search" placeholder="Kod veya ad ara..." aria-label="Sevk Sebebi ara"/>
+    <input pInputText formControlName="search" placeholder="Kod veya ad ara..." aria-label="Zeyil Sebebi ara"/>
    </div>
    <label class="inactive-filter"><p-checkbox formControlName="includeInactive" [binary]="true"/> Pasifleri dahil et</label>
    <p-button type="submit" label="Ara" icon="pi pi-search" [loading]="loading()"/>
@@ -35,7 +35,7 @@
     <p-button type="submit" label="Filtrele" icon="pi pi-check"/>
    </form>
   }
-  <div class="table-scroll" role="region" tabindex="0" aria-label="Sevk Sebebi Tanımları tablosu">
+  <div class="table-scroll" role="region" tabindex="0" aria-label="Zeyil Sebebi Tanımları tablosu">
    <p-table [value]="items()" [loading]="loading()" [resizableColumns]="true"
      columnResizeMode="expand" [tableStyle]="{'min-width':'900px','width':'100%'}">
     <ng-template pTemplate="header"><tr>
@@ -79,11 +79,11 @@
   </div>
  </section>
 </div>
-<p-dialog [header]="editing()?'Sevk Sebebi Düzenle':'Yeni Sevk Sebebi'"
+<p-dialog [header]="editing()?'Zeyil Sebebi Düzenle':'Yeni Zeyil Sebebi'"
  [visible]="dialogVisible()" (visibleChange)="!$event&&closeDialog()" [modal]="true"
  [draggable]="false" [resizable]="false" [style]="{'width':'min(780px,96vw)'}">
  <form class="definition-form" [formGroup]="form" (ngSubmit)="save()">
-  <div class="form-section">Sevk Sebebi Bilgileri</div>
+  <div class="form-section">Zeyil Sebebi Bilgileri</div>
   <div class="form-grid">
    <div class="form-field">
     <label for="annotation-reason-list-code">Kod *</label>
@@ -113,7 +113,7 @@
  </form>
 </p-dialog>
 <p-confirmdialog/>
-<p-dialog header="Sevk Sebebi Tanımları — İşlem Geçmişi" [visible]="!!auditItem()"
+<p-dialog header="Zeyil Sebebi Tanımları — İşlem Geçmişi" [visible]="!!auditItem()"
  (visibleChange)="!$event&&auditItem.set(null)" [modal]="true"
  [style]="{'width':'min(780px,96vw)'}">
  @if(auditItem();as item){<app-audit-history entityType="AnnotationReasonDef" [entityId]="item.id"/>}

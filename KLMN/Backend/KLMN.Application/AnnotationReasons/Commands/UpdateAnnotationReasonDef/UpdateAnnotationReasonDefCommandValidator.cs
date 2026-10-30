@@ -1,7 +1,7 @@
 using FluentValidation;
  using KLMN.Domain.Common;
  namespace KLMN.Application.AnnotationReasons.Commands.UpdateAnnotationReasonDef;
- /// <summary>Sevk Sebebi Tanımları Update doğrulaması.</summary>
+ /// <summary>Zeyil Sebebi Tanımları Update doğrulaması.</summary>
  public sealed class UpdateAnnotationReasonDefCommandValidator:AbstractValidator<UpdateAnnotationReasonDefCommand>
  {
  public UpdateAnnotationReasonDefCommandValidator(){

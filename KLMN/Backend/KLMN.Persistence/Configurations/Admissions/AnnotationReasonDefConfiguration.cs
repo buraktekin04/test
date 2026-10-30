@@ -3,7 +3,7 @@ using KLMN.Persistence.Configurations.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace KLMN.Persistence.Configurations.Admissions;
-/// <summary>Sevk Sebebi Tanımları — ValidFrom/ValidTo, soft delete, xmin ve kod tekilliği.</summary>
+/// <summary>Zeyil Sebebi Tanımları — ValidFrom/ValidTo, soft delete, xmin ve kod tekilliği.</summary>
 public sealed class AnnotationReasonDefConfiguration : EffectiveDatedEntityConfiguration<AnnotationReasonDef>
 {
     protected override void ConfigureEntity(EntityTypeBuilder<AnnotationReasonDef> b)

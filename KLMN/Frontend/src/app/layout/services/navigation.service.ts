@@ -267,7 +267,7 @@ export class NavigationService {
           icon: 'pi pi-send',
           children: [
             {
-                      label: 'Sevk Sebebi Tanımları',icon:'pi pi-file-edit',route:'/app/annotation-reasons',permissionModule:'AnnotationReasons'
+                      label: 'Zeyil Sebebi Tanımları',icon:'pi pi-file-edit',route:'/app/annotation-reasons',permissionModule:'AnnotationReasons'
                     },
             {
                       label: 'Uçtuğu Uçak Tipi Tanımları',icon:'pi pi-send',route:'/app/plane-types',permissionModule:'PlaneTypes'

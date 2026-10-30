@@ -4,7 +4,7 @@ using KLMN.Application.Common.Interfaces.Persistence;
  
  using MediatR;
  namespace KLMN.Application.AnnotationReasons.Commands.ChangeStatusAnnotationReasonDef;
- /// <summary>Sevk Sebebi Tanımları ChangeStatus iş akışı; BaseEntity audit/soft-delete/xmin kullanılır.</summary>
+ /// <summary>Zeyil Sebebi Tanımları ChangeStatus iş akışı; BaseEntity audit/soft-delete/xmin kullanılır.</summary>
  public sealed class ChangeStatusAnnotationReasonDefCommandHandler(IKLMNDbContext db):
  IRequestHandler<ChangeStatusAnnotationReasonDefCommand,AnnotationReasonDefMutationResponse>
  {
