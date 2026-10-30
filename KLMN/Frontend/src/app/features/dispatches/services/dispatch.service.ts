@@ -3,7 +3,7 @@ import {HttpClient,HttpParams} from '@angular/common/http';
 import {API_BASE_URL} from '../../../core/config/api.tokens';
 import {DispatchPerson,DispatchDetails,DispatchResponse,DispatchSaveResponse,DispatchItem,
  DispatchOption,OptionType,DispatchFileItem,DispatchPage,DispatchAdmissionRules,
- DispatchStatusOption,DispatchAdvancedFilters,DispatchPopulationResult} from '../models/dispatch.model';
+ DispatchStatusOption,DispatchAdvancedFilters,DispatchPopulationResult,DispatchGenderOption} from '../models/dispatch.model';
 
 /** Sevk, kurumsal nüfus servisine backend üzerinden erişim ve belge API istemcisi. */
 @Injectable({providedIn:'root'})
@@ -24,6 +24,8 @@ export class DispatchService {
   }
   return this.http.get<DispatchPage>(this.url,{params});
  }
+ /** Cinsiyet seçenekleri GenderDefs tablosundan gelir. */
+ genders(){return this.http.get<DispatchGenderOption[]>(this.url+'/genders');}
  /** Durum adları frontend içine yazılmaz, PostgreSQL sözlük tablosundan gelir. */
  statuses(){return this.http.get<DispatchStatusOption[]>(this.url+'/statuses');}
  detail(id:string){return this.http.get<DispatchResponse>(this.url+'/'+id);}

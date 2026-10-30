@@ -160,6 +160,7 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     public DbSet<Person> Persons => Set<Person>();
     public DbSet<Dispatch> Dispatches => Set<Dispatch>();
     public DbSet<DispatchStatusDef> DispatchStatusDefs => Set<DispatchStatusDef>();
+    public DbSet<GenderDef> GenderDefs => Set<GenderDef>();
     public DbSet<DispatchFile> DispatchFiles => Set<DispatchFile>();
 
     /// <summary>

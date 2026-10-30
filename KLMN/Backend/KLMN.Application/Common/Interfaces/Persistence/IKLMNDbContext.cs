@@ -125,6 +125,7 @@ public interface IKLMNDbContext
     DbSet<Person> Persons { get; }
     DbSet<Dispatch> Dispatches { get; }
     DbSet<DispatchStatusDef> DispatchStatusDefs { get; }
+    DbSet<GenderDef> GenderDefs { get; }
     DbSet<DispatchFile> DispatchFiles { get; }
 
     /// <summary>

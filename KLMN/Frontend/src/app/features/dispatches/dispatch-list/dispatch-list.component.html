@@ -23,7 +23,7 @@
      </label>
      <label class="filter-field">Sevk Durumu
       <p-select formControlName="currentState" [options]="statusItems()" optionLabel="label"
-       optionValue="value" [fluid]="true" appendTo="body" placeholder="Tüm durumlar"/>
+       optionValue="value" [fluid]="true" appendTo="body" (onShow)="loadStatuses()" placeholder="Tüm durumlar"/>
      </label>
      <label class="filter-field">Sevk Sıra No
       <input type="number" min="1" step="1" formControlName="dispatchNo" placeholder="Sevk numarası"/>
@@ -53,7 +53,7 @@
       <label class="filter-field filter-field-wide">Muayeneye Gönderen Makam
        <p-select formControlName="senderAuthority" [options]="senderItems()" optionLabel="label"
         optionValue="value" [fluid]="true" appendTo="body" [showClear]="true" [filter]="true"
-        (onFilter)="filterSenderOptions($event.filter)" placeholder="Birlik veya askerlik şubesi seçiniz"/>
+        (onShow)="filterSenderOptions('')" (onFilter)="filterSenderOptions($event.filter)" placeholder="Birlik veya askerlik şubesi seçiniz"/>
       </label>
       <label class="filter-field">Sevk Kapsamı
        <p-select formControlName="dispatchScope" [options]="scopeItems" optionLabel="label" optionValue="value"
@@ -63,14 +63,14 @@
        <label class="filter-field">Sevk Kapsamı Şehir
         <p-select formControlName="dispatchScopeCityId" [options]="optionMap().cities" optionLabel="label"
          optionValue="id" [fluid]="true" appendTo="body" [showClear]="true" [filter]="true"
-         (onFilter)="loadOptions('cities',$event.filter)" placeholder="Şehir seçiniz"/>
+         (onShow)="loadOptions('cities')" (onFilter)="loadOptions('cities',$event.filter)" placeholder="Şehir seçiniz"/>
        </label>
       }
       @if(searchForm.controls.dispatchScope.value===3){
        <label class="filter-field">Sevk Kapsamı Hastane
         <p-select formControlName="dispatchScopeHospitalId" [options]="optionMap().hospitals"
          optionLabel="label" optionValue="id" [fluid]="true" appendTo="body" [showClear]="true"
-         [filter]="true" (onFilter)="loadOptions('hospitals',$event.filter)" placeholder="Sağlık tesisi seçiniz"/>
+         [filter]="true" (onShow)="loadOptions('hospitals')" (onFilter)="loadOptions('hospitals',$event.filter)" placeholder="Sağlık tesisi seçiniz"/>
        </label>
       }
      </div>
@@ -95,6 +95,7 @@
    </form>
    @if(filterError()){<p class="form-error" role="alert">{{filterError()}}</p>}
   </section>
+  @if(hasSearched()){
   <section class="list-card">
    <div class="table-scroll">
     <p-table [value]="records()" [loading]="loading()" [resizableColumns]="true" columnResizeMode="expand"
@@ -149,6 +150,15 @@
     </div>
    </div>
   </section>
+  } @else {
+   <section class="list-card empty-query-state" role="status">
+    <i class="pi pi-search"></i>
+    <div>
+     <strong>Sevk sorgusu henüz çalıştırılmadı.</strong>
+     <p>Filtreleri belirleyip <b>Sorgula</b> düğmesine basarak kayıtları listeleyebilirsiniz.</p>
+    </div>
+   </section>
+  }
  } @else {
   <p class="muted">Sevk listesine erişmek için görüntüleme veya sorgulama yetkisi gereklidir.</p>
  }

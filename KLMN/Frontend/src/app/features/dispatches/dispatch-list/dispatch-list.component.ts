@@ -49,6 +49,7 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
  readonly pageSize=signal(20);
  readonly maxPage=computed(()=>Math.max(1,Math.ceil(this.total()/this.pageSize())));
  readonly loading=signal(false);
+ readonly hasSearched=signal(false);
  readonly auditRecord=signal<DispatchItem|null>(null);
  private lastRequest=0;
 
@@ -90,6 +91,10 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
   dispatchScopeHospitalId:this.fb.control<string|null>(null)
  });
  readonly filterError=signal<string|null>(null);
+ /** Sayfalama yalnız son 'Sorgula' ile uygulanmış filtrelerle devam eder. */
+ private appliedForm:ReturnType<typeof this.searchForm.getRawValue>|null=null;
+ private statusesLoaded=false;
+ private statusesLoading=false;
 
  ngOnInit(){
   this.searchForm.controls.senderAuthority.valueChanges.subscribe(value=>{
@@ -99,14 +104,15 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
    if(value!==2)this.searchForm.controls.dispatchScopeCityId.setValue(null);
    if(value!==3)this.searchForm.controls.dispatchScopeHospitalId.setValue(null);
   });
-  if(this.canView()){
-   this.load();
-   this.api.statuses().subscribe({
-    next:items=>this.statuses.set(items),
-    error:e=>this.error(e)
-   });
-   for(const type of ['units','offices','cities','hospitals'] as const)this.loadOptions(type);
-  }
+ }
+ /** Durumlar ilk açılışta değil filtre listesi açılınca veya sorgu istenince yüklenir. */
+ loadStatuses(){
+  if(!this.canView()||this.statusesLoaded||this.statusesLoading)return;
+  this.statusesLoading=true;
+  this.api.statuses().subscribe({
+   next:items=>{this.statuses.set(items);this.statusesLoaded=true;this.statusesLoading=false;},
+   error:e=>{this.statusesLoading=false;this.error(e);}
+  });
  }
  /** PrimeNG açılır listeleri backend üzerinden gerektiğinde arar. */
  loadOptions(type:'units'|'offices'|'cities'|'hospitals',search=''){
@@ -149,10 +155,10 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
 
  /** Yalnız backend üzerinde filtrelenmiş sayfayı çağırır; sayfalar arası sonuç kaybetmez. */
  load(){
-  if(!this.canView())return;
+  if(!this.canView()||!this.appliedForm)return;
   const request=++this.lastRequest;
   this.loading.set(true);
-  const form=this.searchForm.getRawValue();
+  const form=this.appliedForm;
   const authority=form.senderAuthority;
   const filters:DispatchAdvancedFilters={
    dateFrom:form.dateFrom,dateTo:form.dateTo,
@@ -188,7 +194,10 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
    return;
   }
   this.filterError.set(null);
+  this.appliedForm={...values};
+  this.hasSearched.set(true);
   this.page.set(1);
+  this.loadStatuses();
   this.load();
  }
  resetSearch(){
@@ -196,13 +205,21 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
    dispatchNo:null,purchaseId:null,tcKimlikNo:'',yabanciKimlikNo:'',name:'',surname:'',
    senderAuthority:null,includeRelatedOrganizations:false,
    dispatchScope:null,dispatchScopeCityId:null,dispatchScopeHospitalId:null});
-  this.search();
+  this.appliedForm=null;
+  ++this.lastRequest; // Devam eden eski bir sorgu temizlenen ekranı tekrar dolduramaz.
+  this.loading.set(false);
+  this.hasSearched.set(false);
+  this.records.set([]);
+  this.total.set(0);
+  this.page.set(1);
+  this.filterError.set(null);
  }
- toPage(n:number){if(n<1||n>this.maxPage())return;this.page.set(n);this.load();}
+ toPage(n:number){if(!this.hasSearched()||n<1||n>this.maxPage())return;this.page.set(n);this.load();}
  setPageSize(e:Event){
   const value=Number((e.target as HTMLSelectElement).value);
   if(![10,20,50,100].includes(value))return;
-  this.pageSize.set(value);this.search();
+  this.pageSize.set(value);
+  if(this.hasSearched()){this.page.set(1);this.load();}
  }
  openCreate(){if(this.canCreate())void this.router.navigateByUrl('/app/dispatches/new');}
  openEdit(row:DispatchItem){

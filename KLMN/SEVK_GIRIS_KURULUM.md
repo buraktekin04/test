@@ -1,3 +1,43 @@
+## Sevk Listeleme / Açılır Seçim / Cinsiyet / Belge Revizyonu — 30.10.2026
+
+### 1. Sevk Listesi ilk açıldığında sorgulama YAPILMAZ
+- `DispatchListComponent.ngOnInit()` artık `GET /dispatches`, durum veya makam/şehir/hastane seçeneklerini otomatik çağırmaz. Filtreler başlangıçta boştur. İlk açılışta “Sevk sorgusu henüz çalıştırılmadı” bilgisi görülür, tablo boş sonuç diye gösterilmez.
+- Kullanıcı filtreleri belirleyip **Sorgula** butonuna bastığında sunucuya gider. Seçili kriterler `appliedForm` içine kopyalanır. Sayfa değiştirme/boyut güncelleme, bu **son uygulanmış** kriterlerle devam eder; kullanıcının ara form değişiklikleri otomatik sorgu başlatmaz.
+- **Temizle** butonu bütün filtreleri, eski sonuçları ve `hasSearched` durumunu sıfırlar; otomatik tekrar arama yapmaz. Uçuşta eski sorgu sonuçları istek sıra numarasıyla göz ardı edilir.
+- Durum sözlüğü ilk kez dropdown açılınca veya Sorgula'ya basılınca; makam/şehir/hastane dropdown kayıtları açılınca yüklenir. Yalnız tanım isteği asıl liste araması değildir.
+
+### 2. Tüm PrimeNG dropdown filtrelerinde büyük/küçük harf duyarsız arama
+- `Frontend/src/app/core/filters/case-insensitive-filter.ts` içinde Türkçe `İ/i/I/ı` ve Unicode harf normalizasyonu tanımlı. `app.config.ts` üzerinden global PrimeNG `FilterService.register` ile `contains`, `startsWith` ve `endsWith` modlarına uygulanır. Böylece ortak PrimeNG `p-select` ve `p-multiselect` dahil UI istemci filtreleri harf büyüklüğünden bağımsızdır.
+- Backend'de `GetDispatchOptionsQueryHandler` artık `ToUpper().Contains` yerine PostgreSQL `EF.Functions.ILike` kullanır. Kullanıcının aradığı `%`, `_` ve ters eğik çizgi kaçırılarak literal arama sağlanır. Seçili ID'leri koruma ve max 100 seçenek kuralı aynen devam eder.
+- Diğer modüllerde *kendine ait sunucu filtre endpoint'i* varsa onların SQL sorgusu ayrıca incelenmelidir; global PrimeNG değişikliği backend sorgularının kendisini değiştirmez.
+
+### 3. Sevk Girişi belge ekleme kaldırıldı, fotoğraf KORUNDU
+- `DispatchEntryComponent` HTML'inde **Belge Ekle**, yükleme alanı ve mevcut ekleri indirme alanı artık YOK. TS dosyasından `selectFile`, bekleyen dosya sinyali, yükleme/indirme adımları kaldırıldı.
+- Fotoğraf çekme, seçme, önizleme, kaydetme ve silme akışı **aynen korunur**.
+- Backend `DispatchFile` tablosu, mevcut dosya command/query/API endpoint'leri ve migration geçmişi **SİLİNMEDİ**. Veritabanı verisi korunur.
+
+### 4. Cinsiyet artık DB'den alınır
+- Yeni `GenderDef : BaseEntity`, `GenderDefs` tablosu, `GenderDefConfiguration` ve ayrı `GetDispatchGendersQuery` / Handler / Response eklendi. EF HasData başlangıç değerleri eski MSKBS enum ile aynıdır: **1 Erkek, 2 Kadın, 3 Belirtilmemiş**; UUID'ler sabittir.
+- `GET /api/dispatches/genders` yalnız etkin ve silinmemiş tanımları getirir. Frontend `DispatchService.genders()` ile okur, `genderItems()` artık sabit dizi değildir. Sevk kaydına cinsiyet kodu gönderilirse `DispatchRules` aktif GenderDefs üzerinden doğrular.
+- **MIGRATION GEREKİR**: `GenderDefs` yeni tablodur. Migration oluşturma ve uygulama işlemi kullanıcıya aittir; bu çalışma DB migration dosyası üretmedi, mevcut migration'ları silmedi. Önceden eklenmiş `DispatchStatusDefs` migration gereksinimi de devam edebilir.
+- Bu sözlük için şimdilik ayrıca tanım ekranı yoktur.
+
+### Kontrol
+```bash
+cd KLMN/Frontend
+npm install
+npm run test:filter-search
+npm run test:dispatch-pages
+npm run test:dispatch-qr
+npm run build
+```
+`KLMN/Backend` dizininden (var olan migration durumuna göre):
+```bash
+dotnet ef migrations add AddGenderDefs --project KLMN.Persistence --startup-project KLMN.Api --context KLMNDbContext
+dotnet ef database update --project KLMN.Persistence --startup-project KLMN.Api --context KLMNDbContext
+```
+**Not:** .NET/Angular derlemesi, veritabanı migration'ı ve gerçek tarayıcı uçtan uca testi bu çalışma ortamında çalıştırılmadı.
+
 ## Sevk Girişi — tek bakışta kompakt çalışma ekranı (30.10.2026)
 
 Eski MSKBS Sevk Giriş ekranının kişi tarafından kolay kullanımı, KLMN Angular 21 + PrimeNG yapısına yeniden uygulandı. Önceki büyük, üst üste yığılmış kartlar ve açılır askerî bilgi panelleri kaldırıldı.

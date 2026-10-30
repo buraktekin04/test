@@ -10,6 +10,7 @@ using KLMN.Application.Dispatches.Queries.GetDispatchById;
 using KLMN.Application.Dispatches.Queries.GetDispatchAdmissionRules;
 using KLMN.Application.Dispatches.Queries.GetDispatches;
 using KLMN.Application.Dispatches.Queries.GetDispatchStatuses;
+using KLMN.Application.Dispatches.Queries.GetDispatchGenders;
 using KLMN.Application.Dispatches.Queries.GetDispatchOptions;
 using KLMN.Application.Dispatches.Queries.GetDispatchFile;
 using KLMN.Application.Dispatches.Queries.GetDispatchFiles;
@@ -26,6 +27,15 @@ namespace KLMN.Api.Controllers;
 [Route("api/dispatches")]
 public sealed class DispatchesController(ISender sender):ControllerBase
 {
+    /// <summary>MSKBS enum kodlarıyla uyumlu cinsiyet tanımlarını DB'den döndürür.</summary>
+    [HttpGet("genders")]
+    [HasPermission(PermissionCodes.Dispatches.Create,PermissionCodes.Dispatches.Update,
+        PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query)]
+    public async Task<IActionResult> Genders(CancellationToken ct)
+    {
+        return Ok(await sender.Send(new GetDispatchGendersQuery(),ct));
+    }
+
     /// <summary>Aktif sevk durumları veritabanı sözlüğünden okunur; tanım ekranı yoktur.</summary>
     [HttpGet("statuses")]
     [HasPermission(PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query,PermissionCodes.Dispatches.Create,PermissionCodes.Dispatches.Update)]

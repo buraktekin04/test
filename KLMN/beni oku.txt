@@ -1,3 +1,55 @@
+30.10.2026 — SEVK LİSTESİ / GENEL DROPDOWN ARAMA / BELGE / CİNSİYET
+===================================================================
+1. Sevk Listesi ve Sorgulama sayfası ilk açıldığında DB/API üzerinde
+   liste araması YAPMAZ. ngOnInit içinde load() çalışmaz.
+   Kullanıcı filtreleri seçer, ancak SORGULA dediğinde arama yapılır.
+   Son Sorgula filtreleri appliedForm içinde korunur, sayfalama bu
+   filtrelerle çalışır. Temizle otomatik arama başlatmaz; sonuçları
+   ve hasSearched bilgisini sıfırlar. İlk açılışta açıklayıcı boş
+   durum mesajı vardır. Status ve referans seçenekleri sadece
+   açılır menü açılınca veya sorgu istenince yüklenir.
+
+2. UYGULAMA GENELİNDE PrimeNG p-select/p-multiselect filtre araması,
+   büyük/küçük harf duyarsızdır; Türkçe İ/i ve I/ı birlikte aranır.
+   Frontend/src/app/core/filters/case-insensitive-filter.ts
+   Frontend/src/app/app.config.ts -> FilterService.register:
+   'contains', 'startsWith', 'endsWith'.
+   GET /dispatches/options backend sorguları EF.Functions.ILike
+   ile case-insensitive oldu; %/_ özel LIKE karakterleri kaçırıldı.
+   Bu global frontend kuralı, diğer modüllerin kendi backend
+   sorgularını otomatik düzeltmez: ayrı backend filtreleri varsa
+   ayrıca ILIKE/uyumlu karşılaştırma yapmalıdır.
+
+3. Sevk Girişi ekranından BELGE EKLEME / mevcut belge listesi
+   kaldırıldı. dispatch-entry TS'ten selectFile, uploadFile,
+   loadFiles, download metotları kaldırıldı. Bu ekran belge upload
+   YAPMAZ. Fotoğraf çekme/seçme/kaydetme/silme akışı KORUNDU.
+   Backend ve DB'de DispatchFile tablosu, endpoint'ler, entity,
+   migration ve mevcut dosyalar KORUNDU; hiçbir DB silme yok.
+
+4. Cinsiyetler artık frontend sabit genderItems enum dizisinden
+   DEĞİL, GenderDefs PostgreSQL sözlük tablosundan döner.
+   Domain/Entities/Admissions/GenderDef.cs -> BaseEntity.
+   Persistence/Configurations/Admissions/GenderDefConfiguration.cs
+   HasData seed: 1 Erkek, 2 Kadın, 3 Belirtilmemiş (eski enum).
+   API GET /api/dispatches/genders, ayrı GetDispatchGendersQuery,
+   Handler ve DispatchGenderOptionResponse.cs.
+   IKLMNDbContext ve KLMNDbContext GenderDefs DbSet.
+   Frontend DispatchService.genders() ve genderItems computed.
+   DispatchRules GenderDefs aktif kod doğrulamasını yapar.
+   Şimdilik cinsiyet tanım ekranı YOK.
+
+5. Yeni GenderDefs tablosu için MIGRATION'ı KULLANICI oluşturup
+   uygulayacak. Migrasyon oluşturma, database update, migration
+   silme ve DB reset YAPILMADI. Daha önce eklenen DispatchStatusDefs
+   migration gereksinimi ayrıca geçerli olabilir.
+
+6. Frontend test: npm run test:filter-search,
+   npm run test:dispatch-pages, npm run test:dispatch-qr.
+   KLMN/SEVK_GIRIS_KURULUM.md güncellendi. Local Angular/.NET build
+   ve PostgreSQL entegrasyon E2E henüz doğrulanamadı.
+   Her zamanki gibi TEK SQUASH COMMIT ile main dalına push.
+
 30.10.2026 — SEVK GİRİŞİ TEK EKRAN MİNİMAL YERLEŞİM
 =======================================================
 Kullanıcının fotoğrafını paylaştığı eski MSKBS Sevk Girişi
