@@ -448,24 +448,33 @@ export class DispatchListComponent implements OnInit,OnDestroy {
    this.saving.set(false);this.formError.set(this.errorText(e));this.error(e);
   }});
  }
- private onSaved(result:DispatchSaveResponse){
+ /** Sevk -> kişi fotoğrafı -> ek belge sırasıyla yüklenir; başarısız ekler kayıt başarısını gizlemez. */
+ private async onSaved(result:DispatchSaveResponse){
+  const failures:string[]=[];
+  const photo=this.photoFile();
   const file=this.uploadFile();
+  if(photo){
+   try{await firstValueFrom(this.api.uploadPhoto(result.id,photo));}
+   catch(e){failures.push('Fotoğraf yüklenemedi: '+this.errorText(e));}
+  }
   if(file){
-   this.api.uploadFile(result.id,file).pipe(finalize(()=>this.saving.set(false)))
-    .subscribe({next:()=>this.finishSave(result.dispatchNo),error:e=>{
-     this.dialogVisible.set(false);this.load();this.uploadFile.set(null);
-     this.message.add({severity:'warn',summary:'Sevk kaydedildi',
-      detail:'Sevk '+result.dispatchNo+' oluşturuldu ancak dosya yüklenemedi: '+this.errorText(e),life:8000});
-    }});
-  }else{this.saving.set(false);this.finishSave(result.dispatchNo);}
- }
- private finishSave(dispatchNo:number){
-  this.dialogVisible.set(false);this.uploadFile.set(null);
-  this.message.add({severity:'success',summary:'Sevk kaydedildi',
-   detail:dispatchNo+' numaralı sevk başarıyla kaydedildi.'});
+   try{await firstValueFrom(this.api.uploadFile(result.id,file));}
+   catch(e){failures.push('Sevk belgesi yüklenemedi: '+this.errorText(e));}
+  }
+  this.saving.set(false);
+  this.dialogVisible.set(false);
+  this.uploadFile.set(null);
+  this.resetPhoto();
+  if(failures.length){
+   this.message.add({severity:'warn',summary:'Sevk kaydedildi; ekler kontrol edilmeli',
+    detail:result.dispatchNo+' numaralı sevk kaydedildi. '+failures.join(' '),life:10000});
+  }else{
+   this.message.add({severity:'success',summary:'Sevk kaydedildi',
+    detail:result.dispatchNo+' numaralı sevk başarıyla kaydedildi.'});
+  }
   this.load();
  }
- cancel(row:DispatchItem){
+  cancel(row:DispatchItem){
   if(!this.canUpdate()||row.currentState!==1)return;
   this.confirm.confirm({header:'Sevk İptali',message:row.dispatchNo+' numaralı sevk iptal edilsin mi? Kayıt geçmişte korunur.',
    acceptLabel:'İptal Et',rejectLabel:'Vazgeç',accept:()=>this.api.cancel(row).subscribe({
