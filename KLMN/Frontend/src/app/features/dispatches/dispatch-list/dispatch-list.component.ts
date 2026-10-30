@@ -143,6 +143,7 @@ export class DispatchListComponent implements OnInit,OnDestroy {
  readonly qrVisible=signal(false);
  private photoObjectUrl:string|null=null;
  private photoRequest=0;
+ private pendingQrReasonId:string|null=null;
  readonly uploadFile=signal<File|null>(null);
  private lastRequest=0;
  private editRequest=0;
@@ -181,6 +182,11 @@ export class DispatchListComponent implements OnInit,OnDestroy {
   this.api.admissionRules(id).subscribe({
    next:rules=>{if(this.rulesRequest!==request)return;
     this.admissionRules.set(rules);
+    const qrReason=this.pendingQrReasonId;
+    if(qrReason){
+     this.pendingQrReasonId=null;
+     this.loadQrReference('reasons',qrReason,'reasonForExaminationDefId');
+    }
     const selected=this.dispatchForm.controls.reasonForExaminationDefId.value;
     if(selected&&rules.unusedReasonIds.includes(selected))this.dispatchForm.controls.reasonForExaminationDefId.setValue(null);
     this.loadOptions('reasons');
@@ -232,6 +238,7 @@ export class DispatchListComponent implements OnInit,OnDestroy {
   ++this.editRequest;this.editing.set(null);this.files.set([]);
   this.formError.set(null);this.uploadFile.set(null);this.identityType.set('tc');
   this.resetPhoto();
+  this.pendingQrReasonId=null;
   this.personForm.reset({name:'',surname:'',birthDate:'',tcKimlikNo:null,yabanciKimlikNo:null});
   this.dispatchForm.reset({dispatchScope:1,reasonForExaminationDefId:null,hcAdmissionTypeDefId:null});
   this.dialogVisible.set(true);
@@ -259,7 +266,7 @@ export class DispatchListComponent implements OnInit,OnDestroy {
   },error:e=>this.error(e)});
  }
  close(){if(this.saving())return;this.dialogVisible.set(false);this.qrVisible.set(false);this.resetPhoto();++this.editRequest;}
- /** Yalnız veritabanında kayıtlı kişi aranır; harici MERNİS/QR sorgusu simüle edilmez. */
+ /** Yalnız veritabanında kayıtlı kişi aranır; harici MERNİS servisi mevcut değildir. QR alanlarını korur. */
  lookup(qr?:DispatchQrData){
   if(!this.canQuery())return;
   const f=this.personForm.getRawValue();
@@ -313,9 +320,15 @@ export class DispatchListComponent implements OnInit,OnDestroy {
    ...(qr.kacinciIslem!==undefined?{nthAdmission:qr.kacinciIslem}:{}),
    ...(qr.alimId!==undefined?{purchaseId:qr.alimId}:{})
   });
-  if(qr.muayeneSebebi)this.loadQrReference('reasons',qr.muayeneSebebi,'reasonForExaminationDefId');
+  if(qr.muayeneSebebi){
+   if(this.dispatchForm.controls.hcAdmissionTypeDefId.value)
+    this.loadQrReference('reasons',qr.muayeneSebebi,'reasonForExaminationDefId');
+   else this.pendingQrReasonId=qr.muayeneSebebi;
+  }
   if(qr.sevkKapsamiHastane)this.loadQrReference('hospitals',qr.sevkKapsamiHastane,'dispatchScopeHospitalId');
   this.qrVisible.set(false);
+  if(this.pendingQrReasonId)this.message.add({severity:'info',
+   summary:'Muayene sebebi bekliyor',detail:'Başvuru grubunu seçtiğinizde QR muayene sebebi otomatik eşleştirilecektir.'});
   this.message.add({severity:'success',summary:'QR bilgileri aktarıldı',
    detail:'Sevk bilgilerini kontrol edin, başvuru grubunu ve eksik kişi alanlarını tamamlayın.'});
   if((qr.tcKimlikNo||qr.yabanciKimlikNo)&&qr.dogumTarihi&&this.canQuery())this.lookup(qr);
