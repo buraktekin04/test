@@ -41,3 +41,16 @@ export interface DispatchFileItem{id:string;fileName:string;contentType:string;f
 export interface DispatchPage{items:DispatchItem[];totalCount:number;pageNumber:number;pageSize:number;}
 export type OptionType='countries'|'towns'|'cities'|'hospitals'|'admissionTypes'|'reasons'|
  'forces'|'ranks'|'classes'|'units'|'schools'|'offices'|'missions'|'planes';
+
+/** Sevk durum tanımları, DispatchStatusDefs tablosundan döner. */
+export interface DispatchStatusOption {code:number;name:string;}
+
+/** Sevk Sorgulama filtreleri; tüm alanlar SQL'de, sayfalamadan önce uygulanır. */
+export interface DispatchAdvancedFilters {
+ dateFrom?:string;dateTo?:string;
+ dispatchNo?:number|null;purchaseId?:number|null;
+ tcKimlikNo?:string;yabanciKimlikNo?:string;name?:string;surname?:string;
+ senderMilitaryUnitDefId?:string;senderMilitaryOfficeDefId?:string;
+ includeRelatedOrganizations?:boolean;
+ dispatchScope?:number|null;dispatchScopeCityId?:string;dispatchScopeHospitalId?:string;
+}
