@@ -1,5 +1,8 @@
 using KLMN.Api.Authorization;
 using KLMN.Application.Dispatches.Commands.CancelDispatch;
+using KLMN.Application.Dispatches.Commands.SetDispatchPhoto;
+using KLMN.Application.Dispatches.Commands.DeleteDispatchPhoto;
+using KLMN.Application.Dispatches.Queries.GetDispatchPhoto;
 using KLMN.Application.Dispatches.Commands.CreateDispatch;
 using KLMN.Application.Dispatches.Commands.UpdateDispatch;
 using KLMN.Application.Dispatches.Commands.UploadDispatchFile;
@@ -82,6 +85,38 @@ public sealed class DispatchesController(ISender sender):ControllerBase
     {
         if(id!=command.Id)return BadRequest("Sevk kimliği uyuşmuyor.");
         return Ok(await sender.Send(command,ct));
+    }
+
+    /// <summary>Başvuran fotoğrafını yetkili kullanıcıya cache olmadan gönderir.</summary>
+    [HttpGet("{id:guid}/photo")]
+    [HasPermission(PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query,PermissionCodes.Dispatches.Update)]
+    public async Task<IActionResult> Photo(Guid id,CancellationToken ct)
+    {
+        var photo=await sender.Send(new GetDispatchPhotoQuery(id),ct);
+        Response.Headers["Cache-Control"]="no-store";
+        Response.Headers["X-Content-Type-Options"]="nosniff";
+        return File(photo.Content,photo.ContentType);
+    }
+
+    /// <summary>Kameradan çekilen veya seçilen resmi, en fazla 2 MiB, güvenli biçimde kaydeder.</summary>
+    [HttpPost("{id:guid}/photo")]
+    [HasPermission(PermissionCodes.Dispatches.Create,PermissionCodes.Dispatches.Update)]
+    [RequestSizeLimit(3*1024*1024)]
+    public async Task<IActionResult> UploadPhoto(Guid id,IFormFile file,CancellationToken ct)
+    {
+        if(file is null||file.Length is <1 or >2097152)
+            return BadRequest("Fotoğraf en fazla 2 MiB olmalıdır.");
+        await using var stream=new MemoryStream();
+        await file.CopyToAsync(stream,ct);
+        return Ok(await sender.Send(new SetDispatchPhotoCommand(id,file.ContentType,stream.ToArray()),ct));
+    }
+
+    /// <summary>Fotoğrafı sevk ve diğer belgeleri silmeden kaldırır; xmin versiyonunu denetler.</summary>
+    [HttpDelete("{id:guid}/photo")]
+    [HasPermission(PermissionCodes.Dispatches.Update)]
+    public async Task<IActionResult> DeletePhoto(Guid id,[FromQuery] uint version,CancellationToken ct)
+    {
+        return Ok(await sender.Send(new DeleteDispatchPhotoCommand(id,version),ct));
     }
 
     [HttpGet("{id:guid}/files")]
