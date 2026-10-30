@@ -13,6 +13,8 @@ const listHtml=read('src/app/features/dispatches/dispatch-list/dispatch-list.com
 const entryTs=read('src/app/features/dispatches/dispatch-entry/dispatch-entry.component.ts');
 const entryHtml=read('src/app/features/dispatches/dispatch-entry/dispatch-entry.component.html');
 const entryScss=read('src/app/features/dispatches/dispatch-entry/dispatch-entry.component.scss');
+const appConfig=read('src/app/app.config.ts');
+const genderFilter=read('src/app/core/filters/case-insensitive-filter.ts');
 const service=read('src/app/features/dispatches/services/dispatch.service.ts');
 const sidebarHtml=read('src/app/layout/sidebar/sidebar.component.html');
 const listScss=read('src/app/features/dispatches/dispatch-list/dispatch-list.component.scss');
@@ -102,4 +104,33 @@ assert.match(entryScss,/@media\(max-width:650px\)/);
 assert.match(entryTs,/styleUrl:'\.\/dispatch-entry\.component\.scss'/);
 assert.doesNotMatch(entryTs,/dispatch-list\.component\.scss/);
 
-console.log('PASS: Sevk filtresi, nüfus sorgusu ve kompakt iki sütunlu tek sayfa form sözleşmeleri.');
+// Sevk listesi filtre seçilmeden ve Sorgula'ya basılmadan sunucuya gitmez.
+assert.match(listTs,/readonly hasSearched=signal\(false\)/);
+assert.match(listTs,/private appliedForm:/);
+assert.doesNotMatch(listTs,/ngOnInit\(\)\s*\{[\s\S]*?if\(this\.canView\(\)\)this\.load\(\)/);
+assert.match(listHtml,/@if\(hasSearched\(\)\)\{/);
+assert.match(listHtml,/Sevk sorgusu henüz çalıştırılmadı/);
+assert.match(listTs,/this\.appliedForm=\{\.\.\.values\}/);
+assert.match(listTs,/this\.hasSearched\.set\(true\)/);
+assert.match(listTs,/this\.hasSearched\.set\(false\)/);
+
+// Dropdown filtrasyonu hem global PrimeNG mekanizması hem sunucu araması için tutarlı.
+assert.match(appConfig,/filters\.register\('contains',containsIgnoringCase\)/);
+assert.match(appConfig,/filters\.register\('startsWith',startsWithIgnoringCase\)/);
+assert.match(appConfig,/filters\.register\('endsWith',endsWithIgnoringCase\)/);
+assert.match(genderFilter,/toLocaleLowerCase\('tr-TR'\)/);
+
+// Cinsiyet enum sabitleri yok, API sözlüğü ve eski 1/2/3 kodları korunur.
+assert.match(entryTs,/this\.api\.genders\(\)/);
+assert.match(entryTs,/genderItems=computed\(/);
+assert.doesNotMatch(entryTs,/readonly genderItems=\[/);
+assert.match(entryHtml,/\[options\]="genderItems\(\)"/);
+assert.match(service,/genders\(\)/);
+
+// Yalnız Sevk Giriş ekranından belge ekleme kaldırıldı; fotoğraf akışı kalır.
+assert.doesNotMatch(entryHtml,/Belge Ekle|entry-file-picker|selectFile\(\$event\)|uploadFile\(\)/);
+assert.doesNotMatch(entryTs,/selectFile\(|this\.uploadFile\(|this\.files\(|this\.loadFiles\(/);
+assert.match(entryHtml,/app-dispatch-photo-capture/);
+assert.match(entryTs,/this\.api\.uploadPhoto/);
+
+console.log('PASS: Sevk sorgusu yalnız Sorgula, global case-insensitive filtre, DB cinsiyet ve fotoğraf.');
