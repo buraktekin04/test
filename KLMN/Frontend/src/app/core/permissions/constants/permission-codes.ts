@@ -3,6 +3,13 @@
  * UI görünürlüğü içindir; gerçek authorization kararı backend'de verilir.
  */
 export const PermissionCodes = {
+  /** Sevk girişinin API ile eşleşen eylem izinleri. */
+  Dispatches: {
+    View: 'Dispatches.View',
+    Query: 'Dispatches.Query',
+    Create: 'Dispatches.Create',
+    Update: 'Dispatches.Update'
+  },
   Users: {
     View: 'Users.View',
     Query: 'Users.Query',
