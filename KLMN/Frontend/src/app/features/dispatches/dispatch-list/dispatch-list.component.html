@@ -1,13 +1,12 @@
 <div class="dispatch-page">
  <header class="page-header">
   <div>
-   <h1>Sevk Giriş ve Takip</h1>
-   <p>Başvuran kişi, sevk evrakı ve askerî bilgilerini mevcut KLMN tanımlarıyla ilişkilendirin.</p>
+   <h1>Sevk Listesi ve Sorgulama</h1>
+   <p>Kayıtlı sevkleri sorgulayın, tarih ve durumlarına göre filtreleyin, görüntüleyin ve yönetin.</p>
   </div>
   @if(canCreate()) {
    <div class="header-actions">
-    <p-button label="QR Kod Okut" icon="pi pi-qrcode" severity="secondary" [outlined]="true" (onClick)="openQr()"/>
-    <p-button label="Yeni Sevk Girişi" icon="pi pi-plus" (onClick)="openCreate()"/>
+    <p-button label="Sevk Girişi" icon="pi pi-plus" (onClick)="openCreate()"/>
    </div>
   }
  </header>
@@ -16,10 +15,20 @@
   <section class="filter-panel">
    <form [formGroup]="searchForm" (ngSubmit)="search()">
     <input pInputText formControlName="search" aria-label="Sevk ara" placeholder="Sevk no, ad veya soyad ile ara..."/>
+    <label class="filter-field">Durum
+     <p-select formControlName="currentState" [options]="statusItems" optionLabel="label" optionValue="value" [fluid]="true" appendTo="body"/>
+    </label>
+    <label class="filter-field">Evrak Tarihi Başlangıç
+     <input type="date" formControlName="documentDateFrom"/>
+    </label>
+    <label class="filter-field">Evrak Tarihi Bitiş
+     <input type="date" formControlName="documentDateTo"/>
+    </label>
     <label class="check"><p-checkbox formControlName="includeCancelled" [binary]="true"/> İptal edilenleri dahil et</label>
     <p-button type="submit" icon="pi pi-search" label="Ara" [loading]="loading()"/>
     <p-button type="button" icon="pi pi-times" label="Temizle" [outlined]="true" severity="secondary" (onClick)="resetSearch()"/>
    </form>
+   @if(filterError()){<p class="form-error" role="alert">{{filterError()}}</p>}
   </section>
   <section class="list-card">
    <div class="table-scroll">
@@ -76,171 +85,9 @@
    </div>
   </section>
  } @else {
-  <p class="muted">Sevk listesi için görüntüleme yetkisi gereklidir. Yeni sevk oluşturma izniniz varsa üstteki butonu kullanabilirsiniz.</p>
+  <p class="muted">Sevk listesine erişmek için görüntüleme veya sorgulama yetkisi gereklidir.</p>
  }
 </div>
-<p-dialog [header]="editing()?'Sevk Düzenle · #'+editing()!.dispatchNo:'Yeni Sevk Girişi'"
- [visible]="dialogVisible()" (visibleChange)="!$event&&close()" [modal]="true"
- [draggable]="false" [resizable]="false" [style]="{'width':'min(1120px,97vw)','max-height':'95vh'}"
- [contentStyle]="{'overflow-y':'auto'}">
- <form class="dispatch-form" [formGroup]="form" (ngSubmit)="save()">
-  <section class="form-section" formGroupName="person">
-   <div class="section-heading"><h2><i class="pi pi-user"></i> Başvuran Kişi</h2>
-    <div class="section-actions">
-     @if(canCreate()&&!editing()){
-      <p-button type="button" label="QR Kod Okut" icon="pi pi-qrcode" [outlined]="true"
-       severity="secondary" (onClick)="openQr()"/>
-     }
-     @if(canQuery()&&!editing()){
-      <p-button type="button" label="Yerel Kaydı Sorgula" icon="pi pi-search" [outlined]="true"
-       [loading]="queryingPerson()" (onClick)="lookup()"/>
-     }
-    </div>
-   </div>
-   <p class="section-note">Kimlik sorgusu yalnız KLMN'ye daha önce kaydedilen kişileri bulur. MERNİS entegrasyonu değildir.</p>
-   <div class="identity-switch">
-    <button type="button" [class.active]="identityType()==='tc'" (click)="setIdentity('tc')"
-      [disabled]="!!editing()">T.C. Kimlik No</button>
-    <button type="button" [class.active]="identityType()==='foreign'" (click)="setIdentity('foreign')"
-      [disabled]="!!editing()">Yabancı Kimlik No</button>
-   </div>
-   <div class="form-grid">
-    @if(identityType()==='tc'){
-     <label class="field">T.C. Kimlik No *
-      <input pInputText formControlName="tcKimlikNo" maxlength="11" inputmode="numeric"
-       [readOnly]="!!editing()" placeholder="11 haneli kimlik numarası" autocomplete="off"/>
-     </label>
-    } @else {
-     <label class="field">Yabancı Kimlik No *
-      <input pInputText formControlName="yabanciKimlikNo" maxlength="20" inputmode="numeric"
-       [readOnly]="!!editing()" placeholder="Yabancı kimlik numarası" autocomplete="off"/>
-     </label>
-    }
-    <label class="field">Doğum Tarihi *
-     <input type="date" formControlName="birthDate" [readOnly]="!!editing()"/>
-    </label>
-    @for(field of personTexts;track field.key){
-     <label class="field">{{field.label}}
-      <input pInputText [formControlName]="field.key" [attr.maxlength]="field.key==='address'?512:field.key==='phoneNumber'?20:64"
-        [attr.autocomplete]="field.key==='address'?'street-address':'off'"/>
-     </label>
-    }
-    <label class="field">Cinsiyet
-     <p-select formControlName="gender" [options]="genderItems" optionLabel="label" optionValue="value" [fluid]="true" appendTo="body"/>
-    </label>
-    @for(field of personSelections;track field.key){
-     <label class="field">{{field.label}}{{isRequired(field.key)?" *":""}}
-      <p-select [formControlName]="field.key" [options]="optionMap()[field.type]" optionLabel="label" optionValue="id"
-        [showClear]="true" [filter]="true" (onFilter)="filterOptions(field.type,$event.filter)"
-        [fluid]="true" appendTo="body" placeholder="Seçiniz veya arayınız"/>
-     </label>
-    }
-   </div>
-   @if(dialogVisible()){
-    <div class="person-photo-area">
-     <h3>Başvuran Fotoğrafı</h3>
-     <app-dispatch-photo-capture [imageUrl]="photoUrl()" [disabled]="saving()"
-      [hasSavedPhoto]="!!editing()?.hasPhoto"
-      (photoSelected)="selectPhoto($event)" (photoCleared)="clearPhotoSelection()"
-      (deleteSavedPhoto)="deleteSavedPhoto()"/>
-    </div>
-   }
-  </section>
-  <section class="form-section" formGroupName="dispatch">
-   <div class="section-heading"><h2><i class="pi pi-file-edit"></i> Sevk Bilgileri</h2></div>
-   <div class="form-grid">
-    <label class="field">Kaçıncı İşlem{{admissionRules()?.nthAdmissionRequired?" *":""}}
-     <p-inputnumber formControlName="nthAdmission" [useGrouping]="false" [min]="1" [showButtons]="true" [fluid]="true"/>
-    </label>
-    <label class="field">Sevk Evrak Tarihi{{admissionRules()?.dispatchDocumentDateRequired?" *":""}}
-     <input type="date" formControlName="dispatchDocumentDate"/>
-    </label>
-    <label class="field">Sevk Evrak Sayısı{{admissionRules()?.dispatchDocumentNoRequired?" *":""}}
-     <input pInputText formControlName="dispatchDocumentNo" maxlength="50"/>
-    </label>
-    <label class="field">Sevk Kapsamı
-     <p-select [options]="scopeItems" formControlName="dispatchScope" optionLabel="label" optionValue="value" [fluid]="true" appendTo="body"/>
-    </label>
-    @if(dispatchForm.controls.dispatchScope.value===2){
-     <label class="field">Sevk Kapsamı Şehir *
-      <p-select [options]="optionMap().cities" formControlName="dispatchScopeCityId" optionLabel="label" optionValue="id"
-       [filter]="true" (onFilter)="filterOptions('cities',$event.filter)" [fluid]="true" appendTo="body"/>
-     </label>
-    }
-    @if(dispatchForm.controls.dispatchScope.value===3){
-     <label class="field">Sevk Kapsamı Sağlık Tesisi *
-      <p-select [options]="optionMap().hospitals" formControlName="dispatchScopeHospitalId" optionLabel="label" optionValue="id"
-       [filter]="true" (onFilter)="filterOptions('hospitals',$event.filter)" [fluid]="true" appendTo="body"/>
-     </label>
-    }
-    <label class="field">Alım ID
-     <p-inputnumber formControlName="purchaseId" [useGrouping]="false" [min]="0" [fluid]="true"/>
-    </label>
-   </div>
-  </section>
-  <section class="form-section" formGroupName="dispatch">
-   <div class="section-heading"><h2><i class="pi pi-sitemap"></i> Başvuru ve Askerî Bilgiler</h2></div>
-   <p class="section-note">Başvuru grubuna göre zorunlu alanlar (*) işaretlenir. Gönderen makam için birlik veya şubeden biri seçilebilir.</p>
-   @if(admissionRules();as required){
-    <p class="section-note">Seçilen grupta {{required.unusedReasonIds.length}} muayene sebebi kullanılamaz.
-      @if(required.senderChairRequired){Gönderen makam seçimi zorunludur.}
-    </p>
-   }
-   <div class="form-grid">
-    @for(field of dispatchSelections;track field.key){
-     <label class="field">{{field.label}}
-      <p-select [formControlName]="field.key" [options]="optionMap()[field.type]"
-       optionLabel="label" optionValue="id" [filter]="true" [showClear]="true" [fluid]="true"
-       (onFilter)="filterOptions(field.type,$event.filter)"
-       appendTo="body" placeholder="Seçiniz veya arayınız"/>
-     </label>
-    }
-    <label class="field">Sicil No{{admissionRules()?.registryNumberRequired?" *":""}}
-     <input pInputText formControlName="registryNumber" maxlength="50"/>
-    </label>
-    <label class="field">Nasbı{{admissionRules()?.lastNominationDateRequired?" *":""}}
-     <input type="date" formControlName="lastNominationDate"/>
-    </label>
-    <label class="field">Birlik Açıklama
-     <input pInputText formControlName="militaryUnitDescription" maxlength="1000"/>
-    </label>
-    <label class="field">Gönderen Makam Açıklama
-     <input pInputText formControlName="senderChairOther" maxlength="1000"/>
-    </label>
-    <label class="field wide">Açıklama
-     <textarea formControlName="description" rows="2" maxlength="500"></textarea>
-    </label>
-   </div>
-  </section>
-  <section class="form-section">
-   <div class="section-heading"><h2><i class="pi pi-paperclip"></i> Sevk Dosyaları</h2></div>
-   <p class="section-note">İsteğe bağlı PDF, PNG veya JPEG. Dosya başına en fazla 5 MiB.
-    Dosya, sevk kaydı başarılı olduğunda yüklenir.</p>
-   <label class="field upload-field">Dosya Seç
-    <input type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg"
-     (change)="selectFile($event)"/>
-   </label>
-   @if(uploadFile()){<p class="selected-file"><i class="pi pi-file"></i> {{uploadFile()!.name}} (yüklenmeye hazır)</p>}
-   @if(editing()&&files().length){
-    <div class="attached-files">
-     @for(file of files();track file.id){
-      <button type="button" (click)="download(file)">
-       <i class="pi pi-download"></i> {{file.fileName}} · {{file.fileSize}} bayt
-      </button>
-     }
-    </div>
-   }
-  </section>
-  @if(formError()){<p role="alert" class="form-error">{{formError()}}</p>}
-  <div class="dialog-actions">
-   <p-button label="Vazgeç" type="button" severity="secondary" [outlined]="true" (onClick)="close()"/>
-   <p-button label="Sevki Kaydet" type="submit" icon="pi pi-check" [loading]="saving()"/>
-  </div>
- </form>
-</p-dialog>
-@if(qrVisible()){
- <app-dispatch-qr-reader (scanned)="applyQr($event)" (dismissed)="qrVisible.set(false)"/>
-}
 <p-confirmdialog/>
 <p-dialog header="Sevk İşlem Geçmişi" [visible]="!!auditRecord()"
  (visibleChange)="!$event&&auditRecord.set(null)" [modal]="true"
