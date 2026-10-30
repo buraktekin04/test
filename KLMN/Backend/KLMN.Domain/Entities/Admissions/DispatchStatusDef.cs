@@ -1,11 +1,11 @@
+using KLMN.Domain.Common;
+
 namespace KLMN.Domain.Entities.Admissions;
 
-/// <summary>Sevk durumlarının DB'de saklanan sabit sözlük kayıtları. Yönetim ekranı henüz yoktur.</summary>
-/// <remarks>Dispatch.CurrentState ile aynı numeric kodu taşır; lookup kaydı audit alanları gerektirmez.</remarks>
-public sealed class DispatchStatusDef
+/// <summary>Sevk durumlarının DB'de saklanan tanımları; şu an için yönetim ekranı yoktur.</summary>
+public sealed class DispatchStatusDef : BaseEntity
 {
     public int Code { get; set; }
     public string Name { get; set; } = string.Empty;
     public int SortOrder { get; set; }
-    public bool IsActive { get; set; } = true;
 }
