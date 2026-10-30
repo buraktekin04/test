@@ -1,3 +1,54 @@
+30.10.2026 — SEVK GİRİŞ NÜFUS SORGUSU VE AÇIKLAMA ALANLARI
+===================================================================
+1. Eski MSKBS sevk ekranında "Sorgula", personService.getPerson(...)
+   üzerinden kurum nüfus entegrasyonunu çağırır. KLMN'nin yeni sevk
+   ekranında "yerel kişi sorgusu" bu gereksinimi KARŞILAMIYOR.
+   Frontend'de "Nüfustan Sorgula" kullan, KLMN Persons tablosunda
+   isim/kimlik araması yapma. Frontend sadece kendi API'sine çağrı
+   yapmalı, nüfus servisi erişimi backend içinde kalmalıdır.
+
+2. Backend nüfus entegrasyonu için:
+   POST /api/dispatches/persons/national-registry
+   Controller: KLMN.Api/Controllers/DispatchesController.cs
+   CQRS: Application/Dispatches/Queries/LookupDispatchPerson/
+      LookupDispatchPersonQuery.cs
+      LookupDispatchPersonQueryValidator.cs
+      LookupDispatchPersonQueryHandler.cs
+   DTO: DispatchPersonResponse(Person, Military?)
+      DispatchRegistryMilitaryResponse.cs (ayrı dosya).
+   Kimlik no ve doğum tarihi backend'de doğrulanır;
+   Create veya Query yetkisi gerekir. Response no-store.
+   Handler içinde TODO var; GERÇEK NÜFUS SERVİS KODUNU
+   KULLANICI BAĞLAYACAK. Handler şu an isteyerek
+   NationalRegistryNotConfiguredException fırlatıyor ve HTTP 503
+   dönüyor. 404 ancak gerçek nüfus sorgusu sonuç bulmazsa.
+   Yerel DB'ye sessiz fallback veya sahte kişi sonucu YASAK.
+   Kişisel verileri loglama/cacheleme.
+   Harici kodları KLMN GUID'lerine doğru map et.
+
+3. Frontend:
+   dispatch.service.ts queryPopulation() endpoint'i kullanır.
+   dispatch-entry.component.ts/html "Nüfustan Sorgula" düğmesi
+   kişi + varsa askerî bilgileri forma işler, 503'ü açıkça bildirir.
+   Kimlik sorgusunu Create VEYA Query yetkisi olan yapabilir.
+   QR okutma/manuel kayıt etkileşimi korunur.
+
+4. Eski MSKBS Sevk Girişi HTML kaynağı test kontrol edildi:
+   Birlik Açıklama ve Muayeneye Gönderen Makam Açıklama
+   dx-text-area idi. Yeni formda 3 satırlı, genişleyebilir,
+   tam genişlikte textarea yapıldı (maxLength 1000).
+   Eski formda bağımsız Genel "Açıklama" kutusu bulunmuyor.
+   Bu kutu Sevk Girişi görünümünden kaldırıldı. Ancak eski
+   veri kaybını önlemek için backend Dispatch.Description ve
+   gizli form kontrolü KORUNDU. DB kolonu bu fazda silinmedi.
+
+5. KLMN/SEVK_GIRIS_KURULUM.md, Frontend/tests/
+   dispatch-pages-regression.mjs ve Tests/Dispatches.Regression/
+   Program.cs testleri güncellendi. Bu düzeltme için YENİ
+   MIGRATION YOKTUR. Önceki DispatchStatusDefs migration
+   gereksinimi devam eder. dotnet/npm build/E2E bu ajan
+   ortamında çalıştırılamadı. Tek squash commit main.
+
 30.10.2026 — SEVK GİRİŞ / SORGULAMA 5 MADDE REVİZYONU
 ===================================================================
 KAYNAK: Kullanıcı fotoğrafı/notu, 30.10.2026
