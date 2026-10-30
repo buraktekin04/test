@@ -17,3 +17,14 @@ export function containsIgnoringCase(value:unknown,filter:unknown):boolean {
  if(value===undefined||value===null)return false;
  return normalizeFilterText(value).includes(normalizeFilterText(filter));
 }
+
+export function startsWithIgnoringCase(value:unknown,filter:unknown):boolean {
+ if(filter===undefined||filter===null||String(filter).trim()==='')return true;
+ if(value===undefined||value===null)return false;
+ return normalizeFilterText(value).startsWith(normalizeFilterText(filter));
+}
+export function endsWithIgnoringCase(value:unknown,filter:unknown):boolean {
+ if(filter===undefined||filter===null||String(filter).trim()==='')return true;
+ if(value===undefined||value===null)return false;
+ return normalizeFilterText(value).endsWith(normalizeFilterText(filter));
+}
