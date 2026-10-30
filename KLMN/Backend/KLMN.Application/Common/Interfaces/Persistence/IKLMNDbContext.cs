@@ -121,6 +121,11 @@ public interface IKLMNDbContext
 
     DbSet<MilitaryUnitDef> MilitaryUnitDefs { get; }
 
+    /// <summary>Sevk Giriş kişi ve sevk kayıtları ile bunların belge ekleri.</summary>
+    DbSet<Person> Persons { get; }
+    DbSet<Dispatch> Dispatches { get; }
+    DbSet<DispatchFile> DispatchFiles { get; }
+
     /// <summary>
     /// save changes async işlemini çağıran katmana belirtilen sözleşmeyle sunar.
     /// </summary>

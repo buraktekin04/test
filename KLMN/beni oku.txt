@@ -1,3 +1,52 @@
+30.10.2026 — SEVK GİRİŞ ve TAKİP (YENİ İŞ MODÜLÜ)
+=============================================================
+Kaynak: repo kökündeki 30.10.2026 tarihli test dosyası
+(dispatch.component.html, dispatch.component.ts, Dispatch, DispatchConfig,
+Person, DispatchScope, DocumentDef, DispatchFile).
+
+KLMN UYARLAMASI
+- KLMN.Domain.Entities.Admissions içinde Person / Dispatch / DispatchFile:
+  BaseEntity, Guid kimlik, Created/Updated, IsActive/IsDeleted, xmin.
+  Kişi ile sevk 1:N, sevk ile belge 1:N. Mevcut tanım tabloları GUID
+  FK ile bağlandı; mevcut tanım şemaları değiştirilmedi.
+- PostgreSQL DispatchNo identity bigint, tarih DateOnly/date; T.C. ve
+  yabancı kimlik numarası string, partial unique indeks. Sevk kapsama
+  göre şehir / hastane, başvuru grubu bayraklarına göre zorunlu alanlar,
+  kullanılamayan muayene sebepleri backend'de denetlenir.
+- Ayrı CQRS Create/Update/Cancel, GetList/GetById, LookupPerson,
+  Options, GetAdmissionRules, belge listeleme/indirme/yükleme;
+  handler, validator, response, exception dosyaları ayrıdır.
+  Projection sadece query handler'da; eski DevExtreme/Oracle kodu yoktur.
+- KLMN.Api/Controllers/DispatchesController.cs REST API ve
+  Dispatches.View/Query/Create/Update izinleri, merkezi 404/409
+  exception ve audit whitelist'i eklendi. Delete yerine İptal
+  durumuna geçiş var; kullanıcı/kimlik ve dosya içerikleri audit'e yazılmaz.
+- Angular 21 + PrimeNG bağımsız /app/dispatches ekranı; kişi, sevk,
+  askerî bilgiler, grup bazlı zorunluluklar, tanım dropdown araması,
+  local kişi eşleştirme, p-table filtre/sayfalama/sıralama/resize,
+  durum etiketi, confirm iptal, popup hata, dosya ekleme/indirme,
+  audit ve responsive form.
+- Güvenlik: Kimlik no maskeleme, belge türü / 5 MiB / dosya
+  imzası kontrolü, izin kontrollü belge indirme, local sorguda
+  kimlik no + doğum tarihi birlikte gerekir. Eski harici MERNİS
+  sorgu, QR/kamera/fotoğraf servisleri ve kaynak bağımlılıklar
+  repo'da mevcut olmadığından gerçek entegrasyon gibi sunulmadı.
+- Dökümantasyon: KLMN/SEVK_GIRIS_KURULUM.md.
+  Kaynak regression: KLMN/Tests/Dispatches.Regression.
+
+MIGRATION DURUMU (30.10.2026)
+- Persons, Dispatches, DispatchFiles için yeni migration GEREKLİ.
+  Local InitialCreate/ModelSnapshot zinciri repoda YOK; migration
+  oluşturulmadı/uygulanmadı. DB silinmedi veya sıfırlanmadı.
+  Geliştirici yerel mevcut snapshot üzerinden migration üretecek.
+- Gerçek dotnet/npm build, regression, PostgreSQL, tarayıcı/E2E,
+  kimlik entegrasyonu bu ortamda ÇALIŞTIRILMADI; 'test başarılı'
+  şeklinde raporlanmaz. Entegrasyon kabulü bekliyor.
+- İleride: gerçek dış kişi sorgu/QR-kamera, fotoğraf işleme ve
+  kimlik kodu/cinsiyet enum uyumu; üretim için privacy/retansiyon
+  ve branş iş kuralları. Tek commit + beni oku güncelleme kuralı
+  aynen geçerlidir.
+
 30.10.2026 — ZEYİL SEBEBİ TANIMLARI ADLANDIRMA DÜZELTMESİ
 ============================================================
 - Mevcut AnnotationReasonDef CRUD API, Angular ekranı, menü, yetki adları, audit etiketi ve Excel başlığı "Zeyil Sebebi Tanımları" olacak şekilde düzeltildi.

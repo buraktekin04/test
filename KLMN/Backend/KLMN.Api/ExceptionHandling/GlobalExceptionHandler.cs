@@ -13,6 +13,7 @@ using KLMN.Application.SYYDiagnosisRequireds.Exceptions;
 using KLMN.Application.SYYDiagnoses.Exceptions;
 using KLMN.Application.SYYDiagnosisTypes.Exceptions;
 using KLMN.Application.SYYDiagnosisSlices.Exceptions;
+using KLMN.Application.Dispatches.Exceptions;
 using KLMN.Application.AnnotationReasons.Exceptions;
 using KLMN.Application.PlaneTypes.Exceptions;
 using KLMN.Application.FlyingMissions.Exceptions;
@@ -255,6 +256,8 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             SYYDiagnosisTypeDefConflictException => new ProblemDetails{Status=409,Title="Tanım işlemi gerçekleştirilemedi.",Detail=exception.Message},
             SYYDiagnosisSliceDefNotFoundException => new ProblemDetails{Status=404,Title="Kayıt bulunamadı.",Detail=exception.Message},
             SYYDiagnosisSliceDefConflictException => new ProblemDetails{Status=409,Title="Tanım işlemi gerçekleştirilemedi.",Detail=exception.Message},
+            DispatchNotFoundException => new ProblemDetails{Status=404,Title="Sevk kaydı bulunamadı.",Detail=exception.Message},
+            DispatchConflictException => new ProblemDetails{Status=409,Title="Sevk kaydedilemedi.",Detail=exception.Message},
             AnnotationReasonDefNotFoundException => new ProblemDetails{Status=404,Title="Kayıt bulunamadı.",Detail=exception.Message},
             AnnotationReasonDefConflictException => new ProblemDetails{Status=409,Title="Tanım işlemi gerçekleştirilemedi.",Detail=exception.Message},
             PlaneTypeDefNotFoundException => new ProblemDetails{Status=404,Title="Kayıt bulunamadı.",Detail=exception.Message},

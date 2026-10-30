@@ -27,6 +27,9 @@ public sealed class AuditableEntitySaveChangesInterceptor(
                 "PhoneNumber", "MilitaryUnitDefId", "ClockLimit", "IsLocked",
                 "IsActive", "ValidFrom", "ValidTo"),
             ["Role"] = Fields("Name", "Code", "Description", "IsActive"),
+            // Kişi kimliği, sağlık verisi ve dosya baytları audit geçmişine alınmaz.
+            ["Dispatch"] = Fields("DispatchNo", "CurrentState", "DispatchScope",
+                "HcAdmissionTypeDefId", "ReasonForExaminationDefId", "IsActive"),
             ["ForcesCommandDef"] = Fields("Name", "Code", "IsActive", "ValidFrom", "ValidTo"),
             ["HospitalDef"] = Fields("Code", "Name", "CityId", "RefereeHospitalId",
                 "ValidFrom", "ValidTo", "IsActive"),

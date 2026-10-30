@@ -156,6 +156,11 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
 
     public DbSet<MilitaryUnitDef> MilitaryUnitDefs => Set<MilitaryUnitDef>();
 
+    /// <summary>Sevk işlem tablosu ve kişiye ait doküman verileri.</summary>
+    public DbSet<Person> Persons => Set<Person>();
+    public DbSet<Dispatch> Dispatches => Set<Dispatch>();
+    public DbSet<DispatchFile> DispatchFiles => Set<DispatchFile>();
+
     /// <summary>
     /// Entity konfigürasyonlarını assembly'den yükleyip global sorgu filtrelerini uygular.
     /// </summary>

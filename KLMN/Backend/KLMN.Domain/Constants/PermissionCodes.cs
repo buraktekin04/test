@@ -532,4 +532,12 @@ public static class PermissionCodes
        public const string Update="FlyingMissions.Update";
        public const string Delete="FlyingMissions.Delete";
     }
+    /// <summary>Sevk girişi, sorgulama ve düzenleme işlem izinleri.</summary>
+    public static class Dispatches
+    {
+        public const string View = "Dispatches.View";
+        public const string Query = "Dispatches.Query";
+        public const string Create = "Dispatches.Create";
+        public const string Update = "Dispatches.Update";
+    }
 }
