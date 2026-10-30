@@ -39,5 +39,9 @@ public sealed class Dispatch : BaseEntity
     public int? PurchaseId { get; set; }
     public string? Description { get; set; }
     public bool AutomaticDispatch { get; set; }
+    /// <summary>Başvurana ait fotoğraf; kimlik fotoğrafı belge eklerinden ayrı tutulur ve audit içine alınmaz.</summary>
+    public byte[]? Photo { get; set; }
+    /// <summary>Fotoğrafın doğrulanmış image/jpeg veya image/png medya türü.</summary>
+    public string? PhotoContentType { get; set; }
     public ICollection<DispatchFile> Files { get; set; } = new List<DispatchFile>();
 }

@@ -1,0 +1,36 @@
+<p-dialog header="Sevk QR Kod Okutma" [visible]="true"
+ (visibleChange)="!$event&&close()" [modal]="true" [draggable]="false" [resizable]="false"
+ [style]="{'width':'min(780px,96vw)'}" [contentStyle]="{'max-height':'78vh','overflow-y':'auto'}">
+ <div class="qr-dialog">
+  <p class="hint">{{infoText()}}</p>
+  <div class="scanner-actions">
+   @if(!cameraEnabled()){
+    <p-button icon="pi pi-camera" label="QR Kamerasını Aç" type="button"
+     [loading]="cameraBusy()" (onClick)="startCamera()"/>
+   } @else {
+    <p-button icon="pi pi-stop-circle" label="Kamerayı Kapat" type="button"
+     severity="secondary" [outlined]="true" (onClick)="stopCamera()"/>
+   }
+   <label class="upload-qr">QR Görseli Seç
+    <input type="file" accept="image/png,image/jpeg,image/webp" (change)="readImage($event)"/>
+   </label>
+  </div>
+  @if(cameraEnabled()){
+   <div class="camera-frame">
+    <video #qrVideo autoplay muted playsinline aria-label="QR okuma kamerası"></video>
+    <div class="scan-guide" aria-hidden="true"></div>
+   </div>
+  }
+  @if(decodingImage()){<p class="hint">QR görüntüsü okunuyor...</p>}
+  <label for="dispatch-qr-text">QR metni / USB QR okuyucu girişi</label>
+  <textarea id="dispatch-qr-text" rows="5" [value]="qrText()" (input)="updateText($event)"
+   (keydown)="onQrKeydown($event)" placeholder="tcKimlikNo:...,dogumTarihi:...,sevkEvrakTarihi:..."></textarea>
+  @if(errorText()){<p class="error" role="alert">{{errorText()}}</p>}
+  <p class="privacy">QR içeriği kamera üzerinde çözümlenir. Geçerli bilgiler sadece sevk formuna aktarılır; QR görseli sunucuya yüklenmez.</p>
+  <div class="footer">
+   <p-button label="Vazgeç" severity="secondary" [outlined]="true" (onClick)="close()"/>
+   <p-button label="Bilgileri Forma Aktar" icon="pi pi-check" [disabled]="!qrText().trim()"
+    (onClick)="apply()"/>
+  </div>
+ </div>
+</p-dialog>

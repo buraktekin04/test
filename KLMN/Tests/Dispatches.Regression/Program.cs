@@ -1,3 +1,5 @@
+using KLMN.Application.Dispatches.Commands.SetDispatchPhoto;
+using KLMN.Application.Dispatches.Commands.DeleteDispatchPhoto;
 using KLMN.Application.Dispatches.Commands.CreateDispatch;
 using KLMN.Application.Dispatches.Commands.UpdateDispatch;
 using KLMN.Application.Dispatches.Commands.CancelDispatch;
@@ -34,4 +36,16 @@ Check(typeof(Dispatch).GetProperty(nameof(Dispatch.HcAdmissionTypeDefId))?.Prope
     "Sevk başvuru grubu FK");
 Check(typeof(Dispatch).GetProperty(nameof(Dispatch.PersonId))?.PropertyType==typeof(Guid),
     "Sevk kişi FK");
+Check(typeof(Dispatch).GetProperty(nameof(Dispatch.Photo))?.PropertyType==typeof(byte[]),
+    "Dispatch fotoğrafı bytea/byte[] olarak korunur");
+Check(typeof(Dispatch).GetProperty(nameof(Dispatch.PhotoContentType))?.PropertyType==typeof(string),
+    "Fotoğraf MIME verisi kaydedilir");
+var photoValidator=new SetDispatchPhotoCommandValidator();
+Check(!photoValidator.Validate(new SetDispatchPhotoCommand(Guid.NewGuid(),"image/gif",[1,2,3])).IsValid,
+    "İzin verilmeyen fotoğraf MIME reddi");
+Check(!photoValidator.Validate(new SetDispatchPhotoCommand(Guid.NewGuid(),"image/jpeg",new byte[2097153])).IsValid,
+    "2 MiB fotoğraf boyut limiti");
+Check(!new DeleteDispatchPhotoCommandValidator()
+    .Validate(new DeleteDispatchPhotoCommand(Guid.Empty,0)).IsValid,
+    "Fotoğraf silme kimlik ve versiyon zorunluluğu");
 Console.WriteLine("Not: Yerel build, PostgreSQL migration, kimlik/başvuru kuralı, izin ve dosya entegrasyon senaryoları ayrıca test edilmelidir.");

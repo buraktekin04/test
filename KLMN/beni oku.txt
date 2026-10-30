@@ -1,3 +1,77 @@
+30.10.2026 — SEVK QR KOD ve KAMERA / FOTOĞRAF TAMAMLAMA
+===================================================================
+KAYNAK: GitHub main /test (MSKBS dispatch.component.html/ts, fotoğraf
+           upload/PhotoCapture ve QR kod pop-up iş akışları).
+
+- Sevk Giriş ekranda QR Kod Okut açılır penceresi:
+  * Fiziksel USB/klavye tipi QR okutucu, metin yapıştırma,
+    web kamera ve QR görsel dosyasından kod okuma.
+  * QR kamera: @zxing/browser ^0.2.1 (Angular 21); arka kamera
+    tercih edilir, izin kullanıcı eylemiyle istenir.
+  * Geçerli QR biçimi: tcKimlikNo, yabanciKimlikNo, dogumTarihi,
+    sevkEvrakTarihi, sevkEvrakSayisi, muayeneSebebi,
+    sevkKapsamiHastane, alimId, kacinciIslem, telefonNo;
+    eski virgüllü key:value biçimi, çift tırnak ve JSON.
+  * Tarih GG.AA.YYYY -> yyyy-MM-dd; kimlik no, telefon, sayı,
+    GUID, alan uzunluğu ve bilinmeyen alan kontrolleri.
+  * QR alanları Sevk formuna alınır. Kişi sorgusu eldeki KLMN
+    yerel kayıtlarındandır. Eski sistemde hardcode edilmiş
+    başvuru grubu/kurum sabit GUID'leri taşınmadı. QR GUID
+    yeni sistemde yoksa ekranda kullanıcı uyarılı seçimi yapar.
+    Başvuru Grubu sonradan seçilirse QR muayene sebebi
+    kurallar yüklendikten sonra doğrulanarak atanır.
+- Başvuran kişi fotoğrafı:
+  * Formun "Kamera / Resim" araçları: ön kamera, fotoğraf çek,
+    resim seç, önizleme, değiştir/temizle, kayıtlı fotoğrafı sil.
+  * Kamera stream açma/kapatma ve modal destroy'da tüm track'ler
+    durdurulur; tarayıcı HTTPS/localhost ve kamera izni gerekir.
+  * Dispatch.Photo (byte[]/bytea, nullable) ve PhotoContentType
+    yeni alanları; Person ve sevk dosya ekleriyle karışmaz.
+    GET/POST/DELETE /api/dispatches/{id}/photo izinli API,
+    fotoğraf MIME + dosya imzası, 2 MiB sınırı, Delete sürüm
+    kontrolü; hassas içerik audit whitelist'ine dahil edilmedi.
+  * Sevk kaydedildikten sonra fotoğraf ve ek belge sırayla
+    yüklenir; biri başarısızsa sevk korunur ve popup gösterilir.
+- Yeni bağımsız frontend bileşenleri:
+  Frontend/src/app/features/dispatches/qr/dispatch-qr-reader.component.ts/html/scss
+  Frontend/src/app/features/dispatches/qr/dispatch-qr.parser.ts
+  Frontend/src/app/features/dispatches/camera/dispatch-photo-capture.component.ts/html/scss
+  Ayrıca dispatch-list TS/HTML/SCSS, dispatch.service/model, package.json.
+- Backend:
+  Domain/Entities/Admissions/Dispatch.cs
+  Persistence/Configurations/Admissions/DispatchConfiguration.cs
+  Application/Dispatches/Commands/SetDispatchPhoto/*,
+  Application/Dispatches/Commands/DeleteDispatchPhoto/*,
+  Application/Dispatches/Queries/GetDispatchPhoto/*,
+  Application/Dispatches/Responses/DispatchPhotoResponse.cs,
+  DispatchResponse ve GetDispatchByIdQueryHandler,
+  Api/Controllers/DispatchesController.cs.
+- Regression kaynakları: Tests/Dispatches.Regression/Program.cs;
+  Frontend/tests/dispatch-qr-regression.mjs, npm script
+  test:dispatch-qr (Node 22 --experimental-strip-types).
+- Ayrıntılı kurulum ve manuel kabul listesi:
+  KLMN/SEVK_GIRIS_KURULUM.md.
+
+MIGRATION:
+  Yeni sevk tabloları yerelde henüz migration'a alınmadıysa yeni
+  migration'da Photo ve PhotoContentType da oluşturulmalıdır.
+  Sevk tabloları zaten migration'da varsa iki kolon için yeni
+  migration gerekir. Yerel ModelSnapshot depoda bulunmadığından
+  migration OLUŞTURULMADI veya UYGULANMADI; veritabanı silinmedi.
+  @zxing/browser bağımlılığı package.json'a eklendi.
+  Depoda package-lock.json yok; npm install sonra geliştirici
+  package-lock.json'u ayrıca commit etmelidir.
+  Derleme veya otomatik testler bu çalışma ortamında KOŞULMADI.
+  Kamera/QR donanımı, iOS Safari/Chrome, PostgreSQL, backend,
+  frontend ve E2E kabulü yerelde yapılmalıdır.
+
+HARİCİ ENTEGRASYON:
+  MSKBS IFileUploadService, PhotoCaptureComponent gibi eski
+  kaynak sınıfların gerçek implementasyonları sağlanmadı; mevcut
+  işlevler yeni tarayıcı/REST tabanlı çalışma olarak geliştirildi.
+  Kurum dışı MERNİS/kimlik sorgu servisi KLMN'de mevcut değildir,
+  bu bağımsız entegrasyon hâlâ gereklidir.
+
 30.10.2026 — SEVK GİRİŞ ve TAKİP (YENİ İŞ MODÜLÜ)
 =============================================================
 Kaynak: repo kökündeki 30.10.2026 tarihli test dosyası

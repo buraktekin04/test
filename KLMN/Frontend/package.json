@@ -6,7 +6,8 @@
     "start": "ng serve --ssl --port 4200",
     "build": "ng build",
     "build:dev": "ng build --configuration development",
-    "typecheck": "ng build --configuration development"
+    "typecheck": "ng build --configuration development",
+    "test:dispatch-qr": "node --experimental-strip-types tests/dispatch-qr-regression.mjs"
   },
   "dependencies": {
     "@angular/animations": "^21.0.0",
@@ -17,6 +18,7 @@
     "@angular/platform-browser": "^21.0.0",
     "@angular/router": "^21.0.0",
     "@primeuix/themes": "^2.0.2",
+    "@zxing/browser": "^0.2.1",
     "primeicons": "^7.0.0",
     "primeng": "^21.0.0",
     "rxjs": "~7.8.2",

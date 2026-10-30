@@ -45,3 +45,9 @@
 .muted{color:var(--ui-muted);font-size:.83rem}
 @media(max-width:950px){.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.form-grid{grid-template-columns:1fr}.form-section{padding:.75rem}.identity-switch button{flex:1}}
+
+/* Fotoğraf bölümü ve QR giriş butonları ana KLMN form sisteminin görünümünü kullanır. */
+.header-actions,.section-actions{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.person-photo-area{margin-top:1rem;padding-top:1rem;border-top:1px solid var(--ui-border)}
+.person-photo-area h3{font-size:.85rem;font-weight:650;margin:0 0 .75rem;color:var(--ui-text)}
+@media(max-width:600px){.section-actions{width:100%}.header-actions{width:100%;justify-content:flex-end}}

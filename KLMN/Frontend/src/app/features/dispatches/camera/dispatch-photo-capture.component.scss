@@ -1,0 +1,13 @@
+:host{display:block;min-width:0}
+.person-photo{display:flex;flex-direction:column;gap:.65rem;min-width:0}
+.photo-area{width:168px;height:190px;max-width:100%;border:1px dashed var(--ui-border);border-radius:9px;background:var(--ui-surface-muted);overflow:hidden}
+.photo-area img{height:100%;width:100%;object-fit:cover}
+.photo-placeholder{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:.5rem;color:var(--ui-muted);font-size:.8rem}
+.photo-placeholder i{font-size:2.6rem}
+.camera-controls{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem}
+.video-box{flex-basis:100%;max-width:400px;aspect-ratio:4/3;background:#101820;border-radius:8px;overflow:hidden}
+.video-box video{width:100%;height:100%;object-fit:cover}
+.photo-upload{cursor:pointer;padding:.55rem .8rem;border:1px solid var(--ui-border);border-radius:6px;background:var(--ui-surface-muted);color:var(--ui-text);font-size:.81rem;font-weight:600}
+.photo-upload input{display:none}
+.photo-note{font-size:.76rem;margin:0;color:var(--ui-muted)}
+.photo-error{font-size:.78rem;margin:0;color:var(--ui-danger)}

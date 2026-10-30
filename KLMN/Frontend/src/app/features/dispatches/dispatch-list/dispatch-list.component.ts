@@ -1,8 +1,8 @@
-import {Component,computed,inject,OnInit,signal} from '@angular/core';
+import {Component,computed,inject,OnDestroy,OnInit,signal} from '@angular/core';
 import {DatePipe} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
 import {FormBuilder,ReactiveFormsModule,Validators} from '@angular/forms';
-import {finalize} from 'rxjs';
+import {finalize,firstValueFrom} from 'rxjs';
 import {ConfirmationService,MessageService} from 'primeng/api';
 import {ButtonModule} from 'primeng/button';
 import {CheckboxModule} from 'primeng/checkbox';
@@ -18,6 +18,9 @@ import {PermissionCodes} from '../../../core/permissions/constants/permission-co
 import {PermissionService} from '../../../core/permissions/services/permission.service';
 import {AuditHistoryComponent} from '../../../shared/audit-history/audit-history.component';
 import {DispatchService} from '../services/dispatch.service';
+import {DispatchQrReaderComponent} from '../qr/dispatch-qr-reader.component';
+import {DispatchPhotoCaptureComponent} from '../camera/dispatch-photo-capture.component';
+import {DispatchQrData,DispatchQrFormatError,parseDispatchQr} from '../qr/dispatch-qr.parser';
 import {DispatchItem,DispatchOption,DispatchPerson,DispatchDetails,DispatchResponse,
  DispatchFileItem,OptionType,DispatchSaveResponse,DispatchAdmissionRules} from '../models/dispatch.model';
 
@@ -26,12 +29,12 @@ import {DispatchItem,DispatchOption,DispatchPerson,DispatchDetails,DispatchRespo
  selector:'app-dispatch-list',standalone:true,
  imports:[DatePipe,ReactiveFormsModule,ButtonModule,CheckboxModule,ConfirmDialogModule,
   DialogModule,InputTextModule,InputNumberModule,SelectModule,TableModule,TagModule,ToastModule,
-  AuditHistoryComponent],
+  AuditHistoryComponent,DispatchQrReaderComponent,DispatchPhotoCaptureComponent],
  providers:[ConfirmationService,MessageService],
  templateUrl:'./dispatch-list.component.html',
  styleUrl:'./dispatch-list.component.scss'
 })
-export class DispatchListComponent implements OnInit {
+export class DispatchListComponent implements OnInit,OnDestroy {
  private readonly api=inject(DispatchService);
  private readonly fb=inject(FormBuilder);
  private readonly permissions=inject(PermissionService);
@@ -134,6 +137,13 @@ export class DispatchListComponent implements OnInit {
  /** Başvuru grubuna göre sunucuda tanımlanmış zorunluluklar. */
  readonly admissionRules=signal<DispatchAdmissionRules|null>(null);
  private rulesRequest=0;
+ /** Kameradan çekilen veya bilgisayardan seçilen, sevk kaydından bağımsız bekleyen fotoğraf. */
+ readonly photoFile=signal<File|null>(null);
+ readonly photoUrl=signal<string|null>(null);
+ readonly qrVisible=signal(false);
+ private photoObjectUrl:string|null=null;
+ private photoRequest=0;
+ private pendingQrReasonId:string|null=null;
  readonly uploadFile=signal<File|null>(null);
  private lastRequest=0;
  private editRequest=0;
@@ -172,6 +182,11 @@ export class DispatchListComponent implements OnInit {
   this.api.admissionRules(id).subscribe({
    next:rules=>{if(this.rulesRequest!==request)return;
     this.admissionRules.set(rules);
+    const qrReason=this.pendingQrReasonId;
+    if(qrReason){
+     this.pendingQrReasonId=null;
+     this.loadQrReference('reasons',qrReason,'reasonForExaminationDefId');
+    }
     const selected=this.dispatchForm.controls.reasonForExaminationDefId.value;
     if(selected&&rules.unusedReasonIds.includes(selected))this.dispatchForm.controls.reasonForExaminationDefId.setValue(null);
     this.loadOptions('reasons');
@@ -222,6 +237,8 @@ export class DispatchListComponent implements OnInit {
   if(!this.canCreate())return;
   ++this.editRequest;this.editing.set(null);this.files.set([]);
   this.formError.set(null);this.uploadFile.set(null);this.identityType.set('tc');
+  this.resetPhoto();
+  this.pendingQrReasonId=null;
   this.personForm.reset({name:'',surname:'',birthDate:'',tcKimlikNo:null,yabanciKimlikNo:null});
   this.dispatchForm.reset({dispatchScope:1,reasonForExaminationDefId:null,hcAdmissionTypeDefId:null});
   this.dialogVisible.set(true);
@@ -232,6 +249,8 @@ export class DispatchListComponent implements OnInit {
   this.api.detail(row.id).subscribe({next:item=>{
    if(this.editRequest!==id)return;
    this.editing.set(item);this.formError.set(null);this.uploadFile.set(null);
+   this.resetPhoto();
+   if(item.hasPhoto)this.loadCurrentPhoto(item.id,id);
    this.personForm.reset(item.person);
    this.dispatchForm.reset(item.dispatch);
    // Başvuru grubu değişimini dinleyen form reseti muayene sebebini temizleyebilir.
@@ -246,9 +265,9 @@ export class DispatchListComponent implements OnInit {
    }
   },error:e=>this.error(e)});
  }
- close(){if(this.saving())return;this.dialogVisible.set(false);++this.editRequest;}
- /** Yalnız veritabanında kayıtlı kişi aranır; harici MERNİS/QR sorgusu simüle edilmez. */
- lookup(){
+ close(){if(this.saving())return;this.dialogVisible.set(false);this.qrVisible.set(false);this.resetPhoto();++this.editRequest;}
+ /** Yalnız veritabanında kayıtlı kişi aranır; harici MERNİS servisi mevcut değildir. QR alanlarını korur. */
+ lookup(qr?:DispatchQrData){
   if(!this.canQuery())return;
   const f=this.personForm.getRawValue();
   if(!f.birthDate||!(this.identityType()==='tc'?f.tcKimlikNo:f.yabanciKimlikNo)){
@@ -258,7 +277,10 @@ export class DispatchListComponent implements OnInit {
   this.api.lookupPerson({tcKimlikNo:this.identityType()==='tc'?f.tcKimlikNo:null,
    yabanciKimlikNo:this.identityType()==='foreign'?f.yabanciKimlikNo:null,birthDate:f.birthDate})
    .pipe(finalize(()=>this.queryingPerson.set(false))).subscribe({
-    next:r=>{this.personForm.patchValue(r.person);this.message.add({severity:'success',
+    next:r=>{this.personForm.patchValue(r.person);
+     // QR ile aktarılan iletişim alanı, eski yerel kayıt dönüşünde kaybolmaz.
+     if(qr?.telefonNo)this.personForm.controls.phoneNumber.setValue(qr.telefonNo);
+     this.message.add({severity:'success',
      summary:'Yerel kişi bulundu',detail:'Kişi bilgileri dolduruldu.'});},
     error:e=>{const h=e as HttpErrorResponse;
      if(h.status===404)this.message.add({severity:'info',summary:'Kişi bulunamadı',
@@ -266,7 +288,131 @@ export class DispatchListComponent implements OnInit {
      else this.error(e);}
    });
  }
- /** Dosya, kayıt başarılı olduktan sonra sevke bağlanır; başarısız upload ayrıca bildirilir. */
+
+ /** Sevk ekranındaki eski QR popup'ının kamera, dosya ve okuyucu karşılığı. */
+ openQr(){
+  if(this.editing()||!this.canCreate())return;
+  if(!this.dialogVisible())this.openCreate();
+  this.qrVisible.set(true);
+ }
+ /** Karekoddan yalnız doğrulanmış alanlar aktarılır; eski sistemin sabit GUID'leri kullanılmaz. */
+ applyQr(raw:string){
+  let qr:DispatchQrData;
+  try{
+   qr=parseDispatchQr(raw);
+  }catch(e){
+   const message=e instanceof DispatchQrFormatError?e.message:'QR metni okunamadı.';
+   this.message.add({severity:'error',summary:'QR kod geçersiz',detail:message,life:7000});
+   return;
+  }
+  if(!this.dialogVisible())this.openCreate();
+  if(qr.tcKimlikNo)this.identityType.set('tc');
+  if(qr.yabanciKimlikNo)this.identityType.set('foreign');
+  this.personForm.patchValue({
+   ...(qr.tcKimlikNo?{tcKimlikNo:qr.tcKimlikNo,yabanciKimlikNo:null}:{}),
+   ...(qr.yabanciKimlikNo?{yabanciKimlikNo:qr.yabanciKimlikNo,tcKimlikNo:null}:{}),
+   ...(qr.dogumTarihi?{birthDate:qr.dogumTarihi}:{}),
+   ...(qr.telefonNo?{phoneNumber:qr.telefonNo}:{})
+  });
+  this.dispatchForm.patchValue({
+   ...(qr.sevkEvrakTarihi?{dispatchDocumentDate:qr.sevkEvrakTarihi}:{}),
+   ...(qr.sevkEvrakSayisi?{dispatchDocumentNo:qr.sevkEvrakSayisi}:{}),
+   ...(qr.kacinciIslem!==undefined?{nthAdmission:qr.kacinciIslem}:{}),
+   ...(qr.alimId!==undefined?{purchaseId:qr.alimId}:{})
+  });
+  if(qr.muayeneSebebi){
+   if(this.dispatchForm.controls.hcAdmissionTypeDefId.value)
+    this.loadQrReference('reasons',qr.muayeneSebebi,'reasonForExaminationDefId');
+   else this.pendingQrReasonId=qr.muayeneSebebi;
+  }
+  if(qr.sevkKapsamiHastane)this.loadQrReference('hospitals',qr.sevkKapsamiHastane,'dispatchScopeHospitalId');
+  this.qrVisible.set(false);
+  if(this.pendingQrReasonId)this.message.add({severity:'info',
+   summary:'Muayene sebebi bekliyor',detail:'Başvuru grubunu seçtiğinizde QR muayene sebebi otomatik eşleştirilecektir.'});
+  this.message.add({severity:'success',summary:'QR bilgileri aktarıldı',
+   detail:'Sevk bilgilerini kontrol edin, başvuru grubunu ve eksik kişi alanlarını tamamlayın.'});
+  if((qr.tcKimlikNo||qr.yabanciKimlikNo)&&qr.dogumTarihi&&this.canQuery())this.lookup(qr);
+ }
+ /** QR'deki eski GUID yalnız yeni veritabanındaki aktif tanımla eşleşirse atanır. */
+ private loadQrReference(type:'reasons'|'hospitals',id:string,key:'reasonForExaminationDefId'|'dispatchScopeHospitalId'){
+  const current= this.editRequest;
+  this.api.options(type,'',id).subscribe({
+   next:items=>{
+    if(current!==this.editRequest||!this.dialogVisible())return;
+    const found=items.find(item=>item.id.toLowerCase()===id.toLowerCase());
+    if(!found){
+     this.message.add({severity:'warn',summary:'QR tanımı bulunamadı',
+      detail:(type==='reasons'?'Muayene sebebi':'Sevk hastanesi')+' kodu yeni sistemle eşleşmedi; listeden seçiniz.',life:7000});
+     return;
+    }
+    this.optionMap.update(map=>({...map,[type]:[found,...map[type].filter(x=>x.id!==found.id)]}));
+    if(key==='dispatchScopeHospitalId'){
+     this.dispatchForm.controls.dispatchScope.setValue(3);
+     this.dispatchForm.controls.dispatchScopeHospitalId.setValue(found.id);
+    } else {
+     const blocked=this.admissionRules()?.unusedReasonIds??[];
+     if(blocked.includes(found.id)){
+      this.message.add({severity:'warn',summary:'Sevk sebebi kullanılamaz',
+       detail:'Bu muayene sebebi seçilen başvuru grubunda kullanılamaz.'});return;
+     }
+     this.dispatchForm.controls.reasonForExaminationDefId.setValue(found.id);
+    }
+   },
+   error:()=>this.message.add({severity:'warn',summary:'Tanım sorgulanamadı',
+    detail:'QR seçimlerini mevcut açılır listelerden tamamlayın.'})
+  });
+ }
+ /** Önizleme URL'si belleği kullanılmadığında serbest bırakılır. */
+ private resetPhoto(){
+  ++this.photoRequest;
+  if(this.photoObjectUrl)URL.revokeObjectURL(this.photoObjectUrl);
+  this.photoObjectUrl=null;
+  this.photoUrl.set(null);
+  this.photoFile.set(null);
+ }
+ private usePhotoUrl(blob:Blob){
+  if(this.photoObjectUrl)URL.revokeObjectURL(this.photoObjectUrl);
+  this.photoObjectUrl=URL.createObjectURL(blob);
+  this.photoUrl.set(this.photoObjectUrl);
+ }
+ /** Kamera ve yüklenen fotoğraf ancak sevk kaydı gönderilince API'ye yüklenir. */
+ selectPhoto(file:File){
+  this.photoFile.set(file);
+  this.usePhotoUrl(file);
+ }
+ clearPhotoSelection(){
+  this.resetPhoto();
+  const current=this.editing();
+  if(current?.hasPhoto)this.loadCurrentPhoto(current.id,this.editRequest);
+ }
+ private loadCurrentPhoto(id:string,requestId:number){
+  const version=++this.photoRequest;
+  this.api.getPhoto(id).subscribe({
+   next:blob=>{
+    if(requestId!==this.editRequest||version!==this.photoRequest||!this.dialogVisible())return;
+    this.usePhotoUrl(blob);
+   },
+   error:e=>{if((e as HttpErrorResponse).status!==404)this.error(e);}
+  });
+ }
+ deleteSavedPhoto(){
+  const current=this.editing();
+  if(!current||!current.hasPhoto||!this.canUpdate())return;
+  this.confirm.confirm({header:'Fotoğrafı Kaldır',message:'Sevke ait kayıtlı başvuran fotoğrafı silinsin mi?',
+   acceptLabel:'Fotoğrafı Sil',rejectLabel:'Vazgeç',accept:()=>{
+    this.api.deletePhoto(current.id,current.version).subscribe({
+     next:result=>{
+      this.editing.set({...current,version:result.version,hasPhoto:false});
+      this.resetPhoto();
+      this.message.add({severity:'success',summary:'Fotoğraf kaldırıldı'});
+     },
+     error:e=>this.error(e)
+    });
+   }});
+ }
+ ngOnDestroy(){this.resetPhoto();}
+
+  /** Dosya, kayıt başarılı olduktan sonra sevke bağlanır; başarısız upload ayrıca bildirilir. */
  selectFile(event:Event){
   const input=event.target as HTMLInputElement;
   const file=input.files?.[0]??null;
@@ -315,24 +461,33 @@ export class DispatchListComponent implements OnInit {
    this.saving.set(false);this.formError.set(this.errorText(e));this.error(e);
   }});
  }
- private onSaved(result:DispatchSaveResponse){
+ /** Sevk -> kişi fotoğrafı -> ek belge sırasıyla yüklenir; başarısız ekler kayıt başarısını gizlemez. */
+ private async onSaved(result:DispatchSaveResponse){
+  const failures:string[]=[];
+  const photo=this.photoFile();
   const file=this.uploadFile();
+  if(photo){
+   try{await firstValueFrom(this.api.uploadPhoto(result.id,photo));}
+   catch(e){failures.push('Fotoğraf yüklenemedi: '+this.errorText(e));}
+  }
   if(file){
-   this.api.uploadFile(result.id,file).pipe(finalize(()=>this.saving.set(false)))
-    .subscribe({next:()=>this.finishSave(result.dispatchNo),error:e=>{
-     this.dialogVisible.set(false);this.load();this.uploadFile.set(null);
-     this.message.add({severity:'warn',summary:'Sevk kaydedildi',
-      detail:'Sevk '+result.dispatchNo+' oluşturuldu ancak dosya yüklenemedi: '+this.errorText(e),life:8000});
-    }});
-  }else{this.saving.set(false);this.finishSave(result.dispatchNo);}
- }
- private finishSave(dispatchNo:number){
-  this.dialogVisible.set(false);this.uploadFile.set(null);
-  this.message.add({severity:'success',summary:'Sevk kaydedildi',
-   detail:dispatchNo+' numaralı sevk başarıyla kaydedildi.'});
+   try{await firstValueFrom(this.api.uploadFile(result.id,file));}
+   catch(e){failures.push('Sevk belgesi yüklenemedi: '+this.errorText(e));}
+  }
+  this.saving.set(false);
+  this.dialogVisible.set(false);
+  this.uploadFile.set(null);
+  this.resetPhoto();
+  if(failures.length){
+   this.message.add({severity:'warn',summary:'Sevk kaydedildi; ekler kontrol edilmeli',
+    detail:result.dispatchNo+' numaralı sevk kaydedildi. '+failures.join(' '),life:10000});
+  }else{
+   this.message.add({severity:'success',summary:'Sevk kaydedildi',
+    detail:result.dispatchNo+' numaralı sevk başarıyla kaydedildi.'});
+  }
   this.load();
  }
- cancel(row:DispatchItem){
+  cancel(row:DispatchItem){
   if(!this.canUpdate()||row.currentState!==1)return;
   this.confirm.confirm({header:'Sevk İptali',message:row.dispatchNo+' numaralı sevk iptal edilsin mi? Kayıt geçmişte korunur.',
    acceptLabel:'İptal Et',rejectLabel:'Vazgeç',accept:()=>this.api.cancel(row).subscribe({

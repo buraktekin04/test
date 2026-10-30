@@ -15,7 +15,7 @@ public sealed class GetDispatchByIdQueryHandler(IKLMNDbContext db)
     {
         return await db.Dispatches.AsNoTracking().Where(x=>x.Id==request.Id&&!x.IsDeleted)
             .Select(x=>new DispatchResponse(
-                x.Id,x.DispatchNo,x.DispatchDate,x.CurrentState,x.IsActive,x.Version,
+                x.Id,x.DispatchNo,x.DispatchDate,x.CurrentState,x.IsActive,x.Version,x.Photo!=null,
                 new DispatchPersonInput{
                     TcKimlikNo=x.Person.TcKimlikNo,YabanciKimlikNo=x.Person.YabanciKimlikNo,
                     Name=x.Person.Name,Surname=x.Person.Surname,MotherName=x.Person.MotherName,
