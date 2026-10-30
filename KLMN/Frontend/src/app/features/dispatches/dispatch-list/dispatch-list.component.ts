@@ -19,7 +19,7 @@ import {PermissionService} from '../../../core/permissions/services/permission.s
 import {AuditHistoryComponent} from '../../../shared/audit-history/audit-history.component';
 import {DispatchService} from '../services/dispatch.service';
 import {DispatchItem,DispatchOption,DispatchPerson,DispatchDetails,DispatchResponse,
- DispatchFileItem,OptionType,DispatchSaveResponse} from '../models/dispatch.model';
+ DispatchFileItem,OptionType,DispatchSaveResponse,DispatchAdmissionRules} from '../models/dispatch.model';
 
 /** Eski sevk ekranının DevExtreme bağımlılığı taşımayan, bağımsız Angular 21 / PrimeNG karşılığı. */
 @Component({
@@ -131,11 +131,19 @@ export class DispatchListComponent implements OnInit {
   forces:[],ranks:[],classes:[],units:[],schools:[],offices:[],missions:[],planes:[]
  });
  private optionRequest:Partial<Record<OptionType,number>>={};
+ /** Başvuru grubuna göre sunucuda tanımlanmış zorunluluklar. */
+ readonly admissionRules=signal<DispatchAdmissionRules|null>(null);
+ private rulesRequest=0;
  readonly uploadFile=signal<File|null>(null);
  private lastRequest=0;
  private editRequest=0;
 
  ngOnInit(){
+  this.dispatchForm.controls.hcAdmissionTypeDefId.valueChanges.subscribe(id=>{
+   this.dispatchForm.controls.reasonForExaminationDefId.setValue(null);
+   if(!id){++this.rulesRequest;this.admissionRules.set(null);return;}
+   this.loadAdmissionRules(id);
+  });
   this.dispatchForm.controls.dispatchScope.valueChanges.subscribe(scope=>{
    if(scope!==2)this.dispatchForm.controls.dispatchScopeCityId.setValue(null);
    if(scope!==3)this.dispatchForm.controls.dispatchScopeHospitalId.setValue(null);
@@ -150,12 +158,38 @@ export class DispatchListComponent implements OnInit {
   this.optionRequest[type]=request;
   this.api.options(type,search,selectedId).subscribe({
    next:values=>{if(this.optionRequest[type]===request){
+    if(type==='reasons')values=values.filter(x=>!this.admissionRules()?.unusedReasonIds.includes(x.id));
     const prev=this.optionMap()[type];
     const selected=selectedId?prev.find(x=>x.id===selectedId):undefined;
     this.optionMap.update(m=>({...m,[type]:selected&&!values.some(x=>x.id===selected.id)?[selected,...values]:values}));
    }},
    error:()=>{if(this.optionRequest[type]===request)this.optionMap.update(m=>({...m,[type]:[]}));}
   });
+ }
+ /** Değişen başvuru grubu için eski seçimi doğrular ve yasaklanan muayene sebeplerini eler. */
+ private loadAdmissionRules(id:string){
+  const request=++this.rulesRequest;
+  this.api.admissionRules(id).subscribe({
+   next:rules=>{if(this.rulesRequest!==request)return;
+    this.admissionRules.set(rules);
+    const selected=this.dispatchForm.controls.reasonForExaminationDefId.value;
+    if(selected&&rules.unusedReasonIds.includes(selected))this.dispatchForm.controls.reasonForExaminationDefId.setValue(null);
+    this.loadOptions('reasons');
+   },
+   error:e=>{if(this.rulesRequest!==request)return;this.admissionRules.set(null);this.error(e);}
+  });
+ }
+ /** Kaynağın zorunlu bayraklarını UI üzerinde alan etiketine yansıtır. */
+ isRequired(key:string):boolean{
+  const r=this.admissionRules();
+  if(!r)return false;
+  const flags:Record<string,boolean>={
+   forcesCommandDefId:r.forcesCommandRequired,
+   rankDefId:r.rankRequired,militaryClassDefId:r.militaryClassRequired,
+   militaryUnitDefId:r.militaryUnitRequired,militaryOfficeDefId:r.militaryOfficeRequired,
+   militarySchoolDefId:r.militarySchoolRequired
+  };
+  return flags[key]??false;
  }
  filterOptions(type:OptionType,filter:string){this.loadOptions(type,filter??'',this.selectedId(type));}
  private selectedId(type:OptionType):string|undefined {
@@ -251,6 +285,21 @@ export class DispatchListComponent implements OnInit {
   person.yabanciKimlikNo=this.identityType()==='foreign'?person.yabanciKimlikNo?.trim()||null:null;
   if(this.form.invalid||!person.birthDate||!(person.tcKimlikNo||person.yabanciKimlikNo)){
    this.form.markAllAsTouched();this.formError.set('Ad, soyad, kimlik numarası, doğum tarihi, başvuru grubu ve muayene sebebi gereklidir.');return;
+  }
+  const rules=this.admissionRules();
+  if(rules && (rules.nthAdmissionRequired&&!dispatch.nthAdmission ||
+   rules.dispatchDocumentDateRequired&&!dispatch.dispatchDocumentDate ||
+   rules.dispatchDocumentNoRequired&&!dispatch.dispatchDocumentNo?.trim() ||
+   rules.forcesCommandRequired&&!dispatch.forcesCommandDefId ||
+   rules.rankRequired&&!dispatch.rankDefId ||
+   rules.militaryClassRequired&&!dispatch.militaryClassDefId ||
+   rules.militaryUnitRequired&&!dispatch.militaryUnitDefId ||
+   rules.militaryOfficeRequired&&!dispatch.militaryOfficeDefId ||
+   rules.militarySchoolRequired&&!dispatch.militarySchoolDefId ||
+   rules.registryNumberRequired&&!dispatch.registryNumber?.trim() ||
+   rules.lastNominationDateRequired&&!dispatch.lastNominationDate ||
+   rules.senderChairRequired&&!(dispatch.senderMilitaryUnitDefId||dispatch.senderMilitaryOfficeDefId))){
+    this.formError.set('Başvuru grubunun zorunlu tuttuğu sevk ve askerî bilgileri doldurunuz.');return;
   }
   if(dispatch.dispatchScope===2&&!dispatch.dispatchScopeCityId ||
      dispatch.dispatchScope===3&&!dispatch.dispatchScopeHospitalId){
