@@ -51,9 +51,7 @@ assert.match(sharedCss,/width:auto!important/);
 assert.doesNotMatch(sharedCss,/flex:1 1 0;/);
 assert.doesNotMatch(sharedCss,/width:0;/);
 
-// p-table hücreleri ile API yanıtı bire bir aynı JSON isimlerini kullanmalı.
-// Özellikle ICD10 gibi büyük harf kısaltmalarını web camelCase politikası farklı
-// çevirebilir; açık JsonPropertyName bu hatayı kalıcı olarak engeller.
+// Liste/detail response JSON adları, Angular tablosu ve EF projection tutarlı olmalı.
 for(const [jsonKey,clrKey] of [
  ['icd10DefId','ICD10DefId'],
  ['icd10Code','ICD10Code'],
@@ -65,15 +63,13 @@ for(const [jsonKey,clrKey] of [
 ]){
  assert.ok(listResponse.includes('[property: JsonPropertyName("'+jsonKey+'")]'),
   'Response JSON alanı eksik: '+jsonKey);
- assert.match(listResponse,new RegExp('\\\\b'+clrKey+'\\\\b'));
+ assert.ok(listResponse.includes(clrKey),'CLR alanı eksik: '+clrKey);
 }
-assert.match(html,/\\{\\{row\\.icd10Code\\}\\}/);
-assert.match(html,/\\{\\{row\\.icd10Name\\}\\}/);
-assert.match(listHandler,/new ICD10DiagnosticResponse\\(/);
-assert.match(detailHandler,/new ICD10DiagnosticResponse\\(/);
-assert.match(listHandler,/x\\.ICD10\\.Code/);
-assert.match(listHandler,/x\\.ICD10\\.Name/);
-assert.match(detailHandler,/x\\.ICD10\\.Code/);
-assert.match(detailHandler,/x\\.ICD10\\.Name/);
-
+assert.ok(html.includes('{{row.icd10Code}}'),'ICD10 Kodu kolon bağı');
+assert.ok(html.includes('{{row.icd10Name}}'),'ICD10 Adı kolon bağı');
+for(const source of [listHandler,detailHandler]){
+ assert.ok(source.includes('new ICD10DiagnosticResponse('),'Ortak DTO projeksiyonu');
+ assert.ok(source.includes('x.ICD10.Code'),'ICD10 ilişkisi kod projeksiyonu');
+ assert.ok(source.includes('x.ICD10.Name'),'ICD10 ilişkisi ad projeksiyonu');
+}
 console.log('PASS: ICD10 kod/ad liste ve detay JSON alanları ile frontend kolonları eşleşir.');
