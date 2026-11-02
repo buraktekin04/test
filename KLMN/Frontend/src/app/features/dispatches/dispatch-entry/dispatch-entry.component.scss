@@ -33,6 +33,14 @@
 .required-mark{color:var(--ui-danger,#c62828);font-weight:800}
 .field-caption{display:inline-flex;gap:.23rem;align-items:center}
 .field-helper{font-size:.69rem;font-weight:400;color:var(--ui-muted)}
+/* Başvuru Grubu: servis yanıtı gelene kadar kompakt ve görünür ilerleme. */
+.entry-admission-field{position:relative}
+.admission-loading-label{display:inline-flex;align-items:center;margin-left:.4rem;font-size:.71rem;font-weight:400;color:var(--ui-muted)}
+.entry-admission-field p-progressbar{display:block;width:100%;margin-top:-.08rem}
+:host ::ng-deep .entry-admission-field .p-progressbar{border-radius:3px;overflow:hidden}
+.admission-options-error{display:flex;align-items:center;flex-wrap:wrap;gap:.35rem;font-size:.72rem;color:var(--ui-danger,#c62828);line-height:1.4}
+.admission-options-error button{border:none;background:transparent;color:var(--ui-primary);font-size:.72rem;font-weight:700;text-decoration:underline;cursor:pointer;padding:.15rem}
+.admission-options-error button:focus-visible{outline:2px solid var(--ui-primary);outline-offset:2px}
 .field{min-width:0;display:flex;flex-direction:column;gap:.23rem;font-size:.74rem;line-height:1.12;font-weight:600;color:var(--ui-text)}
 .field > input,.field > textarea{display:block;box-sizing:border-box;width:100%;min-width:0;max-width:none;min-height:34px;height:34px;border:1px solid var(--ui-border);border-radius:5px;background:var(--ui-surface);color:var(--ui-text);padding:.36rem .55rem;font:inherit;font-size:.79rem;font-weight:400}
 .field > input:focus,.field > textarea:focus{outline:2px solid var(--ui-primary);outline-offset:0}
