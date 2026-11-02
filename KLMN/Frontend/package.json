@@ -11,7 +11,8 @@
     "test:dispatch-pages": "node tests/dispatch-pages-regression.mjs",
     "test:filter-search": "node --experimental-strip-types tests/filter-search-regression.mjs",
     "test:procedure-optional": "node tests/procedure-optional-regression.mjs",
-    "test:syy-searchable": "node tests/syy-searchable-selects-regression.mjs"
+    "test:syy-searchable": "node tests/syy-searchable-selects-regression.mjs",
+    "test:syy-approval-radio": "node tests/syy-approval-radio-regression.mjs"
   },
   "dependencies": {
     "@angular/animations": "^21.0.0",
