@@ -54,6 +54,19 @@ assert.match(controller,/filterForcesCommandDef/);
 assert.match(handler,/x\.ForcesCommandId==r\.FilterForcesCommandDef\.Value/);
 assert.match(rule,/Seçilen sınıf grubu, seçilen kuvvet komutanlığına bağlı olmalıdır/);
 
+// SelectedItem template + flex/wrap together previously made single letters stack vertically.
+for(const template of [diagnosis,statistics,classification]){
+ assert.doesNotMatch(template,/#selectedItem/);
+}
+assert.match(sharedStyles,/\.syy-search-select\.p-select\s*\{/);
+assert.match(sharedStyles,/height:38px/);
+assert.match(sharedStyles,/\.syy-search-select\.p-select \.p-select-label/);
+assert.match(sharedStyles,/flex:1 1 0/);
+assert.match(sharedStyles,/white-space:nowrap!important/);
+assert.match(sharedStyles,/text-overflow:ellipsis!important/);
+assert.match(sharedStyles,/\.syy-search-overlay \.syy-select-option-text/);
+assert.match(sharedStyles,/overflow-wrap:break-word/);
+assert.doesNotMatch(sharedStyles,/\.syy-search-select \.p-select-label\{\s*display:flex/);
 assert.match(sharedStyles,/\.syy-search-overlay\.p-select-overlay/);
 assert.match(sharedStyles,/\.syy-select-option-text/);
 assert.match(sharedStyles,/white-space:normal/);
