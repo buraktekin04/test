@@ -12,6 +12,7 @@ public sealed class UpdateSYYDiagnosisRequiredCommandHandler(IKLMNDbContext db):
  public async Task<SYYDiagnosisRequiredMutationResponse> Handle(UpdateSYYDiagnosisRequiredCommand r,CancellationToken ct)
  {
  
+ SYYDiagnosisRequiredRules.EnsureExclusiveCondition(r.MustAll,r.MustOneOf);
  var item=await SYYDiagnosisRequiredRules.LoadAsync(db,r.Id,r.Version,ct);
  await SYYDiagnosisRequiredRules.ValidateDiagnosisAsync(db,r.SYYDiagnosisDefId,item.Id,ct);
  item.UpdatedDate=DateTime.UtcNow; // Detay değişikliğinde de parent xmin kontrolü.
