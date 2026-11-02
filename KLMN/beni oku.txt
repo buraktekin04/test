@@ -1,3 +1,53 @@
+02.11.2026 — 3 DÜZELTME: TC SADECE SAYI / LİSTE BOŞ PANEL / TETKİK TÜRÜ
+=============================================================================
+1) SEVK GİRİŞ TC KİMLİK:
+   dispatch-entry.component.html: TC kimlik input type=text olarak kaldı,
+   inputmode=numeric, maxlength=11, pattern=[0-9]*, beforeinput ve input
+   handler kullanır. Harf girişini engeller; paste/IME gibi durumlarda
+   tüm rakam dışı karakterleri anlık siler, sınırı uygular ve ReactiveForms
+   kontrolünü eşitler. Başta sıfırın kaybolmaması kritik.
+   tcKimlikNo: Validators.pattern(/^[0-9]{11}$/).
+   Yabancı kimlik de rakama filtrelendi (11-20 hane doğrulaması).
+   Backend validasyonu ve nüfus sorgu entegrasyonu korundu.
+
+2) SEVK LİSTESİ İLK AÇILIŞ BOŞ PANELİ:
+   dispatch-list.component.html / .scss:
+   list-card empty-query-state bileşimine özel responsive, ortalı,
+   48px ikon, min-height, başlık ve açıklama sınıfları tanımlandı.
+   Önceki stil bozukluğu giderildi. İlk açılışta API araması YOK,
+   sadece Sorgula ile arama davranışı korunur.
+
+3) TETKİK TANIMLARI -> YENİ TETKİK / DÜZENLE:
+   Tetkik Türü artık ZORUNLU DEĞİLDİR. Yalnız formdaki '*' kaldırılmadı;
+   frontend validators.required kaldırıldı, procedureType null gönderilir.
+   Domain ProcedureDef.ProcedureType int? ve ProcedureTypeDefId Guid?;
+   TypeDefinition navigasyon nullable; EF ilişki IsRequired(false).
+   CreateProcedureDefCommand/UpdateProcedureDefCommand int?;
+   validator null kabul eder, verilmiş kodun >=0 olması gerekir.
+   ProcedureDefRules.ResolveTypeIdAsync null alırsa DB'ye dokunmadan
+   null döner; kod varsa aktif tür tablosunda ID arar, hatalı kodu reddeder.
+   Handler create/update mevcut ilişkileri koruyarak yeni null FK kabul eder.
+   List/GetById yanıtlarında ProcedureType int? ve boş tür adı güvenlidir.
+   Kullanıcı tür seçerse mevcut bağlantı ve güncelleme devam eder.
+   Model dosyası Frontend/src/app/features/procedures/models/procedures.model.ts
+   isteğe bağlı türü number|null olarak taşır.
+   ESKİ KAYITLAR SİLİNMEDİ, tablolar ve ilişkiler korunuyor.
+
+   MIGRATION GEREKİR: ProcedureDefs.ProcedureType (integer) ve
+   ProcedureDefs.ProcedureTypeDefId (UUID) kolonları nullable olacak.
+   Kullanıcı migration oluşturup uygulayacak, mevcut snapshot kontrol
+   edilecek. Bu çalışmada DB update/migration oluşturma veya reset YOK.
+   Önceki GenderDefs / DispatchStatusDefs migration gereklilikleri
+   mevcut projeye göre kontrol edilmeli.
+
+4) TEST:
+   Frontend/tests/dispatch-pages-regression.mjs TC+empty-state kontrolü,
+   Frontend/tests/procedure-optional-regression.mjs uçtan uca kaynak sözleşmesi,
+   npm run test:dispatch-pages, npm run test:procedure-optional.
+   KLMN/SEVK_GIRIS_KURULUM.md güncellendi.
+   Angular, dotnet build, gerçek PostgreSQL E2E ortamda çalıştırılamadı.
+   Tek squash commit ve main push.
+
 30.10.2026 — SEVK LİSTESİ / GENEL DROPDOWN ARAMA / BELGE / CİNSİYET
 ===================================================================
 1. Sevk Listesi ve Sorgulama sayfası ilk açıldığında DB/API üzerinde
