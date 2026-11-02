@@ -1,3 +1,26 @@
+## 02.11.2026 — Sevk Kimlik Girişi, Boş Liste Paneli ve Tetkik Türü
+
+1. **Sevk Girişi T.C. Kimlik No:** `tcKimlikNo` artık 11 haneli ve yalnızca 0-9 rakamları kabul eder. `inputmode="numeric"` yanında `beforeinput` ile harf yazılması engellenir; `input` sırasında yapıştırılan/geçen rakam dışı karakterler silinir, 11 hane sınırı korunur. `type="number"` kullanılmadı: baştaki sıfırlar ve `maxlength` davranışı bozulmaz. Benzer güvenlik yabancı kimlik numarasına da uygulandı (en fazla 20 hane). Angular pattern doğrulaması yalnız sayısal değerleri kabul eder; backend kimlik doğrulaması korunur.
+2. **Sevk Listesi ve Sorgulama boş ekranı:** İlk sayfa açıldığında sorgu çalıştırılmıyor. Sorgu öncesi `list-card empty-query-state` paneli özel SCSS ile ortalı, küçük ikonlu, okunur metinli ve responsive hale getirildi. Sadece `Sorgula` sonrasında tablo listelenir.
+3. **Tetkik Tanımları — Tetkik Türü isteğe bağlı:** Yeni Tetkik/Düzenleme formundan zorunluluk kaldırıldı. `procedureType` artık frontend `number|null`, backend `int?`; `ProcedureDef.ProcedureType` ve `ProcedureTypeDefId` nullable, `TypeDefinition` optional. Tür seçilmezse `null` kaydedilir; seçildiğinde aktif `ProcedureTypeDef` ilişkisi doğrulanır. Liste ve detay sorgularında boş tür güvenle gösterilir; Excel ve eski kayıtlar korunur. Bu, sadece UI yıldızını kaldırmak değil, uçtan uca nullable veri modelidir.
+
+**Migration gerekli:** `ProcedureDefs` tablosundaki `ProcedureType` (integer) ve `ProcedureTypeDefId` (UUID/FK) kolonlarının nullable olması için mevcut migration zincirinden migration oluşturup uygulamalısınız. Bu çalışmada migration oluşturulmadı veya veritabanı değiştirilmedi. Önceki `GenderDefs` / `DispatchStatusDefs` migration gereksinimlerini de mevcut ModelSnapshot ile kontrol edin. Mevcut tetkik kayıtları ve ilişkileri korunmalıdır.
+
+```bash
+cd KLMN/Frontend
+npm run test:dispatch-pages
+npm run test:procedure-optional
+npm run build
+```
+
+```bash
+cd KLMN/Backend
+dotnet ef migrations add MakeProcedureTypeOptional --project KLMN.Persistence --startup-project KLMN.Api --context KLMNDbContext
+dotnet ef database update --project KLMN.Persistence --startup-project KLMN.Api --context KLMNDbContext
+```
+
+Test ve migration komutları yerel geliştirme ortamında çalıştırılmalıdır; otomatik derleme/DB uçtan uca testleri bu çalışmada uygulanmadı.
+
 ## Sevk Listeleme / Açılır Seçim / Cinsiyet / Belge Revizyonu — 30.10.2026
 
 ### 1. Sevk Listesi ilk açıldığında sorgulama YAPILMAZ
