@@ -5,4 +5,4 @@ public sealed record DispatchAdmissionRulesResponse(
  bool ForcesCommandRequired,bool RankRequired,bool MilitaryClassRequired,bool MilitaryUnitRequired,
  bool SenderChairRequired,bool MilitaryOfficeRequired,bool RegistryNumberRequired,bool MilitarySchoolRequired,
  bool LastNominationDateRequired,bool NthAdmissionRequired,bool DispatchDocumentDateRequired,bool DispatchDocumentNoRequired,
- IReadOnlyList<Guid> UnusedReasonIds);
+ IReadOnlyList<Guid> UnusedReasonIds,IReadOnlyList<Guid> AllowedForcesCommandIds);
