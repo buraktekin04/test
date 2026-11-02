@@ -1,3 +1,66 @@
+02.11.2026 — SYY SEÇİLİ DROPDOWN YALNIZ İLK HARF / ICD10 İSTATİSTİK BOŞ SEÇENEKLER
+==========================================================================================
+KULLANICI GERİ BİLDİRİMİ: ICD10 sayısı şu anda sadece 5 adet. Bu nedenle
+ICD10 için ayrı sorgu/arama endpoint'i, sayfalama, gecikmeli arama veya
+yükleme limiti İSTENMİYOR. Mevcut tek GET /api/icd10-diagnostics/options
+ile TÜM etkin referansları tek çağrıda çek ve Angular p-select içinde
+LOCAL arama özelliği kullan. Bu sınır gelecekte de izin alınmadan
+değiştirilmemelidir.
+
+1. Yeni SYY Tanısı — Tanı Türü ve Bağlı Kayıt:
+   Önceki ortak .syy-search-select CSS kuralındaki
+     .p-select-label { flex:1 1 0; width:0; ... }
+   seçili etiketi daralttığından kullanıcı yalnız ilk harfi görüyordu.
+   Frontend/src/styles.scss içinde
+     flex:1 1 auto; width:auto!important; min-width:0
+   yapıldı. white-space:nowrap ve text-overflow:ellipsis KORUNDU:
+   seçili değer tüm mevcut genişliği kullanır ve uzun değer
+   gerekirse ... ile kesilir. Açılan panelde uzun seçenekler ise
+   eskisi gibi çok satırda, arama ile gösterilir. Bu ortak CSS
+   düzeltmesi diğer SYY popup seçimlerine de uygulanır.
+
+2. ICD10 SYY Tanı İstatistik Tanımları — Yeni İstatistik:
+   Mevcut GetICD10DiagnosticOptionsQueryHandler, ICD10Defs içindeki
+   aktif ve silinmemiş TÜM tanımları zaten tek defada getiriyordu.
+   API yanıtındaki Positional C# record alanı "ICD10s" ASP.NET Core
+   camel-case serileştirmesinde frontend'in beklediği "icd10s" ile
+   isim uyuşmazlığına yol açabiliyordu (icD10s).
+   GetICD10DiagnosticOptionsQuery.cs:
+     [property: JsonPropertyName("icd10s")] ICD10s
+     [property: JsonPropertyName("syyDiagnoses")] SYYDiagnoses
+     [property: JsonPropertyName("admissionTypes")] AdmissionTypes
+   ile JSON sözleşmesi kararlı hale getirildi.
+   Bu yüzden artık mevcut 5 ICD10 kaydı frontend'in icd10s alanına
+   doğru eşlenebilir. Gerçek veritabanı yanıtı ayrıca yerelde test edilmeli.
+
+3. ICD10 SYY Tanı İstatistikleri frontend:
+   icd10-diagnostic-list.component.html/ts:
+   - ICD10, SYY Tanısı ve Başvuru Grubu için native select yerine
+     PrimeNG p-select (filter=true, filterBy=label, contains).
+   - Frontend kullanıcı yazdıkça filtreler; backend'e arama isteği
+     GÖNDERMEZ. Seçenekler tek options() çağrısıyla gelir.
+   - Uzun metinler açılır panelde çok satır, seçilen değer tek satır.
+   - Üçlü FK / form validations, düzenleme seçimleri ve API CRUD
+     aynı kaldı; eski statü/pasif kayıtlar düzenlemede korunur.
+   - Yeni dialog her açıldığında bir options() çağrısı yapılır,
+     istek sıralaması optionsRequestId ile korunur.
+   - ICD10 için AYRI ARAMA ENDPOINT'İ YOK; önerilen geçici
+     GetICD10DiagnosticCodeOptionsQuery ve Handler dosyaları
+     branch içinde oluşturulup tekrar SİLİNDİ, main'e dahil
+     EDİLMEYECEK.
+
+4. TEST:
+   Frontend/tests/syy-searchable-selects-regression.mjs sıfır genişlik
+   regresyonu güncellendi.
+   Frontend/tests/icd10-dropdown-regression.mjs oluşturuldu.
+   npm run test:syy-searchable
+   npm run test:icd10-dropdown
+   npm run build
+   Gerçek Angular/.NET build ve veritabanı entegrasyon testi mevcut
+   ajan ortamında çalıştırılmadı; statik kontroller yapıldı.
+   DB ŞEMASI değişmedi. MIGRATION YOK.
+   Değişiklikler GitHub main'e TEK SQUASH COMMIT ile alınmalı.
+
 02.11.2026 — SYY ONAY GEREKTİREN MADDELER: KURAL KOŞULU RADIO BUTTON
 =========================================================================
 Kullanıcı düzeltmesi: Dialogdaki MustAll / MustOneOf checkbox çiftinin
