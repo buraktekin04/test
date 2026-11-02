@@ -121,21 +121,21 @@
         @if(admissionRules()?.nthAdmissionRequired){<span class="required-mark">*</span>}
         Kaçıncı İşlem
        </span>
-       <p-inputnumber formControlName="nthAdmission" [useGrouping]="false" [min]="1" [fluid]="true"/>
+       <p-inputnumber formControlName="nthAdmission" [useGrouping]="false" [min]="1" [fluid]="true" [disabled]="!isGroupFieldEnabled('nthAdmission')"/>
       </label>
       <label class="field">
        <span class="field-caption">
         @if(admissionRules()?.dispatchDocumentDateRequired){<span class="required-mark">*</span>}
         Sevk Evrak Tarihi
        </span>
-       <input type="date" formControlName="dispatchDocumentDate"/>
+       <input type="date" formControlName="dispatchDocumentDate" [disabled]="!isGroupFieldEnabled('dispatchDocumentDate')"/>
       </label>
       <label class="field">
        <span class="field-caption">
         @if(admissionRules()?.dispatchDocumentNoRequired){<span class="required-mark">*</span>}
         Sevk Evrak Sayısı
        </span>
-       <input pInputText formControlName="dispatchDocumentNo" maxlength="50"/>
+       <input pInputText formControlName="dispatchDocumentNo" maxlength="50" [disabled]="!isGroupFieldEnabled('dispatchDocumentNo')"/>
       </label>
       <label class="field">Sevk Kapsamı
        <p-select formControlName="dispatchScope" [options]="scopeItems"
@@ -209,21 +209,22 @@
        @if(isRequired(field.key)){<span class="required-mark">*</span>}
        {{field.label}}
        </span>
-       <p-select [formControlName]="field.key" [options]="optionMap()[field.type]"
+       <p-select [formControlName]="field.key" [options]="visibleOptions(field.type)"
         optionLabel="label" optionValue="id" [filter]="true" [showClear]="true"
-        [fluid]="true" (onFilter)="filterOptions(field.type,$event.filter)"
+        [disabled]="!isGroupFieldEnabled(field.key)" [fluid]="true"
+        (onFilter)="filterOptions(field.type,$event.filter)"
         appendTo="body" placeholder="Seçiniz"/>
       </label>
      }
      <label class="field"><span class="field-caption">
       @if(admissionRules()?.registryNumberRequired){<span class="required-mark">*</span>}
       Sicil No</span>
-      <input pInputText formControlName="registryNumber" maxlength="50"/>
+      <input pInputText formControlName="registryNumber" maxlength="50" [disabled]="!isGroupFieldEnabled('registryNumber')"/>
      </label>
      <label class="field"><span class="field-caption">
       @if(admissionRules()?.lastNominationDateRequired){<span class="required-mark">*</span>}
       Nasbı</span>
-      <input type="date" formControlName="lastNominationDate"/>
+      <input type="date" formControlName="lastNominationDate" [disabled]="!isGroupFieldEnabled('lastNominationDate')"/>
      </label>
 
      <div class="entry-inline-group entry-full-row">
@@ -248,13 +249,22 @@
         appendTo="body" placeholder="Seçiniz"/>
       </label>
      }
-     <label class="field entry-explanation">Birlik Açıklama
+     <label class="field entry-explanation">
+      <span class="field-caption">
+       @if(isOtherMilitaryUnit()){<span class="required-mark">*</span>}
+       Birlik Açıklama
+      </span>
       <textarea formControlName="militaryUnitDescription" rows="2" maxlength="1000"
-       placeholder="Birlik açıklaması"></textarea>
+       [disabled]="!isGroupFieldEnabled('militaryUnitDefId')"
+       [placeholder]="isOtherMilitaryUnit() ? 'DİĞER seçildi, açıklama zorunlu' : 'Birlik açıklaması'"></textarea>
      </label>
-     <label class="field entry-explanation">Gönderen Makam Açıklama
+     <label class="field entry-explanation">
+      <span class="field-caption">
+       @if(isOtherSender()){<span class="required-mark">*</span>}
+       Gönderen Makam Açıklama
+      </span>
       <textarea formControlName="senderChairOther" rows="2" maxlength="1000"
-       placeholder="Muayeneye gönderen makam açıklaması"></textarea>
+       [placeholder]="isOtherSender() ? 'DİĞER seçildi, açıklama zorunlu' : 'Muayeneye gönderen makam açıklaması'"></textarea>
      </label>
     </div>
    </section>
