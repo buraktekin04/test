@@ -19,6 +19,7 @@ public sealed class ProcedureDefConfiguration : EffectiveDatedEntityConfiguratio
         b.HasIndex(x=>x.ProcedureTypeDefId);
         b.HasOne(x=>x.TypeDefinition).WithMany(x=>x.Procedures)
           .HasForeignKey(x=>x.ProcedureTypeDefId)
+          .IsRequired(false)
           .OnDelete(DeleteBehavior.Restrict);
     }
 }
