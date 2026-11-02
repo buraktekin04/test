@@ -49,8 +49,8 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
  readonly formError=signal<string|null>(null);
  readonly identityType=signal<'tc'|'foreign'>('tc');
  readonly personForm=this.fb.group({
-  tcKimlikNo:this.fb.control<string|null>(null),
-  yabanciKimlikNo:this.fb.control<string|null>(null),
+  tcKimlikNo:this.fb.control<string|null>(null,Validators.pattern(/^[0-9]{11}$/)),
+  yabanciKimlikNo:this.fb.control<string|null>(null,Validators.pattern(/^[0-9]{11,20}$/)),
   name:this.fb.nonNullable.control('',[Validators.required,Validators.maxLength(64)]),
   surname:this.fb.nonNullable.control('',[Validators.required,Validators.maxLength(64)]),
   motherName:this.fb.control<string|null>(null),
@@ -233,6 +233,22 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   const field=keys.find(x=>x.type===type);
   if(!field)return undefined;
   return (this.personForm.get(field.key)?.value||this.dispatchForm.get(field.key)?.value||undefined) as string|undefined;
+ }
+ /** Kullanıcı yazarken/yapıştırırken kimlik alanında yalnız 0-9 rakamları tutar.
+  * Başta sıfır kaybolmaması için HTML number değil text input kullanılır. */
+ onIdentityNumberInput(event:Event,kind:'tcKimlikNo'|'yabanciKimlikNo'):void{
+  const input=event.target as HTMLInputElement;
+  const length=kind==='tcKimlikNo'?11:20;
+  const digits=input.value.replace(/[^0-9]/g,'').slice(0,length);
+  if(input.value!==digits)input.value=digits;
+  const control=this.personForm.controls[kind];
+  if(control.value!==digits)control.setValue(digits);
+ }
+ /** Geçersiz karakterlerin yazılırken alana girmesini engeller; yapıştırma ayrıca temizlenir. */
+ preventNonNumericInput(event:Event):void{
+  const inputEvent=event as InputEvent;
+  if(inputEvent.data&&/[^0-9]/.test(inputEvent.data)&&inputEvent.cancelable)
+   inputEvent.preventDefault();
  }
  setIdentity(kind:'tc'|'foreign'){
   this.identityType.set(kind);
