@@ -14,7 +14,7 @@ public sealed class ProcedureDefConfiguration : EffectiveDatedEntityConfiguratio
         b.Property(x=>x.RequiresNumericResult).IsRequired();
         b.Property(x=>x.RequiresReferenceRange).IsRequired();
         b.Property(x=>x.RequiresDeviationInfo).IsRequired();
-        b.Property(x=>x.ProcedureType).IsRequired();
+        b.Property(x=>x.ProcedureType).IsRequired(false);
         b.HasIndex(x=>x.ProcedureCode).IsUnique().HasFilter(PostgreSqlIndexFilters.NotDeleted);
         b.HasIndex(x=>x.ProcedureTypeDefId);
         b.HasOne(x=>x.TypeDefinition).WithMany(x=>x.Procedures)
