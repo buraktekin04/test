@@ -6,6 +6,19 @@ namespace KLMN.Application.SYYDiagnosisRequireds.Commands.Common;
 /// <summary>Tanı başına birden fazla koşullu kural; madde listesi ayrı tabloda ve tek işlemde güncellenir.</summary>
 internal static class SYYDiagnosisRequiredRules
 {
+ /// <summary>İki nullable DB sütunuyla saklanan kural koşulu yalnızca tek seçim içerebilir.</summary>
+ public static bool HasExactlyOneCondition(bool? mustAll,bool? mustOneOf)
+ {
+  return (mustAll==true && mustOneOf==false)
+      || (mustAll==false && mustOneOf==true);
+ }
+ /// <summary>Validation pipeline dışında handler doğrudan çağrılsa da hatalı kayıt saklanamaz.</summary>
+ public static void EnsureExclusiveCondition(bool? mustAll,bool? mustOneOf)
+ {
+  if(!HasExactlyOneCondition(mustAll,mustOneOf))
+   throw new SYYDiagnosisRequiredConflictException(
+    "Kural koşulu zorunludur: Tüm Maddeler Gerekli veya En Az Biri Gerekli seçeneklerinden yalnızca birini seçiniz.");
+ }
  public static async Task<SYYDiagnosisRequired> LoadAsync(IKLMNDbContext db,Guid id,uint version,CancellationToken ct)
  {
   var item=await db.SYYDiagnosisRequireds.IgnoreQueryFilters()
