@@ -14,7 +14,7 @@ public sealed class ProcedureDef : EffectiveDatedEntity
     /// <summary>Sapma Bilgisi Gerektirir.</summary>
     public bool RequiresDeviationInfo { get; set; }
     // ValidFrom ve ValidTo, EffectiveDatedEntity üzerinden miras alınır.
-    /// <summary>Eski sistemle API uyumlu kod; FK artık ProcedureTypeDefId üzerindedir.</summary>
+    /// <summary>İsteğe bağlı eski tür kodu; seçilmezse null. FK ProcedureTypeDefId üzerindedir.</summary>
     public int? ProcedureType { get; set; }
     /// <summary>İsteğe bağlı dinamik tetkik türü kaydı.</summary>
     public Guid? ProcedureTypeDefId { get; set; }
