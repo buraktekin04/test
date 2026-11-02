@@ -24,3 +24,14 @@
 .dialog-actions{display:flex;justify-content:flex-end;gap:.6rem;border-top:1px solid var(--ui-border);padding-top:.8rem}
 .form-error{color:var(--ui-danger);font-size:.83rem}
 @media(max-width:680px){.form-grid{grid-template-columns:1fr}}
+
+/* Seçilen kuvvetin sınıf grubu, seçilen kuvvet değişince yenilenir. */
+.definition-form .form-field > p-select{display:block;width:100%;min-width:0}
+.force-class-help{
+  display:block;
+  min-height:1.1rem;
+  line-height:1.4;
+  font-size:.72rem;
+  font-weight:400;
+  color:var(--ui-muted);
+}
