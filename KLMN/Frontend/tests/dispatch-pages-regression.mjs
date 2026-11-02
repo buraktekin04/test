@@ -148,4 +148,26 @@ assert.match(listScss,/\.empty-query-state\{/);
 assert.match(listScss,/\.empty-query-content\{/);
 assert.match(listScss,/\.empty-query-icon\{/);
 
-console.log('PASS: Sevk kimlik numarası, sorgu başlangıç paneli ve önceki regresyonlar.');
+// Sevk girişinde başvuru grubu diğer tanımlardan önce istenir; beklerken yükleme UI'si görünür.
+assert.match(entryTs,/readonly admissionOptionsLoading=signal\(true\)/);
+assert.match(entryTs,/readonly admissionOptionsError=signal\(false\)/);
+assert.match(entryTs,/this\.loadOptions\('admissionTypes'\);[\s\S]*?if\(type!=='admissionTypes'\)this\.loadOptions\(type\)/);
+assert.match(entryTs,/if\(type==='admissionTypes'\)\{/);
+assert.match(entryTs,/this\.admissionOptionsLoading\.set\(true\)/);
+assert.match(entryTs,/this\.admissionOptionsLoading\.set\(false\)/);
+assert.match(entryTs,/this\.admissionOptionsError\.set\(true\)/);
+assert.match(entryHtml,/<p-progressbar mode="indeterminate"/);
+assert.match(entryHtml,/\[loading\]="admissionOptionsLoading\(\)"/);
+assert.match(entryHtml,/loadOptions\('admissionTypes'\)">Tekrar dene/);
+assert.match(entryScss,/\.admission-loading-label\{/);
+assert.match(entryScss,/\.admission-options-error\{/);
+
+// Zeyil Sebebi Tanımları ayrı menü grubundadır; rota ve yetki değişmez.
+assert.match(navigation,/label: 'Zeyil Tanımları'[\s\S]*?label: 'Zeyil Sebebi Tanımları'[\s\S]*?route: '\/app\/annotation-reasons'/);
+assert.match(navigation,/label: 'Zeyil Sebebi Tanımları'[\s\S]*?permissionModule: 'AnnotationReasons'/);
+assert.match(navigation,/label: 'Uçuş Tanımları'[\s\S]*?route: '\/app\/plane-types'[\s\S]*?route: '\/app\/flying-missions'/);
+assert.doesNotMatch(navigation,/label: 'Uçuş ve Sevk'/);
+assert.equal((navigation.match(/route: '\/app\/annotation-reasons'/g)||[]).length,1);
+
+console.log('PASS: Sevk başvuru grubu yükleme ve Zeyil/Uçuş menü ayrımı.');
+
