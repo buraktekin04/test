@@ -13,6 +13,9 @@ const ts=read('src/app/features/icd10-diagnostics/icd10-diagnostic-list/icd10-di
 const client=read('src/app/features/icd10-diagnostics/services/icd10-diagnostic.service.ts');
 const model=read('src/app/features/icd10-diagnostics/models/icd10-diagnostic.model.ts');
 const dto=be('KLMN.Application/ICD10Diagnostics/Queries/GetICD10DiagnosticOptions/GetICD10DiagnosticOptionsQuery.cs');
+const listResponse=be('KLMN.Application/ICD10Diagnostics/Responses/ICD10DiagnosticResponse.cs');
+const listHandler=be('KLMN.Application/ICD10Diagnostics/Queries/GetICD10Diagnostics/GetICD10DiagnosticsQueryHandler.cs');
+const detailHandler=be('KLMN.Application/ICD10Diagnostics/Queries/GetICD10DiagnosticById/GetICD10DiagnosticByIdQueryHandler.cs');
 const handler=be('KLMN.Application/ICD10Diagnostics/Queries/GetICD10DiagnosticOptions/GetICD10DiagnosticOptionsQueryHandler.cs');
 const controller=be('KLMN.Api/Controllers/ICD10DiagnosticsController.cs');
 const sharedCss=read('src/styles.scss');
@@ -48,4 +51,25 @@ assert.match(sharedCss,/width:auto!important/);
 assert.doesNotMatch(sharedCss,/flex:1 1 0;/);
 assert.doesNotMatch(sharedCss,/width:0;/);
 
-console.log('PASS: ICD10 seçenekleri aynı tek API çağrısından gelir; JSON icd10s eşleşir, 3 dropdown aranabilir.');
+// Liste/detail response JSON adları, Angular tablosu ve EF projection tutarlı olmalı.
+for(const [jsonKey,clrKey] of [
+ ['icd10DefId','ICD10DefId'],
+ ['icd10Code','ICD10Code'],
+ ['icd10Name','ICD10Name'],
+ ['syyDiagnosisName','SYYDiagnosisName'],
+ ['hcAdmissionTypeName','HcAdmissionTypeName'],
+ ['amount','Amount'],
+ ['isActive','IsActive']
+]){
+ assert.ok(listResponse.includes('[property: JsonPropertyName("'+jsonKey+'")]'),
+  'Response JSON alanı eksik: '+jsonKey);
+ assert.ok(listResponse.includes(clrKey),'CLR alanı eksik: '+clrKey);
+}
+assert.ok(html.includes('{{row.icd10Code}}'),'ICD10 Kodu kolon bağı');
+assert.ok(html.includes('{{row.icd10Name}}'),'ICD10 Adı kolon bağı');
+for(const source of [listHandler,detailHandler]){
+ assert.ok(source.includes('new ICD10DiagnosticResponse('),'Ortak DTO projeksiyonu');
+ assert.ok(source.includes('x.ICD10.Code'),'ICD10 ilişkisi kod projeksiyonu');
+ assert.ok(source.includes('x.ICD10.Name'),'ICD10 ilişkisi ad projeksiyonu');
+}
+console.log('PASS: ICD10 kod/ad liste ve detay JSON alanları ile frontend kolonları eşleşir.');
