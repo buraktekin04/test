@@ -432,3 +432,12 @@
 /* İlgili tetkiğin eşdeğerlerini açan satır bağlantısı. */
 .syy-related-link{display:inline-flex;align-items:center;gap:.35rem;color:var(--ui-primary);text-decoration:none;border-radius:6px;padding:.3rem}
 .syy-related-link:hover{background:var(--ui-surface-muted)}
+
+/* Tetkik Türü kullanıcı seçmezse boş kalabilir; form başlığında zorunluluk gösterilmez. */
+.procedure-form .optional-label{
+  display:inline-block;
+  margin-left:.2rem;
+  font-size:.72rem;
+  font-weight:400;
+  color:var(--ui-muted);
+}
