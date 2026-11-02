@@ -39,3 +39,6 @@
 
 .syy-related-link{display:inline-flex;align-items:center;justify-content:center;min-width:30px;min-height:30px;text-decoration:none;color:var(--ui-primary);border-radius:6px}
 .syy-related-link:hover{background:var(--ui-surface-muted)}
+
+/* SYY tanısı formundaki aranabilir referanslar diğer alanları taşırmaz. */
+.definition-form .form-field > p-select{display:block;width:100%;min-width:0}
