@@ -1,4 +1,5 @@
 using FluentValidation;
+using KLMN.Application.SYYDiagnosisRequireds.Commands.Common;
 namespace KLMN.Application.SYYDiagnosisRequireds.Commands.CreateSYYDiagnosisRequired;
 public sealed class CreateSYYDiagnosisRequiredCommandValidator:AbstractValidator<CreateSYYDiagnosisRequiredCommand>
 {
@@ -7,8 +8,8 @@ public sealed class CreateSYYDiagnosisRequiredCommandValidator:AbstractValidator
   
   
  RuleFor(x=>x.SYYDiagnosisDefId).NotEmpty();
- RuleFor(x=>x).Must(x=>!(x.MustAll==true&&x.MustOneOf==true))
- .WithMessage("Tüm maddeler ve en az biri kuralları birlikte seçilemez.");
+ RuleFor(x=>x).Must(x=>SYYDiagnosisRequiredRules.HasExactlyOneCondition(x.MustAll,x.MustOneOf))
+ .WithMessage("Kural koşulunda Tüm Maddeler Gerekli veya En Az Biri Gerekli seçeneklerinden tam olarak biri seçilmelidir.");
  RuleFor(x=>x.Descriptions).NotNull().Must(x=>x is { Count: >= 1 and <= 50 })
  .WithMessage("1 ile 50 arası madde yazılmalıdır.");
  RuleForEach(x=>x.Descriptions).NotEmpty().MaximumLength(1500);
