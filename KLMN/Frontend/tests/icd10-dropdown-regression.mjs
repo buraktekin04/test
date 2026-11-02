@@ -13,6 +13,9 @@ const ts=read('src/app/features/icd10-diagnostics/icd10-diagnostic-list/icd10-di
 const client=read('src/app/features/icd10-diagnostics/services/icd10-diagnostic.service.ts');
 const model=read('src/app/features/icd10-diagnostics/models/icd10-diagnostic.model.ts');
 const dto=be('KLMN.Application/ICD10Diagnostics/Queries/GetICD10DiagnosticOptions/GetICD10DiagnosticOptionsQuery.cs');
+const listResponse=be('KLMN.Application/ICD10Diagnostics/Responses/ICD10DiagnosticResponse.cs');
+const listHandler=be('KLMN.Application/ICD10Diagnostics/Queries/GetICD10Diagnostics/GetICD10DiagnosticsQueryHandler.cs');
+const detailHandler=be('KLMN.Application/ICD10Diagnostics/Queries/GetICD10DiagnosticById/GetICD10DiagnosticByIdQueryHandler.cs');
 const handler=be('KLMN.Application/ICD10Diagnostics/Queries/GetICD10DiagnosticOptions/GetICD10DiagnosticOptionsQueryHandler.cs');
 const controller=be('KLMN.Api/Controllers/ICD10DiagnosticsController.cs');
 const sharedCss=read('src/styles.scss');
@@ -48,4 +51,29 @@ assert.match(sharedCss,/width:auto!important/);
 assert.doesNotMatch(sharedCss,/flex:1 1 0;/);
 assert.doesNotMatch(sharedCss,/width:0;/);
 
-console.log('PASS: ICD10 seçenekleri aynı tek API çağrısından gelir; JSON icd10s eşleşir, 3 dropdown aranabilir.');
+// p-table hücreleri ile API yanıtı bire bir aynı JSON isimlerini kullanmalı.
+// Özellikle ICD10 gibi büyük harf kısaltmalarını web camelCase politikası farklı
+// çevirebilir; açık JsonPropertyName bu hatayı kalıcı olarak engeller.
+for(const [jsonKey,clrKey] of [
+ ['icd10DefId','ICD10DefId'],
+ ['icd10Code','ICD10Code'],
+ ['icd10Name','ICD10Name'],
+ ['syyDiagnosisName','SYYDiagnosisName'],
+ ['hcAdmissionTypeName','HcAdmissionTypeName'],
+ ['amount','Amount'],
+ ['isActive','IsActive']
+]){
+ assert.ok(listResponse.includes('[property: JsonPropertyName("'+jsonKey+'")]'),
+  'Response JSON alanı eksik: '+jsonKey);
+ assert.match(listResponse,new RegExp('\\\\b'+clrKey+'\\\\b'));
+}
+assert.match(html,/\\{\\{row\\.icd10Code\\}\\}/);
+assert.match(html,/\\{\\{row\\.icd10Name\\}\\}/);
+assert.match(listHandler,/new ICD10DiagnosticResponse\\(/);
+assert.match(detailHandler,/new ICD10DiagnosticResponse\\(/);
+assert.match(listHandler,/x\\.ICD10\\.Code/);
+assert.match(listHandler,/x\\.ICD10\\.Name/);
+assert.match(detailHandler,/x\\.ICD10\\.Code/);
+assert.match(detailHandler,/x\\.ICD10\\.Name/);
+
+console.log('PASS: ICD10 kod/ad liste ve detay JSON alanları ile frontend kolonları eşleşir.');
