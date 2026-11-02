@@ -19,7 +19,7 @@ public sealed class GetProcedureDefByIdQueryHandler(IKLMNDbContext db)
         Id=x.Id,ProcedureCode=x.ProcedureCode,Name=x.Name,RequiresNumericResult=x.RequiresNumericResult,
         RequiresReferenceRange=x.RequiresReferenceRange,RequiresDeviationInfo=x.RequiresDeviationInfo,
         ValidFrom=x.ValidFrom,ValidTo=x.ValidTo,ProcedureType=x.ProcedureType,
-        ProcedureTypeName=x.TypeDefinition.Name,IsActive=x.IsActive,CreatedDate=x.CreatedDate,
+        ProcedureTypeName=x.TypeDefinition!=null?x.TypeDefinition.Name:"",IsActive=x.IsActive,CreatedDate=x.CreatedDate,
         CreatedBy=x.CreatedBy,UpdatedDate=x.UpdatedDate,UpdatedBy=x.UpdatedBy,Version=x.Version
     }).SingleOrDefaultAsync(ct)
             ?? throw new ProcedureNotFoundException();
