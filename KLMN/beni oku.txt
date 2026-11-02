@@ -1,3 +1,57 @@
+02.11.2026 — SYY ONAY GEREKTİREN MADDELER: KURAL KOŞULU RADIO BUTTON
+=========================================================================
+Kullanıcı düzeltmesi: Dialogdaki MustAll / MustOneOf checkbox çiftinin
+yerine RADIO BUTTON kullanılmalıdır. İkisinden yalnız biri seçilecek
+ve herhangi bir koşul seçmeden yeni kayıt veya güncelleme YAPILMAYACAK.
+
+1) Frontend:
+   Frontend/src/app/features/syy-diagnosis-requireds/
+    syy-diagnosis-required-list/syy-diagnosis-required-list.component.ts
+   PrimeNG RadioButtonModule eklendi. Form artık ayrı nullable checkbox
+   kontrollü mustAll/mustOneOf tutmaz. Tek radio alanı:
+     ruleCondition: 'all' | 'one' | null (Validators.required)
+   Seçenekler "Tüm Maddeler Gerekli" / "En Az Biri Gerekli".
+   Başlangıçta hiçbiri seçili değildir, seçim ZORUNLUDUR.
+   Kullanıcı "all" seçerse backend payload:
+     mustAll:true, mustOneOf:false
+   "one" seçerse:
+     mustAll:false, mustOneOf:true
+   Düzenle formunda eski iki bool alanı radio'ya doğru eşlenir.
+   Eski kayıt null/null, false/false veya true/true gibi geçersiz
+   durumdaysa RADIO OTOMATİK SEÇİLMEZ. Düzenleyen kullanıcıdan gerçek
+   koşulu seçmesi istenir; eski kayıtlar otomatik değiştirilmez.
+   Tablo iki Evet/Hayır sütunu yerine tek "Kural Koşulu" sütununda
+   insan tarafından okunabilir etiketi gösterir. Salt okunur
+   SYY Kural Tanımları ekranında da geçersiz durum yanıltıcı
+   bir etiketle "Tüm maddeler gerekli" olarak gösterilmez.
+
+2) Backend:
+   KLMN.Application/SYYDiagnosisRequireds/Commands/Common/
+    SYYDiagnosisRequiredRules.cs
+   HasExactlyOneCondition(mustAll,mustOneOf) YALNIZ
+     (true,false) veya (false,true) için true döner.
+   EnsureExclusiveCondition() aksi durumda ilgili
+   SYYDiagnosisRequiredConflictException fırlatır.
+   CreateSYYDiagnosisRequiredCommandValidator ve
+   UpdateSYYDiagnosisRequiredCommandValidator ikisi de aynı ortak
+   doğrulamayı yapar; hem hiç seçim olmaması hem ikisinin de true
+   olması reddedilir. Create ve Update HANDLER'ları da veritabanına
+   gitmeden EnsureExclusiveCondition ile doğrudan çağrılma halinde
+   aynı kuralı uygular.
+   DB DOMAIN ve API RESPONSE eski bool? MustAll / MustOneOf ile
+   AYNEN KORUNDU. Şema/kolon silme yok, MIGRATION GEREKMİYOR.
+   Not: DB'de önceden geçersiz koşulla oluşmuş kayıtlar
+   otomatik değişmedi. Edit edildiğinde koşul seçilmesi gerekir.
+
+3) Test:
+   KLMN/Tests/SYYRules.Regression/Program.cs içine yeni
+   create/update validasyon kombinasyonları eklendi.
+   KLMN/Frontend/tests/syy-approval-radio-regression.mjs eklendi.
+   Frontend/package.json: npm run test:syy-approval-radio
+   Full Angular/dotnet build, DB entegrasyon ve tarayıcı E2E
+   testleri bu çalışma ortamında ayrıca çalıştırılmalıdır.
+   Her zamanki tek squash commit ve main push yöntemi uygulanır.
+
 02.11.2026 — KRİTİK UI DÜZELTME: SYY DROPDOWN HARFLERİN ALT ALTA DÜŞMESİ
 ============================================================================
 Kullanıcı ekran görüntülerinde SYY Tanısı ve SYY Tanı Sınıflandırma
