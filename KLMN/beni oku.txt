@@ -1,3 +1,54 @@
+02.11.2026 — ICD10 SYY TANI İSTATİSTİĞİ p-table KOD/AD BOŞ GÖRÜNÜYOR
+=======================================================================
+KULLANICI HATASI: "ICD10 SYY Tanı İstatistiği Tanımları" listesindeki
+ICD10 Kodu ve ICD10 Adı kolonları boş görünüyor.
+
+KÖK NEDEN: Backend Application/ICD10Diagnostics/Responses/
+ICD10DiagnosticResponse.cs positional record özelliklerinin CLR
+isimleri ICD10Code / ICD10Name / ICD10DefId idi. System.Text.Json
+camelCase kısaltma geçişinde icD10Code / icD10Name / icD10DefId
+biçimlerine çevrilebiliyor. Frontend HTML p-table ise
+row.icd10Code ve row.icd10Name, TypeScript modelinde
+icd10DefId alanlarını bekliyor. Aynı sorun eski düzenleme detay
+yanıtındaki ICD10DefId için de geçerliydi.
+
+DÜZELTİLDİ:
+1) ICD10DiagnosticResponse positional record parametrelerine
+   System.Text.Json.Serialization.JsonPropertyName eklendi.
+   "icd10DefId", "icd10Code", "icd10Name" açıkça ve doğru
+   belirtiliyor. Diğer alanların (id, syyDiagnosisDefId,
+   syyDiagnosisName, hcAdmissionTypeDefId, hcAdmissionTypeName,
+   amount, isActive, version, createdDate) JSON adları da aynı
+   response içinde açıkça sabitlendi.
+   GET /api/icd10-diagnostics liste ve GET /{id} detay, aynı
+   response DTO'sunu kullanır; her ikisi de düzelir.
+2) GetICD10DiagnosticsQueryHandler.cs / GetICD10DiagnosticById...
+   içerisinde ICD10 ilişkisi üzerinden x.ICD10.Code/Name projection
+   zaten doğruydu; SQL join veya frontend tablo binding yanlış
+   olmadığı için bu katmanlar gereksiz yere değiştirilmedi.
+3) Frontend/models ve HTML p-table icd10Code/icd10Name alanları
+   doğruydu ve aynen bırakıldı. Önceden düzeltmiş olduğumuz
+   options endpoint'i icd10s sözleşmesi ve tek istekte bütün ICD10
+   dropdown kayıtlarını çekme davranışı KORUNDU, yeni endpoint yok.
+4) KLMN/Tests/ICD10Diagnostics.Regression yeni .NET 10 proje:
+   System.Text.Json(JsonSerializerDefaults.Web) ile gerçek
+   PagedResult<ICD10DiagnosticResponse> ve tekil detay JSON
+   serialize edilerek icd10Code / icd10Name / icd10DefId alanları,
+   yanlış icD10... alanlarının bulunmaması test edilir.
+   Frontend/tests/icd10-dropdown-regression.mjs testine HTML,
+   TypeScript ve backend JSON sözleşme kontrolleri eklendi.
+
+YEREL DOĞRULAMA:
+   cd KLMN/Backend
+   dotnet run --project ../Tests/ICD10Diagnostics.Regression/ICD10Diagnostics.Regression.csproj
+   cd ../Frontend
+   npm run test:icd10-dropdown
+   npm run build
+
+Bu çalışma ortamında .NET kurulu değil, gerçek derleme/uygulama
+çalıştırılamadı. Veritabanı şeması değişmedi, MIGRATION GEREKMİYOR.
+Her zamanki TEK SQUASH COMMIT ile main'e gönderilmeli.
+
 02.11.2026 — SYY SEÇİLİ DROPDOWN YALNIZ İLK HARF / ICD10 İSTATİSTİK BOŞ SEÇENEKLER
 ==========================================================================================
 KULLANICI GERİ BİLDİRİMİ: ICD10 sayısı şu anda sadece 5 adet. Bu nedenle
