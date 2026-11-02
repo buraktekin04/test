@@ -1,3 +1,42 @@
+02.11.2026 — KRİTİK UI DÜZELTME: SYY DROPDOWN HARFLERİN ALT ALTA DÜŞMESİ
+============================================================================
+Kullanıcı ekran görüntülerinde SYY Tanısı ve SYY Tanı Sınıflandırma
+Çizelgesi popup'larındaki p-select alanlarının seçili/placeholder
+metinlerinin her harfinin ayrı satıra kaydığını ve devasa yükseklikte
+kutular oluştuğunu bildirdi.
+
+KÖK NEDEN: Bir önceki SYY çalışmasında Frontend/src/styles.scss
+içindeki .syy-search-select .p-select-label selector'ına
+display:flex, white-space:normal, overflow-wrap:anywhere atanmıştı.
+Ayrıca #selectedItem template'i syy-select-option-text sınıfını
+içerdiği için açılır menüye ait çok satır davranışı seçili değere de
+uygulanıyordu. Uzun placeholder/seçili metin her harfte kırılıyordu.
+
+DÜZELTİLEN:
+1) Frontend/src/styles.scss: .syy-search-select.p-select
+   genişlik %100, sabit 38px yükseklik. İç .p-select-label
+   display:block, flex:1 1 0, width:0, min-width:0,
+   white-space:nowrap!important, overflow:hidden,
+   text-overflow:ellipsis; seçili değer ASLA çok satır olmaz.
+2) .syy-search-overlay .syy-select-option-text sadece açılır
+   seçenek PANELİNDE white-space:normal ve overflow-wrap:break-word.
+   Bu sayede uzun karar/tanı adı popup içinde çok satırlıdır, fakat
+   seçim kutusu kompakt kalır.
+3) Üç formdan toplam 10 özel #selectedItem template'i kaldırıldı:
+   - syy-diagnoses: Yeni SYY Tanısı (Bağlı Kayıt)
+   - syy-diagnosis-decisions: Yeni Karar İstatistiği (4 referans)
+   - syy-classifications: SYY Sınıflandırma Çizelgesi (5 referans)
+   PrimeNG varsayılan label gösterimini kullanır.
+4) p-select [filter]=true, Türkçe büyük/küçük harf duyarsız arama,
+   kuvvete bağlı sınıf grubu, backend seçenek sorgusu, form kuralları
+   ve tablodaki çok satırlı SYY Tanısı kolonu KORUNDU.
+5) Frontend/tests/syy-searchable-selects-regression.mjs testine
+   selectedItem ve seçili-label yüksekliği regresyon kontrolleri eklendi.
+   Yerelde npm run test:syy-searchable && npm run build komutlarını
+   çalıştırın. Bu ortamda gerçek Angular derleme, tarayıcı ve E2E
+   kontrolü yapılamadı; kaynak kontrolleri yapıldı.
+   DB şeması değişmedi: MIGRATION YOK. Tek squash commit main.
+
 02.11.2026 — SYY ARANABİLİR DROPDOWN / ÇOK SATIRLI METİN / KUVVETE BAĞLI SINIF GRUBU
 ========================================================================================
 İş kaynağı: kullanıcının SYY ekran notları (4 madde).
