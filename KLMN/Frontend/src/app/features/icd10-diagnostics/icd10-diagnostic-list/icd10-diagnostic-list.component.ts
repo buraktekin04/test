@@ -9,6 +9,7 @@ import {CheckboxModule} from 'primeng/checkbox';
 import {ConfirmDialogModule} from 'primeng/confirmdialog';
 import {DialogModule} from 'primeng/dialog';
 import {InputTextModule} from 'primeng/inputtext';
+import {SelectModule} from 'primeng/select';
 import {TableModule} from 'primeng/table';
 import {TagModule} from 'primeng/tag';
 import {ToastModule} from 'primeng/toast';
@@ -21,7 +22,7 @@ import {Icd10DiagnosticItem,Icd10DiagnosticOptions,Icd10DiagnosticQuery} from '.
 @Component({
  selector:'app-icd10-diagnostic-list',standalone:true,
  imports:[RouterLink,ReactiveFormsModule,ButtonModule,CheckboxModule,ConfirmDialogModule,
- DialogModule,InputTextModule,TableModule,TagModule,ToastModule,AuditHistoryComponent],
+ DialogModule,InputTextModule,SelectModule,TableModule,TagModule,ToastModule,AuditHistoryComponent],
  providers:[ConfirmationService,MessageService],
  templateUrl:'./icd10-diagnostic-list.component.html',
  styleUrl:'./icd10-diagnostic-list.component.scss'
@@ -56,6 +57,7 @@ export class Icd10DiagnosticListComponent implements OnInit {
   amount:this.fb.nonNullable.control(0,[Validators.required,Validators.min(0)])
  });
  private requestId=0;private editId=0;
+ private optionsRequestId=0;
  ngOnInit(){this.load();}
  private query():Icd10DiagnosticQuery{
   const f=this.searchForm.getRawValue();
@@ -73,14 +75,27 @@ export class Icd10DiagnosticListComponent implements OnInit {
  clear(){this.searchForm.reset({search:'',includeInactive:false});this.activeFilter.setValue(null);this.search();}
  toPage(n:number){if(n<1||n>this.maxPage()||this.loading())return;this.page.set(n);this.load();}
  setPageSize(e:Event){this.pageSize.set(Number((e.target as HTMLSelectElement).value));this.search();}
+ /** Mevcut tek options endpoint'i bütün aktif tanımları bir kez getirir.
+  * Yeni dialog her açıldığında en güncel kayıtları okur; ayrı ICD10 arama API'si yoktur. */
  private loadOptions(row?:Icd10DiagnosticItem){
-  this.api.options(row).subscribe({next:o=>this.optionsData.set(o),error:e=>this.notify(e)});
+  const request=++this.optionsRequestId;
+  this.api.options(row).subscribe({
+   next:o=>{
+    if(request!==this.optionsRequestId)return;
+    this.optionsData.set(o);
+   },
+   error:e=>{
+    if(request!==this.optionsRequestId)return;
+    this.notify(e);
+   }
+  });
  }
  openCreate(){
   if(!this.canCreate())return;
   ++this.editId;this.editing.set(null);this.formError.set(null);
   this.form.reset({icd10DefId:this.presetICD10DefId||'',syyDiagnosisDefId:'',hcAdmissionTypeDefId:'',amount:0});
-  this.loadOptions();this.showForm.set(true);
+  this.optionsData.set({icd10s:[],syyDiagnoses:[],admissionTypes:[]});
+  this.showForm.set(true);this.loadOptions();
  }
  openEdit(row:Icd10DiagnosticItem){
   if(!this.canUpdate())return;
@@ -90,7 +105,8 @@ export class Icd10DiagnosticListComponent implements OnInit {
    this.editing.set(item);this.formError.set(null);
    this.form.reset({icd10DefId:item.icd10DefId,syyDiagnosisDefId:item.syyDiagnosisDefId,
     hcAdmissionTypeDefId:item.hcAdmissionTypeDefId,amount:item.amount});
-   this.loadOptions(item);this.showForm.set(true);
+   this.optionsData.set({icd10s:[],syyDiagnoses:[],admissionTypes:[]});
+   this.showForm.set(true);this.loadOptions(item);
   },error:e=>this.notify(e)});
  }
  save(){
