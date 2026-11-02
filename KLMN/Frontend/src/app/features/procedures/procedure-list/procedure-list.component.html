@@ -106,7 +106,7 @@
             <td><div class="record-name-cell"><i class="pi pi-file" aria-hidden="true"></i>
               <strong [title]="item.name">{{ item.name }}</strong></div></td>
             <td><code class="record-code">{{ item.procedureCode }}</code></td>
-            <td>{{ item.procedureTypeName }}</td>
+            <td>{{ item.procedureTypeName || '—' }}</td>
             <td><p-tag [value]="item.requiresNumericResult ? 'Evet' : 'Hayır'" [severity]="item.requiresNumericResult?'success':'secondary'" /></td>
             <td><p-tag [value]="item.requiresReferenceRange ? 'Evet' : 'Hayır'" [severity]="item.requiresReferenceRange?'success':'secondary'" /></td>
             <td><p-tag [value]="item.requiresDeviationInfo ? 'Evet' : 'Hayır'" [severity]="item.requiresDeviationInfo?'success':'secondary'" /></td>
@@ -200,9 +200,9 @@
       </div>
 
       <div class="form-field">
-        <label for="procedures-procedureType">Tetkik Türü <span class="required">*</span></label>
+        <label for="procedures-procedureType">Tetkik Türü <span class="optional-label">(İsteğe bağlı)</span></label>
         <select id="procedures-procedureType" formControlName="procedureType">
-          <option [ngValue]="null">Tetkik türü seçiniz</option>
+          <option [ngValue]="null">Tetkik türü seçilmedi</option>
           @for (type of typeOptions(); track type.code) {
             <option [ngValue]="type.code">{{type.name}} ({{type.code}}){{type.isActive?'':' — Pasif'}}</option>
           }

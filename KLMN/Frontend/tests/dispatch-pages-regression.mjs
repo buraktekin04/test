@@ -109,7 +109,7 @@ assert.match(listTs,/readonly hasSearched=signal\(false\)/);
 assert.match(listTs,/private appliedForm:/);
 assert.doesNotMatch(listTs,/ngOnInit\(\)\s*\{[\s\S]*?if\(this\.canView\(\)\)this\.load\(\)/);
 assert.match(listHtml,/@if\(hasSearched\(\)\)\{/);
-assert.match(listHtml,/Sevk sorgusu henüz çalıştırılmadı/);
+assert.match(listHtml,/Sevk sorgusu için hazır/);
 assert.match(listTs,/this\.appliedForm=\{\.\.\.values\}/);
 assert.match(listTs,/this\.hasSearched\.set\(true\)/);
 assert.match(listTs,/this\.hasSearched\.set\(false\)/);
@@ -133,4 +133,19 @@ assert.doesNotMatch(entryTs,/selectFile\(|this\.uploadFile\(|this\.files\(|this\
 assert.match(entryHtml,/app-dispatch-photo-capture/);
 assert.match(entryTs,/this\.api\.uploadPhoto/);
 
-console.log('PASS: Sevk sorgusu yalnız Sorgula, global case-insensitive filtre, DB cinsiyet ve fotoğraf.');
+// Kimlik numarası yalnız rakamla girilir; yapıştırılan harfler de temizlenir.
+assert.match(entryHtml,/pattern="\[0-9\]\*"/);
+assert.match(entryHtml,/onIdentityNumberInput\(\$event,'tcKimlikNo'\)/);
+assert.match(entryHtml,/onIdentityNumberInput\(\$event,'yabanciKimlikNo'\)/);
+assert.match(entryTs,/onIdentityNumberInput\(event:Event/);
+assert.match(entryTs,/replace\(\/\[\^0-9\]\/g,''\)/);
+assert.match(entryTs,/Validators\.pattern\(\/\^\[0-9\]\{11\}\$\/\)/);
+// Sorgulanmamış liste, kendisine özel boyutlu bir boş durum alanı içerir.
+assert.match(listHtml,/class="list-card empty-query-state"/);
+assert.match(listHtml,/class="empty-query-content"/);
+assert.match(listHtml,/class="empty-query-icon"/);
+assert.match(listScss,/\.empty-query-state\{/);
+assert.match(listScss,/\.empty-query-content\{/);
+assert.match(listScss,/\.empty-query-icon\{/);
+
+console.log('PASS: Sevk kimlik numarası, sorgu başlangıç paneli ve önceki regresyonlar.');

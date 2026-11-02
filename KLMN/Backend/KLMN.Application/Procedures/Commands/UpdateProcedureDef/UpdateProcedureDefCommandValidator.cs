@@ -13,7 +13,8 @@ public sealed class UpdateProcedureDefCommandValidator : AbstractValidator<Updat
         RuleFor(x => x.Version).GreaterThan(0u);
         RuleFor(x => x.ProcedureCode).NotEmpty().MaximumLength(100).Matches("^[A-Za-z0-9_-]+$");
         RuleFor(x => x.Name).NotEmpty().MaximumLength(250);
-        RuleFor(x => x.ProcedureType).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.ProcedureType).Must(x => !x.HasValue || x.Value >= 0)
+            .WithMessage("Tetkik türü seçilirse geçerli bir kod olmalıdır.");
         RuleFor(x => x).Must(x => ValidityPeriod.HasValidBounds(x.ValidFrom, x.ValidTo))
             .WithMessage("Geçerli bitiş başlangıçtan sonra olmalıdır.").WithName("ValidTo");
         RuleFor(x => x.ValidFrom).Must(x => !x.HasValue || x.Value.Kind == DateTimeKind.Utc)

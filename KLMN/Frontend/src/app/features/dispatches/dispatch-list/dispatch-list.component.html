@@ -151,11 +151,11 @@
    </div>
   </section>
   } @else {
-   <section class="list-card empty-query-state" role="status">
-    <i class="pi pi-search"></i>
-    <div>
-     <strong>Sevk sorgusu henüz çalıştırılmadı.</strong>
-     <p>Filtreleri belirleyip <b>Sorgula</b> düğmesine basarak kayıtları listeleyebilirsiniz.</p>
+   <section class="list-card empty-query-state" role="status" aria-live="polite">
+    <div class="empty-query-content">
+     <span class="empty-query-icon" aria-hidden="true"><i class="pi pi-search"></i></span>
+     <strong>Sevk sorgusu için hazır</strong>
+     <p>Filtreleri belirleyip <b>Sorgula</b> butonuna basarak sevk kayıtlarını listeleyebilirsiniz.</p>
     </div>
    </section>
   }

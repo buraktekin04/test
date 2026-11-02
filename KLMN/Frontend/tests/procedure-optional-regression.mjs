@@ -1,0 +1,45 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+import {dirname,resolve} from 'node:path';
+
+const frontend=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const project=resolve(frontend,'..');
+const fe=path=>readFileSync(resolve(frontend,path),'utf8');
+const be=path=>readFileSync(resolve(project,'Backend',path),'utf8');
+const ts=fe('src/app/features/procedures/procedure-list/procedure-list.component.ts');
+const html=fe('src/app/features/procedures/procedure-list/procedure-list.component.html');
+const models=fe('src/app/features/procedures/models/procedures.model.ts');
+const entity=be('KLMN.Domain/Entities/Admissions/ProcedureDef.cs');
+const config=be('KLMN.Persistence/Configurations/Admissions/ProcedureDefConfiguration.cs');
+const rules=be('KLMN.Application/Procedures/Commands/Common/ProcedureDefRules.cs');
+const create=be('KLMN.Application/Procedures/Commands/CreateProcedureDef/CreateProcedureDefCommand.cs');
+const update=be('KLMN.Application/Procedures/Commands/UpdateProcedureDef/UpdateProcedureDefCommand.cs');
+const createValidator=be('KLMN.Application/Procedures/Commands/CreateProcedureDef/CreateProcedureDefCommandValidator.cs');
+const updateValidator=be('KLMN.Application/Procedures/Commands/UpdateProcedureDef/UpdateProcedureDefCommandValidator.cs');
+const list=be('KLMN.Application/Procedures/Queries/GetProcedureDefs/GetProcedureDefsQueryHandler.cs');
+const detail=be('KLMN.Application/Procedures/Queries/GetProcedureDefById/GetProcedureDefByIdQueryHandler.cs');
+
+assert.match(ts,/procedureType: this\.fb\.control<number\|null>\(null\)/);
+assert.doesNotMatch(ts,/procedureType: this\.fb\.control<number\|null>\(null,Validators\.required\)/);
+assert.match(ts,/procedureType: values\.procedureType\b/);
+assert.doesNotMatch(ts,/procedureType: values\.procedureType!/);
+assert.match(html,/Tetkik Türü <span class="optional-label">\(İsteğe bağlı\)<\/span>/);
+assert.match(html,/Tetkik türü seçilmedi/);
+assert.match(html,/item\.procedureTypeName \|\| '—'/);
+assert.match(models,/procedureType:number\|null/);
+assert.match(entity,/int\? ProcedureType/);
+assert.match(entity,/Guid\? ProcedureTypeDefId/);
+assert.match(entity,/ProcedureTypeDef\? TypeDefinition/);
+assert.match(config,/Property\(x=>x\.ProcedureType\)\.IsRequired\(false\)/);
+assert.match(config,/HasForeignKey\(x=>x\.ProcedureTypeDefId\)\s*\.IsRequired\(false\)/);
+assert.match(rules,/Task<Guid\?> ResolveTypeIdAsync\(IKLMNDbContext db,int\? code/);
+assert.match(rules,/if\(!code\.HasValue\)return null/);
+assert.match(create,/int\? ProcedureType/);
+assert.match(update,/int\? ProcedureType/);
+assert.match(createValidator,/!x\.HasValue \|\| x\.Value >= 0/);
+assert.match(updateValidator,/!x\.HasValue \|\| x\.Value >= 0/);
+assert.match(list,/TypeDefinition!=null\?x\.TypeDefinition\.Name:""/);
+assert.match(detail,/TypeDefinition!=null\?x\.TypeDefinition\.Name:""/);
+
+console.log('PASS: Tetkik Türü is optional in frontend, API commands, validation, queries, model and FK.');

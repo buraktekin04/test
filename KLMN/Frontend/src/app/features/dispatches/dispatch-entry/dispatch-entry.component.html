@@ -29,13 +29,15 @@
     @if(identityType()==='tc'){
      <label class="field lookup-identity">
       <span class="field-caption"><span class="required-mark">*</span> T.C. Kimlik No</span>
-      <input pInputText formControlName="tcKimlikNo" maxlength="11" inputmode="numeric"
+      <input pInputText formControlName="tcKimlikNo" maxlength="11" inputmode="numeric" pattern="[0-9]*"
+       (beforeinput)="preventNonNumericInput($event)" (input)="onIdentityNumberInput($event,'tcKimlikNo')"
        [readOnly]="!!editing()" placeholder="11 haneli kimlik numarası" autocomplete="off"/>
      </label>
     } @else {
      <label class="field lookup-identity">
       <span class="field-caption"><span class="required-mark">*</span> Yabancı Kimlik No</span>
-      <input pInputText formControlName="yabanciKimlikNo" maxlength="20" inputmode="numeric"
+      <input pInputText formControlName="yabanciKimlikNo" maxlength="20" inputmode="numeric" pattern="[0-9]*"
+       (beforeinput)="preventNonNumericInput($event)" (input)="onIdentityNumberInput($event,'yabanciKimlikNo')"
        [readOnly]="!!editing()" placeholder="Yabancı kimlik numarası" autocomplete="off"/>
      </label>
     }
