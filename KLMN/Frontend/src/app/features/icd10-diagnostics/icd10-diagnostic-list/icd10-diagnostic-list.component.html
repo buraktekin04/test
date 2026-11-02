@@ -82,30 +82,42 @@
   <div class="form-grid">
    <div class="form-field">
     <label for="icd10-diagnostic-code">ICD10 *</label>
-    <select id="icd10-diagnostic-code" formControlName="icd10DefId">
-     <option value="">ICD10 kodu seçiniz</option>
-     @for(o of optionsData().icd10s;track o.id){
-      <option [value]="o.id">{{o.label}}{{o.isActive?'':' — Pasif'}}</option>
-     }
-    </select>
+    <p-select inputId="icd10-diagnostic-code" formControlName="icd10DefId"
+     [options]="optionsData().icd10s" optionLabel="label" optionValue="id"
+     [filter]="true" filterBy="label" filterMatchMode="contains" [showClear]="true"
+     [fluid]="true" appendTo="body" styleClass="syy-search-select"
+     panelStyleClass="syy-search-overlay"
+     placeholder="ICD10 kodu seçiniz" filterPlaceholder="ICD10 kodu veya adında ara...">
+     <ng-template #item let-option>
+      <span class="syy-select-option-text">{{option.label}}{{option.isActive?'':' — Pasif'}}</span>
+     </ng-template>
+    </p-select>
    </div>
    <div class="form-field">
     <label for="icd10-diagnostic-syy">SYY Tanısı *</label>
-    <select id="icd10-diagnostic-syy" formControlName="syyDiagnosisDefId">
-     <option value="">SYY tanısı seçiniz</option>
-     @for(o of optionsData().syyDiagnoses;track o.id){
-      <option [value]="o.id">{{o.label}}{{o.isActive?'':' — Pasif'}}</option>
-     }
-    </select>
+    <p-select inputId="icd10-diagnostic-syy" formControlName="syyDiagnosisDefId"
+     [options]="optionsData().syyDiagnoses" optionLabel="label" optionValue="id"
+     [filter]="true" filterBy="label" filterMatchMode="contains" [showClear]="true"
+     [fluid]="true" appendTo="body" styleClass="syy-search-select"
+     panelStyleClass="syy-search-overlay"
+     placeholder="SYY tanısı seçiniz" filterPlaceholder="SYY tanılarında ara...">
+     <ng-template #item let-option>
+      <span class="syy-select-option-text">{{option.label}}{{option.isActive?'':' — Pasif'}}</span>
+     </ng-template>
+    </p-select>
    </div>
    <div class="form-field">
     <label for="icd10-diagnostic-group">Başvuru Grubu *</label>
-    <select id="icd10-diagnostic-group" formControlName="hcAdmissionTypeDefId">
-     <option value="">Başvuru grubu seçiniz</option>
-     @for(o of optionsData().admissionTypes;track o.id){
-      <option [value]="o.id">{{o.label}}{{o.isActive?'':' — Pasif'}}</option>
-     }
-    </select>
+    <p-select inputId="icd10-diagnostic-group" formControlName="hcAdmissionTypeDefId"
+     [options]="optionsData().admissionTypes" optionLabel="label" optionValue="id"
+     [filter]="true" filterBy="label" filterMatchMode="contains" [showClear]="true"
+     [fluid]="true" appendTo="body" styleClass="syy-search-select"
+     panelStyleClass="syy-search-overlay"
+     placeholder="Başvuru grubu seçiniz" filterPlaceholder="Başvuru gruplarında ara...">
+     <ng-template #item let-option>
+      <span class="syy-select-option-text">{{option.label}}{{option.isActive?'':' — Pasif'}}</span>
+     </ng-template>
+    </p-select>
    </div>
    <div class="form-field">
     <label for="icd10-diagnostic-amount">Adet *</label>

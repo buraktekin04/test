@@ -61,7 +61,10 @@ for(const template of [diagnosis,statistics,classification]){
 assert.match(sharedStyles,/\.syy-search-select\.p-select\s*\{/);
 assert.match(sharedStyles,/height:38px/);
 assert.match(sharedStyles,/\.syy-search-select\.p-select \.p-select-label/);
-assert.match(sharedStyles,/flex:1 1 0/);
+assert.match(sharedStyles,/flex:1 1 auto/);
+assert.match(sharedStyles,/width:auto!important/);
+assert.doesNotMatch(sharedStyles,/flex:1 1 0;/);
+assert.doesNotMatch(sharedStyles,/width:0;/);
 assert.match(sharedStyles,/white-space:nowrap!important/);
 assert.match(sharedStyles,/text-overflow:ellipsis!important/);
 assert.match(sharedStyles,/\.syy-search-overlay \.syy-select-option-text/);

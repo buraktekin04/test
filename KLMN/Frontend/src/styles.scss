@@ -283,8 +283,9 @@ p-select { min-width: 0; max-width: 100%; }
 }
 .syy-search-select.p-select .p-select-label{
   display:block;
-  flex:1 1 0;
-  width:0;
+  /* PrimeNG zaten label'ın flex düzenini yönetir. width:0 tek harf bırakıyordu. */
+  flex:1 1 auto;
+  width:auto!important;
   max-width:100%;
   min-width:0;
   min-height:0;
