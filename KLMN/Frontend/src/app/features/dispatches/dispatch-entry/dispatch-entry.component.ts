@@ -8,6 +8,7 @@ import {ButtonModule} from 'primeng/button';
 import {ConfirmDialogModule} from 'primeng/confirmdialog';
 import {InputTextModule} from 'primeng/inputtext';
 import {InputNumberModule} from 'primeng/inputnumber';
+import {ProgressBarModule} from 'primeng/progressbar';
 import {SelectModule} from 'primeng/select';
 import {ToastModule} from 'primeng/toast';
 import {PermissionCodes} from '../../../core/permissions/constants/permission-codes';
@@ -23,7 +24,7 @@ import {DispatchOption,DispatchPerson,DispatchDetails,DispatchResponse,
 @Component({
  selector:'app-dispatch-entry',standalone:true,
  imports:[ReactiveFormsModule,ButtonModule,ConfirmDialogModule,
-  InputTextModule,InputNumberModule,SelectModule,ToastModule,
+  InputTextModule,InputNumberModule,ProgressBarModule,SelectModule,ToastModule,
   DispatchQrReaderComponent,DispatchPhotoCaptureComponent],
  providers:[ConfirmationService,MessageService],
  templateUrl:'./dispatch-entry.component.html',
@@ -131,6 +132,9 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   'flyingMissionDefId','planeTypeDefId'
  ].includes(x.key));
  readonly rulesLoading=signal(false);
+ /** Başvuru grubu ilk yüklenirken alanın boş görünmesini engelleyen yükleme durumu. */
+ readonly admissionOptionsLoading=signal(true);
+ readonly admissionOptionsError=signal(false);
  hasMandatoryMilitary():boolean{return this.militarySelections.some(x=>this.isRequired(x.key));}
  readonly optionMap=signal<Record<OptionType,DispatchOption[]>>({
   countries:[],towns:[],cities:[],hospitals:[],admissionTypes:[],reasons:[],
@@ -179,21 +183,38 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
    if(!this.canCreate()){void this.router.navigateByUrl('/app');return;}
    this.openCreate();
   }
-  // Referans seçenekleri sunucu üzerinde aramayla yüklenir; her türde ilk 100 sonuç gösterilir.
-  for(const type of Object.keys(this.optionMap()) as OptionType[])this.loadOptions(type);
+  // En önemli seçim önceliklidir: diğer 13 referans isteğinden önce gönderilir.
+  // Başvuru grubu isteği sırasında küçük bir ilerleme çubuğu görünür.
+  this.loadOptions('admissionTypes');
+  for(const type of Object.keys(this.optionMap()) as OptionType[]){
+   if(type!=='admissionTypes')this.loadOptions(type);
+  }
  }
  /** Tanım aramaları istek sıralamasıyla korunur; eski cevap yeni arama sonuçlarını ezmez. */
  loadOptions(type:OptionType,search='',selectedId?:string){
   const request=(this.optionRequest[type]??0)+1;
   this.optionRequest[type]=request;
+  if(type==='admissionTypes'){
+   this.admissionOptionsLoading.set(true);
+   this.admissionOptionsError.set(false);
+  }
   this.api.options(type,search,selectedId).subscribe({
-   next:values=>{if(this.optionRequest[type]===request){
+   next:values=>{
+    if(this.optionRequest[type]!==request)return;
     if(type==='reasons')values=values.filter(x=>!this.admissionRules()?.unusedReasonIds.includes(x.id));
     const prev=this.optionMap()[type];
     const selected=selectedId?prev.find(x=>x.id===selectedId):undefined;
     this.optionMap.update(m=>({...m,[type]:selected&&!values.some(x=>x.id===selected.id)?[selected,...values]:values}));
-   }},
-   error:()=>{if(this.optionRequest[type]===request)this.optionMap.update(m=>({...m,[type]:[]}));}
+    if(type==='admissionTypes')this.admissionOptionsLoading.set(false);
+   },
+   error:()=>{
+    if(this.optionRequest[type]!==request)return;
+    if(type==='admissionTypes'){
+     this.admissionOptionsLoading.set(false);
+     this.admissionOptionsError.set(true);
+    }
+    this.optionMap.update(m=>({...m,[type]:[]}));
+   }
   });
  }
  /** Değişen başvuru grubu için eski seçimi doğrular ve yasaklanan muayene sebeplerini eler. */
