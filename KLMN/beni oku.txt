@@ -1,3 +1,50 @@
+02.11.2026 — SEVK BAŞVURU GRUBU YÜKLENİYOR GÖSTERGESİ VE ZEYİL MENÜ AYRIMI
+===============================================================================
+Kullanıcı ekran notu (2 madde). Bu fazda backend/DB şeması ve API değişmedi.
+
+1) Sevk Girişi > Askerî ve Başvuru Bilgileri > Başvuru Grubu:
+   - Daha önce ngOnInit içinde optionMap sırasıyla countries, towns,
+     cities, hospitals, admissionTypes ... olmak üzere 14 tip
+     tanımı aynı anda çağırıyordu. En kritik Başvuru Grubu beşinci
+     istekte kalıyor, ilk açılışta geç gelebiliyor.
+   - dispatch-entry.component.ts ilk önce
+     this.loadOptions('admissionTypes') çalıştırır; geri kalan
+     tanımlar sonra kendi mevcut mekanizmasıyla çekilir.
+   - admissionOptionsLoading / admissionOptionsError signal'leri
+     admissionTypes isteğini izler (son istek ID kontrolü korunur).
+     İstek devam ederken açılır alanın label'ı "Yükleniyor...",
+     PrimeNG p-select'in loading durumu ve 3px p-progressbar
+     indeterminate göstergesi görünür. Dropdown o sırada
+     disabled olup boş seçeneklerden yanlış seçim yapılmaz.
+   - Hata olursa boş ve sessiz kalmak yerine "Başvuru grupları
+     yüklenemedi" ve "Tekrar dene" butonu gösterilir.
+     Arama ile yapılan sonraki isteklerde de durum izlenir,
+     eski HTTP cevapları yeni seçenekleri ezemez.
+   - İlgili import: ProgressBarModule ('primeng/progressbar').
+     HTML/SCSS yalnız dispatch-entry ekranına aittir.
+   - Kimlik, QR, kamera, başvuru grup-muayene sebebi kural
+     bağımlılığı ve diğer option endpoint'leri değişmedi.
+
+2) Sol Menü > Tanımlamalar:
+   - Eski "Uçuş ve Sevk" grubu içinde bulunan
+     "Zeyil Sebebi Tanımları" bu gruptan ÇIKARTILDI.
+   - Ayrı "Zeyil Tanımları" menü grubu oluşturuldu; altında
+     "Zeyil Sebebi Tanımları" yer alır.
+   - Kalan Uçtuğu Uçak Tipi ve Uçucu Görev tanımlarının grubu
+     daha doğru olacak şekilde "Uçuş Tanımları" adını aldı.
+   - annotation-reasons, plane-types, flying-missions rotaları,
+     permissionModule bilgileri ve backend yetkileri AYNEN
+     korundu. Menüde hiçbir ekran kopyalanmadı, yetkiye göre
+     boş grup gizleme davranışı devam eder.
+
+3) Doğrulama:
+   Frontend/tests/dispatch-pages-regression.mjs kaynak testleri
+   bekleme/error/retry durumu ve menü bağımlılıkları için eklendi.
+   cd KLMN/Frontend && npm run test:dispatch-pages && npm run build
+   Gerçek Angular tarayıcı ve backend entegrasyon E2E testleri
+   bu ortamda çalıştırılamadı. MIGRATION GEREKMİYOR.
+   Tek squash commit ile main'e alınmalıdır.
+
 02.11.2026 — ICD10 SYY TANI İSTATİSTİĞİ p-table KOD/AD BOŞ GÖRÜNÜYOR
 =======================================================================
 KULLANICI HATASI: "ICD10 SYY Tanı İstatistiği Tanımları" listesindeki
