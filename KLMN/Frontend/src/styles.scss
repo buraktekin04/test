@@ -266,33 +266,51 @@ p-select { min-width: 0; max-width: 100%; }
 /* Popup seçenekleri seçim paneli içinde satır kırarak gösterilir. */
 .long-option-label {white-space:normal;overflow-wrap:anywhere;line-height:1.4;max-width:100%}
 
-/* Ortak aranabilir dropdown: uzun açıklamalar ve karar adları çok satırda
-   okunur; panel gövdeden ayrılan overlay olarak da aynı stili kullanır. */
+/* SYY dropdown: seçili alan HER ZAMAN tek satır ve sabit yüksekliktedir.
+   Önceki 'display:flex + white-space:normal + overflow-wrap:anywhere'
+   kombinasyonu daralan label içinde harf harf satır kırıp formu uzatıyordu.
+   Yalnız açılan seçenek paneli çok satırlı olabilir. */
 .syy-search-select.p-select{
   display:flex;
   align-items:center;
-  min-height:38px;
-  height:auto;
   width:100%;
-  min-width:0;
   max-width:100%;
-}
-.syy-search-select .p-select-label{
-  display:flex;
-  align-items:center;
   min-width:0;
-  white-space:normal;
-  overflow-wrap:anywhere;
-  word-break:normal;
-  line-height:1.45;
-  padding:.5rem .65rem;
+  min-height:38px;
+  height:38px;
+  box-sizing:border-box;
+  overflow:hidden;
 }
-.syy-select-option-text{
+.syy-search-select.p-select .p-select-label{
+  display:block;
+  flex:1 1 0;
+  width:0;
+  max-width:100%;
+  min-width:0;
+  min-height:0;
+  height:auto;
+  padding:.5rem .65rem;
+  line-height:1.4;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  overflow-wrap:normal!important;
+  word-break:normal!important;
+}
+.syy-search-select.p-select .p-select-dropdown{
+  flex:0 0 auto;
+}
+.syy-search-select.p-select .p-select-clear-icon{
+  flex-shrink:0;
+}
+/* Sadece açılan seçenek satırları birden fazla satır alabilir. */
+.syy-search-overlay .syy-select-option-text{
   display:block;
   min-width:0;
+  width:100%;
   max-width:100%;
   white-space:normal;
-  overflow-wrap:anywhere;
+  overflow-wrap:break-word;
   word-break:normal;
   line-height:1.45;
 }
