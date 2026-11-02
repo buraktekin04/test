@@ -282,18 +282,33 @@ export class NavigationService {
           ]
         },
         {
-          label: 'Uçuş ve Sevk',
+          label: 'Zeyil Tanımları',
+          icon: 'pi pi-file-edit',
+          children: [
+            {
+              label: 'Zeyil Sebebi Tanımları',
+              icon: 'pi pi-file-edit',
+              route: '/app/annotation-reasons',
+              permissionModule: 'AnnotationReasons'
+            }
+          ]
+        },
+        {
+          label: 'Uçuş Tanımları',
           icon: 'pi pi-send',
           children: [
             {
-                      label: 'Zeyil Sebebi Tanımları',icon:'pi pi-file-edit',route:'/app/annotation-reasons',permissionModule:'AnnotationReasons'
-                    },
+              label: 'Uçtuğu Uçak Tipi Tanımları',
+              icon: 'pi pi-send',
+              route: '/app/plane-types',
+              permissionModule: 'PlaneTypes'
+            },
             {
-                      label: 'Uçtuğu Uçak Tipi Tanımları',icon:'pi pi-send',route:'/app/plane-types',permissionModule:'PlaneTypes'
-                    },
-            {
-                      label: 'Uçucu Görev Tanımları',icon:'pi pi-compass',route:'/app/flying-missions',permissionModule:'FlyingMissions'
-                    }
+              label: 'Uçucu Görev Tanımları',
+              icon: 'pi pi-compass',
+              route: '/app/flying-missions',
+              permissionModule: 'FlyingMissions'
+            }
           ]
         }
       ]

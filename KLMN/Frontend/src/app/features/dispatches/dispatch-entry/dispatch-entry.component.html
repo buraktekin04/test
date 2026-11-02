@@ -167,11 +167,30 @@
      <span class="required-legend"><span class="required-mark">*</span> Zorunlu</span>
     </div>
     <div class="form-grid entry-military-grid">
-     <label class="field entry-full-row"><span class="field-caption"><span class="required-mark">*</span> Başvuru Grubu</span>
-      <p-select formControlName="hcAdmissionTypeDefId" [options]="optionMap().admissionTypes"
-       optionLabel="label" optionValue="id" [filter]="true" [showClear]="true" [fluid]="true"
-       (onFilter)="filterOptions('admissionTypes',$event.filter)" appendTo="body" placeholder="Önce başvuru grubu seçiniz"/>
-     </label>
+     <div class="field entry-full-row entry-admission-field">
+      <label class="field-caption" for="dispatch-admission-type">
+       <span class="required-mark">*</span> Başvuru Grubu
+       @if(admissionOptionsLoading()){
+        <span class="admission-loading-label" role="status">Yükleniyor...</span>
+       }
+      </label>
+      <p-select inputId="dispatch-admission-type" formControlName="hcAdmissionTypeDefId"
+       [options]="optionMap().admissionTypes" optionLabel="label" optionValue="id"
+       [filter]="true" [showClear]="true" [fluid]="true" appendTo="body"
+       [loading]="admissionOptionsLoading()"
+       [disabled]="admissionOptionsLoading()"
+       (onFilter)="filterOptions('admissionTypes',$event.filter)"
+       [placeholder]="admissionOptionsLoading() ? 'Başvuru grupları yükleniyor...' : 'Başvuru grubu seçiniz'"/>
+      @if(admissionOptionsLoading()){
+       <p-progressbar mode="indeterminate" [style]="{'height':'3px'}"
+        ariaLabel="Başvuru grupları yükleniyor"/>
+      } @else if(admissionOptionsError()){
+       <div class="admission-options-error" role="alert">
+        Başvuru grupları yüklenemedi.
+        <button type="button" (click)="loadOptions('admissionTypes')">Tekrar dene</button>
+       </div>
+      }
+     </div>
      <label class="field entry-full-row">
       <span class="field-caption"><span class="required-mark">*</span> Muayene Sebebi
        @if(!dispatchForm.controls.hcAdmissionTypeDefId.value){
