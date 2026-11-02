@@ -13,7 +13,8 @@
     "test:procedure-optional": "node tests/procedure-optional-regression.mjs",
     "test:syy-searchable": "node tests/syy-searchable-selects-regression.mjs",
     "test:syy-approval-radio": "node tests/syy-approval-radio-regression.mjs",
-    "test:icd10-dropdown": "node tests/icd10-dropdown-regression.mjs"
+    "test:icd10-dropdown": "node tests/icd10-dropdown-regression.mjs",
+    "test:dispatch-admission": "node tests/dispatch-admission-regression.mjs"
   },
   "dependencies": {
     "@angular/animations": "^21.0.0",
