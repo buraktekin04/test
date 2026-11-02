@@ -119,11 +119,18 @@
     </div>
     <div class="form-field">
       <label for="syy-diagnosis-list-attached">Bağlı Kayıt</label>
-      <select id="syy-diagnosis-list-attached" formControlName="attachedRecNo">
-       <option [ngValue]="null">Bağımsız tanı</option>
-       @for(parent of options().parents; track parent.value){
-        <option [ngValue]="parent.value">{{parent.label}}{{parent.isActive?'':' — Pasif'}}</option>}
-      </select>
+      <p-select inputId="syy-diagnosis-list-attached" formControlName="attachedRecNo"
+       [options]="options().parents" optionLabel="label" optionValue="value"
+       [filter]="true" filterMatchMode="contains" [showClear]="true" [fluid]="true"
+       appendTo="body" panelStyleClass="syy-search-overlay"
+       styleClass="syy-search-select" placeholder="Bağımsız tanı" filterPlaceholder="Bağlı kayıtlarda ara...">
+       <ng-template #item let-parent>
+        <span class="syy-select-option-text">{{parent.label}}{{parent.isActive?'':' — Pasif'}}</span>
+       </ng-template>
+       <ng-template #selectedItem let-parent>
+        <span class="syy-select-option-text">{{parent.label}}</span>
+       </ng-template>
+      </p-select>
     </div>
     <div class="form-field">
       <label for="syy-diagnosis-list-slice">Bağlı Dilim</label>
