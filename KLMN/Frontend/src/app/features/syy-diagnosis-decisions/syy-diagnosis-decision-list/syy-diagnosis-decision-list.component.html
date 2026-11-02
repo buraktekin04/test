@@ -37,7 +37,7 @@
      <th class="sticky-actions-col">İşlemler</th></tr></ng-template>
     <ng-template pTemplate="body" let-row><tr>
      <td><code class="record-code">{{row.syyDiagnosisCode}}</code></td>
-     <td class="wrap">{{row.syyDiagnosisName}}</td>
+     <td class="wrap syy-diagnosis-cell">{{row.syyDiagnosisName}}</td>
      <td class="wrap">{{row.hcDecisionCode}} — {{row.hcDecisionName}}</td>
      <td class="wrap">{{row.hcAdmissionTypeName}}</td>
      <td class="wrap">{{row.militaryClassName??'Tümü / belirtilmedi'}}</td>
@@ -72,25 +72,53 @@
  <form class="definition-form" [formGroup]="form" (ngSubmit)="save()">
   <div class="form-grid">
    <label class="form-field"><span>SYY Tanı Kodu *</span>
-    <select formControlName="syyDiagnosisDefId"><option value="">Tanı seçiniz</option>
-     @for(item of optionsData().syyDiagnoses;track item.id){
-      <option [value]="item.id">{{item.label}}{{item.isActive?'':' (Pasif)'}}</option>
-     }</select></label>
+    <p-select formControlName="syyDiagnosisDefId" [options]="optionsData().syyDiagnoses"
+     optionLabel="label" optionValue="id" [filter]="true" filterMatchMode="contains"
+     [showClear]="true" [fluid]="true" appendTo="body" panelStyleClass="syy-search-overlay"
+     styleClass="syy-search-select" placeholder="Tanı seçiniz" filterPlaceholder="Tanılarda ara...">
+     <ng-template #item let-item>
+      <span class="syy-select-option-text">{{item.label}}{{item.isActive?'':' (Pasif)'}}</span>
+     </ng-template>
+     <ng-template #selectedItem let-item>
+      <span class="syy-select-option-text">{{item.label}}</span>
+     </ng-template>
+    </p-select></label>
    <label class="form-field"><span>Kurul Kararı *</span>
-    <select formControlName="hcDecisionDefId"><option value="">Karar seçiniz</option>
-     @for(item of optionsData().decisions;track item.id){
-      <option [value]="item.id">{{item.label}}{{item.isActive?'':' (Pasif)'}}</option>
-     }</select></label>
+    <p-select formControlName="hcDecisionDefId" [options]="optionsData().decisions"
+     optionLabel="label" optionValue="id" [filter]="true" filterMatchMode="contains"
+     [showClear]="true" [fluid]="true" appendTo="body" panelStyleClass="syy-search-overlay"
+     styleClass="syy-search-select" placeholder="Karar seçiniz" filterPlaceholder="Kurul kararlarında ara...">
+     <ng-template #item let-item>
+      <span class="syy-select-option-text">{{item.label}}{{item.isActive?'':' (Pasif)'}}</span>
+     </ng-template>
+     <ng-template #selectedItem let-item>
+      <span class="syy-select-option-text">{{item.label}}</span>
+     </ng-template>
+    </p-select></label>
    <label class="form-field"><span>Başvuru Grubu *</span>
-    <select formControlName="hcAdmissionTypeDefId"><option value="">Grup seçiniz</option>
-     @for(item of optionsData().admissionTypes;track item.id){
-      <option [value]="item.id">{{item.label}}{{item.isActive?'':' (Pasif)'}}</option>
-     }</select></label>
+    <p-select formControlName="hcAdmissionTypeDefId" [options]="optionsData().admissionTypes"
+     optionLabel="label" optionValue="id" [filter]="true" filterMatchMode="contains"
+     [showClear]="true" [fluid]="true" appendTo="body" panelStyleClass="syy-search-overlay"
+     styleClass="syy-search-select" placeholder="Grup seçiniz" filterPlaceholder="Başvuru gruplarında ara...">
+     <ng-template #item let-item>
+      <span class="syy-select-option-text">{{item.label}}{{item.isActive?'':' (Pasif)'}}</span>
+     </ng-template>
+     <ng-template #selectedItem let-item>
+      <span class="syy-select-option-text">{{item.label}}</span>
+     </ng-template>
+    </p-select></label>
    <label class="form-field"><span>Askerî Sınıf (isteğe bağlı)</span>
-    <select formControlName="militaryClassDefId"><option value="">Tümü / belirtilmedi</option>
-     @for(item of optionsData().militaryClasses;track item.id){
-      <option [value]="item.id">{{item.label}}{{item.isActive?'':' (Pasif)'}}</option>
-     }</select></label>
+    <p-select formControlName="militaryClassDefId" [options]="optionsData().militaryClasses"
+     optionLabel="label" optionValue="id" [filter]="true" filterMatchMode="contains"
+     [showClear]="true" [fluid]="true" appendTo="body" panelStyleClass="syy-search-overlay"
+     styleClass="syy-search-select" placeholder="Tümü / belirtilmedi" filterPlaceholder="Askerî sınıflarda ara...">
+     <ng-template #item let-item>
+      <span class="syy-select-option-text">{{item.label}}{{item.isActive?'':' (Pasif)'}}</span>
+     </ng-template>
+     <ng-template #selectedItem let-item>
+      <span class="syy-select-option-text">{{item.label}}</span>
+     </ng-template>
+    </p-select></label>
    <label class="form-field"><span>Adet *</span>
     <input pInputText type="number" min="0" step="1" formControlName="amount"/>
     <small>0 veya üzeri tam sayı.</small>
