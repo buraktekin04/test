@@ -77,7 +77,7 @@ export class ProcedureListComponent implements OnInit {
     requiresNumericResult:false,
     requiresReferenceRange:false,
     requiresDeviationInfo:false,
-    procedureType: this.fb.control<number|null>(null,Validators.required)
+    procedureType: this.fb.control<number|null>(null)
   });
   public readonly totalPages = computed(() => Math.max(1, Math.ceil(this.totalCount() / this.pageSize())));
   public readonly rangeStart = computed(() => this.totalCount() ? (this.pageNumber()-1)*this.pageSize()+1 : 0);
@@ -247,7 +247,7 @@ export class ProcedureListComponent implements OnInit {
     this.fieldServerErrors.set({});
     if (this.itemForm.invalid) {
       this.itemForm.markAllAsTouched();
-      const first = (['procedureCode','name','procedureType'] as FormField[])
+      const first = (['procedureCode','name'] as FormField[])
         .find(f => this.itemForm.controls[f].invalid);
       if (first) this.focusField(first);
       return;
@@ -265,7 +265,7 @@ export class ProcedureListComponent implements OnInit {
       requiresDeviationInfo:values.requiresDeviationInfo,
       validFrom: ValidityPeriodUtils.toUtcIso(values.validFrom),
       validTo: ValidityPeriodUtils.toUtcIso(values.validTo),
-      procedureType: values.procedureType!
+      procedureType: values.procedureType
     };
     const edited = this.editing();
     const request: Observable<ProcedureDefMutationResponse> = edited
