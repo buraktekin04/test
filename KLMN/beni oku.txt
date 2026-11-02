@@ -1,3 +1,61 @@
+02.11.2026 — ESKİ MSKBS SEVK GİRİŞ OLAYLARININ KLMN'YE TAŞINMASI
+=============================================================================
+KAYNAK: GitHub repo kökündeki "test" dosyası (73 KB).
+Eski TS/HTML onHcAdmissinTypeValueChanged, changeByHcAdmissionType,
+controlOfRequiredFiles, onSelectionChangedMilitaryUnit, onSelectionChanged
+ve C# GetReasonForExaminationListByHcAdmissionType kodları incelendi.
+Kullanıcı daha sonra ek kodları test.text dosyasına koyacağını söyledi;
+bu çalışmada henüz depoya eklenmemiş yeni bir dosya değerlendirilmedi.
+
+1) Başvuru Grubu seçilince GET /dispatches/admission-rules/{id}
+ile HcAdmissionTypeDef.Required flag'leri yüklenir. Kuvvet, Rütbe,
+Sınıf, Birlik, Askerlik Şubesi, Okul, Sicil No, Nasbı, Kaçıncı İşlem,
+Sevk Evrak Tarihi ve Sayısı ancak ilgili Required=true olduğunda
+aktif hale gelir. Eski komponentte Required değişkeni !flag
+şeklinde tutulduğu için disabled değerinin tersidir; yeni sistemde
+isGroupFieldEnabled normal DB flag'ini kullanır. Zorunlu yıldızları
+ve backend DispatchRules zorunluluk kontrolü korunur.
+Grup kullanıcı tarafından değişince gerekmeyen alanlar temizlenir.
+DÜZENLEME ekranında form.reset(...,{emitEvent:false}) ve
+loadAdmissionRules(id,false) kullanılarak kayıtlı alanlar yanlışlıkla
+silinmez. Eski kodun hatalı ters temizleme davranışı kopyalanmadı.
+
+2) Eski C# reason endpoint'inin kullanılmayan Muayene Sebepleri
+filtresi KLMN'de zaten vardı, KORUNDU. Eksik KUVVET filtresi:
+   - HcAdmissionTypeDef.Code == 7: tüm aktif kuvvetler
+   - Code == 33: yalnız ForcesCommandDef.Code 1/2/3
+   - diğer gruplar: Code 4 ve 5 dışındaki aktif kuvvetler.
+GetDispatchAdmissionRulesQueryHandler mevcut response'a
+AllowedForcesCommandIds GUID listesini ekledi. Frontend
+visibleOptions('forces') bu ID'lerden farklı seçenekleri gizler,
+uygunsuz seçimi temizler. Backend DispatchRules.ValidateAsync
+de aynı kontrolü yapar; yalnız frontend filtresine güvenilmez.
+
+3) Eski onSelectionChangedMilitaryUnit / onSelectionChanged:
+DİĞER (Code=DIGER veya Name=DİĞER) seçilirse Birlik Açıklama
+veya Muayeneye Gönderen Makam Açıklama zorunludur. DispatchOption
+DTO nullable Code alanı içerir; forces/units/offices options
+sorguları Code döndürür. Frontend yıldız ve kaydetme uyarısı
+dinamik olur. Backend gerçek DB Code/Name üzerinden aynı
+zorunluluğu kontrol eder. Değişimlerde başka seçimde
+DİĞER gerekliliği kalkar.
+
+4) KLMN'deki mevcut senderMilitaryUnitDefId /
+senderMilitaryOfficeDefId ayrımı korunur. HeightWeightRequired ve
+PertemApprovalRequired için Sevk Girişi'nde karşılık gelen alanlar
+olmadığından yeni alan/DB migration üretilmedi. KLMN'nin
+SenderChairRequired bayrağı mevcut DB dinamik davranışıyla korunur;
+eski sistemde gönderen makam her zaman zorunluydu.
+DB şeması ve migration geçmişi DEĞİŞMEDİ.
+
+5) Test: Frontend/tests/dispatch-admission-regression.mjs
+npm run test:dispatch-admission
+npm run test:dispatch-pages
+npm run build
+KLMN/Backend içinde dotnet build.
+Bu ortamda gerçek Angular/.NET build, PostgreSQL ve tarayıcı E2E
+testleri henüz çalıştırılamadı. Tek squash commit ile main'e push.
+
 02.11.2026 — SEVK BAŞVURU GRUBU YÜKLENİYOR GÖSTERGESİ VE ZEYİL MENÜ AYRIMI
 ===============================================================================
 Kullanıcı ekran notu (2 madde). Bu fazda backend/DB şeması ve API değişmedi.
