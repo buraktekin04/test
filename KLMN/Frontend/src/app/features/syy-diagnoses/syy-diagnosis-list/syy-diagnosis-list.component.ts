@@ -11,6 +11,7 @@ import {ConfirmDialogModule} from 'primeng/confirmdialog';
 import {DialogModule} from 'primeng/dialog';
 import {InputTextModule} from 'primeng/inputtext';
 import {TableModule} from 'primeng/table';
+import {SelectModule} from 'primeng/select';
 import {TagModule} from 'primeng/tag';
 import {ToastModule} from 'primeng/toast';
 import {PermissionCodes} from '../../../core/permissions/constants/permission-codes';
@@ -24,7 +25,7 @@ const emptyOptions:DiagnosisOptions={types:[],slices:[],parents:[]};
 @Component({
  selector:'app-syy-diagnosis-list',standalone:true,
  imports:[DatePipe,RouterLink,ReactiveFormsModule,ButtonModule,CheckboxModule,ConfirmDialogModule,
- DialogModule,InputTextModule,TableModule,TagModule,ToastModule,AuditHistoryComponent],
+ DialogModule,InputTextModule,SelectModule,TableModule,TagModule,ToastModule,AuditHistoryComponent],
  providers:[ConfirmationService,MessageService],
  templateUrl:'./syy-diagnosis-list.component.html',
  styleUrl:'./syy-diagnosis-list.component.scss'

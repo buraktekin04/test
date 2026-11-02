@@ -74,38 +74,85 @@
   <div class="form-section">Bağlantılar</div>
   <div class="form-grid"><div class="form-field">
  <label for="syy-classification-list-syyDiagnosisDefId">Tanı *</label>
- <select id="syy-classification-list-syyDiagnosisDefId" formControlName="syyDiagnosisDefId">
-  <option value="">Seçiniz</option>
-  @for(o of optionsData().diagnoses;track o.id){<option [value]="o.id">{{o.name}}{{o.isActive?'':' — Pasif'}}</option>}
- </select>
+ <p-select inputId="syy-classification-list-syyDiagnosisDefId" formControlName="syyDiagnosisDefId"
+  [options]="optionsData().diagnoses" optionLabel="name" optionValue="id"
+  [filter]="true" filterMatchMode="contains" [showClear]="true" [fluid]="true"
+  appendTo="body" panelStyleClass="syy-search-overlay" styleClass="syy-search-select"
+  placeholder="Tanı seçiniz" filterPlaceholder="Tanılarda ara...">
+  <ng-template #item let-option>
+   <span class="syy-select-option-text">{{option.name}}{{option.isActive?'':' — Pasif'}}</span>
+  </ng-template>
+  <ng-template #selectedItem let-option>
+   <span class="syy-select-option-text">{{option.name}}</span>
+  </ng-template>
+ </p-select>
 </div>
 <div class="form-field">
  <label for="syy-classification-list-forcesCommandDef">Kuvvet Komutanlığı *</label>
- <select id="syy-classification-list-forcesCommandDef" formControlName="forcesCommandDef">
-  <option value="">Seçiniz</option>
-  @for(o of optionsData().forces;track o.id){<option [value]="o.id">{{o.name}}{{o.isActive?'':' — Pasif'}}</option>}
- </select>
+ <p-select inputId="syy-classification-list-forcesCommandDef" formControlName="forcesCommandDef"
+  [options]="optionsData().forces" optionLabel="name" optionValue="id"
+  [filter]="true" filterMatchMode="contains" [showClear]="true" [fluid]="true"
+  appendTo="body" panelStyleClass="syy-search-overlay" styleClass="syy-search-select"
+  placeholder="Kuvvet komutanlığı seçiniz" filterPlaceholder="Kuvvet komutanlığı ara...">
+  <ng-template #item let-option>
+   <span class="syy-select-option-text">{{option.name}}{{option.isActive?'':' — Pasif'}}</span>
+  </ng-template>
+  <ng-template #selectedItem let-option>
+   <span class="syy-select-option-text">{{option.name}}</span>
+  </ng-template>
+ </p-select>
 </div>
 <div class="form-field">
  <label for="syy-classification-list-rankGroup">Rütbe Grubu *</label>
- <select id="syy-classification-list-rankGroup" formControlName="rankGroup">
-  <option value="">Seçiniz</option>
-  @for(o of optionsData().ranks;track o.id){<option [value]="o.id">{{o.name}}{{o.isActive?'':' — Pasif'}}</option>}
- </select>
+ <p-select inputId="syy-classification-list-rankGroup" formControlName="rankGroup"
+  [options]="optionsData().ranks" optionLabel="name" optionValue="id"
+  [filter]="true" filterMatchMode="contains" [showClear]="true" [fluid]="true"
+  appendTo="body" panelStyleClass="syy-search-overlay" styleClass="syy-search-select"
+  placeholder="Rütbe grubu seçiniz" filterPlaceholder="Rütbe gruplarında ara...">
+  <ng-template #item let-option>
+   <span class="syy-select-option-text">{{option.name}}{{option.isActive?'':' — Pasif'}}</span>
+  </ng-template>
+  <ng-template #selectedItem let-option>
+   <span class="syy-select-option-text">{{option.name}}</span>
+  </ng-template>
+ </p-select>
 </div>
 <div class="form-field">
  <label for="syy-classification-list-militaryClassGroup">Askerî Sınıf Grubu *</label>
- <select id="syy-classification-list-militaryClassGroup" formControlName="militaryClassGroup">
-  <option value="">Seçiniz</option>
-  @for(o of optionsData().classes;track o.id){<option [value]="o.id">{{o.name}}{{o.isActive?'':' — Pasif'}}</option>}
- </select>
+ <small class="force-class-help">
+  @if(form.controls.forcesCommandDef.value){
+   Yalnızca seçilen kuvvet komutanlığına ait sınıf grupları listelenir.
+  } @else {
+   Önce kuvvet komutanlığını seçiniz.
+  }
+ </small>
+ <p-select inputId="syy-classification-list-militaryClassGroup" formControlName="militaryClassGroup"
+  [options]="optionsData().classes" optionLabel="name" optionValue="id"
+  [filter]="true" filterMatchMode="contains" [showClear]="true" [fluid]="true"
+  appendTo="body" panelStyleClass="syy-search-overlay" styleClass="syy-search-select"
+  [placeholder]="form.controls.forcesCommandDef.value ? 'Sınıf grubu seçiniz' : 'Önce kuvvet seçiniz'" filterPlaceholder="Sınıf gruplarında ara..." [disabled]="!form.controls.forcesCommandDef.value">
+  <ng-template #item let-option>
+   <span class="syy-select-option-text">{{option.name}}{{option.isActive?'':' — Pasif'}}</span>
+  </ng-template>
+  <ng-template #selectedItem let-option>
+   <span class="syy-select-option-text">{{option.name}}</span>
+  </ng-template>
+ </p-select>
 </div>
 <div class="form-field">
  <label for="syy-classification-list-hcDecision">Bağlı Kurul Kararı *</label>
- <select id="syy-classification-list-hcDecision" formControlName="hcDecision">
-  <option value="">Seçiniz</option>
-  @for(o of optionsData().decisions;track o.id){<option [value]="o.id">{{o.name}}{{o.isActive?'':' — Pasif'}}</option>}
- </select>
+ <p-select inputId="syy-classification-list-hcDecision" formControlName="hcDecision"
+  [options]="optionsData().decisions" optionLabel="name" optionValue="id"
+  [filter]="true" filterMatchMode="contains" [showClear]="true" [fluid]="true"
+  appendTo="body" panelStyleClass="syy-search-overlay" styleClass="syy-search-select"
+  placeholder="Kurul kararı seçiniz" filterPlaceholder="Kararlarda ara...">
+  <ng-template #item let-option>
+   <span class="syy-select-option-text">{{option.name}}{{option.isActive?'':' — Pasif'}}</span>
+  </ng-template>
+  <ng-template #selectedItem let-option>
+   <span class="syy-select-option-text">{{option.name}}</span>
+  </ng-template>
+ </p-select>
 </div></div>
   <div class="form-section">Geçerlilik Tarihleri</div>
   <div class="form-grid"><div class="form-field"><label for="syy-classification-list-from">Geçerli Başlangıç</label>

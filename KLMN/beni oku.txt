@@ -1,3 +1,64 @@
+02.11.2026 — SYY ARANABİLİR DROPDOWN / ÇOK SATIRLI METİN / KUVVETE BAĞLI SINIF GRUBU
+========================================================================================
+İş kaynağı: kullanıcının SYY ekran notları (4 madde).
+
+1) SYY TANI LİSTESİ (M/D/F):
+   Yeni/Düzenle SYY Tanısı formundaki Bağlı Kayıt dropdown'ı,
+   büyük/küçük harfe duyarsız arama destekleyen PrimeNG p-select
+   olarak yenilendi. Tanı Türü ve Dilim seçimleri de aynı biçimde
+   aranabilir yapıldı. null -> bağımsız tanı/dilim yok korunur.
+   selected değerleri ve edit ekranındaki pasif seçenekler korunur.
+
+2) SYY TANI KARAR İSTATİSTİĞİ TANIMLARI:
+   Yeni İstatistik Tanımı formundaki SYY Tanı Kodu ve Kurul Kararı,
+   ayrıca Başvuru Grubu ve Askerî Sınıf dropdown'ları PrimeNG
+   p-select filter/contains biçiminde arama yapar.
+   Uzun isim ve karar metinleri popup seçeneklerde ve seçili
+   alanlarda çok satırda okunur. Tablodaki SYY Tanısı hücresi de
+   white-space:normal, overflow-wrap:anywhere ve uygun max-width
+   kullanır, alt satıra taşar; metin kaybolmaz.
+
+3) SYY TANI SINIFLANDIRMA ÇİZELGESİ:
+   Tanı, Kuvvet, Rütbe Grubu, Askerî Sınıf Grubu ve Kurul Kararı
+   açılır menüleri aranabilir hale getirildi. ÖNCE KUVVET seçilir.
+   Kuvvet seçilmeden askerî sınıf grubu seçimi kilitlidir.
+   Seçilen kuvvet değişince eski sınıf grubu temizlenir, yeni
+   seçilen kuvvetin MilitaryClassGroupDefs.ForcesCommandId bağına
+   göre yalnız ilgili gruplar backend EF sorgusundan getirilir.
+   GetSYYClassificationDefOptionsQuery'e FilterForcesCommandDef
+   eklendi; /api/syy-classifications/options endpoint'inin yeni
+   filterForcesCommandDef parametresi frontend'den gönderilir.
+   Düzenleme ekranındaki seçilmiş pasif tarihsel kayıt korunur.
+   Eski isteklerin yeni seçenekleri ezmesini engellemek için
+   optionsRequestId kullanılır.
+   SYYClassificationDefRules.EnsureAsync içindeki kuvvet/grup
+   tutarlılık doğrulaması KALMALI; UI yanlış seçimleri önler ama
+   API'ye doğrudan yanlış kombinasyon gönderilirse backend reddeder.
+   Sadece "uyarıyı silmek" güvenli değildir.
+
+4) ORTAK DROPDOWN DÜZENİ:
+   Frontend/src/styles.scss sonunda .syy-search-select,
+   .syy-search-overlay ve .syy-select-option-text ortak stilleri.
+   Overlay ve seçili değerler max-width taşmadan çok satırda.
+   Frontend/src/app/app.config.ts FilterService global
+   contains/startsWith/endsWith Türkçe harf duyarsız arama
+   desteği önceki çalışmadan KORUNDU.
+   Bu üç SYY formunun REFERANS dropdown'ları güncellendi; uygulamanın
+   diğer ekranlarındaki HTML native <select> elemanlarının tümünün
+   otomatik aranabilir olduğu İDDİA EDİLMEMELİ. Onlar PrimeNG
+   p-select'e dönüştürüldükçe aynı ortak arama/stili kullanabilir.
+   Sayfalama ve sadece iki değerli durum select'leri zorla
+   dönüştürülmedi.
+
+5) TEST/DAĞITIM:
+   Frontend/tests/syy-searchable-selects-regression.mjs eklendi;
+   npm run test:syy-searchable ve npm run build çalıştırılmalıdır.
+   Backend grup filtresi SQL sorgusunda uygulanır; CRUD/form
+   veri kontratı ve veritabanı şeması değişmedi. MIGRATION YOK.
+   Gerçek .NET/Angular derlemesi, tarayıcı ve DB E2E bu ajan
+   ortamında çalıştırılmadı.
+   GitHub main'e TEK SQUASH COMMIT olarak gönder.
+
 02.11.2026 — 3 DÜZELTME: TC SADECE SAYI / LİSTE BOŞ PANEL / TETKİK TÜRÜ
 =============================================================================
 1) SEVK GİRİŞ TC KİMLİK:

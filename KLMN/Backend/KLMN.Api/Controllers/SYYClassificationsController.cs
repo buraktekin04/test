@@ -22,8 +22,8 @@ public sealed class SYYClassificationsController(ISender sender,IExcelExportServ
 
  [HttpGet("options")]
  [HasPermission(PermissionCodes.SYYClassifications.View,PermissionCodes.SYYClassifications.Query,PermissionCodes.SYYClassifications.Create,PermissionCodes.SYYClassifications.Update,PermissionCodes.SYYClassifications.Delete)]
- public async Task<IActionResult> Options([FromQuery]Guid? selectedSYYDiagnosisDefId,[FromQuery]Guid? selectedForcesCommandDef,[FromQuery]Guid? selectedRankGroup,[FromQuery]Guid? selectedMilitaryClassGroup,[FromQuery]Guid? selectedHcDecision,CancellationToken ct)=>
- Ok(await sender.Send(new GetSYYClassificationDefOptionsQuery(selectedSYYDiagnosisDefId,selectedForcesCommandDef,selectedRankGroup,selectedMilitaryClassGroup,selectedHcDecision),ct));
+ public async Task<IActionResult> Options([FromQuery]Guid? selectedSYYDiagnosisDefId,[FromQuery]Guid? selectedForcesCommandDef,[FromQuery]Guid? selectedRankGroup,[FromQuery]Guid? selectedMilitaryClassGroup,[FromQuery]Guid? selectedHcDecision,[FromQuery]Guid? filterForcesCommandDef,CancellationToken ct)=>
+ Ok(await sender.Send(new GetSYYClassificationDefOptionsQuery(selectedSYYDiagnosisDefId,selectedForcesCommandDef,selectedRankGroup,selectedMilitaryClassGroup,selectedHcDecision,filterForcesCommandDef),ct));
 
  [HttpGet("export")]
  [HasPermission(PermissionCodes.SYYClassifications.Query)]

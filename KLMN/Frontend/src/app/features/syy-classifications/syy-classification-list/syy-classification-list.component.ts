@@ -11,6 +11,7 @@ import {ConfirmDialogModule} from 'primeng/confirmdialog';
 import {DialogModule} from 'primeng/dialog';
 import {InputTextModule} from 'primeng/inputtext';
 import {TableModule} from 'primeng/table';
+import {SelectModule} from 'primeng/select';
 import {TagModule} from 'primeng/tag';
 import {ToastModule} from 'primeng/toast';
 import {AuditHistoryComponent} from '../../../shared/audit-history/audit-history.component';
@@ -23,7 +24,7 @@ import {SyyClassificationItem,SyyClassificationItemOptions,SyyClassificationItem
 @Component({
  selector:'app-syy-classification-list',standalone:true,
  imports:[DatePipe,RouterLink,ReactiveFormsModule,ButtonModule,CheckboxModule,
- ConfirmDialogModule,DialogModule,InputTextModule,TableModule,TagModule,ToastModule,AuditHistoryComponent],
+ ConfirmDialogModule,DialogModule,InputTextModule,SelectModule,TableModule,TagModule,ToastModule,AuditHistoryComponent],
  providers:[ConfirmationService,MessageService],
  templateUrl:'./syy-classification-list.component.html',
  styleUrl:'./syy-classification-list.component.scss'
@@ -61,7 +62,16 @@ export class SyyClassificationListComponent implements OnInit {
   validTo:this.fb.nonNullable.control('')
  });
  private loadId=0;
- ngOnInit(){this.reload();this.loadOptions();}
+ private optionsRequestId=0;
+ ngOnInit(){
+  this.reload();
+  // Seçilen kuvvet değişince önceki kuvvete ait sınıf grubu artık geçerli değildir.
+  this.form.controls.forcesCommandDef.valueChanges.subscribe(()=>{
+   this.form.controls.militaryClassGroup.setValue('');
+   this.optionsData.update(data=>({...data,classes:[]}));
+   if(this.showForm())this.loadOptions();
+  });
+ }
  private query():SyyClassificationItemQuery{
   const f=this.filter.getRawValue();
   return {search:f.search,includeInactive:f.includeInactive||this.filterStatus.value===false,
@@ -79,17 +89,25 @@ export class SyyClassificationListComponent implements OnInit {
  changePage(n:number){if(n<1||n>this.maxPage()||this.loading())return;this.page.set(n);this.reload();}
  changeSize(e:Event){this.pageSize.set(Number((e.target as HTMLSelectElement).value));this.search();}
  private loadOptions(selected?:SyyClassificationItem){
-  this.service.options(selected).subscribe({next:x=>this.optionsData.set(x),error:e=>this.error(e)});
+  const requestId=++this.optionsRequestId;
+  const forceId=this.form.controls.forcesCommandDef.value||undefined;
+  this.service.options(selected,forceId).subscribe({
+   next:x=>{if(requestId===this.optionsRequestId)this.optionsData.set(x);},
+   error:e=>{if(requestId===this.optionsRequestId)this.error(e);}
+  });
  }
  openCreate(){
   if(!this.canCreate())return;this.editing.set(null);this.formError.set(null);
-  this.form.reset({syyDiagnosisDefId:this.presetDiagnosisId||'',forcesCommandDef:'',rankGroup:'',militaryClassGroup:'',hcDecision:'',validFrom:'',validTo:''});this.loadOptions();this.showForm.set(true);
+  this.form.reset({syyDiagnosisDefId:this.presetDiagnosisId||'',forcesCommandDef:'',rankGroup:'',militaryClassGroup:'',hcDecision:'',validFrom:'',validTo:''},{emitEvent:false});
+  this.optionsData.update(data=>({...data,classes:[]}));
+  this.showForm.set(true);this.loadOptions();
  }
  openEdit(row:SyyClassificationItem){
   if(!this.canUpdate())return;
   this.service.detail(row.id).subscribe({next:item=>{
     this.editing.set(item);this.formError.set(null);
-    this.form.reset({syyDiagnosisDefId:item.syyDiagnosisDefId,forcesCommandDef:item.forcesCommandDef,rankGroup:item.rankGroup,militaryClassGroup:item.militaryClassGroup,hcDecision:item.hcDecision,validFrom:ValidityPeriodUtils.toLocalInput(item.validFrom),validTo:ValidityPeriodUtils.toLocalInput(item.validTo)});this.loadOptions(item);this.showForm.set(true);
+    this.form.reset({syyDiagnosisDefId:item.syyDiagnosisDefId,forcesCommandDef:item.forcesCommandDef,rankGroup:item.rankGroup,militaryClassGroup:item.militaryClassGroup,hcDecision:item.hcDecision,validFrom:ValidityPeriodUtils.toLocalInput(item.validFrom),validTo:ValidityPeriodUtils.toLocalInput(item.validTo)},{emitEvent:false});
+    this.showForm.set(true);this.loadOptions(item);
   },error:e=>this.error(e)});
  }
  save(){

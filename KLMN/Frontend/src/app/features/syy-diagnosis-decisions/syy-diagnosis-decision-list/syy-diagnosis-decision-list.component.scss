@@ -27,3 +27,25 @@
 .summary-line strong{color:var(--ui-text)}
 @media(max-width:950px){.filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:580px){.filter-grid,.form-grid{grid-template-columns:1fr}}
+
+/* SYY Tanısı kolonunda uzun tanı metinleri aşağıya kaybolmadan çok satırlı. */
+:host ::ng-deep .table-scroll .p-datatable-tbody > tr > td.syy-diagnosis-cell{
+  min-width:240px;
+  max-width:430px;
+  width:30%;
+  white-space:normal!important;
+  overflow-wrap:anywhere;
+  word-break:normal;
+  line-height:1.55;
+  vertical-align:top;
+}
+:host ::ng-deep .table-scroll .p-datatable-tbody > tr > td.syy-diagnosis-cell .wrap{
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.definition-form .form-field > p-select{width:100%;min-width:0}
+@media(max-width:720px){
+ :host ::ng-deep .table-scroll .p-datatable-tbody > tr > td.syy-diagnosis-cell{
+   min-width:190px;max-width:310px;
+ }
+}

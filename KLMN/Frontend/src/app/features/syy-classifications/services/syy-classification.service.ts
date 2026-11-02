@@ -17,8 +17,9 @@ export class SyyClassificationService {
  }
  list(q:SyyClassificationItemQuery){return this.http.get<PagedItems<SyyClassificationItem>>(this.url,{params:this.params(q)});}
  detail(id:string){return this.http.get<SyyClassificationItem>(this.url+'/'+id);}
- options(selected?:SyyClassificationItem){
+ options(selected?:SyyClassificationItem,forceId?:string){
   let params=new HttpParams();
+  if(forceId)params=params.set('filterForcesCommandDef',forceId);
   if(selected?.syyDiagnosisDefId)params=params.set('selectedSyyDiagnosisDefId',selected.syyDiagnosisDefId);
   if(selected?.forcesCommandDef)params=params.set('selectedForcesCommandDef',selected.forcesCommandDef);
   if(selected?.rankGroup)params=params.set('selectedRankGroup',selected.rankGroup);

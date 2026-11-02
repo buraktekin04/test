@@ -265,3 +265,48 @@ p-select { min-width: 0; max-width: 100%; }
 
 /* Popup seçenekleri seçim paneli içinde satır kırarak gösterilir. */
 .long-option-label {white-space:normal;overflow-wrap:anywhere;line-height:1.4;max-width:100%}
+
+/* Ortak aranabilir dropdown: uzun açıklamalar ve karar adları çok satırda
+   okunur; panel gövdeden ayrılan overlay olarak da aynı stili kullanır. */
+.syy-search-select.p-select{
+  display:flex;
+  align-items:center;
+  min-height:38px;
+  height:auto;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+}
+.syy-search-select .p-select-label{
+  display:flex;
+  align-items:center;
+  min-width:0;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  word-break:normal;
+  line-height:1.45;
+  padding:.5rem .65rem;
+}
+.syy-select-option-text{
+  display:block;
+  min-width:0;
+  max-width:100%;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  word-break:normal;
+  line-height:1.45;
+}
+.syy-search-overlay.p-select-overlay{
+  width:min(560px,calc(100vw - 32px))!important;
+  max-width:min(560px,calc(100vw - 32px))!important;
+}
+.syy-search-overlay .p-select-option{
+  height:auto;
+  min-height:34px;
+  white-space:normal!important;
+  align-items:flex-start;
+  padding:.55rem .7rem;
+}
+.syy-search-overlay .p-select-list{max-width:100%}
+.syy-search-overlay .p-select-filter-container{padding:.25rem}
+.syy-search-overlay .p-select-filter{width:100%;min-width:0}

@@ -17,7 +17,9 @@ var items2=await db.RankGroupDefs.IgnoreQueryFilters().AsNoTracking()
  .Where(x=>!x.IsDeleted&&(x.IsActive||x.Id==r.SelectedRankGroup))
  .OrderBy(x=>x.Name).Select(x=>new SYYReferenceOption(x.Id,x.Name,x.IsActive)).ToListAsync(ct);
 var items3=await db.MilitaryClassGroupDefs.IgnoreQueryFilters().AsNoTracking()
- .Where(x=>!x.IsDeleted&&(x.IsActive||x.Id==r.SelectedMilitaryClassGroup))
+ .Where(x=>!x.IsDeleted&&(x.IsActive||x.Id==r.SelectedMilitaryClassGroup) &&
+    ((r.FilterForcesCommandDef.HasValue && x.ForcesCommandId==r.FilterForcesCommandDef.Value)
+      || x.Id==r.SelectedMilitaryClassGroup))
  .OrderBy(x=>x.Name).Select(x=>new SYYReferenceOption(x.Id,x.Name,x.IsActive)).ToListAsync(ct);
 var items4=await db.HcConnectedDecisionDefs.IgnoreQueryFilters().AsNoTracking()
  .Where(x=>!x.IsDeleted&&(x.IsActive||x.Id==r.SelectedHcDecision))
