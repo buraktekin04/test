@@ -160,9 +160,10 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   });
   this.dispatchForm.controls.hcAdmissionTypeDefId.valueChanges.subscribe(id=>{
    this.dispatchForm.controls.reasonForExaminationDefId.setValue(null);
+   this.optionMap.update(m=>({...m,reasons:[]}));
    if(!id){++this.rulesRequest;this.admissionRules.set(null);this.rulesLoading.set(false);return;}
    this.admissionRules.set(null);
-   this.loadAdmissionRules(id);
+   this.loadAdmissionRules(id,true);
   });
   this.dispatchForm.controls.dispatchScope.valueChanges.subscribe(scope=>{
    if(scope!==2)this.dispatchForm.controls.dispatchScopeCityId.setValue(null);
@@ -217,13 +218,30 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
    }
   });
  }
- /** Değişen başvuru grubu için eski seçimi doğrular ve yasaklanan muayene sebeplerini eler. */
- private loadAdmissionRules(id:string){
+ /** Eski onHcAdmissinTypeValueChanged: zorunlu alanlar, kuvvet ve sebep sınırları. */
+ private loadAdmissionRules(id:string,groupChanged=false){
   const request=++this.rulesRequest;
   this.rulesLoading.set(true);
   this.api.admissionRules(id).subscribe({
    next:rules=>{if(this.rulesRequest!==request)return;
     this.admissionRules.set(rules);this.rulesLoading.set(false);
+    if(groupChanged){
+     // Kullanıcı grubu değiştirdiğinde artık uygulanmayan alanları temizle.
+     // Düzenleme ekranında eski kayıt alanlarını otomatik değiştirme.
+     const fields:readonly string[]=[
+      'nthAdmission','dispatchDocumentDate','dispatchDocumentNo',
+      'forcesCommandDefId','rankDefId','militaryClassDefId','militaryUnitDefId',
+      'militaryOfficeDefId','militarySchoolDefId','registryNumber','lastNominationDate'
+     ];
+     for(const key of fields){
+      if(!this.isGroupFieldEnabled(key))this.dispatchForm.get(key)?.reset(null,{emitEvent:false});
+     }
+     if(!rules.militaryUnitRequired)this.dispatchForm.controls.militaryUnitDescription.setValue(null);
+    }
+    // Eski kod 7=hepsi, 33=1/2/3, diğer gruplar=4/5 hariç.
+    const chosenForce=this.dispatchForm.controls.forcesCommandDefId.value;
+    if(chosenForce&&!rules.allowedForcesCommandIds.includes(chosenForce))
+     this.dispatchForm.controls.forcesCommandDefId.setValue(null);
     const qrReason=this.pendingQrReasonId;
     if(qrReason){
      this.pendingQrReasonId=null;
@@ -231,7 +249,7 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
     }
     const selected=this.dispatchForm.controls.reasonForExaminationDefId.value;
     if(selected&&rules.unusedReasonIds.includes(selected))this.dispatchForm.controls.reasonForExaminationDefId.setValue(null);
-    this.loadOptions('reasons');
+    this.loadOptions('reasons','',selected??undefined);
    },
    error:e=>{if(this.rulesRequest!==request)return;this.admissionRules.set(null);this.rulesLoading.set(false);this.error(e);}
   });
@@ -247,6 +265,48 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
    militarySchoolDefId:r.militarySchoolRequired
   };
   return flags[key]??false;
+ }
+ /** Başvuru grubu seçilene kadar ve seçilen grupta gerekmeyen alanlar eski ekrandaki gibi kilitlidir. */
+ isGroupFieldEnabled(key:string):boolean{
+  const r=this.admissionRules();
+  if(!r)return false;
+  const flags:Record<string,boolean>={
+   forcesCommandDefId:r.forcesCommandRequired,
+   rankDefId:r.rankRequired,
+   militaryClassDefId:r.militaryClassRequired,
+   militaryUnitDefId:r.militaryUnitRequired,
+   militaryOfficeDefId:r.militaryOfficeRequired,
+   militarySchoolDefId:r.militarySchoolRequired,
+   registryNumber:r.registryNumberRequired,
+   lastNominationDate:r.lastNominationDateRequired,
+   nthAdmission:r.nthAdmissionRequired,
+   dispatchDocumentDate:r.dispatchDocumentDateRequired,
+   dispatchDocumentNo:r.dispatchDocumentNoRequired
+  };
+  return flags[key]??false;
+ }
+ /** Başvuru grubunun kuvvet kısıtını yalnız görünen seçeneklere uygular. */
+ visibleOptions(type:OptionType):DispatchOption[]{
+  const all=this.optionMap()[type];
+  if(type!=='forces')return all;
+  const allowed=this.admissionRules()?.allowedForcesCommandIds;
+  if(!allowed)return [];
+  return all.filter(x=>allowed.includes(x.id));
+ }
+ /** Eski onSelectionChanged / onSelectionChangedMilitaryUnit koşulu. */
+ private isOtherOption(type:OptionType,id:string|null|undefined):boolean{
+  if(!id)return false;
+  const item=this.optionMap()[type].find(x=>x.id===id);
+  if(!item)return false;
+  return item.code?.trim().toLocaleUpperCase('tr-TR')==='DIGER' ||
+   item.label.trim().toLocaleUpperCase('tr-TR')==='DİĞER';
+ }
+ isOtherMilitaryUnit():boolean{
+  return this.isOtherOption('units',this.dispatchForm.controls.militaryUnitDefId.value);
+ }
+ isOtherSender():boolean{
+  return this.isOtherOption('units',this.dispatchForm.controls.senderMilitaryUnitDefId.value)||
+   this.isOtherOption('offices',this.dispatchForm.controls.senderMilitaryOfficeDefId.value);
  }
  filterOptions(type:OptionType,filter:string){this.loadOptions(type,filter??'',this.selectedId(type));}
  private selectedId(type:OptionType):string|undefined {
@@ -296,8 +356,10 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
    this.resetPhoto();
    if(item.hasPhoto)this.loadCurrentPhoto(item.id,requestId);
    this.personForm.reset(item.person);
-   this.dispatchForm.reset(item.dispatch);
-   // Başvuru grubu değişimini dinleyen form reseti muayene sebebini temizleyebilir.
+   this.dispatchForm.reset(item.dispatch,{emitEvent:false});
+   if(item.dispatch.hcAdmissionTypeDefId)
+    this.loadAdmissionRules(item.dispatch.hcAdmissionTypeDefId,false);
+   // Düzenleme yüklenirken başvuru grubu değişimini tetikleyip sebebi silmeyiz.
    // Kayıt detayı yüklendiğinde seçili sebebi tekrar koru.
    this.dispatchForm.controls.reasonForExaminationDefId.setValue(item.dispatch.reasonForExaminationDefId,{emitEvent:false});
    this.identityType.set(item.person.tcKimlikNo?'tc':'foreign');
@@ -499,6 +561,16 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
    rules.lastNominationDateRequired&&!dispatch.lastNominationDate ||
    rules.senderChairRequired&&!(dispatch.senderMilitaryUnitDefId||dispatch.senderMilitaryOfficeDefId))){
     this.formError.set('Başvuru grubunun zorunlu tuttuğu sevk ve askerî bilgileri doldurunuz.');return;
+  }
+  if(dispatch.forcesCommandDefId &&
+     !rules.allowedForcesCommandIds.includes(dispatch.forcesCommandDefId)){
+   this.formError.set('Seçilen kuvvet bu başvuru grubunda kullanılamaz.');return;
+  }
+  if(this.isOtherMilitaryUnit()&&!dispatch.militaryUnitDescription?.trim()){
+   this.formError.set('Birlik DİĞER seçildiğinde Birlik Açıklama gereklidir.');return;
+  }
+  if(this.isOtherSender()&&!dispatch.senderChairOther?.trim()){
+   this.formError.set('Gönderen makam DİĞER seçildiğinde Gönderen Makam Açıklama gereklidir.');return;
   }
   if(dispatch.dispatchScope===2&&!dispatch.dispatchScopeCityId ||
      dispatch.dispatchScope===3&&!dispatch.dispatchScopeHospitalId){

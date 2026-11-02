@@ -74,7 +74,12 @@ internal static class DispatchRules
         if (p.TownOfBirthId.HasValue && !await db.TownDefs.AnyAsync(x=>x.Id==p.TownOfBirthId && x.IsActive,ct)) throw new DispatchConflictException("Doğum yeri geçersiz.");
         if (d.DispatchScopeCityId.HasValue && !await db.CityDefs.AnyAsync(x=>x.Id==d.DispatchScopeCityId && x.IsActive,ct)) throw new DispatchConflictException("Sevk kapsamı şehri geçersiz.");
         if (d.DispatchScopeHospitalId.HasValue && !await db.HospitalDefs.AnyAsync(x=>x.Id==d.DispatchScopeHospitalId && x.IsActive,ct)) throw new DispatchConflictException("Sevk kapsamı hastanesi geçersiz.");
-        if (d.ForcesCommandDefId.HasValue && !await db.ForcesCommandDefs.AnyAsync(x=>x.Id==d.ForcesCommandDefId && x.IsActive,ct)) throw new DispatchConflictException("Kuvvet geçersiz.");
+        if (d.ForcesCommandDefId.HasValue &&
+            !await db.ForcesCommandDefs.AnyAsync(x=>x.Id==d.ForcesCommandDefId && x.IsActive&&!x.IsDeleted &&
+                (group.Code==7 ||
+                 (group.Code==33 ? x.Code=="1"||x.Code=="2"||x.Code=="3"
+                                  : x.Code!="4"&&x.Code!="5")),ct))
+            throw new DispatchConflictException("Seçilen kuvvet komutanlığı bu başvuru grubunda kullanılamaz.");
         if (d.RankDefId.HasValue && !await db.RankDefs.AnyAsync(x=>x.Id==d.RankDefId && x.IsActive,ct)) throw new DispatchConflictException("Rütbe geçersiz.");
         if (d.MilitaryClassDefId.HasValue && !await db.MilitaryClassDefs.AnyAsync(x=>x.Id==d.MilitaryClassDefId && x.IsActive,ct)) throw new DispatchConflictException("Askerî sınıf geçersiz.");
         if (d.MilitaryUnitDefId.HasValue && !await db.MilitaryUnitDefs.AnyAsync(x=>x.Id==d.MilitaryUnitDefId && x.IsActive,ct)) throw new DispatchConflictException("Birlik geçersiz.");
@@ -82,6 +87,20 @@ internal static class DispatchRules
         if (d.SenderMilitaryUnitDefId.HasValue && !await db.MilitaryUnitDefs.AnyAsync(x=>x.Id==d.SenderMilitaryUnitDefId && x.IsActive,ct)) throw new DispatchConflictException("Gönderen birlik geçersiz.");
         if (d.SenderMilitaryOfficeDefId.HasValue && !await db.MilitaryOfficeDefs.AnyAsync(x=>x.Id==d.SenderMilitaryOfficeDefId && x.IsActive,ct)) throw new DispatchConflictException("Gönderen askerlik şubesi geçersiz.");
         if (d.MilitaryOfficeDefId.HasValue && !await db.MilitaryOfficeDefs.AnyAsync(x=>x.Id==d.MilitaryOfficeDefId && x.IsActive,ct)) throw new DispatchConflictException("Askerlik şubesi geçersiz.");
+        // Eski onSelectionChanged / onSelectionChangedMilitaryUnit: DİĞER seçilince açıklama zorunlu.
+        if (d.MilitaryUnitDefId.HasValue &&
+            await db.MilitaryUnitDefs.AnyAsync(x=>x.Id==d.MilitaryUnitDefId &&
+                (x.Code=="DIGER"||x.Name=="DİĞER"),ct) &&
+            string.IsNullOrWhiteSpace(d.MilitaryUnitDescription))
+            throw new DispatchConflictException("Birlik DİĞER seçildiğinde Birlik Açıklama zorunludur.");
+        if ((d.SenderMilitaryUnitDefId.HasValue &&
+             await db.MilitaryUnitDefs.AnyAsync(x=>x.Id==d.SenderMilitaryUnitDefId &&
+                 (x.Code=="DIGER"||x.Name=="DİĞER"),ct) ||
+             d.SenderMilitaryOfficeDefId.HasValue &&
+             await db.MilitaryOfficeDefs.AnyAsync(x=>x.Id==d.SenderMilitaryOfficeDefId &&
+                 (x.Code=="DIGER"||x.Name=="DİĞER"),ct)) &&
+            string.IsNullOrWhiteSpace(d.SenderChairOther))
+            throw new DispatchConflictException("Gönderen makam DİĞER seçildiğinde Gönderen Makam Açıklama zorunludur.");
         if (d.FlyingMissionDefId.HasValue && !await db.FlyingMissionDefs.AnyAsync(x=>x.Id==d.FlyingMissionDefId && x.IsActive,ct)) throw new DispatchConflictException("Uçucu görev geçersiz.");
         if (d.PlaneTypeDefId.HasValue && !await db.PlaneTypeDefs.AnyAsync(x=>x.Id==d.PlaneTypeDefId && x.IsActive,ct)) throw new DispatchConflictException("Uçak tipi geçersiz.");
     }

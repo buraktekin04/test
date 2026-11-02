@@ -1,3 +1,30 @@
+## 02.11.2026 — Eski MSKBS başvuru grubu olayları
+
+Kaynak: GitHub repository kökündeki eski Angular TS/HTML ve C# kodlarını içeren **test** dosyası. İncelenen metotlar: onHcAdmissinTypeValueChanged, changeByHcAdmissionType, controlOfRequiredFiles, onSelectionChangedMilitaryUnit, onSelectionChanged ve GetReasonForExaminationListByHcAdmissionType.
+
+### Uygulanan karşılıklar
+
+- Başvuru grubu değiştiğinde GET /api/dispatches/admission-rules/{id}: DB'deki Requires flag'lerine bağlı olarak Kuvvet, Rütbe, Sınıf, Birlik, Şube, Okul, Sicil, Nasbı, Kaçıncı İşlem, Sevk Evrak Tarihi/Sayısı aktif veya pasif hale gelir; zorunlu yıldızları dinamik kalır.
+- Kullanılamayan muayene sebepleri DB'de ReasonForExamUnusedHcAdmissionType ilişkisine göre çıkarılır. Mevcut filtre korunur.
+- Eski özel Kuvvet filtreleri eklendi: başvuru grubu kodu 7 tüm kuvvetler, 33 yalnız kuvvet kodları 1/2/3, diğerleri 4/5 hariç. GET admission-rules yanıtına AllowedForcesCommandIds eklendi. Frontend yalnız bu ID'leri gösterir; backend kaydı yeniden doğrular.
+- DİĞER Birlik veya Gönderen Makam seçilince açıklama zorunludur. Option DTO artık ID, Label, Code gönderir; backend gerçek tanım kodunu/name kontrol eder.
+- Grup değiştiren kullanıcının önceki gereksiz alanları temizlenir. Eski kaydı düzenlerken form reset emitEvent:false kullanılır; gerekli değerler silinmeden yeniden kurallar yüklenir.
+- Gönderen Makam iki ayrı KLMN seçimi olarak kalır; veritabanı şeması değişmedi. Eski kaynaktaki kullanılmayan Boy/Kilo ve PERTEM alanları eklenmedi.
+- KLMN'nin DB tabanlı SenderChairRequired işareti korunur; eski formda gönderen makam her durumda required kontrolünden geçiyordu. Dolayısıyla tüm eski davranışların birebir eşdeğer olduğu iddia edilmez.
+
+### Yerel kontrol
+
+```bash
+cd KLMN/Frontend
+npm run test:dispatch-admission
+npm run test:dispatch-pages
+npm run build
+cd ../Backend
+dotnet build
+```
+
+Migration gerekmez. Gerçek DB/Angular/.NET derlemesi ve tarayıcı E2E çalıştırılması gereklidir.
+
 ## 02.11.2026 — Sevk Kimlik Girişi, Boş Liste Paneli ve Tetkik Türü
 
 1. **Sevk Girişi T.C. Kimlik No:** `tcKimlikNo` artık 11 haneli ve yalnızca 0-9 rakamları kabul eder. `inputmode="numeric"` yanında `beforeinput` ile harf yazılması engellenir; `input` sırasında yapıştırılan/geçen rakam dışı karakterler silinir, 11 hane sınırı korunur. `type="number"` kullanılmadı: baştaki sıfırlar ve `maxlength` davranışı bozulmaz. Benzer güvenlik yabancı kimlik numarasına da uygulandı (en fazla 20 hane). Angular pattern doğrulaması yalnız sayısal değerleri kabul eder; backend kimlik doğrulaması korunur.
