@@ -10,6 +10,7 @@ import {ConfirmDialogModule} from 'primeng/confirmdialog';
 import {DialogModule} from 'primeng/dialog';
 import {InputTextModule} from 'primeng/inputtext';
 import {TableModule} from 'primeng/table';
+import {SelectModule} from 'primeng/select';
 import {TagModule} from 'primeng/tag';
 import {ToastModule} from 'primeng/toast';
 import {AuditHistoryComponent} from '../../../shared/audit-history/audit-history.component';
@@ -22,7 +23,7 @@ import {SyyDiagnosisDecisionItem,SyyDiagnosisDecisionOptions,SyyDiagnosisDecisio
 @Component({
  selector:'app-syy-diagnosis-decision-list',standalone:true,
  imports:[RouterLink,ReactiveFormsModule,ButtonModule,CheckboxModule,ConfirmDialogModule,
-  DialogModule,InputTextModule,TableModule,TagModule,ToastModule,AuditHistoryComponent],
+  DialogModule,InputTextModule,SelectModule,TableModule,TagModule,ToastModule,AuditHistoryComponent],
  providers:[ConfirmationService,MessageService],
  templateUrl:'./syy-diagnosis-decision-list.component.html',
  styleUrl:'./syy-diagnosis-decision-list.component.scss'
