@@ -15,10 +15,10 @@ public sealed class ProcedureDef : EffectiveDatedEntity
     public bool RequiresDeviationInfo { get; set; }
     // ValidFrom ve ValidTo, EffectiveDatedEntity üzerinden miras alınır.
     /// <summary>Eski sistemle API uyumlu kod; FK artık ProcedureTypeDefId üzerindedir.</summary>
-    public int ProcedureType { get; set; }
-    /// <summary>Dinamik tetkik türü kaydı.</summary>
-    public Guid ProcedureTypeDefId { get; set; }
-    public ProcedureTypeDef TypeDefinition { get; set; } = null!;
+    public int? ProcedureType { get; set; }
+    /// <summary>İsteğe bağlı dinamik tetkik türü kaydı.</summary>
+    public Guid? ProcedureTypeDefId { get; set; }
+    public ProcedureTypeDef? TypeDefinition { get; set; }
     /// <summary>Muayene sebebi eşleştirmeleri.</summary>
     public ICollection<ReasonForExamProcedureDef> ExaminationReasons { get; set; } = new List<ReasonForExamProcedureDef>();
 }
