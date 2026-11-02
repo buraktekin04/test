@@ -1725,3 +1725,82 @@ namespace MSKBSModel
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public IActionResult GetReasonForExaminationListByHcAdmissionType([FromBody] GetReasonExDefinitionListInput input)
+{
+    var result = new HcAdmissionTypeControl();
+    var reasonForExamList = _definitionService.GetReasonForExaminationList(null).Where(x => x.IsActive == true).ToList();
+    var forcesCommandList = _definitionService.GetForcesCommandList(null).Where(x => x.IsActive == true).ToList();
+    var filterReasonForExamList = _definitionService.GetReasonForExamUnusedHcAdmissionTypeByHcAdmissionTypeList(input.HcAdmissionType);
+
+    var hcacmissiontypecontrol = _definitionService.GetHcAdmissionTypeList(null).Where(x => x.ObjectId == input.HcAdmissionType).FirstOrDefault();
+    result.ForcesCommoandRequired = hcacmissiontypecontrol != null ? hcacmissiontypecontrol.ForcesCommandRequired : false;
+    result.LastNominationDateRequired = hcacmissiontypecontrol != null ? hcacmissiontypecontrol.LastNominationDateRequired : false;
+    result.HeightWeightRequired = hcacmissiontypecontrol != null ? hcacmissiontypecontrol.HeightWeightRequired : false;
+    result.MilitaryClassRequired = hcacmissiontypecontrol != null ? hcacmissiontypecontrol.MilitaryClassRequired : false;
+    result.MilitaryOfficeRequired = hcacmissiontypecontrol != null ? hcacmissiontypecontrol.MilitaryOfficeRequired : false;
+    result.MilitarySchoolRequired = hcacmissiontypecontrol != null ? hcacmissiontypecontrol.MilitarySchoolRequired : false;
+    result.MilitaryUnitRequired = hcacmissiontypecontrol != null ? hcacmissiontypecontrol.MilitaryUnitRequired : false;
+    result.RankRequired = hcacmissiontypecontrol != null ? hcacmissiontypecontrol.RankRequired : false;
+    result.RegistryNumberRequired = hcacmissiontypecontrol != null ? hcacmissiontypecontrol.RegistryNumberRequired : false;
+    result.SenderChaireRequired = hcacmissiontypecontrol != null ? hcacmissiontypecontrol.SenderChairRequired : false;
+
+    result.NthAdmissionRequired = hcacmissiontypecontrol != null ? hcacmissiontypecontrol.NthAdmissionRequired : false;
+    result.DispatchDocumentDateRequired = hcacmissiontypecontrol != null ? hcacmissiontypecontrol.DispatchDocumentDateRequired : false;
+    result.DispatchDocumentNoRequired = hcacmissiontypecontrol != null ? hcacmissiontypecontrol.DispatchDocumentNoRequired : false;
+
+
+    result.ReasonForExaminationDefs = new List<ReasonForExaminationDef>();
+    if (filterReasonForExamList == null)
+    {
+        result.ReasonForExaminationDefs = reasonForExamList;
+    }
+    else
+    {
+        foreach (var item in reasonForExamList)
+        {
+            if (filterReasonForExamList.Contains(item.ObjectId) == false)
+            {
+                result.ReasonForExaminationDefs.Add(item);
+            }
+        }
+    }
+
+    result.ForcesCommandDefs = new List<ForcesCommandDef>();
+    result.ForcesCommandDefs = forcesCommandList;
+
+    if (hcacmissiontypecontrol != null && hcacmissiontypecontrol.Code != 7)
+    {
+
+
+        if(hcacmissiontypecontrol.Code == 33)
+        {
+            var GecerliKevvetler = new HashSet<string> { "1", "2", "3" };
+            result.ForcesCommandDefs.RemoveAll(x=> !GecerliKevvetler.Contains(x.Code));
+
+        }
+        else
+        {
+            result.ForcesCommandDefs.Remove(forcesCommandList.Find(x => x.Code == "4"));
+            result.ForcesCommandDefs.Remove(forcesCommandList.Find(x => x.Code == "5"));
+        }
+            
+    }
+    return Ok(result);
+}
+
+
