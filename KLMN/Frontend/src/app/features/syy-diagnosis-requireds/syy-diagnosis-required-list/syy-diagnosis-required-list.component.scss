@@ -16,7 +16,20 @@
 .form-section{font-size:.82rem;font-weight:650;display:flex;align-items:center;gap:.6rem;color:var(--ui-muted)}
 .form-section:after{content:'';height:1px;background:var(--ui-border);flex:1}
 .form-field{display:flex;flex-direction:column;gap:.4rem}.form-field select{width:100%}
-.rule-flags{display:flex;flex-wrap:wrap;gap:1rem}.rule-flags label{display:flex;align-items:center;gap:.5rem;font-size:.83rem}
+/* Kural koşulları checkbox değil, zorunlu tek seçimli radio grubudur. */
+.rule-condition-options{display:flex;align-items:stretch;gap:.65rem;flex-wrap:wrap}
+.rule-condition-option{
+  display:inline-flex;align-items:center;gap:.65rem;cursor:pointer;
+  padding:.65rem .8rem;border:1px solid var(--ui-border);
+  background:var(--ui-surface);border-radius:6px;
+  font-size:.83rem;min-height:42px;box-sizing:border-box;
+}
+.rule-condition-option:focus-within{outline:2px solid var(--ui-primary);outline-offset:1px}
+.rule-condition-option span{display:flex;flex-direction:column;gap:.14rem}
+.rule-condition-option small{font-size:.73rem;color:var(--ui-muted)}
+.rule-condition-help{margin:-.45rem 0 0;font-size:.75rem;line-height:1.4;color:var(--ui-muted)}
+.required-mark{color:var(--ui-danger);font-weight:750}
+@media(max-width:540px){.rule-condition-options{flex-direction:column}.rule-condition-option{width:100%}}
 .details-group{display:flex;flex-direction:column;gap:.65rem}
 .detail-input-row{display:flex;align-items:center;gap:.6rem}
 .detail-input-row input{flex:1 1 200px;min-width:0}

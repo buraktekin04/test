@@ -95,7 +95,9 @@
         </div>
         @for(approval of item.approvals;track approval.id){
          <div class="relation-item"><strong>
-          {{approval.mustAll===true?'Tüm maddeler gerekli':approval.mustOneOf===true?'En az bir madde gerekli':'Onay kuralı'}}
+          {{approval.mustAll===true&&approval.mustOneOf===false?'Tüm maddeler gerekli':
+           approval.mustAll===false&&approval.mustOneOf===true?'En az bir madde gerekli':
+           'Kural koşulu seçilmemiş / geçersiz'}}
           @if(!approval.isActive){ · Pasif}
          </strong>
          <ul class="approval-items">

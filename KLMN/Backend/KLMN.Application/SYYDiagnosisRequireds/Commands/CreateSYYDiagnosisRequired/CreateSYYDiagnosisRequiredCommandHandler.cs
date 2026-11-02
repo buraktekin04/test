@@ -11,6 +11,7 @@ public sealed class CreateSYYDiagnosisRequiredCommandHandler(IKLMNDbContext db):
  public async Task<SYYDiagnosisRequiredMutationResponse> Handle(CreateSYYDiagnosisRequiredCommand r,CancellationToken ct)
  {
  
+ SYYDiagnosisRequiredRules.EnsureExclusiveCondition(r.MustAll,r.MustOneOf);
  await SYYDiagnosisRequiredRules.ValidateDiagnosisAsync(db,r.SYYDiagnosisDefId,null,ct);
  var item=new SYYDiagnosisRequired{SYYDiagnosisDefId=r.SYYDiagnosisDefId,MustAll=r.MustAll,MustOneOf=r.MustOneOf};
  for(var i=0;i<r.Descriptions.Count;i++)item.Details.Add(new SYYDiagnosisRequiredDetail

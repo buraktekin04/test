@@ -6,6 +6,7 @@ import {finalize} from 'rxjs';
 import {ConfirmationService,MessageService} from 'primeng/api';
 import {ButtonModule} from 'primeng/button';
 import {CheckboxModule} from 'primeng/checkbox';
+import {RadioButtonModule} from 'primeng/radiobutton';
 import {ConfirmDialogModule} from 'primeng/confirmdialog';
 import {DialogModule} from 'primeng/dialog';
 import {InputTextModule} from 'primeng/inputtext';
@@ -20,7 +21,7 @@ import {SyyRequiredItem,SyyRequiredOption,SyyRequiredQuery} from '../models/syy-
 /** SYY Onay Gerektiren Maddeler: tek ekran, kural ve alt maddeler için ayrı DB tabloları. */
 @Component({
  selector:'app-syy-diagnosis-required-list',standalone:true,
- imports:[RouterLink,ReactiveFormsModule,ButtonModule,CheckboxModule,ConfirmDialogModule,
+ imports:[RouterLink,ReactiveFormsModule,ButtonModule,CheckboxModule,RadioButtonModule,ConfirmDialogModule,
  DialogModule,InputTextModule,TableModule,TagModule,ToastModule,AuditHistoryComponent],
  providers:[ConfirmationService,MessageService],
  templateUrl:'./syy-diagnosis-required-list.component.html',
@@ -50,8 +51,7 @@ export class SyyDiagnosisRequiredListComponent implements OnInit {
  readonly statusFilter=this.fb.control<boolean|null>(null);
  readonly form=this.fb.group({
   syyDiagnosisDefId:this.fb.nonNullable.control('',Validators.required),
-  mustAll:this.fb.control<boolean|null>(false),
-  mustOneOf:this.fb.control<boolean|null>(false)
+  ruleCondition:this.fb.control<'all'|'one'|null>(null,Validators.required)
  });
  /** Sıralı açıklamalar; formun içinde eklenir/çıkarılır, ayrı tanım ekranı değildir. */
  readonly descriptions=this.fb.nonNullable.array<string>([]);
@@ -86,14 +86,17 @@ export class SyyDiagnosisRequiredListComponent implements OnInit {
  }
  create(){
   if(!this.canCreate())return;this.editing.set(null);this.formError.set(null);
-  this.form.reset({syyDiagnosisDefId:this.presetDiagnosisId??'',mustAll:false,mustOneOf:false});
+  this.form.reset({syyDiagnosisDefId:this.presetDiagnosisId??'',ruleCondition:null});
   this.resetDescriptions(['']);this.loadOptions(this.presetDiagnosisId??undefined);this.showForm.set(true);
  }
  edit(row:SyyRequiredItem){
   if(!this.canUpdate())return;
   this.api.detail(row.id).subscribe({next:x=>{
     this.editing.set(x);this.formError.set(null);
-    this.form.reset({syyDiagnosisDefId:x.syyDiagnosisDefId,mustAll:x.mustAll,mustOneOf:x.mustOneOf});
+    // Eski kayıtlarda ikisi true veya ikisi de boş olabilir; sessizce karar vermiyoruz.
+    const ruleCondition=x.mustAll===true&&x.mustOneOf===false?'all':
+      x.mustOneOf===true&&x.mustAll===false?'one':null;
+    this.form.reset({syyDiagnosisDefId:x.syyDiagnosisDefId,ruleCondition});
     this.resetDescriptions(x.details.map(d=>d.description));
     this.loadOptions(x.syyDiagnosisDefId);this.showForm.set(true);
   },error:e=>this.notice(e)});
@@ -104,13 +107,14 @@ export class SyyDiagnosisRequiredListComponent implements OnInit {
   const f=this.form.getRawValue(),items=this.descriptions.getRawValue().map(x=>x.trim());
   if(this.form.invalid||this.descriptions.invalid||items.length===0||items.some(x=>!x)){
    this.form.markAllAsTouched();this.descriptions.markAllAsTouched();
-   this.formError.set('Tanıyı seçiniz ve en az bir madde açıklaması yazınız.');return;
+   this.formError.set('SYY tanısını, kural koşullarından birini ve en az bir madde açıklamasını giriniz.');return;
   }
-  if(f.mustAll===true&&f.mustOneOf===true){
-   this.formError.set('Tüm maddeler ve en az bir madde koşulları birlikte seçilemez.');return;
+  // Radio tek seçimdir; mevcut iki DB/API flag'iyle açık ve tutarlı map edilir.
+  if(f.ruleCondition!=='all'&&f.ruleCondition!=='one'){
+   this.formError.set('Kural koşulu için iki seçenekten birini seçiniz.');return;
   }
   const fields:Record<string,unknown>={syyDiagnosisDefId:f.syyDiagnosisDefId,
-   mustAll:f.mustAll,mustOneOf:f.mustOneOf,descriptions:items};
+   mustAll:f.ruleCondition==='all',mustOneOf:f.ruleCondition==='one',descriptions:items};
   const old=this.editing();
   const req=old?this.api.update(old.id,{...fields,id:old.id,version:old.version}):this.api.create(fields);
   this.saving.set(true);
