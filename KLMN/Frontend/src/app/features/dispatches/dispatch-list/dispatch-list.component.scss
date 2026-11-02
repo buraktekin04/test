@@ -96,3 +96,55 @@
 @media(max-width:1200px){.filter-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:760px){.filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.advanced-filter-details summary span{display:none}}
 @media(max-width:480px){.filter-grid{grid-template-columns:minmax(0,1fr)}.filter-field-wide{grid-column:auto}.filter-actions{align-items:stretch}.filter-buttons{justify-content:flex-end}}
+
+/* Sevk listesi ilk açıldığında, tablo yerine sakin ve ortalanmış başlangıç durumu. */
+.empty-query-state{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-width:0;
+  min-height:200px;
+  padding:1.5rem;
+  box-sizing:border-box;
+  background:var(--ui-surface);
+  border:1px solid var(--ui-border);
+  border-radius:var(--ui-radius,8px);
+  box-shadow:none;
+}
+.empty-query-content{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap:.6rem;
+  width:min(100%,460px);
+  margin:0 auto;
+  color:var(--ui-text);
+}
+.empty-query-icon{
+  display:grid;
+  place-items:center;
+  flex:none;
+  width:48px;
+  height:48px;
+  border-radius:12px;
+  color:var(--ui-primary);
+  background:var(--ui-surface-muted);
+  border:1px solid var(--ui-border-soft);
+}
+.empty-query-icon i{font-size:1.22rem}
+.empty-query-content strong{font-size:.93rem;font-weight:650;line-height:1.3}
+.empty-query-content p{
+  margin:0;
+  max-width:420px;
+  color:var(--ui-muted);
+  font-size:.81rem;
+  line-height:1.6;
+}
+.empty-query-content b{font-weight:650;color:var(--ui-text)}
+@media(max-width:600px){
+  .empty-query-state{min-height:170px;padding:1.1rem .85rem}
+  .empty-query-content{gap:.45rem}
+}
