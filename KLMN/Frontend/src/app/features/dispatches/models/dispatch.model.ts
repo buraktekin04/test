@@ -28,14 +28,14 @@ export interface DispatchResponse {
  isActive:boolean; version:number; hasPhoto:boolean; person:DispatchPerson; dispatch:DispatchDetails;
 }
 export interface DispatchSaveResponse{id:string;dispatchNo:number;version:number;}
-export interface DispatchOption{id:string;label:string;}
+export interface DispatchOption{id:string;label:string;code?:string|null;}
 /** Başvuru grubunun seçeceği zorunlu alanlar ve yasaklanan muayene sebepleri. */
 export interface DispatchAdmissionRules {
  forcesCommandRequired:boolean; rankRequired:boolean; militaryClassRequired:boolean;
  militaryUnitRequired:boolean; senderChairRequired:boolean; militaryOfficeRequired:boolean;
  registryNumberRequired:boolean; militarySchoolRequired:boolean; lastNominationDateRequired:boolean;
  nthAdmissionRequired:boolean; dispatchDocumentDateRequired:boolean; dispatchDocumentNoRequired:boolean;
- unusedReasonIds:string[];
+ unusedReasonIds:string[];allowedForcesCommandIds:string[];
 }
 export interface DispatchFileItem{id:string;fileName:string;contentType:string;fileSize:number;createdDate:string;}
 export interface DispatchPage{items:DispatchItem[];totalCount:number;pageNumber:number;pageSize:number;}
