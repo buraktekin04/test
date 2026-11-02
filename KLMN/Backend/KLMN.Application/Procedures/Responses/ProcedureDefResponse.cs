@@ -11,7 +11,7 @@ public sealed class ProcedureDefResponse
     public bool RequiresDeviationInfo { get; init; }
     public DateTime? ValidFrom { get; init; }
     public DateTime? ValidTo { get; init; }
-    public int ProcedureType { get; init; }
+    public int? ProcedureType { get; init; }
     public string ProcedureTypeName { get; init; } = string.Empty;
     public bool IsActive { get; init; }
     public DateTime CreatedDate { get; init; }
