@@ -21,10 +21,11 @@ internal static class ProcedureDefRules
 
     /// <summary>Yeni seçimde mevcut ve aktif tetkik türünü doğrular.</summary>
     /// <summary>Kodun aktif kaydını bulur; ilişki değişmez GUID ile kurulmalıdır.</summary>
-    public static async Task<Guid> ResolveTypeIdAsync(IKLMNDbContext db,int code,CancellationToken ct)
+    public static async Task<Guid?> ResolveTypeIdAsync(IKLMNDbContext db,int? code,CancellationToken ct)
     {
+        if(!code.HasValue)return null;
         var id=await db.ProcedureTypeDefs.IgnoreQueryFilters().AsNoTracking()
-            .Where(x=>x.Code==code&&!x.IsDeleted&&x.IsActive)
+            .Where(x=>x.Code==code.Value&&!x.IsDeleted&&x.IsActive)
             .Select(x=>x.Id).FirstOrDefaultAsync(ct);
         if(id==Guid.Empty)
             throw new ProcedureConflictException("Aktif bir Tetkik Türü seçilmelidir.");
