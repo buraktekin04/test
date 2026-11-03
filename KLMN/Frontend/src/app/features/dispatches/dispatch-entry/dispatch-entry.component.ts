@@ -79,6 +79,8 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   militaryClassDefId:this.fb.control<string|null>(null),
   militaryUnitDefId:this.fb.control<string|null>(null),
   militarySchoolDefId:this.fb.control<string|null>(null),
+  // UI tek birleşik seçimi gösterir; iki mevcut FK API/DB sözleşmesi için korunur.
+  senderChairChoice:this.fb.control<string|null>(null,Validators.required),
   senderMilitaryUnitDefId:this.fb.control<string|null>(null),
   senderMilitaryOfficeDefId:this.fb.control<string|null>(null),
   senderChairOther:this.fb.control<string|null>(null),
@@ -114,8 +116,6 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   {key:'militaryUnitDefId',label:'Birliği',type:'units' as OptionType},
   {key:'militarySchoolDefId',label:'Okulu',type:'schools' as OptionType},
   {key:'militaryOfficeDefId',label:'Askerlik Şubesi',type:'offices' as OptionType},
-  {key:'senderMilitaryUnitDefId',label:'Gönderen Birlik',type:'units' as OptionType},
-  {key:'senderMilitaryOfficeDefId',label:'Gönderen Askerlik Şubesi',type:'offices' as OptionType},
   {key:'flyingMissionDefId',label:'Uçucu Görev',type:'missions' as OptionType},
   {key:'planeTypeDefId',label:'Uçtuğu Uçak Tipi',type:'planes' as OptionType}
  ];
@@ -124,9 +124,6 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
  readonly militarySelections=this.dispatchSelections.filter(x=>[
   'forcesCommandDefId','rankDefId','militaryClassDefId','militaryUnitDefId',
   'militarySchoolDefId','militaryOfficeDefId'
- ].includes(x.key));
- readonly senderSelections=this.dispatchSelections.filter(x=>[
-  'senderMilitaryUnitDefId','senderMilitaryOfficeDefId'
  ].includes(x.key));
  readonly flightSelections=this.dispatchSelections.filter(x=>[
   'flyingMissionDefId','planeTypeDefId'
@@ -138,8 +135,12 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
  hasMandatoryMilitary():boolean{return this.militarySelections.some(x=>this.isRequired(x.key));}
  readonly optionMap=signal<Record<OptionType,DispatchOption[]>>({
   countries:[],towns:[],cities:[],hospitals:[],admissionTypes:[],reasons:[],
-  forces:[],ranks:[],classes:[],units:[],schools:[],offices:[],missions:[],planes:[]
+  forces:[],ranks:[],classes:[],units:[],schools:[],offices:[],senders:[],missions:[],planes:[]
  });
+ // Çakışan GUID ihtimaline karşı source:Id biçimiyle benzersiz seçim oluştur.
+ readonly senderOptions=computed(()=>this.optionMap().senders
+  .filter(x=>x.kind==='unit'||x.kind==='office')
+  .map(x=>({...x,choice:x.kind+':'+x.id})));
  private optionRequest:Partial<Record<OptionType,number>>={};
  /** Başvuru grubuna göre sunucuda tanımlanmış zorunluluklar. */
  readonly admissionRules=signal<DispatchAdmissionRules|null>(null);
@@ -169,12 +170,13 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
    if(scope!==2)this.dispatchForm.controls.dispatchScopeCityId.setValue(null);
    if(scope!==3)this.dispatchForm.controls.dispatchScopeHospitalId.setValue(null);
   });
-  // Gönderen makam seçiminde birlik ve askerlik şubesi aynı anda doldurulamaz.
-  this.dispatchForm.controls.senderMilitaryUnitDefId.valueChanges.subscribe(id=>{
-   if(id)this.dispatchForm.controls.senderMilitaryOfficeDefId.setValue(null);
-  });
-  this.dispatchForm.controls.senderMilitaryOfficeDefId.valueChanges.subscribe(id=>{
-   if(id)this.dispatchForm.controls.senderMilitaryUnitDefId.setValue(null);
+  // Eski militaryunitandoffice tek seçim: unit/office ayrımını FK'lere aktar.
+  this.dispatchForm.controls.senderChairChoice.valueChanges.subscribe(choice=>{
+   const match=/^(unit|office):([0-9a-fA-F-]{36})$/.exec(choice??'');
+   this.dispatchForm.patchValue({
+    senderMilitaryUnitDefId:match?.[1]==='unit'?match[2]:null,
+    senderMilitaryOfficeDefId:match?.[1]==='office'?match[2]:null
+   },{emitEvent:false});
   });
   const editId=this.route.snapshot.paramMap.get('id');
   if(editId){
@@ -305,11 +307,15 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   return this.isOtherOption('units',this.dispatchForm.controls.militaryUnitDefId.value);
  }
  isOtherSender():boolean{
-  return this.isOtherOption('units',this.dispatchForm.controls.senderMilitaryUnitDefId.value)||
-   this.isOtherOption('offices',this.dispatchForm.controls.senderMilitaryOfficeDefId.value);
+  const choice=this.dispatchForm.controls.senderChairChoice.value;
+  const selected=this.senderOptions().find(x=>x.choice===choice);
+  if(!selected)return false;
+  return selected.code?.trim().toLocaleUpperCase('tr-TR')==='DIGER' ||
+   selected.label.split(' · ').pop()?.trim().toLocaleUpperCase('tr-TR')==='DİĞER';
  }
  filterOptions(type:OptionType,filter:string){this.loadOptions(type,filter??'',this.selectedId(type));}
  private selectedId(type:OptionType):string|undefined {
+  if(type==='senders')return this.dispatchForm.controls.senderChairChoice.value?.split(':')[1];
   const keys=[...this.personSelections,...this.dispatchSelections];
   const field=keys.find(x=>x.type===type);
   if(!field)return undefined;
@@ -357,6 +363,13 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
    if(item.hasPhoto)this.loadCurrentPhoto(item.id,requestId);
    this.personForm.reset(item.person);
    this.dispatchForm.reset(item.dispatch,{emitEvent:false});
+   const senderChoice=item.dispatch.senderMilitaryUnitDefId
+    ?'unit:'+item.dispatch.senderMilitaryUnitDefId
+    :item.dispatch.senderMilitaryOfficeDefId
+      ?'office:'+item.dispatch.senderMilitaryOfficeDefId:null;
+   this.dispatchForm.controls.senderChairChoice.setValue(senderChoice,{emitEvent:false});
+   // Düzenleme seçiminde aktif olmayan tarihsel tanımlar da gösterilebilir.
+   if(senderChoice)this.loadOptions('senders','',senderChoice.split(':')[1]);
    if(item.dispatch.hcAdmissionTypeDefId)
     this.loadAdmissionRules(item.dispatch.hcAdmissionTypeDefId,false);
    // Düzenleme yüklenirken başvuru grubu değişimini tetikleyip sebebi silmeyiz.
@@ -537,11 +550,13 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   if(this.saving())return;
   this.formError.set(null);
   const person=this.personForm.getRawValue() as DispatchPerson;
-  const dispatch=this.dispatchForm.getRawValue() as DispatchDetails;
+  // UI'ya özgü senderChairChoice alanı API'ye gönderilmez.
+  const dispatch={...this.dispatchForm.getRawValue()} as DispatchDetails & {senderChairChoice?:string|null};
+  delete dispatch.senderChairChoice;
   person.tcKimlikNo=this.identityType()==='tc'?person.tcKimlikNo?.trim()||null:null;
   person.yabanciKimlikNo=this.identityType()==='foreign'?person.yabanciKimlikNo?.trim()||null:null;
   if(this.form.invalid||!person.birthDate||!(person.tcKimlikNo||person.yabanciKimlikNo)){
-   this.form.markAllAsTouched();this.formError.set('Ad, soyad, kimlik numarası, doğum tarihi, başvuru grubu ve muayene sebebi gereklidir.');return;
+   this.form.markAllAsTouched();this.formError.set('Ad, soyad, kimlik numarası, doğum tarihi, başvuru grubu, muayene sebebi ve muayeneye gönderen makam gereklidir.');return;
   }
   const rules=this.admissionRules();
   if(!rules){
@@ -559,7 +574,7 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
    rules.militarySchoolRequired&&!dispatch.militarySchoolDefId ||
    rules.registryNumberRequired&&!dispatch.registryNumber?.trim() ||
    rules.lastNominationDateRequired&&!dispatch.lastNominationDate ||
-   rules.senderChairRequired&&!(dispatch.senderMilitaryUnitDefId||dispatch.senderMilitaryOfficeDefId))){
+   !(dispatch.senderMilitaryUnitDefId||dispatch.senderMilitaryOfficeDefId))){
     this.formError.set('Başvuru grubunun zorunlu tuttuğu sevk ve askerî bilgileri doldurunuz.');return;
   }
   if(dispatch.forcesCommandDefId &&
