@@ -24,6 +24,11 @@ assert.match(ts,/senderChairChoice:this\.fb\.control<string\|null>\(null,Validat
 assert.match(ts,/senderOptions=computed/);
 assert.match(ts,/x\.kind==='unit'\|\|x\.kind==='office'/);
 assert.match(ts,/senderChairChoice\.valueChanges\.subscribe/);
+assert.match(ts,/this\.auth\.currentUser\(\)\?\.militaryUnitDefId/);
+assert.match(ts,/private prefillCurrentUserSender\(\)/);
+assert.match(ts,/this\.prefillCurrentUserSender\(\)/);
+assert.match(ts,/if\(type==='senders'&&!this\.senderDefaultChecked&&!this\.editing\(\)\)/);
+
 assert.match(ts,/senderMilitaryUnitDefId:match\?\.\[1\]==='unit'\?match\[2\]:null/);
 assert.match(ts,/senderMilitaryOfficeDefId:match\?\.\[1\]==='office'\?match\[2\]:null/);
 assert.match(ts,/delete dispatch\.senderChairChoice/);
