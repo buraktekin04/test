@@ -43,8 +43,9 @@ UYGULAMA:
    SelectedId ile seçeneklerde korunabilir.
    Yeni sevkte AuthService.currentUser().militaryUnitDefId varsa
    mevcut options API'sine SelectedId olarak verilir; bu birlik
-   seçeneği aktif/dönen kayıtlarda bulunursa başlangıçta
-   otomatik seçilir. Düzenlemede VEYA kullanıcı kendisi
+   seçeneği gerçekten AKTİF ise (seçenek IsActive=true)
+   başlangıçta otomatik seçilir. Birlik pasifse seçilmez.
+   Tarihsel düzenlemede seçilen eski/pasif referans gösterilebilir. Düzenlemede VEYA kullanıcı kendisi
    başka seçenek seçtiğinde varsayılan değer üzerine yazılmaz.
    Bu, eski authService.getUserMilitaryUnit organizasyon
    varsayılanının KLMN kullanıcı modelindeki karşılığıdır.
