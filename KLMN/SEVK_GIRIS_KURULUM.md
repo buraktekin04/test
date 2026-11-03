@@ -1,3 +1,13 @@
+## 03.11.2026 — Muayeneye Gönderen Makam tek seçim
+
+Eski dispatch.component.html dosyasında Muayeneye Gönderen Makam, mskbsSelectDefinition=militaryunitandoffice ile tek dropdown'dur. GetReasonForExaminationListByHcAdmissionType ise Gönderen Makam listesi **döndürmez**; Başvuru Grubu için gerekli alanlar, Muayene Sebepleri ve Kuvvet seçeneklerini döndürür. KLMN'nin mevcut admission-rules endpoint'i bu davranışı zaten karşılar.
+
+Bu sürümde Sevk Girişi formunda iki ayrı "Gönderen Birlik" ve "Gönderen Askerlik Şubesi" yerine **tek aranabilir Muayeneye Gönderen Makam** dropdown'u vardır. Mevcut options endpoint'ine type=senders ile sorgu yapıldığında birlik ve askerlik şubesi tabloları tek seçenek listesinde birleştirilir, etiket türle birlikte görünür. Seçilen türüne göre mevcut senderMilitaryUnitDefId veya senderMilitaryOfficeDefId alanından **yalnız biri** doldurulur. Başka tablo veya migration gerekmez. Seçim tüm Başvuru Gruplarında zorunludur (eski controlOfRequiredFiles); DİĞER seçimi açıklama zorunluluğu oluşturur.
+
+KLMN AuthUser.militaryUnitDefId alanı aktif seçeneklerde varsa yeni sevk için varsayılan gönderen birlik olarak gelir. Kullanıcı değiştirebilir; mevcut sevk düzenlenirken kayıtlı seçim korunur. Özgün senderChairChoice alanı yalnız form içindir, API'ye gönderilmez.
+
+Kaynak kontrolleri: npm run test:dispatch-sender-chair ve npm run test:dispatch-admission. Gerçek Angular/.NET derlemesi, API ve tarayıcı testi yerelde ayrıca yapılmalıdır.
+
 ## 02.11.2026 — Eski MSKBS başvuru grubu olayları
 
 Kaynak: GitHub repository kökündeki eski Angular TS/HTML ve C# kodlarını içeren **test** dosyası. İncelenen metotlar: onHcAdmissinTypeValueChanged, changeByHcAdmissionType, controlOfRequiredFiles, onSelectionChangedMilitaryUnit, onSelectionChanged ve GetReasonForExaminationListByHcAdmissionType.
