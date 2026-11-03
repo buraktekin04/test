@@ -41,6 +41,13 @@ UYGULAMA:
 4) Düzenlemede var olan kaydın iki FK'sinden biri kullanılarak
    tek seçim geri yüklenir; seçilen eski/pasif referans
    SelectedId ile seçeneklerde korunabilir.
+   Yeni sevkte AuthService.currentUser().militaryUnitDefId varsa
+   mevcut options API'sine SelectedId olarak verilir; bu birlik
+   seçeneği aktif/dönen kayıtlarda bulunursa başlangıçta
+   otomatik seçilir. Düzenlemede VEYA kullanıcı kendisi
+   başka seçenek seçtiğinde varsayılan değer üzerine yazılmaz.
+   Bu, eski authService.getUserMilitaryUnit organizasyon
+   varsayılanının KLMN kullanıcı modelindeki karşılığıdır.
 5) Eski DİĞER kuralı birleşik dropdown'daki option.Code
    veya etiketin gerçek adı ile denetlenir.
    DİĞER seçilirse Gönderen Makam Açıklama zorunludur;
