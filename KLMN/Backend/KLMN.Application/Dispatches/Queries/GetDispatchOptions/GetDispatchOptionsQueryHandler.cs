@@ -23,13 +23,13 @@ public sealed class GetDispatchOptionsQueryHandler(IKLMNDbContext db)
         {
             var units=await db.MilitaryUnitDefs.IgnoreQueryFilters().AsNoTracking()
                 .Where(x=>!x.IsDeleted&&(x.IsActive||x.Id==id))
-                .Where(x=>EF.Functions.ILike(x.Name,pattern,@"\\")||x.Id==id)
+                .Where(x=>EF.Functions.ILike(x.Name,pattern,@"\")||x.Id==id)
                 .OrderByDescending(x=>x.Id==id).ThenBy(x=>x.Name).Take(100)
                 .Select(x=>new DispatchOption(x.Id,"Birlik · "+x.Name,x.Code,"unit"))
                 .ToListAsync(ct);
             var offices=await db.MilitaryOfficeDefs.IgnoreQueryFilters().AsNoTracking()
                 .Where(x=>!x.IsDeleted&&(x.IsActive||x.Id==id))
-                .Where(x=>EF.Functions.ILike(x.Name,pattern,@"\\")||x.Id==id)
+                .Where(x=>EF.Functions.ILike(x.Name,pattern,@"\")||x.Id==id)
                 .OrderByDescending(x=>x.Id==id).ThenBy(x=>x.Name).Take(100)
                 .Select(x=>new DispatchOption(x.Id,"Askerlik Şubesi · "+x.Name,x.Code,"office"))
                 .ToListAsync(ct);
