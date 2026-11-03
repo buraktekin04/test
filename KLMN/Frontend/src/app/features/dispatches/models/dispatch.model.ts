@@ -28,7 +28,7 @@ export interface DispatchResponse {
  isActive:boolean; version:number; hasPhoto:boolean; person:DispatchPerson; dispatch:DispatchDetails;
 }
 export interface DispatchSaveResponse{id:string;dispatchNo:number;version:number;}
-export interface DispatchOption{id:string;label:string;code?:string|null;kind?:'unit'|'office'|null;}
+export interface DispatchOption{id:string;label:string;code?:string|null;kind?:'unit'|'office'|null;isActive?:boolean|null;}
 /** Başvuru grubunun seçeceği zorunlu alanlar ve yasaklanan muayene sebepleri. */
 export interface DispatchAdmissionRules {
  forcesCommandRequired:boolean; rankRequired:boolean; militaryClassRequired:boolean;
