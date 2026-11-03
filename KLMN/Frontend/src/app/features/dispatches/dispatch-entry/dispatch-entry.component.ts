@@ -149,7 +149,7 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
  private prefillCurrentUserSender(){
   if(this.editing()||this.dispatchForm.controls.senderChairChoice.value)return;
   const unitId=this.auth.currentUser()?.militaryUnitDefId;
-  if(unitId&&this.optionMap().senders.some(x=>x.kind==='unit'&&x.id===unitId))
+  if(unitId&&this.optionMap().senders.some(x=>x.kind==='unit'&&x.id===unitId&&x.isActive===true))
    this.dispatchForm.controls.senderChairChoice.setValue('unit:'+unitId);
  }
  /** Başvuru grubuna göre sunucuda tanımlanmış zorunluluklar. */
