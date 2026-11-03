@@ -13,6 +13,7 @@ import {SelectModule} from 'primeng/select';
 import {ToastModule} from 'primeng/toast';
 import {PermissionCodes} from '../../../core/permissions/constants/permission-codes';
 import {PermissionService} from '../../../core/permissions/services/permission.service';
+import {AuthService} from '../../../core/auth/services/auth.service';
 import {DispatchService} from '../services/dispatch.service';
 import {DispatchQrReaderComponent} from '../qr/dispatch-qr-reader.component';
 import {DispatchPhotoCaptureComponent} from '../camera/dispatch-photo-capture.component';
@@ -34,6 +35,7 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
  private readonly api=inject(DispatchService);
  private readonly fb=inject(FormBuilder);
  private readonly permissions=inject(PermissionService);
+ private readonly auth=inject(AuthService);
  private readonly confirm=inject(ConfirmationService);
  private readonly message=inject(MessageService);
  private readonly router=inject(Router);
@@ -142,6 +144,14 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   .filter(x=>x.kind==='unit'||x.kind==='office')
   .map(x=>({...x,choice:x.kind+':'+x.id})));
  private optionRequest:Partial<Record<OptionType,number>>={};
+ private senderDefaultChecked=false;
+ /** Eski getUserMilitaryUnit başlangıç seçimi: geçerli birlik seçeneği varsa doldur. */
+ private prefillCurrentUserSender(){
+  if(this.editing()||this.dispatchForm.controls.senderChairChoice.value)return;
+  const unitId=this.auth.currentUser()?.militaryUnitDefId;
+  if(unitId&&this.optionMap().senders.some(x=>x.kind==='unit'&&x.id===unitId))
+   this.dispatchForm.controls.senderChairChoice.setValue('unit:'+unitId);
+ }
  /** Başvuru grubuna göre sunucuda tanımlanmış zorunluluklar. */
  readonly admissionRules=signal<DispatchAdmissionRules|null>(null);
  private rulesRequest=0;
@@ -189,8 +199,10 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   // En önemli seçim önceliklidir: diğer 13 referans isteğinden önce gönderilir.
   // Başvuru grubu isteği sırasında küçük bir ilerleme çubuğu görünür.
   this.loadOptions('admissionTypes');
+  // Eski sistemde ilk seçim kullanıcının bağlı birliğiydi.
+  this.loadOptions('senders','',this.auth.currentUser()?.militaryUnitDefId??undefined);
   for(const type of Object.keys(this.optionMap()) as OptionType[]){
-   if(type!=='admissionTypes')this.loadOptions(type);
+   if(type!=='admissionTypes'&&type!=='senders')this.loadOptions(type);
   }
  }
  /** Tanım aramaları istek sıralamasıyla korunur; eski cevap yeni arama sonuçlarını ezmez. */
@@ -207,7 +219,11 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
     if(type==='reasons')values=values.filter(x=>!this.admissionRules()?.unusedReasonIds.includes(x.id));
     const prev=this.optionMap()[type];
     const selected=selectedId?prev.find(x=>x.id===selectedId):undefined;
-    this.optionMap.update(m=>({...m,[type]:selected&&!values.some(x=>x.id===selected.id)?[selected,...values]:values}));
+    this.optionMap.update(m=>({...m,[type]:selected&&!values.some(x=>x.id===selected.id&&x.kind===selected.kind)?[selected,...values]:values}));
+    if(type==='senders'&&!this.senderDefaultChecked&&!this.editing()){
+     this.senderDefaultChecked=true;
+     this.prefillCurrentUserSender();
+    }
     if(type==='admissionTypes')this.admissionOptionsLoading.set(false);
    },
    error:()=>{
@@ -349,6 +365,8 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   this.pendingQrReasonId=null;
   this.personForm.reset({name:'',surname:'',birthDate:'',tcKimlikNo:null,yabanciKimlikNo:null});
   this.dispatchForm.reset({dispatchScope:1,reasonForExaminationDefId:null,hcAdmissionTypeDefId:null});
+  this.senderDefaultChecked=false;
+  this.prefillCurrentUserSender();
   this.dialogVisible.set(true);
  }
  private loadEdit(dispatchId:string){
