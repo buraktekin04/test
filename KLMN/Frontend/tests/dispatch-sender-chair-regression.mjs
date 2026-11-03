@@ -26,6 +26,7 @@ assert.match(ts,/x\.kind==='unit'\|\|x\.kind==='office'/);
 assert.match(ts,/senderChairChoice\.valueChanges\.subscribe/);
 assert.match(ts,/this\.auth\.currentUser\(\)\?\.militaryUnitDefId/);
 assert.match(ts,/private prefillCurrentUserSender\(\)/);
+assert.match(ts,/x\.id===unitId&&x\.isActive===true/);
 assert.match(ts,/this\.prefillCurrentUserSender\(\)/);
 assert.match(ts,/if\(type==='senders'&&!this\.senderDefaultChecked&&!this\.editing\(\)\)/);
 
@@ -42,12 +43,12 @@ assert.match(rules,/Gönderen makam DİĞER seçildiğinde Gönderen Makam Açı
 // Birlik/Şube aynı seçenek API'sine toplanır, discriminator kaybolmaz.
 assert.match(model,/\|'senders'\|/);
 assert.match(model,/kind\?:'unit'\|'office'/);
-assert.match(dto,/string\? Kind=null/);
+assert.match(dto,/string\? Kind=null,bool\? IsActive=null/);
 assert.match(options,/if\(request\.Type=="senders"\)/);
 assert.match(options,/db\.MilitaryUnitDefs\.IgnoreQueryFilters\(\)/);
 assert.match(options,/db\.MilitaryOfficeDefs\.IgnoreQueryFilters\(\)/);
-assert.match(options,/new DispatchOption\(x\.Id,"Birlik · "\+x\.Name,x\.Code,"unit"\)/);
-assert.match(options,/new DispatchOption\(x\.Id,"Askerlik Şubesi · "\+x\.Name,x\.Code,"office"\)/);
+assert.match(options,/new DispatchOption\(x\.Id,"Birlik · "\+x\.Name,x\.Code,"unit",x\.IsActive\)/);
+assert.match(options,/new DispatchOption\(x\.Id,"Askerlik Şubesi · "\+x\.Name,x\.Code,"office",x\.IsActive\)/);
 
 // Eski controlOfRequiredFiles: makam her zaman zorunlu, tek FK gerekir.
 assert.match(rules,/Muayeneye Gönderen Makam boş geçilemez/);
