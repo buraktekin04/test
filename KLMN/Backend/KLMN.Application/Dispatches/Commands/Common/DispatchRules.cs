@@ -70,8 +70,7 @@ internal static class DispatchRules
             group.MilitaryOfficeRequired && !d.MilitaryOfficeDefId.HasValue ||
             group.MilitarySchoolRequired && !d.MilitarySchoolDefId.HasValue ||
             group.RegistryNumberRequired && string.IsNullOrWhiteSpace(d.RegistryNumber) ||
-            group.LastNominationDateRequired && !d.LastNominationDate.HasValue ||
-            false)
+            group.LastNominationDateRequired && !d.LastNominationDate.HasValue)
             throw new DispatchConflictException("Başvuru grubunun gerektirdiği sevk/askerî alanlardan biri boş.");
         // FK'ler hem aktif olmalıdır hem de DB düzeyinde Restrict ile korunur.
         if (p.NationalityId.HasValue && !await db.CountryDefs.AnyAsync(x=>x.Id==p.NationalityId && x.IsActive,ct)) throw new DispatchConflictException("Uyruğu geçersiz.");
