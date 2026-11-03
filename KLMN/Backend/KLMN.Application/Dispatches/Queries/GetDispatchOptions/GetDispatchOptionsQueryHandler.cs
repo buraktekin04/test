@@ -17,6 +17,26 @@ public sealed class GetDispatchOptionsQueryHandler(IKLMNDbContext db)
         var escaped=s.Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_");
         var pattern="%"+escaped+"%";
         var id=request.SelectedId;
+        // Eski militaryunitandoffice birleşik tanımı: ayrı iki tablo tek aramada.
+        // Kind, iki farklı FK'yi tek dropdown'dan güvenli seçebilmek için gereklidir.
+        if(request.Type=="senders")
+        {
+            var units=await db.MilitaryUnitDefs.IgnoreQueryFilters().AsNoTracking()
+                .Where(x=>!x.IsDeleted&&(x.IsActive||x.Id==id))
+                .Where(x=>EF.Functions.ILike(x.Name,pattern,@"\\")||x.Id==id)
+                .OrderByDescending(x=>x.Id==id).ThenBy(x=>x.Name).Take(100)
+                .Select(x=>new DispatchOption(x.Id,"Birlik · "+x.Name,x.Code,"unit"))
+                .ToListAsync(ct);
+            var offices=await db.MilitaryOfficeDefs.IgnoreQueryFilters().AsNoTracking()
+                .Where(x=>!x.IsDeleted&&(x.IsActive||x.Id==id))
+                .Where(x=>EF.Functions.ILike(x.Name,pattern,@"\\")||x.Id==id)
+                .OrderByDescending(x=>x.Id==id).ThenBy(x=>x.Name).Take(100)
+                .Select(x=>new DispatchOption(x.Id,"Askerlik Şubesi · "+x.Name,x.Code,"office"))
+                .ToListAsync(ct);
+            return units.Concat(offices)
+                .OrderByDescending(x=>x.Id==id)
+                .ThenBy(x=>x.Label).Take(100).ToList();
+        }
         // Üst limit 100; UI filtrelemesi API aramasıyla yenilenir.
         return request.Type switch
         {
