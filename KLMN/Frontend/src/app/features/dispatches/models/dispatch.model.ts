@@ -28,7 +28,7 @@ export interface DispatchResponse {
  isActive:boolean; version:number; hasPhoto:boolean; person:DispatchPerson; dispatch:DispatchDetails;
 }
 export interface DispatchSaveResponse{id:string;dispatchNo:number;version:number;}
-export interface DispatchOption{id:string;label:string;code?:string|null;}
+export interface DispatchOption{id:string;label:string;code?:string|null;kind?:'unit'|'office'|null;isActive?:boolean|null;}
 /** Başvuru grubunun seçeceği zorunlu alanlar ve yasaklanan muayene sebepleri. */
 export interface DispatchAdmissionRules {
  forcesCommandRequired:boolean; rankRequired:boolean; militaryClassRequired:boolean;
@@ -40,7 +40,7 @@ export interface DispatchAdmissionRules {
 export interface DispatchFileItem{id:string;fileName:string;contentType:string;fileSize:number;createdDate:string;}
 export interface DispatchPage{items:DispatchItem[];totalCount:number;pageNumber:number;pageSize:number;}
 export type OptionType='countries'|'towns'|'cities'|'hospitals'|'admissionTypes'|'reasons'|
- 'forces'|'ranks'|'classes'|'units'|'schools'|'offices'|'missions'|'planes';
+ 'forces'|'ranks'|'classes'|'units'|'schools'|'offices'|'senders'|'missions'|'planes';
 
 /** Sevk durum tanımları, DispatchStatusDefs tablosundan döner. */
 export interface DispatchStatusOption {code:number;name:string;}

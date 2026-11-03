@@ -228,18 +228,16 @@
      </label>
 
      <div class="entry-inline-group entry-full-row">
-      <span class="entry-inline-title">Muayeneye Gönderen Makam
-       @if(admissionRules()?.senderChairRequired){<span class="required-mark">*</span>}
-      </span>
-      <div class="entry-two-fields">
-       @for(field of senderSelections;track field.key){
-        <label class="field">{{field.label}}
-         <p-select [formControlName]="field.key" [options]="optionMap()[field.type]"
-          optionLabel="label" optionValue="id" [filter]="true" [showClear]="true" [fluid]="true"
-          (onFilter)="filterOptions(field.type,$event.filter)" appendTo="body" placeholder="Seçiniz"/>
-        </label>
-       }
-      </div>
+      <label class="field" for="dispatch-sender-chair">
+       <span class="field-caption"><span class="required-mark">*</span>
+        Muayeneye Gönderen Makam
+       </span>
+       <p-select inputId="dispatch-sender-chair" formControlName="senderChairChoice"
+        [options]="senderOptions()" optionLabel="label" optionValue="choice"
+        [filter]="true" [showClear]="true" [fluid]="true" appendTo="body"
+        (onFilter)="filterOptions('senders',$event.filter)"
+        placeholder="Birlik veya askerlik şubesi seçiniz"/>
+      </label>
      </div>
      @for(field of flightSelections;track field.key){
       <label class="field">{{field.label}}

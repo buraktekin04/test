@@ -1,3 +1,79 @@
+03.11.2026 — MUAYENEYE GÖNDEREN MAKAM: ESKİ TEK DROPDOWN / KLMN EŞLEMESİ
+============================================================================
+KAYNAK: Kullanıcının bu sohbet içinde paylaştığı eski
+dispatch.component.html, dispatch.component.ts, eski Dispatch entity
+ve GetReasonForExaminationListByHcAdmissionType metodu.
+
+ÖNEMLİ AYRIM:
+- GetReasonForExaminationListByHcAdmissionType C# metodu gönderen
+  makam LISTESİ döndürmez. ReasonForExaminationDefs,
+  ForcesCommandDefs ve SenderChaireRequired dahil başvuru grubu
+  zorunluluk bayraklarını döndürür. KLMN'nin mevcut
+  GET /api/dispatches/admission-rules/{id} akışı bu davranışı
+  karşılar. Daha önce yapılan yasaklı neden/kuvvet filtreleri
+  KORUNDU.
+- Eski HTML gönderen makam dropdown'ında tanım kaynağı
+  mskbsSelectDefinition=militaryunitandoffice idi; bu
+  birleşik Birlik ve Askerlik Şubesi seçimi anlamına gelir.
+  Eski TypeScript onSelectionChanged DİĞER kodu/adını denetler.
+- Eski controlOfRequiredFiles(), SenderChaireRequired bayrağını
+  kontrol etmeksizin Muayeneye Gönderen Makam'ı zorunlu tutuyordu.
+
+UYGULAMA:
+1) Frontend Sevk Giriş'te iki ayrı Gönderen Birlik /
+   Gönderen Askerlik Şubesi p-select yerine tek
+   Muayeneye Gönderen Makam * aranabilir p-select var.
+   Kullanıcı Birlik · Ad veya Askerlik Şubesi · Ad
+   etiketlerinden birini seçer. senderChairChoice UI-only,
+   Validators.required, değer: unit:GUID veya office:GUID.
+2) Backend mevcut GET /api/dispatches/options?type=senders
+   birleştirilmiş seçenekleri döndürür. Ayrı controller/
+   yeni tablo yoktur. GetDispatchOptionsQueryHandler iki
+   tanım tablosunu aktif/silinmemiş kayıtlardan sorgular,
+   arama ILIKE uygulanır, kaynak Kind=unit/office
+   ve Code döner. Genel 100 sonuç limiti korunur.
+   DispatchOption Kind optional; eski lookup ID/Label/Code korunur.
+3) UI seçildiğinde senderChairChoice sadece uygun FK'yi
+   doldurur: senderMilitaryUnitDefId VEYA
+   senderMilitaryOfficeDefId. Diğerini NULL yapar.
+   UI'ya ait kontrol Create/Update API JSON'una dahil edilmez.
+   Mevcut Domain, iki FK ve DB şeması korunur. MIGRATION YOK.
+4) Düzenlemede var olan kaydın iki FK'sinden biri kullanılarak
+   tek seçim geri yüklenir; seçilen eski/pasif referans
+   SelectedId ile seçeneklerde korunabilir.
+   Yeni sevkte AuthService.currentUser().militaryUnitDefId varsa
+   mevcut options API'sine SelectedId olarak verilir; bu birlik
+   seçeneği gerçekten AKTİF ise (seçenek IsActive=true)
+   başlangıçta otomatik seçilir. Birlik pasifse seçilmez.
+   Tarihsel düzenlemede seçilen eski/pasif referans gösterilebilir. Düzenlemede VEYA kullanıcı kendisi
+   başka seçenek seçtiğinde varsayılan değer üzerine yazılmaz.
+   Bu, eski authService.getUserMilitaryUnit organizasyon
+   varsayılanının KLMN kullanıcı modelindeki karşılığıdır.
+5) Eski DİĞER kuralı birleşik dropdown'daki option.Code
+   veya etiketin gerçek adı ile denetlenir.
+   DİĞER seçilirse Gönderen Makam Açıklama zorunludur;
+   backend zaten DB tanımından Code/Name denetler.
+6) Eski controlOfRequiredFiles() davranışına göre
+   gönderen makam herhangi Başvuru Grubu için
+   SEÇİLMEDEN KAYDEDİLEMEZ. Frontend p-select required.
+   Backend DispatchRules.ValidateAsync de iki FK de
+   boşsa hata döndürür; ikisi birlikte doluysa reddeder.
+   HcAdmissionTypeDef.SenderChairRequired bilgisi
+   admission-rules response'ta tutulur ama bu alan için
+   eski ekranın GERÇEK zorunluluk kontrolü uygulanır.
+
+KONTROLLER:
+- Frontend/tests/dispatch-sender-chair-regression.mjs
+- npm run test:dispatch-sender-chair
+- npm run test:dispatch-admission
+- npm run test:dispatch-pages
+- npm run build
+- Backend: dotnet build / integration test
+
+Gerçek Angular/.NET build, DB ve tarayıcı E2E çalıştırılması
+bu ajan ortamında mümkün olmadı; GitHub kaynak kontrolleri yapıldı.
+Main'e tek squash commit olarak gönder. Şema değişikliği yok.
+
 02.11.2026 — ESKİ MSKBS SEVK GİRİŞ OLAYLARININ KLMN'YE TAŞINMASI
 =============================================================================
 KAYNAK: GitHub repo kökündeki "test" dosyası (73 KB).

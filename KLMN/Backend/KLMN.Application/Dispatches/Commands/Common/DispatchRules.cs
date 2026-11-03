@@ -42,6 +42,10 @@ internal static class DispatchRules
             throw new DispatchConflictException("Sevk kapsamıyla ilgisiz şehir/hastane seçimi temizlenmelidir.");
         if (d.SenderMilitaryUnitDefId.HasValue && d.SenderMilitaryOfficeDefId.HasValue)
             throw new DispatchConflictException("Gönderen makamda birlik veya askerlik şubesinden yalnızca biri seçilebilir.");
+        // Eski controlOfRequiredFiles(): Gönderen Makam, SenderChairRequired bayrağına
+        // bağlı olmaksızın zorunluydu; UI ve doğrudan API çağrıları aynı kuralı uygular.
+        if (!d.SenderMilitaryUnitDefId.HasValue && !d.SenderMilitaryOfficeDefId.HasValue)
+            throw new DispatchConflictException("Muayeneye Gönderen Makam boş geçilemez.");
         if (d.DispatchDocumentNo?.Length>50||d.RegistryNumber?.Length>50||
             d.MilitaryUnitDescription?.Length>1000||d.SenderChairOther?.Length>1000||d.Description?.Length>500)
             throw new DispatchConflictException("Sevk bilgilerinde izin verilen alan uzunluğu aşıldı.");
@@ -66,8 +70,7 @@ internal static class DispatchRules
             group.MilitaryOfficeRequired && !d.MilitaryOfficeDefId.HasValue ||
             group.MilitarySchoolRequired && !d.MilitarySchoolDefId.HasValue ||
             group.RegistryNumberRequired && string.IsNullOrWhiteSpace(d.RegistryNumber) ||
-            group.LastNominationDateRequired && !d.LastNominationDate.HasValue ||
-            group.SenderChairRequired && !d.SenderMilitaryUnitDefId.HasValue && !d.SenderMilitaryOfficeDefId.HasValue)
+            group.LastNominationDateRequired && !d.LastNominationDate.HasValue)
             throw new DispatchConflictException("Başvuru grubunun gerektirdiği sevk/askerî alanlardan biri boş.");
         // FK'ler hem aktif olmalıdır hem de DB düzeyinde Restrict ile korunur.
         if (p.NationalityId.HasValue && !await db.CountryDefs.AnyAsync(x=>x.Id==p.NationalityId && x.IsActive,ct)) throw new DispatchConflictException("Uyruğu geçersiz.");
