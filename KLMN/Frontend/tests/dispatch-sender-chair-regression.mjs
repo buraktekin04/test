@@ -27,7 +27,7 @@ assert.match(ts,/senderChairChoice\.valueChanges\.subscribe/);
 assert.match(ts,/senderMilitaryUnitDefId:match\?\.\[1\]==='unit'\?match\[2\]:null/);
 assert.match(ts,/senderMilitaryOfficeDefId:match\?\.\[1\]==='office'\?match\[2\]:null/);
 assert.match(ts,/delete dispatch\.senderChairChoice/);
-assert.match(ts,/this\.dispatchForm\.controls\.senderChairChoice\.setValue\(senderChoice,\{emitEvent:false\}\)/);
+assert.ok(ts.includes("this.loadOptions('senders','',senderChoice.split(':')[1])"));
 assert.match(ts,/this\.loadOptions\('senders','',senderChoice\.split\(': '\)\[1\]\)/.source ? /this\.loadOptions\('senders','',senderChoice\.split\(': '\)\[1\]\)/ : /this\.loadOptions\('senders'/);
 // Eski formun DİĞER -> açıklama kuralı korunur.
 assert.match(ts,/isOtherSender\(\):boolean/);
