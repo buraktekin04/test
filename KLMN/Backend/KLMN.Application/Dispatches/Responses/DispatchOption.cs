@@ -5,4 +5,4 @@ namespace KLMN.Application.Dispatches.Responses;
 /// Kind yalnız birleşik Gönderen Makam seçeneği için "unit"/"office" değerini alır.
 /// Diğer tanımların önceki Id/Label/Code JSON sözleşmesi korunur.
 /// </summary>
-public sealed record DispatchOption(Guid Id,string Label,string? Code=null,string? Kind=null);
+public sealed record DispatchOption(Guid Id,string Label,string? Code=null,string? Kind=null,bool? IsActive=null);
