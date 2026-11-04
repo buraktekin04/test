@@ -151,7 +151,7 @@ assert.match(listScss,/\.empty-query-icon\{/);
 // Sevk girişinde başvuru grubu diğer tanımlardan önce istenir; beklerken yükleme UI'si görünür.
 assert.match(entryTs,/readonly admissionOptionsLoading=signal\(true\)/);
 assert.match(entryTs,/readonly admissionOptionsError=signal\(false\)/);
-assert.match(entryTs,/this\.loadOptions\('admissionTypes'\);[\s\S]*?if\(type!=='admissionTypes'\)this\.loadOptions\(type\)/);
+assert.match(entryTs,/this\.loadOptions\('admissionTypes'\);[\s\S]*?if\(type!=='admissionTypes'&&type!=='senders'\)this\.loadOptions\(type\)/);
 assert.match(entryTs,/if\(type==='admissionTypes'\)\{/);
 assert.match(entryTs,/this\.admissionOptionsLoading\.set\(true\)/);
 assert.match(entryTs,/this\.admissionOptionsLoading\.set\(false\)/);

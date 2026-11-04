@@ -63,7 +63,12 @@ Check(typeof(DispatchStatusDef).GetProperty(nameof(DispatchStatusDef.Code))?.Pro
     "Sevk durumu integer DB kodu");
 
 
-Check(!new GetDispatchOptionsQueryValidator().Validate(new GetDispatchOptionsQuery("bad-type")).IsValid,
+var dispatchOptionValidator=new GetDispatchOptionsQueryValidator();
+Check(dispatchOptionValidator.Validate(new GetDispatchOptionsQuery("senders")).IsValid,
+    "Muayeneye Gönderen Makam (senders) kabul edilir");
+Check(dispatchOptionValidator.Validate(new GetDispatchOptionsQuery("admissionTypes")).IsValid,
+    "Başvuru Grubu (admissionTypes) kabul edilir");
+Check(!dispatchOptionValidator.Validate(new GetDispatchOptionsQuery("bad-type")).IsValid,
     "Tanım türü allowlist dışında sorgu reddi");
 var registryValidator=new LookupDispatchPersonQueryValidator();
 Check(registryValidator.Validate(new LookupDispatchPersonQuery("12345678901",null,new DateOnly(1990,1,1))).IsValid,

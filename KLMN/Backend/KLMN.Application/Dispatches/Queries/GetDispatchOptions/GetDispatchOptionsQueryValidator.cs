@@ -7,7 +7,7 @@ public sealed class GetDispatchOptionsQueryValidator : AbstractValidator<GetDisp
     {
         RuleFor(x=>x.Search).MaximumLength(100);
         RuleFor(x=>x.Type).Must(x=>new[]{"countries","towns","cities","hospitals","admissionTypes",
-            "reasons","forces","ranks","classes","units","schools","offices","missions","planes"}.Contains(x))
+            "reasons","forces","ranks","classes","units","schools","offices","senders","missions","planes"}.Contains(x))
             .WithMessage("Geçersiz sevk tanım türü.");
     }
 }

@@ -12,6 +12,15 @@ const model=read('src/app/features/dispatches/models/dispatch.model.ts');
 const options=be('KLMN.Application/Dispatches/Queries/GetDispatchOptions/GetDispatchOptionsQueryHandler.cs');
 const dto=be('KLMN.Application/Dispatches/Responses/DispatchOption.cs');
 const rules=be('KLMN.Application/Dispatches/Commands/Common/DispatchRules.cs');
+const validator=be('KLMN.Application/Dispatches/Queries/GetDispatchOptions/GetDispatchOptionsQueryValidator.cs');
+// Frontend OptionType ile backend validator allowlist'i ayrışamaz.
+const optionType=model.match(/export type OptionType=([\s\S]*?);/);
+const allowlist=validator.match(/new\[\]\{([\s\S]*?)\}\.Contains\(x\)/);
+assert.ok(optionType&&allowlist,'Frontend veya backend seçenek türleri okunamadı');
+const uiTypes=[...optionType[1].matchAll(/'([^']+)'/g)].map(x=>x[1]).sort();
+const backendTypes=[...allowlist[1].matchAll(/"([^"]+)"/g)].map(x=>x[1]).sort();
+assert.deepEqual(backendTypes,uiTypes,'KLMN sevk seçenek türleri UI ve backend üzerinde eşit olmalı');
+assert.ok(backendTypes.includes('senders'),'Gönderen makam senders backend allowlist içinde olmalı');
 
 // Eski militaryunitandoffice, artık birleşik tek açılır liste.
 assert.match(html,/formControlName="senderChairChoice"/);

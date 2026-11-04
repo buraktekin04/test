@@ -1,3 +1,12 @@
+## 04.11.2026 — Sevk tanım türü ve eski sevk alanları
+
+- `GetDispatchOptionsQueryValidator` eksik `senders` türünü kabul ediyor. Bu, birleşik Muayeneye Gönderen Makam seçimindeki `Geçersiz sevk tanım türü` hatasını düzeltir.
+- Eski MSKBS ekranında **Kaçıncı İşlem**, **Sevk Evrak Tarihi**, **Sevk Evrak Sayısı** daima düzenlenebilirdi. Bu üç alanın KLMN `[disabled]` bağları kaldırıldı. Başvuru grubu değişse de girilmiş değerler silinmez. `...Required` bayrakları yalnızca zorunluluk ve backend doğrulaması için korunur.
+- Askerî alan kilitleri, muayene sebebi ve kuvvet filtreleri, birleşik gönderen makam ile DİĞER açıklama kuralları korunur.
+- Regresyon: `npm run test:dispatch-sender-chair`, `npm run test:dispatch-admission`, `npm run test:dispatch-pages`, `Tests/Dispatches.Regression`.
+- Eski-yeni tam işlevsellik karşılaştırması için eski `getPerson`, `newDispatchPhoto`, `mskbsSelectDefinition` ve QR servislerinin backend kodları ayrıca incelenmelidir. `senders` hatası doğrudan `admissionTypes` çağrısını bozmaz.
+- **Migration gerekmez.**
+
 ## 03.11.2026 — Muayeneye Gönderen Makam tek seçim
 
 Eski dispatch.component.html dosyasında Muayeneye Gönderen Makam, mskbsSelectDefinition=militaryunitandoffice ile tek dropdown'dur. GetReasonForExaminationListByHcAdmissionType ise Gönderen Makam listesi **döndürmez**; Başvuru Grubu için gerekli alanlar, Muayene Sebepleri ve Kuvvet seçeneklerini döndürür. KLMN'nin mevcut admission-rules endpoint'i bu davranışı zaten karşılar.

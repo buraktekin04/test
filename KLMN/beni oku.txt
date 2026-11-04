@@ -1,3 +1,30 @@
+04.11.2026 — SEVK TANIM TÜRÜ / ESKİ SEVK ALANLARI
+==================================================================
+- GetDispatchOptionsQueryValidator'da eksik "senders" türü eklendi.
+  Birleşik Muayeneye Gönderen Makam frontend/backend handler tarafında
+  zaten vardı; validator engelliyordu. Tüm OptionType listesi için
+  frontend-backend eşitliği regresyon testinde doğrulanıyor.
+- Eski HTML'de Kaçıncı İşlem, Sevk Evrak Tarihi ve Sevk Evrak Sayısı
+  hiçbir zaman disabled değil. KLMN'deki üç disabled bağı kaldırıldı.
+  Grup değişiminde bu alanlar artık boşaltılmıyor. İlgili Required
+  flag'leri ve sunucu tarafı kontrol, yıldızlar aynen korundu.
+- Askerî alan required/disabled, kuvvet filtreleri, neden filtreleri,
+  gönderen makam ve DİĞER açıklama davranışı bozulmadı.
+- Eski dosya "test" frontend akışlarını içeriyor. Tam API eşdeğerliği
+  için eski IPersonService.getPerson, IDispatchService.newDispatchPhoto,
+  mskbsSelectDefinition lookup ve QR backend akışları ayrıca gerekli.
+  Gerçek kurum nüfus servisi kurulmadan "Nüfustan Sorgula" uçtan uca
+  eşdeğer kabul edilmez.
+- "senders" türü hatası tek başına bağımsız "admissionTypes"
+  isteğinin boş kalmasını açıklamaz; başvuru grubu hâlâ boşsa ilgili
+  endpoint'in gerçek HTTP cevabı/DB incelenmelidir.
+TEST: npm run test:dispatch-sender-chair, test:dispatch-admission,
+      test:dispatch-pages, npm run build;
+      dotnet run --project ../Tests/Dispatches.Regression
+      dotnet build KLMN.slnx.
+Bu ortamda .NET/Angular/DB/E2E gerçek testleri çalıştırılmadı.
+Migration gerekmez. Tek commit/push.
+
 03.11.2026 — MUAYENEYE GÖNDEREN MAKAM: ESKİ TEK DROPDOWN / KLMN EŞLEMESİ
 ============================================================================
 KAYNAK: Kullanıcının bu sohbet içinde paylaştığı eski

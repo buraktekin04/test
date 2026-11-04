@@ -121,21 +121,21 @@
         @if(admissionRules()?.nthAdmissionRequired){<span class="required-mark">*</span>}
         Kaçıncı İşlem
        </span>
-       <p-inputnumber formControlName="nthAdmission" [useGrouping]="false" [min]="1" [fluid]="true" [disabled]="!isGroupFieldEnabled('nthAdmission')"/>
+       <p-inputnumber formControlName="nthAdmission" [useGrouping]="false" [min]="1" [fluid]="true"/>
       </label>
       <label class="field">
        <span class="field-caption">
         @if(admissionRules()?.dispatchDocumentDateRequired){<span class="required-mark">*</span>}
         Sevk Evrak Tarihi
        </span>
-       <input type="date" formControlName="dispatchDocumentDate" [disabled]="!isGroupFieldEnabled('dispatchDocumentDate')"/>
+       <input type="date" formControlName="dispatchDocumentDate"/>
       </label>
       <label class="field">
        <span class="field-caption">
         @if(admissionRules()?.dispatchDocumentNoRequired){<span class="required-mark">*</span>}
         Sevk Evrak Sayısı
        </span>
-       <input pInputText formControlName="dispatchDocumentNo" maxlength="50" [disabled]="!isGroupFieldEnabled('dispatchDocumentNo')"/>
+       <input pInputText formControlName="dispatchDocumentNo" maxlength="50"/>
       </label>
       <label class="field">Sevk Kapsamı
        <p-select formControlName="dispatchScope" [options]="scopeItems"

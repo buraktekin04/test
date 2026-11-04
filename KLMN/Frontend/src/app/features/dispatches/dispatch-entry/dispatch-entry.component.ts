@@ -244,11 +244,10 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
    next:rules=>{if(this.rulesRequest!==request)return;
     this.admissionRules.set(rules);this.rulesLoading.set(false);
     if(groupChanged){
-     // Kullanıcı grubu değiştirdiğinde artık uygulanmayan alanları temizle.
-     // Düzenleme ekranında eski kayıt alanlarını otomatik değiştirme.
+     // Kullanıcı grubu değiştiğinde askerî zorunluluk bayrağı kapanan alanları temizle.
+     // Eski MSKBS'de Kaçıncı İşlem ve Sevk Evrak alanları her zaman açık; bunlar grup değişince korunur.
      const fields:readonly string[]=[
-      'nthAdmission','dispatchDocumentDate','dispatchDocumentNo',
-      'forcesCommandDefId','rankDefId','militaryClassDefId','militaryUnitDefId',
+            'forcesCommandDefId','rankDefId','militaryClassDefId','militaryUnitDefId',
       'militaryOfficeDefId','militarySchoolDefId','registryNumber','lastNominationDate'
      ];
      for(const key of fields){
@@ -284,7 +283,7 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   };
   return flags[key]??false;
  }
- /** Başvuru grubu seçilene kadar ve seçilen grupta gerekmeyen alanlar eski ekrandaki gibi kilitlidir. */
+ /** Askerî alanların kullanılabilirliği grup kurallarına bağlı; sevk evrakı ve Kaçıncı İşlem daima düzenlenebilir. */
  isGroupFieldEnabled(key:string):boolean{
   const r=this.admissionRules();
   if(!r)return false;
@@ -297,9 +296,7 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
    militarySchoolDefId:r.militarySchoolRequired,
    registryNumber:r.registryNumberRequired,
    lastNominationDate:r.lastNominationDateRequired,
-   nthAdmission:r.nthAdmissionRequired,
-   dispatchDocumentDate:r.dispatchDocumentDateRequired,
-   dispatchDocumentNo:r.dispatchDocumentNoRequired
+
   };
   return flags[key]??false;
  }

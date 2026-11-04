@@ -35,16 +35,29 @@ assert.match(ts,/allowedForcesCommandIds/);
 for(const key of [
  'forcesCommandDefId','rankDefId','militaryClassDefId','militaryUnitDefId',
  'militaryOfficeDefId','militarySchoolDefId','registryNumber',
- 'lastNominationDate','nthAdmission','dispatchDocumentDate','dispatchDocumentNo'
+ 'lastNominationDate'
 ]) assert.ok(ts.includes(key+':r.'),'Eksik gerekli alan: '+key);
 
 assert.match(html,/\[options\]="visibleOptions\(field.type\)"/);
 assert.match(html,/\[disabled\]="!isGroupFieldEnabled\(field.key\)"/);
 assert.match(html,/\[disabled\]="!isGroupFieldEnabled\('registryNumber'\)"/);
-assert.match(html,/\[disabled\]="!isGroupFieldEnabled\('nthAdmission'\)"/);
-assert.match(html,/\[disabled\]="!isGroupFieldEnabled\('dispatchDocumentDate'\)"/);
-assert.match(html,/\[disabled\]="!isGroupFieldEnabled\('dispatchDocumentNo'\)"/);
 assert.match(html,/\[disabled\]="!isGroupFieldEnabled\('lastNominationDate'\)"/);
+
+// Eski HTML'de bu üç sevk alanı daima düzenlenebilir (disabled yok).
+for(const [oldControl,field,tag,requiredFlag] of [
+ ['nthadmission','nthAdmission','p-inputnumber','nthAdmissionRequired'],
+ ['dispatchdocumentdate','dispatchDocumentDate','input','dispatchDocumentDateRequired'],
+ ['dispatchdocumentno','dispatchDocumentNo','input','dispatchDocumentNoRequired']
+]){
+ assert.ok(old.includes('name="'+oldControl+'"'),'Eski ekran sevk alanı yok: '+oldControl);
+ const control=html.match(new RegExp('<'+tag+'[^>]*formControlName="'+field+'"[^>]*>'));
+ assert.ok(control,'Yeni sevk alanı yok: '+field);
+ assert.doesNotMatch(control[0],/\[disabled\]/,'Sevk alanı disabled olamaz: '+field);
+ assert.ok(html.includes('admissionRules()?.'+requiredFlag),'Zorunluluk işareti eksik: '+field);
+}
+const groupCleared=ts.split('const fields:readonly string[]=')[1].split('for(const key of fields)')[0];
+for(const field of ['nthAdmission','dispatchDocumentDate','dispatchDocumentNo'])
+ assert.ok(!groupCleared.includes("'"+field+"'"),'Grup değişiminde veri silinmemeli: '+field);
 
 // Kod 7 tüm kuvvetler, 33 yalnız 1/2/3, diğer gruplar 4 ve 5 hariç.
 // Kurallar server tarafında da uygulandığı için API dışından bypass edilemez.
