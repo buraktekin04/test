@@ -17,10 +17,32 @@ static void Check(bool condition,string name)
     Console.WriteLine("PASS: "+name);
 }
 var person=new DispatchPersonInput{Name="Örnek",Surname="Kişi",TcKimlikNo="12345678901",BirthDate=new DateOnly(1990,1,1)};
-var dispatch=new DispatchDetailsInput{HcAdmissionTypeDefId=Guid.NewGuid(),
-    ReasonForExaminationDefId=Guid.NewGuid(),DispatchScope=1};
-Check(new CreateDispatchCommandValidator().Validate(new CreateDispatchCommand(person,dispatch)).IsValid,
-    "Sevk oluşturma istek sözleşmesi");
+static DispatchDetailsInput Scope(int scope,Guid? city=null,Guid? hospital=null)
+{
+    return new DispatchDetailsInput
+    {
+        HcAdmissionTypeDefId=Guid.NewGuid(),
+        ReasonForExaminationDefId=Guid.NewGuid(),
+        DispatchScope=scope,DispatchScopeCityId=city,DispatchScopeHospitalId=hospital
+    };
+}
+var dispatch=Scope(2,city:Guid.NewGuid());
+var createValidator=new CreateDispatchCommandValidator();
+var updateValidator=new UpdateDispatchCommandValidator();
+Check(createValidator.Validate(new CreateDispatchCommand(person,dispatch)).IsValid,
+    "Sevk oluşturma istek sözleşmesi (şehir kapsamı)");
+Check(createValidator.Validate(new CreateDispatchCommand(person,Scope(3,hospital:Guid.NewGuid()))).IsValid,
+    "Sevk oluşturma belirli sağlık tesisi kapsamı");
+Check(!createValidator.Validate(new CreateDispatchCommand(person,new DispatchDetailsInput())).IsValid,
+    "Sevk oluştururken kapsam gönderilmemesi reddedilir");
+Check(!createValidator.Validate(new CreateDispatchCommand(person,Scope(1))).IsValid,
+    "Sevk oluştururken kapsam belirtilmemiş (1) reddedilir");
+Check(!createValidator.Validate(new CreateDispatchCommand(person,Scope(2))).IsValid,
+    "Şehir kapsamı seçildiğinde şehir zorunlu");
+Check(!createValidator.Validate(new CreateDispatchCommand(person,Scope(3))).IsValid,
+    "Sağlık tesisi kapsamı seçildiğinde hastane zorunlu");
+Check(!updateValidator.Validate(new UpdateDispatchCommand(Guid.NewGuid(),1,person,Scope(1))).IsValid,
+    "Sevk düzenlerken kapsam belirtilmemiş (1) reddedilir");
 Check(!new CreateDispatchCommandValidator().Validate(new CreateDispatchCommand(null!,dispatch)).IsValid,
     "Kişi bilgisi olmadan oluşturma engeli");
 Check(!new UpdateDispatchCommandValidator().Validate(new UpdateDispatchCommand(Guid.Empty,0,person,dispatch)).IsValid,

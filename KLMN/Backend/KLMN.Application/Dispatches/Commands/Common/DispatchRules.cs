@@ -31,8 +31,9 @@ internal static class DispatchRules
             p.PhoneNumber?.Length>20||p.Address?.Length>512||p.BirthPlaceText?.Length>500||
             p.BirthPlaceCode?.Length>250)
             throw new DispatchConflictException("Kişi bilgilerinde izin verilen alan uzunluğu aşıldı.");
-        if (d.DispatchScope is <1 or >3)
-            throw new DispatchConflictException("Sevk kapsamı geçersizdir.");
+        // 1 (Kapsam belirtilmemiş) eski kayıtlarda kalabilir; yeni kayıt/güncelleme için yalnız 2 veya 3 geçerlidir.
+        if (d.DispatchScope is not (2 or 3))
+            throw new DispatchConflictException("Sevk kapsamı zorunludur. Şehir veya belirli sağlık tesisi seçiniz.");
         if (d.DispatchScope==2 && !d.DispatchScopeCityId.HasValue)
             throw new DispatchConflictException("Şehir kapsamı için sevk kapsamı şehri seçilmelidir.");
         if (d.DispatchScope==3 && !d.DispatchScopeHospitalId.HasValue)

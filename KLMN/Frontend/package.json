@@ -16,7 +16,8 @@
     "test:icd10-dropdown": "node tests/icd10-dropdown-regression.mjs",
     "test:dispatch-admission": "node tests/dispatch-admission-regression.mjs",
     "test:dispatch-sender-chair": "node tests/dispatch-sender-chair-regression.mjs",
-    "test:admission-labels": "node tests/admission-labels-regression.mjs"
+    "test:admission-labels": "node tests/admission-labels-regression.mjs",
+    "test:dispatch-scope": "node tests/dispatch-scope-regression.mjs"
   },
   "dependencies": {
     "@angular/animations": "^21.0.0",

@@ -1,3 +1,18 @@
+04.11.2026 — SEVK GİRİŞİ KAPSAM ZORUNLULUĞU
+===========================================
+Yeni sevk için 'Kapsam belirtilmemiş' (1) seçeneği kaldırıldı.
+Kapsam başlangıçta null; kullanıcı yalnız Şehirdeki sağlık tesisleri (2)
+veya Belirli sağlık tesisi (3) seçebilir. 2->şehir, 3->hastane zorunlu.
+Frontend form, save() ve backend Create/Update Validator + DispatchRules
+kontrolleri aynı kuralı uygular. DispatchDetailsInput artık 1'e default etmez.
+Eski DB kayıtları ve Sevk Listesi/Sorgulama'da tarihsel 1 filtresi korunur.
+Eski kapsam=1 sevk düzenlenirken yeni kapsam seçmek zorunludur.
+DB check constraint geriye dönük veri uyumu için değişmedi; migration yok.
+TEST: npm --prefix KLMN/Frontend run test:dispatch-scope
+      dotnet run --project KLMN/Tests/Dispatches.Regression
+      npm --prefix KLMN/Frontend run build
+      dotnet build KLMN/Backend/KLMN.slnx
+Bu ortamda gerçek build/DB/E2E çalıştırılmadı. Tek commit/push.
 04.11.2026 — BAŞVURU GRUBU DÖRT ZORUNLULUK ALANI ETİKETİ
 =======================================================
 Başvuru Grubu Yeni/Düzenle formundaki değişiklikler:

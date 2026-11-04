@@ -7,7 +7,8 @@ public sealed class DispatchDetailsInput
     public DateOnly? DispatchDocumentDate { get; set; }
     public string? DispatchDocumentNo { get; set; }
     public Guid ReasonForExaminationDefId { get; set; }
-    public int DispatchScope { get; set; } = 1;
+    // 0: kapsam gönderilmedi; 1: artık yeni sevk oluşturma/düzenlemede kabul edilmeyen tarihsel değer.
+    public int DispatchScope { get; set; }
     public Guid? DispatchScopeCityId { get; set; }
     public Guid? DispatchScopeHospitalId { get; set; }
     public Guid HcAdmissionTypeDefId { get; set; }

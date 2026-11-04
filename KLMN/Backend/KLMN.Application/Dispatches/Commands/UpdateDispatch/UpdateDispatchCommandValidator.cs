@@ -9,5 +9,14 @@ public sealed class UpdateDispatchCommandValidator : AbstractValidator<UpdateDis
         RuleFor(x=>x.Version).GreaterThan(0U);
         RuleFor(x=>x.Person).NotNull();
         RuleFor(x=>x.Dispatch).NotNull();
+        RuleFor(x=>x.Dispatch!.DispatchScope).Must(scope=>scope is 2 or 3)
+            .When(x=>x.Dispatch is not null)
+            .WithMessage("Sevk kapsamı zorunludur. Şehir veya belirli sağlık tesisi seçiniz.");
+        RuleFor(x=>x.Dispatch!.DispatchScopeCityId).NotNull()
+            .When(x=>x.Dispatch?.DispatchScope==2)
+            .WithMessage("Şehir kapsamı için şehir seçiniz.");
+        RuleFor(x=>x.Dispatch!.DispatchScopeHospitalId).NotNull()
+            .When(x=>x.Dispatch?.DispatchScope==3)
+            .WithMessage("Sağlık tesisi kapsamı için sağlık tesisi seçiniz.");
     }
 }

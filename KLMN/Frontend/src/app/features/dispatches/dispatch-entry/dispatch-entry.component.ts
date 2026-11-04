@@ -72,7 +72,7 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   dispatchDocumentDate:this.fb.control<string|null>(null),
   dispatchDocumentNo:this.fb.control<string|null>(null),
   reasonForExaminationDefId:this.fb.control<string|null>(null,Validators.required),
-  dispatchScope:this.fb.nonNullable.control(1),
+  dispatchScope:this.fb.control<number|null>(null,Validators.required),
   dispatchScopeCityId:this.fb.control<string|null>(null),
   dispatchScopeHospitalId:this.fb.control<string|null>(null),
   hcAdmissionTypeDefId:this.fb.control<string|null>(null,Validators.required),
@@ -96,8 +96,8 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   description:this.fb.control<string|null>(null)
  });
  readonly form=this.fb.group({person:this.personForm,dispatch:this.dispatchForm});
- readonly scopeItems=[{label:'Kapsam belirtilmemiş',value:1},
-  {label:'Şehirdeki sağlık tesisleri',value:2},{label:'Belirli sağlık tesisi',value:3}];
+ readonly scopeItems=[{label:'Şehirdeki sağlık tesisleri',value:2},
+  {label:'Belirli sağlık tesisi',value:3}];
  readonly genderOptions=signal<DispatchGenderOption[]>([]);
  readonly genderItems=computed(()=>this.genderOptions().map(x=>({label:x.name,value:x.code})));
  readonly personTexts=[
@@ -361,7 +361,7 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   this.resetPhoto();
   this.pendingQrReasonId=null;
   this.personForm.reset({name:'',surname:'',birthDate:'',tcKimlikNo:null,yabanciKimlikNo:null});
-  this.dispatchForm.reset({dispatchScope:1,reasonForExaminationDefId:null,hcAdmissionTypeDefId:null});
+  this.dispatchForm.reset({dispatchScope:null,reasonForExaminationDefId:null,hcAdmissionTypeDefId:null});
   this.senderDefaultChecked=false;
   this.prefillCurrentUserSender();
   this.dialogVisible.set(true);
@@ -570,6 +570,10 @@ export class DispatchEntryComponent implements OnInit,OnDestroy {
   delete dispatch.senderChairChoice;
   person.tcKimlikNo=this.identityType()==='tc'?person.tcKimlikNo?.trim()||null:null;
   person.yabanciKimlikNo=this.identityType()==='foreign'?person.yabanciKimlikNo?.trim()||null:null;
+  if(dispatch.dispatchScope!==2&&dispatch.dispatchScope!==3){
+   this.dispatchForm.controls.dispatchScope.markAsTouched();
+   this.formError.set('Sevk kapsamı seçiniz.');return;
+  }
   if(this.form.invalid||!person.birthDate||!(person.tcKimlikNo||person.yabanciKimlikNo)){
    this.form.markAllAsTouched();this.formError.set('Ad, soyad, kimlik numarası, doğum tarihi, başvuru grubu, muayene sebebi ve muayeneye gönderen makam gereklidir.');return;
   }

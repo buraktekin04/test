@@ -1,3 +1,12 @@
+## 04.11.2026 — Sevk kapsamı seçim zorunluluğu
+
+- Yeni Sevk Girişi'nde **Kapsam belirtilmemiş (1)** seçeneği kaldırıldı. Varsayılan `dispatchScope=null`, formda zorunlu yıldız ve seçim yer tutucusu var.
+- Geçerli seçenekler: `2=Şehirdeki sağlık tesisleri` (şehir seçimi zorunlu) ve `3=Belirli sağlık tesisi` (hastane seçimi zorunlu).
+- Frontend kaydetmeden önce 2/3 seçimini kontrol eder; Create/Update FluentValidation ve DispatchRules de yalnız 2/3'e izin verir.
+- `DispatchDetailsInput` varsayılan 1 değerini kaldırdık: kapsam gönderilmeyen istekler artık sessizce 1'e dönüştürülmez.
+- Sevk Listesi ve Sorgulama'da tarihsel **Kapsam belirtilmemiş (1)** kayıtlarını filtreleyebilmek için eski seçenek korunmuştur. DB `CK_Dispatch_Scope` değiştirilmemiştir; eski kayıtlar silinmez. Düzenleme ekranında eski kapsamlı bir kayıt açıldığında kullanıcı 2 veya 3 seçmeden güncelleyemez.
+- Frontend regresyonu: `npm run test:dispatch-scope`; backend regresyonu: `dotnet run --project ../Tests/Dispatches.Regression`.
+- **Migration gerekmez.** Gerçek Angular/.NET build ve canlı veritabanı testleri yerel ortamda yapılmalı.
 ## 04.11.2026 — Sevk tanım türü ve eski sevk alanları
 
 - `GetDispatchOptionsQueryValidator` eksik `senders` türünü kabul ediyor. Bu, birleşik Muayeneye Gönderen Makam seçimindeki `Geçersiz sevk tanım türü` hatasını düzeltir.
