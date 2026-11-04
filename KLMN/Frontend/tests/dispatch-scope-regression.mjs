@@ -24,7 +24,7 @@ assert.match(html,/<span class="required-mark">\*<\/span> Sevk Kapsamı/);
 assert.match(html,/placeholder="Sevk kapsamı seçiniz"/);
 assert.match(html,/@if\(dispatchForm\.controls\.dispatchScope\.value===2\)/);
 assert.match(html,/@if\(dispatchForm\.controls\.dispatchScope\.value===3\)/);
-assert.match(input,/public int DispatchScope \{ get; set; \};/);
+assert.match(input,/public int DispatchScope \{ get; set; \}/);
 assert.doesNotMatch(input,/DispatchScope \{ get; set; \} = 1;/);
 assert.match(rules,/if \(d\.DispatchScope is not \(2 or 3\)\)/);
 for(const v of [create,update]){
