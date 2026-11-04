@@ -94,7 +94,7 @@ export class AdmissionTypeListComponent implements OnInit {
     title: string; fields: readonly { key: AdmissionRequirementField; label: string }[]
   }[] = [
     { title: 'Askerî Bilgiler', fields: [
-      { key: 'forcesCommandRequired', label: 'Kuvvet Komutanlığı' },
+      { key: 'forcesCommandRequired', label: 'Kuvvet Gerekir' },
       { key: 'rankRequired', label: 'Rütbe' },
       { key: 'militaryClassRequired', label: 'Askerî Sınıf' },
       { key: 'militaryUnitRequired', label: 'Birlik' },
@@ -104,13 +104,13 @@ export class AdmissionTypeListComponent implements OnInit {
       { key: 'militarySchoolRequired', label: 'Askerî Okul' },
     ] },
     { title: 'Başvuru ve Sağlık', fields: [
-      { key: 'lastNominationDateRequired', label: 'Son Adaylık Tarihi' },
+      { key: 'lastNominationDateRequired', label: 'Nasbı Gerekir' },
       { key: 'heightWeightRequired', label: 'Boy ve Kilo' },
       { key: 'nthAdmissionRequired', label: 'Kaçıncı İşlem Gerekir' },
     ] },
     { title: 'Belgeler ve Onay', fields: [
-      { key: 'dispatchDocumentDateRequired', label: 'Sevk Belgesi Tarihi' },
-      { key: 'dispatchDocumentNoRequired', label: 'Sevk Belgesi Numarası' },
+      { key: 'dispatchDocumentDateRequired', label: 'Sevk Evrak Tarihi Gerekir' },
+      { key: 'dispatchDocumentNoRequired', label: 'Sevk Evrak Sayısı Gerekir' },
       { key: 'pertemApprovalRequired', label: 'PERTEM Onayı' },
     ] },
   ];

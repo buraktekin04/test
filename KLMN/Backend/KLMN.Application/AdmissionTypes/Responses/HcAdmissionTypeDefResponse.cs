@@ -8,6 +8,7 @@ public sealed class HcAdmissionTypeDefResponse
     public Guid Id { get; init; }
     public int Code { get; init; }
     public string Name { get; init; } = string.Empty;
+    /// <summary>Başvuru grubu formundaki "Kuvvet Gerekir" seçimi; API alan adı korunur.</summary>
     public bool ForcesCommandRequired { get; init; }
     public bool RankRequired { get; init; }
     public bool MilitaryClassRequired { get; init; }
@@ -16,10 +17,13 @@ public sealed class HcAdmissionTypeDefResponse
     public bool MilitaryOfficeRequired { get; init; }
     public bool RegistryNumberRequired { get; init; }
     public bool MilitarySchoolRequired { get; init; }
+    /// <summary>Başvuru grubu formundaki "Nasbı Gerekir" seçimi; API alan adı korunur.</summary>
     public bool LastNominationDateRequired { get; init; }
     public bool HeightWeightRequired { get; init; }
     public bool NthAdmissionRequired { get; init; }
+    /// <summary>Başvuru grubu formundaki "Sevk Evrak Tarihi Gerekir" seçimi; API alan adı korunur.</summary>
     public bool DispatchDocumentDateRequired { get; init; }
+    /// <summary>Başvuru grubu formundaki "Sevk Evrak Sayısı Gerekir" seçimi; API alan adı korunur.</summary>
     public bool DispatchDocumentNoRequired { get; init; }
     public bool PertemApprovalRequired { get; init; }
     public DateTime? ValidFrom { get; init; }

@@ -1,3 +1,23 @@
+04.11.2026 — BAŞVURU GRUBU DÖRT ZORUNLULUK ALANI ETİKETİ
+=======================================================
+Başvuru Grubu Yeni/Düzenle formundaki değişiklikler:
+- Kuvvet Komutanlığı => Kuvvet Gerekir (ForcesCommandRequired)
+- Son Adaylık Tarihi => Nasbı Gerekir (LastNominationDateRequired)
+- Sevk Belgesi Tarihi => Sevk Evrak Tarihi Gerekir (DispatchDocumentDateRequired)
+- Sevk Belgesi Numarası => Sevk Evrak Sayısı Gerekir (DispatchDocumentNoRequired)
+
+KAPSAM: Angular requirementGroups; backend Excel sütun başlıkları;
+HcAdmissionTypeDef domain ve response XML açıklamaları;
+BASVURU_GRUBU_TANIMLARI_KURULUM.md; yeni regresyon testi
+Frontend/tests/admission-labels-regression.mjs ve package.json script'i.
+
+API JSON property adları, entity, create/update/response sözleşmesi,
+PostgreSQL kolonları ve 14 boolean aynen korundu. Başka Kuvvet
+Komutanlığı tanımları/Sevk Girişi ekranı değiştirilmedi.
+TEST: cd KLMN/Frontend && npm run test:admission-labels && npm run build
+      cd ../Backend && dotnet build KLMN.slnx
+Bu ajan ortamında Angular/.NET derlemesi, DB/E2E koşturulmadı.
+Migration gerekmez. Tek commit + push.
 04.11.2026 — SEVK TANIM TÜRÜ / ESKİ SEVK ALANLARI
 ==================================================================
 - GetDispatchOptionsQueryValidator'da eksik "senders" türü eklendi.

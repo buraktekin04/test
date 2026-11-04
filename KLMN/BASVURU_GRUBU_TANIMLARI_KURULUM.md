@@ -1,5 +1,23 @@
 # Başvuru Grubu Tanımları — Kurulum ve Test
 
+## 04.11.2026 — Başvuru Grubu zorunluluk etiketleri
+
+Yeni/Düzenle formu ve Excel dışa aktarımı aynı metinleri kullanır:
+
+| Eski | Yeni | Mevcut teknik alan |
+| --- | --- | --- |
+| Kuvvet Komutanlığı | Kuvvet Gerekir | `ForcesCommandRequired` |
+| Son Adaylık Tarihi | Nasbı Gerekir | `LastNominationDateRequired` |
+| Sevk Belgesi Tarihi | Sevk Evrak Tarihi Gerekir | `DispatchDocumentDateRequired` |
+| Sevk Belgesi Numarası | Sevk Evrak Sayısı Gerekir | `DispatchDocumentNoRequired` |
+
+Angular requirementGroups, backend AdmissionTypesController.Export, domain/DTO açıklamaları güncellendi.
+Create/Update/Response JSON property adları ve PostgreSQL kolonları değişmedi.
+14 boolean alan korunuyor. **Migration gerekmez.**
+
+Doğrulama: `cd KLMN/Frontend && npm run test:admission-labels && npm run build`
+ve `cd KLMN/Backend && dotnet build KLMN.slnx`.
+
 ## Fotoğraftaki HcAdmissionTypeDef alanlarının karşılığı
 
 `HcAdmissionTypeDef : EffectiveDatedEntity : BaseEntity` kullanılır.
@@ -13,7 +31,7 @@
 
 | Eski bool property | Formda görünen alan |
 |---|---|
-| `ForcesCommandRequired` | Kuvvet Komutanlığı |
+| `ForcesCommandRequired` | Kuvvet Gerekir |
 | `RankRequired` | Rütbe |
 | `MilitaryClassRequired` | Askerî Sınıf |
 | `MilitaryUnitRequired` | Birlik |
@@ -21,11 +39,11 @@
 | `MilitaryOfficeRequired` | Askerlik Şubesi |
 | `RegistryNumberRequired` | Sicil Numarası |
 | `MilitarySchoolRequired` | Askerî Okul |
-| `LastNominationDateRequired` | Son Adaylık Tarihi |
+| `LastNominationDateRequired` | Nasbı Gerekir |
 | `HeightWeightRequired` | Boy ve Kilo |
 | `NthAdmissionRequired` | Kaçıncı Başvuru |
-| `DispatchDocumentDateRequired` | Sevk Belgesi Tarihi |
-| `DispatchDocumentNoRequired` | Sevk Belgesi Numarası |
+| `DispatchDocumentDateRequired` | Sevk Evrak Tarihi Gerekir |
+| `DispatchDocumentNoRequired` | Sevk Evrak Sayısı Gerekir |
 | `PertemApprovalRequired` | PERTEM Onayı |
 
 Hiçbir ek FK, dropdown tablosu, `Active` kopyası veya yeni entity özelliği

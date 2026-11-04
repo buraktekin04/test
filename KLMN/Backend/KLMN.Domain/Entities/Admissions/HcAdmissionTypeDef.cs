@@ -18,7 +18,7 @@ public sealed class HcAdmissionTypeDef : EffectiveDatedEntity
     public ICollection<ReasonForExamUnusedHcAdmissionType> UnusedExaminationReasons { get; set; } = new List<ReasonForExamUnusedHcAdmissionType>();
 
 
-    /// <summary>Başvuruda Kuvvet Komutanlığı alanının zorunlu olup olmayacağını belirler.</summary>
+    /// <summary>Başvuruda Kuvvet Gerekir seçiminin zorunlu olup olmayacağını belirler.</summary>
     public bool ForcesCommandRequired { get; set; }
 
     /// <summary>Başvuruda Rütbe alanının zorunlu olup olmayacağını belirler.</summary>
@@ -42,7 +42,7 @@ public sealed class HcAdmissionTypeDef : EffectiveDatedEntity
     /// <summary>Başvuruda Askerî Okul alanının zorunlu olup olmayacağını belirler.</summary>
     public bool MilitarySchoolRequired { get; set; }
 
-    /// <summary>Başvuruda Son Adaylık Tarihi alanının zorunlu olup olmayacağını belirler.</summary>
+    /// <summary>Başvuruda Nasbı Gerekir seçiminin zorunlu olup olmayacağını belirler.</summary>
     public bool LastNominationDateRequired { get; set; }
 
     /// <summary>Başvuruda Boy ve Kilo alanının zorunlu olup olmayacağını belirler.</summary>
@@ -51,10 +51,10 @@ public sealed class HcAdmissionTypeDef : EffectiveDatedEntity
     /// <summary>Başvuruda Kaçıncı İşlem Gerekir alanının zorunlu olup olmayacağını belirler.</summary>
     public bool NthAdmissionRequired { get; set; }
 
-    /// <summary>Başvuruda Sevk Belgesi Tarihi alanının zorunlu olup olmayacağını belirler.</summary>
+    /// <summary>Başvuruda Sevk Evrak Tarihi Gerekir seçiminin zorunlu olup olmayacağını belirler.</summary>
     public bool DispatchDocumentDateRequired { get; set; }
 
-    /// <summary>Başvuruda Sevk Belgesi Numarası alanının zorunlu olup olmayacağını belirler.</summary>
+    /// <summary>Başvuruda Sevk Evrak Sayısı Gerekir seçiminin zorunlu olup olmayacağını belirler.</summary>
     public bool DispatchDocumentNoRequired { get; set; }
 
     /// <summary>Başvuruda PERTEM Onayı alanının zorunlu olup olmayacağını belirler.</summary>
