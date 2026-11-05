@@ -1,0 +1,132 @@
+<div class="provision-page">
+ <header class="provision-header"><div><h1>Provizyon Sevksiz Giriş</h1>
+  <p>Eski sistemdeki kişi, provizyon ve askerî bilgileri tek ekranda.</p></div>
+  <a routerLink="/app/provisions/query">Provizyon Sorgulama</a>
+ </header>
+ <form [formGroup]="form" (ngSubmit)="save()" class="provision-page">
+  <section class="provision-card">
+   <h2><i class="pi pi-user"></i> Başvuran Kişi</h2>
+   <div class="provision-grid">
+    <label class="provision-field">T.C. Kimlik No
+     <input formControlName="tcKimlikNo" inputmode="numeric" maxlength="11" placeholder="T.C. Kimlik No"/></label>
+    <label class="provision-field">Yabancı Kimlik No
+     <input formControlName="yabanciKimlikNo" inputmode="numeric" maxlength="20" placeholder="Yabancı Kimlik No"/></label>
+    <div class="provision-field"><span>Kimlik sorgulama</span>
+     <p-button type="button" label="Nüfustan Sorgula" icon="pi pi-search"
+      [loading]="querying()" [disabled]="querying()" (onClick)="lookupPerson()"/></div>
+    <label class="provision-field">Doğum Tarihi <span class="provision-required">*</span>
+     <input type="date" formControlName="birthDate"/></label>
+   </div>
+  </section>
+  <div class="provision-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+   <section class="provision-card" style="min-width:0">
+    <h2><i class="pi pi-id-card"></i> Kişi Bilgileri</h2>
+    <div class="provision-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+     <label class="provision-field">Adı <span class="provision-required">*</span>
+      <input formControlName="name" maxlength="64"/></label>
+     <label class="provision-field">Soyadı <span class="provision-required">*</span>
+      <input formControlName="surname" maxlength="64"/></label>
+     <label class="provision-field">Ana Adı<input formControlName="motherName" maxlength="64"/></label>
+     <label class="provision-field">Baba Adı<input formControlName="fatherName" maxlength="64"/></label>
+     <label class="provision-field">Uyruğu
+      <p-select formControlName="nationalityId" [options]="getOptions('countries')"
+       optionLabel="label" optionValue="id" [filter]="true" filterBy="label"
+       placeholder="Uyruğu seçiniz" [showClear]="true" [fluid]="true" appendTo="body"/></label>
+     <label class="provision-field">Doğum Yeri
+      <p-select formControlName="townOfBirthId" [options]="getOptions('towns')"
+       optionLabel="label" optionValue="id" [filter]="true" filterBy="label"
+       placeholder="İlçe seçiniz" [showClear]="true" [fluid]="true" appendTo="body"/></label>
+     <label class="provision-field">Cinsiyet
+      <select formControlName="gender"><option [ngValue]="0">Seçiniz</option>
+       @for(g of genders();track g.code){<option [ngValue]="g.code">{{g.name}}</option>}
+      </select></label>
+     <label class="provision-field">Telefon<input formControlName="phoneNumber" maxlength="20"/></label>
+     <label class="provision-field full">Adres<textarea formControlName="address" rows="2" maxlength="512"></textarea></label>
+     <label class="provision-field full">Fotoğraf (PNG/JPEG, maks. 2 MiB)
+      <input type="file" accept="image/png,image/jpeg" (change)="onPhoto($event)"/></label>
+    </div>
+   </section>
+   <section class="provision-card" style="min-width:0">
+    <h2><i class="pi pi-heart"></i> Provizyon Bilgileri</h2>
+    <div class="provision-grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+     <label class="provision-field wide">Kabul Yapan Hastane <span class="provision-required">*</span>
+      <p-select formControlName="hospitalId" [options]="getOptions('hospitals')"
+       optionLabel="label" optionValue="id" [filter]="true" filterBy="label"
+       placeholder="Hastane seçiniz" [fluid]="true" appendTo="body"/></label>
+     <label class="provision-field">Kaçıncı İşlem<input type="number" min="1" formControlName="nthAdmission"/></label>
+     <label class="provision-field">Alım ID<input type="number" min="0" formControlName="purchaseId"/></label>
+     <label class="provision-field">Sevk Evrak Tarihi<input type="date" formControlName="dispatchDocumentDate"/></label>
+     <label class="provision-field">Sevk Evrak Sayısı<input formControlName="dispatchDocumentNo" maxlength="50"/></label>
+     <label class="provision-field wide">Başvuru Grubu <span class="provision-required">*</span>
+      <p-select formControlName="hcAdmissionTypeDefId" [options]="getOptions('admissionTypes')"
+       optionLabel="label" optionValue="id" [filter]="true" filterBy="label"
+       placeholder="Başvuru grubu seçiniz" [fluid]="true" appendTo="body"/></label>
+     <label class="provision-field wide">Muayene Sebebi <span class="provision-required">*</span>
+      <p-select formControlName="reasonForExaminationDefId" [options]="availableReasons()"
+       optionLabel="label" optionValue="id" [filter]="true" filterBy="label"
+       placeholder="Muayene sebebi seçiniz" [fluid]="true" appendTo="body"
+       [disabled]="!rules()"/></label>
+     <p class="provision-note" style="grid-column:1/-1">Sevksiz provizyonun sevk kapsamı,
+      kabul eden hastaneden otomatik belirlenir. Sevk Kapsamı Belirtilmemiş kullanılamaz.</p>
+    </div>
+   </section>
+  </div>
+  <section class="provision-card">
+   <h2><i class="pi pi-sitemap"></i> Askerî Bilgiler</h2>
+   <div class="provision-grid">
+    <label class="provision-field">Kuvvet
+     <p-select formControlName="forcesCommandDefId" [options]="getOptions('forces')"
+      optionLabel="label" optionValue="id" [filter]="true" filterBy="label" [showClear]="true"
+      placeholder="Kuvvet" [fluid]="true" appendTo="body"/></label>
+    <label class="provision-field">Sınıf
+     <p-select formControlName="militaryClassDefId" [options]="getOptions('classes')"
+      optionLabel="label" optionValue="id" [filter]="true" filterBy="label" [showClear]="true"
+      placeholder="Sınıf" [fluid]="true" appendTo="body"/></label>
+    <label class="provision-field">Rütbe
+     <p-select formControlName="rankDefId" [options]="getOptions('ranks')"
+      optionLabel="label" optionValue="id" [filter]="true" filterBy="label" [showClear]="true"
+      placeholder="Rütbe" [fluid]="true" appendTo="body"/></label>
+    <label class="provision-field">Sicil No<input formControlName="registryNumber" maxlength="50"/></label>
+    <label class="provision-field">Birlik
+     <p-select formControlName="militaryUnitDefId" [options]="getOptions('units')"
+      optionLabel="label" optionValue="id" [filter]="true" filterBy="label" [showClear]="true"
+      placeholder="Birlik" [fluid]="true" appendTo="body"/></label>
+    <label class="provision-field">Muayeneye Gönderen Makam <span class="provision-required">*</span>
+     <p-select formControlName="senderChoice"
+      [options]="getOptions('senders')" optionLabel="label" optionValue="id"
+      [filter]="true" filterBy="label" placeholder="Gönderen makam"
+      [fluid]="true" appendTo="body"/></label>
+    <label class="provision-field">Okul
+     <p-select formControlName="militarySchoolDefId" [options]="getOptions('schools')"
+      optionLabel="label" optionValue="id" [filter]="true" filterBy="label"
+      [showClear]="true" placeholder="Okul" [fluid]="true" appendTo="body"/></label>
+    <label class="provision-field">Kayıtlı Olduğu Askerlik Şubesi
+     <p-select formControlName="militaryOfficeDefId" [options]="getOptions('offices')"
+      optionLabel="label" optionValue="id" [filter]="true" filterBy="label"
+      [showClear]="true" placeholder="Askerlik şubesi" [fluid]="true" appendTo="body"/></label>
+    <label class="provision-field">Nasbı<input type="date" formControlName="lastNominationDate"/></label>
+    <label class="provision-field">Uçucu Görevi
+     <p-select formControlName="flyingMissionDefId" [options]="getOptions('missions')"
+      optionLabel="label" optionValue="id" [filter]="true" filterBy="label"
+      [showClear]="true" placeholder="Uçucu görev" [fluid]="true" appendTo="body"/></label>
+    <label class="provision-field">Uçtuğu Uçak Tipi
+     <p-select formControlName="planeTypeDefId" [options]="getOptions('planes')"
+      optionLabel="label" optionValue="id" [filter]="true" filterBy="label"
+      [showClear]="true" placeholder="Uçak tipi" [fluid]="true" appendTo="body"/></label>
+    <label class="provision-field wide">Birlik Açıklaması
+     <textarea formControlName="militaryUnitDescription" rows="2" maxlength="1000"></textarea></label>
+    <label class="provision-field wide">Gönderen Makam Açıklaması
+     <textarea formControlName="senderChairOther" rows="2" maxlength="1000"></textarea></label>
+   </div>
+  </section>
+  @if(error()){<div role="alert" class="provision-error">{{error()}}</div>}
+  @if(warning()){<div class="provision-error">{{warning()}}</div>}
+  @if(result();as saved){<div class="provision-success" role="status">
+    {{saved.provisionNo}} numaralı sevksiz provizyon kaydedildi.
+    <a [routerLink]="['/app/provisions/query']" [queryParams]="{provisionNo:saved.provisionNo}">Sorgulamaya git</a>
+   </div>}
+  <div class="provision-actions"><p-button type="submit" label="Provizyon Al" icon="pi pi-check"
+   [loading]="loading()" [disabled]="loading()||form.invalid||result()!==null||!rules()"/>
+   <a routerLink="/app/provisions/query">İptal / Sorgulama ekranı</a></div>
+ </form>
+</div>

@@ -30,6 +30,11 @@ public sealed class AuditableEntitySaveChangesInterceptor(
             // Kişi kimliği, sağlık verisi ve dosya baytları audit geçmişine alınmaz.
             ["Dispatch"] = Fields("DispatchNo", "CurrentState", "DispatchScope",
                 "HcAdmissionTypeDefId", "ReasonForExaminationDefId", "IsActive"),
+            // Provizyon geçmişi: yalnız referans ve durum kodları. Kişisel/sağlık
+            // bilgileri, açıklama, itiraz raporu ve fotoğraf byte'ları audit'e girmez.
+            ["Provision"] = Fields("DispatchId", "ProvisionNo", "DispatchHospitalId",
+                "WithoutDispatch", "CurrentState", "IsActive"),
+            ["ProvisionState"] = Fields("ProvisionId", "State", "IsActive"),
             ["ForcesCommandDef"] = Fields("Name", "Code", "IsActive", "ValidFrom", "ValidTo"),
             ["HospitalDef"] = Fields("Code", "Name", "CityId", "RefereeHospitalId",
                 "ValidFrom", "ValidTo", "IsActive"),

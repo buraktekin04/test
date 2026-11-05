@@ -1,0 +1,31 @@
+<div class="provision-page">
+ <header class="provision-header"><div><h1>Provizyon Sevkli Giriş</h1>
+  <p>Eski MSKBS Provizyon Sevkli ekranına karşılık gelir.</p></div>
+  <a routerLink="/app/provisions/query">Provizyon Sorgulama</a></header>
+ <section class="provision-card">
+  <h2><i class="pi pi-file-import"></i> Sevkli Provizyon</h2>
+  <form [formGroup]="form" (ngSubmit)="save()">
+   <div class="provision-grid">
+    <label class="provision-field wide">Sevk Kayıt Numarası <span class="provision-required">*</span>
+     <input formControlName="dispatchReference" placeholder="Sevk sıra numarası veya eski GUID" autocomplete="off"/>
+    </label>
+    <label class="provision-field wide">Kabul Yapan Hastane <span class="provision-required">*</span>
+     <p-select formControlName="hospitalId" [options]="hospitals()"
+      optionLabel="label" optionValue="id" [filter]="true"
+      filterBy="label" placeholder="Hastane seçiniz" [fluid]="true" appendTo="body"/>
+    </label>
+   </div>
+   <p class="provision-note">Eski sevk GUID'si değişmez. Provizyon yalnız Yeni durumundaki
+    sevklere ve sevkin kapsamına uygun hastaneye alınabilir.</p>
+   @if(error()){<div role="alert" class="provision-error">{{error()}}</div>}
+   @if(result();as saved){
+    <div class="provision-success" role="status">
+     {{saved.provisionNo}} numaralı provizyon oluşturuldu.
+     <a [routerLink]="['/app/provisions/query']" [queryParams]="{provisionNo:saved.provisionNo}">Kaydı görüntüle</a>
+    </div>
+   }
+   <div class="provision-actions"><p-button type="submit" label="Provizyon Al" icon="pi pi-check"
+     [loading]="loading()" [disabled]="form.invalid||loading()||result()!==null"/></div>
+  </form>
+ </section>
+</div>

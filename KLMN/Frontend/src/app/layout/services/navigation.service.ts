@@ -45,6 +45,25 @@ export class NavigationService {
       ]
     },
     {
+      label: 'Provizyon İşlemleri',
+      icon: 'pi pi-heart',
+      children: [
+        {label:'Provizyon Sevkli Giriş',icon:'pi pi-file-plus',
+         route:'/app/provisions/with-dispatch',
+         requiredPermissions:[PermissionCodes.Provisions.CreateWithDispatch]},
+        {label:'Provizyon Sevksiz Giriş',icon:'pi pi-user-plus',
+         route:'/app/provisions/without-dispatch',
+         requiredPermissions:[PermissionCodes.Provisions.CreateWithoutDispatch]},
+        {label:'Provizyon Sorgulama',icon:'pi pi-search',
+         route:'/app/provisions/query',
+         requiredPermissions:[PermissionCodes.Provisions.View,PermissionCodes.Provisions.Query],
+         permissionMode:'any'},
+        {label:'Provizyon Takibi',icon:'pi pi-chart-line',
+         route:'/app/provisions/tracking',
+         requiredPermissions:[PermissionCodes.Provisions.Track]}
+      ]
+    },
+    {
       label: 'Tanımlamalar',
       icon: 'pi pi-cog',
       children: [

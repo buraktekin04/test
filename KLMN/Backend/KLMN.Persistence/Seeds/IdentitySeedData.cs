@@ -272,6 +272,13 @@ internal static class IdentitySeedData
         new("Sevk Oluşturma", PermissionCodes.Dispatches.Create, "Dispatches", 30),
         new("Sevk Düzenleme ve İptal", PermissionCodes.Dispatches.Update, "Dispatches", 40),
 
+        new("Provizyon Görüntüleme", PermissionCodes.Provisions.View, "Provisions", 10),
+        new("Provizyon Sorgulama", PermissionCodes.Provisions.Query, "Provisions", 20),
+        new("Sevkli Provizyon Girişi", PermissionCodes.Provisions.CreateWithDispatch, "Provisions", 30),
+        new("Sevksiz Provizyon Girişi", PermissionCodes.Provisions.CreateWithoutDispatch, "Provisions", 40),
+        new("Provizyon İptal", PermissionCodes.Provisions.Cancel, "Provisions", 50),
+        new("Provizyon Takip", PermissionCodes.Provisions.Track, "Provisions", 60),
+
         new("Raporları Görüntüleme", PermissionCodes.Reports.View, "Reports", 10),
         new("Rapor Sorgulama", PermissionCodes.Reports.Query, "Reports", 20),
         new("Rapor Dışa Aktarma", PermissionCodes.Reports.Export, "Reports", 30),

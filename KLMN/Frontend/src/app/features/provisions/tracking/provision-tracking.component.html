@@ -1,0 +1,71 @@
+<div class="provision-page">
+ <header class="provision-header">
+  <div><h1>Provizyon Takibi</h1>
+   <p>Yerel provizyon durumu, işlem geçmişi ve alım numarası bazlı sorgulama.</p></div>
+  <a routerLink="/app/provisions/query">Provizyon Sorgulama</a>
+ </header>
+ <section class="provision-card">
+  <div class="provision-tabs">
+   <button type="button" [class.active]="tab()==='detail'" (click)="setTab('detail')">Provizyon Durumu Detay</button>
+   <button type="button" [class.active]="tab()==='summary'" (click)="setTab('summary')">Provizyon Durumu Özet</button>
+  </div>
+  <h2><i class="pi pi-search"></i> Provizyon {{tab()==='detail'?'Detay':'Özet'}} Sorgula</h2>
+  <form [formGroup]="form" (ngSubmit)="search()">
+   <div class="provision-grid">
+    @if(tab()==='detail'){
+     <label class="provision-field">T.C. Kimlik No<input formControlName="tcKimlikNo"
+      inputmode="numeric" maxlength="11" placeholder="T.C. Kimlik No"/></label>
+     <label class="provision-field">Provizyon Sıra No<input type="number" formControlName="provisionNo" min="1"/></label>
+    }@else{
+     <label class="provision-field">Başlangıç Tarihi<input type="date" formControlName="dateFrom"/></label>
+     <label class="provision-field">Bitiş Tarihi<input type="date" formControlName="dateTo"/></label>
+    }
+    <label class="provision-field">Alım ID<input type="number" formControlName="purchaseId" min="0"/></label>
+   </div>
+   <div class="provision-actions"><p-button type="submit" label="Listele" icon="pi pi-search" [loading]="loading()"/></div>
+  </form>
+  <p class="provision-note">Bu ekran KLMN PostgreSQL provizyon kayıtlarını ve durum geçmişini gösterir.
+   Eski sistemin bakanlık provizyon durum servisi, tetkik ve rapor imza geçmişi entegrasyonu henüz
+   bağlı olmadığından dış servis verileri gösterilmez. Yanlış veya örnek veri üretilmez.</p>
+ </section>
+ @if(error()){<div role="alert" class="provision-error">{{error()}}</div>}
+ <section class="provision-card">
+  <h2><i class="pi pi-history"></i> Provizyon {{tab()==='detail'?'Detayı':'Özeti'}} Sorgulama Sonuçları</h2>
+  @if(!searched()){<p class="provision-empty">Listele butonuyla aramayı başlatınız.</p>}
+  @else{
+   <div class="provision-table-wrap">
+    <p-table [value]="records()" [showGridlines]="true" [tableStyle]="{'min-width':'870px'}">
+     <ng-template pTemplate="header"><tr><th>Provizyon No</th><th>Sevk No</th>
+      <th>Provizyon Tarihi</th><th>Ad Soyad</th><th>Hastane</th>
+      <th>Alım ID</th><th>Durum</th><th>Geçmiş</th></tr></ng-template>
+     <ng-template pTemplate="body" let-row><tr><td>{{row.provisionNo}}</td><td>{{row.dispatchNo}}</td>
+      <td>{{row.provisionDate | date:'dd.MM.yyyy HH:mm'}}</td><td>{{row.personName}}</td>
+      <td>{{row.hospitalName}}</td><td>{{row.purchaseId??'—'}}</td>
+      <td><p-tag [value]="stateLabel(row.currentState)" [severity]="row.currentState===3?'danger':'info'"/></td>
+      <td><p-button label="Durumlar" size="small" [text]="true" (onClick)="select(row)"/></td>
+     </tr></ng-template>
+    </p-table>
+   </div>
+   @if(records().length===0){<p class="provision-empty">Aranan kayıt bulunamadı.</p>}
+   <div class="provision-pagination"><span>Toplam {{totalCount()}} kayıt — Sayfa {{page()}}</span>
+    <div class="provision-row">
+     <p-button label="Önceki" size="small" [outlined]="true" (onClick)="search(page()-1)"
+      [disabled]="page()<=1||loading()"/>
+     <p-button label="Sonraki" size="small" [outlined]="true" (onClick)="search(page()+1)"
+      [disabled]="page()*20>=totalCount()||loading()"/>
+    </div>
+   </div>
+  }
+ </section>
+ @if(selected();as item){
+  <section class="provision-card">
+   <h2><i class="pi pi-clock"></i> {{item.provisionNo}} Numaralı Provizyon Durum Geçmişi</h2>
+   @for(state of states();track state.id){
+    <div class="provision-row" style="padding:.45rem 0;border-bottom:1px solid var(--ui-border)">
+     <strong>{{stateLabel(state.state)}}</strong>
+     <span>{{state.createdDate | date:'dd.MM.yyyy HH:mm'}}</span>
+    </div>
+   }@empty{<p class="provision-empty">Yerel durum geçmişi bulunamadı.</p>}
+  </section>
+ }
+</div>

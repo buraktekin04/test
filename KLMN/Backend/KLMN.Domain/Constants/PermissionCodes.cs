@@ -532,6 +532,17 @@ public static class PermissionCodes
        public const string Update="FlyingMissions.Update";
        public const string Delete="FlyingMissions.Delete";
     }
+    /// <summary>Provizyon giriş, sorgu, takip ve iptal yetkileri.</summary>
+    public static class Provisions
+    {
+        public const string View = "Provisions.View";
+        public const string Query = "Provisions.Query";
+        public const string CreateWithDispatch = "Provisions.CreateWithDispatch";
+        public const string CreateWithoutDispatch = "Provisions.CreateWithoutDispatch";
+        public const string Cancel = "Provisions.Cancel";
+        public const string Track = "Provisions.Track";
+    }
+
     /// <summary>Sevk girişi, sorgulama ve düzenleme işlem izinleri.</summary>
     public static class Dispatches
     {

@@ -79,6 +79,35 @@ export const routes: Routes = [
             .then(component => component.DispatchEntryComponent)
       },
       {
+        path: 'provisions/with-dispatch',
+        canActivate: [permissionGuard],
+        data: { permissions:[PermissionCodes.Provisions.CreateWithDispatch] },
+        loadComponent:()=>import('./features/provisions/with-dispatch/provision-with-dispatch.component')
+         .then(c=>c.ProvisionWithDispatchComponent)
+      },
+      {
+        path: 'provisions/without-dispatch',
+        canActivate: [permissionGuard],
+        data: { permissions:[PermissionCodes.Provisions.CreateWithoutDispatch] },
+        loadComponent:()=>import('./features/provisions/without-dispatch/provision-without-dispatch.component')
+         .then(c=>c.ProvisionWithoutDispatchComponent)
+      },
+      {
+        path: 'provisions/query',
+        canActivate: [permissionGuard],
+        data: { permissions:[PermissionCodes.Provisions.View,PermissionCodes.Provisions.Query],
+         permissionMode:'any' },
+        loadComponent:()=>import('./features/provisions/query/provision-query.component')
+         .then(c=>c.ProvisionQueryComponent)
+      },
+      {
+        path: 'provisions/tracking',
+        canActivate: [permissionGuard],
+        data: { permissions:[PermissionCodes.Provisions.Track] },
+        loadComponent:()=>import('./features/provisions/tracking/provision-tracking.component')
+         .then(c=>c.ProvisionTrackingComponent)
+      },
+      {
         path: 'users',
         canActivate: [permissionGuard],
         data: {

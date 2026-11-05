@@ -41,6 +41,7 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
  readonly canView=computed(()=>this.permissions.hasAny(PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query));
  readonly canCreate=computed(()=>this.permissions.has(PermissionCodes.Dispatches.Create));
  readonly canUpdate=computed(()=>this.permissions.has(PermissionCodes.Dispatches.Update));
+ readonly canCreateProvision=computed(()=>this.permissions.has(PermissionCodes.Provisions.CreateWithDispatch));
  readonly canAudit=computed(()=>this.permissions.has(PermissionCodes.AuditLogs.View));
 
  readonly records=signal<DispatchItem[]>([]);
@@ -221,6 +222,10 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
   if(this.hasSearched()){this.page.set(1);this.load();}
  }
  openCreate(){if(this.canCreate())void this.router.navigateByUrl('/app/dispatches/new');}
+ openProvision(row:DispatchItem){
+  if(!this.canCreateProvision()||row.currentState!==1)return;
+  void this.router.navigate(['/app/provisions/with-dispatch'],{queryParams:{dispatchId:row.id}});
+ }
  openEdit(row:DispatchItem){
   if(!this.canUpdate()||row.currentState!==1)return;
   void this.router.navigate(['/app/dispatches',row.id,'edit']);

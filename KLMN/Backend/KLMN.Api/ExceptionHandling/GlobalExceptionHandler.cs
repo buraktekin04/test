@@ -14,6 +14,7 @@ using KLMN.Application.SYYDiagnoses.Exceptions;
 using KLMN.Application.SYYDiagnosisTypes.Exceptions;
 using KLMN.Application.SYYDiagnosisSlices.Exceptions;
 using KLMN.Application.Dispatches.Exceptions;
+using KLMN.Application.Provisions.Exceptions;
 using KLMN.Application.AnnotationReasons.Exceptions;
 using KLMN.Application.PlaneTypes.Exceptions;
 using KLMN.Application.FlyingMissions.Exceptions;
@@ -175,6 +176,10 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
                     Title = "Kullanıcı işlemi gerçekleştirilemedi.",
                     Detail = exception.Message
                 },
+            ProvisionNotFoundException =>
+                new ProblemDetails { Status=404,Title="Provizyon bulunamadı.",Detail=exception.Message },
+            ProvisionConflictException =>
+                new ProblemDetails { Status=409,Title="Provizyon işlemi gerçekleştirilemedi.",Detail=exception.Message },
 
             RoleNotFoundException =>
                 new ProblemDetails

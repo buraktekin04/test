@@ -1,0 +1,106 @@
+<div class="provision-page">
+ <header class="provision-header"><div><h1>Provizyon Sorgulama</h1>
+  <p>Provizyon kayıtlarını sorgulayın; detay, iptal ve durum geçmişini görüntüleyin.</p></div>
+  <div class="provision-row"><a routerLink="/app/provisions/with-dispatch">Sevkli Giriş</a>
+   <a routerLink="/app/provisions/without-dispatch">Sevksiz Giriş</a>
+   <a routerLink="/app/provisions/tracking">Provizyon Takibi</a></div>
+ </header>
+ <section class="provision-card">
+  <h2><i class="pi pi-search"></i> Provizyon Sorgulama Kriterleri</h2>
+  <form [formGroup]="form" (ngSubmit)="search()">
+   <div class="provision-grid">
+    <label class="provision-field">Başlangıç Tarihi<input type="date" formControlName="dateFrom"/></label>
+    <label class="provision-field">Bitiş Tarihi<input type="date" formControlName="dateTo"/></label>
+    <label class="provision-field">Provizyon Durumu
+     <select formControlName="currentState"><option [ngValue]="0">Tüm Durumlar</option>
+      @for(s of statuses.slice(1);track s.value){<option [ngValue]="s.value">{{s.label}}</option>}
+     </select></label>
+    <label class="provision-field">Provizyon Sıra No<input type="number" min="1" formControlName="provisionNo"/></label>
+    <label class="provision-field">Hastane
+     <p-select formControlName="hospitalId" [options]="hospitals()" optionLabel="label" optionValue="id"
+      [filter]="true" filterBy="label" [showClear]="true" [fluid]="true" appendTo="body"
+      placeholder="Tüm hastaneler"/></label>
+    <label class="provision-field">T.C. Kimlik No<input formControlName="tcKimlikNo" inputmode="numeric" maxlength="11"/></label>
+    <label class="provision-field">Yabancı Kimlik No<input formControlName="yabanciKimlikNo" inputmode="numeric" maxlength="20"/></label>
+    <label class="provision-field">Alım ID<input type="number" min="0" formControlName="purchaseId"/></label>
+    <label class="provision-field">Adı<input formControlName="name" maxlength="64"/></label>
+    <label class="provision-field">Soyadı<input formControlName="surname" maxlength="64"/></label>
+   </div>
+   <div class="provision-actions"><p-button type="submit" label="Listele" icon="pi pi-search" [loading]="loading()"/></div>
+  </form>
+ </section>
+ @if(error()){<div role="alert" class="provision-error">{{error()}}</div>}
+ @if(notice()){<div role="status" class="provision-success">{{notice()}}</div>}
+ <section class="provision-card">
+  <h2><i class="pi pi-table"></i> Provizyon Sorgulama Sonuçları</h2>
+  @if(!searched()){<p class="provision-empty">Kriterleri seçip Listele butonuna basınız.</p>}
+  @else{
+   <div class="provision-table-wrap"><p-table [value]="records()" [showGridlines]="true"
+    [tableStyle]="{'min-width':'1050px'}">
+    <ng-template pTemplate="header"><tr>
+     <th>Provizyon No</th><th>Sevk No</th><th>Provizyon Tarihi</th><th>Hastane</th>
+     <th>Ad Soyad</th><th>Kimlik (Maskeli)</th><th>Durum</th><th>Tür</th><th>İşlemler</th>
+    </tr></ng-template>
+    <ng-template pTemplate="body" let-row><tr>
+     <td>{{row.provisionNo}}</td><td>{{row.dispatchNo}}</td>
+     <td>{{row.provisionDate | date:'dd.MM.yyyy HH:mm'}}</td>
+     <td>{{row.hospitalName}}</td><td>{{row.personName}}</td><td>{{row.identityMasked}}</td>
+     <td><p-tag [severity]="row.currentState===3?'danger':row.currentState===1?'info':'success'"
+      [value]="stateLabel(row.currentState)"/></td>
+     <td>{{row.withoutDispatch===1?'Sevksiz':'Sevkli'}}</td>
+     <td><div class="provision-row">
+      <p-button type="button" icon="pi pi-eye" size="small" [text]="true" (onClick)="openDetail(row)" label="Detay"/>
+      @if(row.currentState===1&&canCancel()){
+       <p-button type="button" icon="pi pi-ban" size="small" severity="danger" [text]="true"
+        (onClick)="beginCancel(row)" label="İptal"/>
+      }
+      <a [routerLink]="['/app/provisions/tracking']" [queryParams]="{provisionNo:row.provisionNo}">Takip</a>
+     </div></td>
+    </tr></ng-template>
+   </p-table></div>
+   @if(records().length===0){<p class="provision-empty">Kayıt bulunamadı.</p>}
+   <div class="provision-pagination">
+    <span>Toplam {{totalCount()}} kayıt · Sayfa {{page()}}</span>
+    <div class="provision-row">
+     <p-button type="button" label="Önceki" [outlined]="true" size="small"
+      [disabled]="page()<=1||loading()" (onClick)="search(page()-1)"/>
+     <p-button type="button" label="Sonraki" [outlined]="true" size="small"
+      [disabled]="page()*pageSize>=totalCount()||loading()" (onClick)="search(page()+1)"/>
+    </div>
+   </div>
+  }
+ </section>
+ <p-dialog header="Provizyon İptal" [visible]="cancelOpen()" (visibleChange)="cancelOpen.set($event)"
+  [modal]="true" [style]="{width:'min(95vw,500px)'}">
+  <p class="provision-note">İptal işlemi geri alınamaz. Açıklama zorunludur.</p>
+  <label class="provision-field">İptal Açıklaması <span class="provision-required">*</span>
+   <textarea [(ngModel)]="cancelReason" rows="4" maxlength="1000"></textarea></label>
+  <div class="provision-actions">
+   <p-button label="Provizyon İptal Et" severity="danger" [loading]="loading()"
+    [disabled]="!cancelReason.trim()" (onClick)="cancel()"/>
+   <p-button label="Vazgeç" severity="secondary" [outlined]="true" (onClick)="cancelOpen.set(false)"/>
+  </div>
+ </p-dialog>
+ <p-dialog header="Provizyon Detayı" [visible]="detailOpen()" (visibleChange)="detailOpen.set($event)"
+  [modal]="true" [style]="{width:'min(95vw,900px)'}">
+  @if(detail();as d){
+   <div class="provision-grid">
+    <div><strong>Provizyon:</strong> {{d.provisionNo}}</div>
+    <div><strong>Sevk:</strong> {{d.dispatchNo}}</div>
+    <div><strong>Ad Soyad:</strong> {{d.person.name}} {{d.person.surname}}</div>
+    <div><strong>Durum:</strong> {{stateLabel(d.currentState)}}</div>
+    <div><strong>Başvuru Grubu GUID:</strong> {{d.dispatch.hcAdmissionTypeDefId}}</div>
+    <div><strong>Muayene Sebebi GUID:</strong> {{d.dispatch.reasonForExaminationDefId}}</div>
+    <div><strong>Kabul Yapan Hastane GUID:</strong> {{d.hospitalId}}</div>
+    <div><strong>Provizyon Tarihi:</strong> {{d.provisionDate | date:'dd.MM.yyyy HH:mm'}}</div>
+   </div>
+   <h3>Durum Geçmişi</h3>
+   @for(state of d.states;track state.id){
+    <div class="provision-row">{{state.createdDate | date:'dd.MM.yyyy HH:mm'}} — {{stateLabel(state.state)}}</div>
+   }
+   <p class="provision-note">Rapor Giriş işlemi, Rapor modülünün gerçek API akışı
+    bağlandıktan sonra etkinleştirilecektir. Eksik entegrasyon nedeniyle işlem başlatılmaz.</p>
+   <p-button type="button" label="Kapat" [outlined]="true" (onClick)="detailOpen.set(false)"/>
+  }@else{<p>Detay yükleniyor…</p>}
+ </p-dialog>
+</div>

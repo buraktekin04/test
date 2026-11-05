@@ -1,3 +1,55 @@
+05.11.2026 — KLMN PROVİZYON MODÜLÜ (test3)
+============================================
+KAYNAK: GitHub ana dizini test3 — eski MSKBS:
+- newprovision (sevkli)
+- newprovisionwithfullinfo (sevksiz)
+- provisionstatussummary (takip)
+- queryprovision (sorgu/iptal/detay/audit yönlendirmeleri)
+- Provision, ProvisionState, ProvisionChangedStatusSummary modelleri.
+
+YENİ TABLOLAR: KLMN.Domain/Entities/Admissions/Provision.cs,
+ProvisionState.cs, EF Core ProvisionConfiguration ve
+ProvisionStateConfiguration, DbContext/IKLMNDbContext DbSet.
+Yeni tablolar PostgreSQL'de mevcut değil: MIGRATION GEREKİR.
+ESKİ GUID'LER KORUNUR: Oracle'dan PostgreSQL'e aktarımda Provision.Id,
+Provision.DispatchId, Provision.DispatchHospitalId, ProvisionState.Id,
+ProvisionState.ProvisionId, ObjectionableReportId değiştirilmez.
+Yeni kayıtlarda BaseEntity.Id Guid.NewGuid normaldir; mevcut kayıtlar için
+GUID yeniden üretilmez. ProvisionNo PostgreSQL identity kolonudur:
+eski ProvisionNo aktarılacaksa identity sequence sonra hizalanmalıdır.
+
+AKIŞ:
+- Sevkli: sevk GUID veya sevk sıra no ile seç, hastane seç, kapsam
+  kontrolü; yalnız Yeni sevkten; tek işlemde Provision ve ilk State.
+- Sevksiz: eski kişi/başvuru/askeri alanlar, mevcut DispatchRules;
+  kabul hastanesini kapsam=3 belirler; sentetik sevk+kişi+provizyon+
+  ilk durum aynı SaveChanges; WithoutDispatch=1, AutomaticDispatch=true.
+- Fotoğraf provizyon.Photo bytea alanına, doğrulanan JPEG/PNG ile aynı
+  oluşturma isteğinde kaydedilir (max 2 MiB).
+- Sorgulama: tarih, durum, no, hastane, kimlik, isim, alım; server paging;
+  detay ve zorunlu açıklamayla İptal; xmin concurrency ve ProvisionState.
+- Takip: yerel durum geçmişi, TC/alım/no ve tarih bazlı sorgu;
+  Bakanlık provizyon servisinden yanıt uydurulmaz.
+- 6 ayrı permission seed: Provisions.View/Query/CreateWithDispatch/
+  CreateWithoutDispatch/Cancel/Track. Menu, route, API kontrollü.
+- Sevk Listesinde Yeni sevkten Provizyon Al kısayolu.
+- Rapor Giriş endpoint'i ve dış servis durum detay/tetkik/onay API'si
+  mevcut değil, yanlış/stub işlem üretmeden eksik olarak belgelendi.
+- Frontend Angular 21 + PrimeNG; .NET 10 CQRS/MediatR, FluentValidation.
+- Yeni ASP.NET API: GET /api/provisions, /{id}, /{id}/states;
+  POST /with-dispatch, /without-dispatch; PATCH /{id}/cancel.
+- Eski modelde olmayan veya bilinmeyen servis DTO alanları için sahte
+  tablo veya yetki tanımlanmadı. Durum kodları aynı: 1/2/3/4.
+
+TEST:
+ cd KLMN/Frontend && npm run test:provisions && npm run build
+ cd ../Backend && dotnet build KLMN.slnx
+ dotnet run --project ../Tests/Provisions.Regression
+Node/.NET ve canlı veritabanı testleri bu bağlantıda çalıştırılamadı.
+Migration oluşturma ve uygulama kullanıcı tarafından yapılacak.
+Eksikler ve veri taşıma notları: KLMN/PROVIZYON_EKSIKLER_VE_AKTARIM.md
+Tek commit/push.
+
 05.11.2026 — TOPLU SEVK ESKİ MSKBS GUID'LERİNİ BİREBİR KORUMA
 ========================================================
 - Eski SevkYeniGiris düz alan adları doğrudan okunur; yeni {person,dispatch}

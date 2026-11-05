@@ -124,6 +124,8 @@ public interface IKLMNDbContext
     /// <summary>Sevk Giriş kişi ve sevk kayıtları ile bunların belge ekleri.</summary>
     DbSet<Person> Persons { get; }
     DbSet<Dispatch> Dispatches { get; }
+    DbSet<Provision> Provisions { get; }
+    DbSet<ProvisionState> ProvisionStates { get; }
     DbSet<DispatchStatusDef> DispatchStatusDefs { get; }
     DbSet<GenderDef> GenderDefs { get; }
     DbSet<DispatchFile> DispatchFiles { get; }

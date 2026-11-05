@@ -3,6 +3,15 @@
  * UI görünürlüğü içindir; gerçek authorization kararı backend'de verilir.
  */
 export const PermissionCodes = {
+  /** Provizyon ekranlarının backend izin kodları. */
+  Provisions: {
+    View: 'Provisions.View',
+    Query: 'Provisions.Query',
+    CreateWithDispatch: 'Provisions.CreateWithDispatch',
+    CreateWithoutDispatch: 'Provisions.CreateWithoutDispatch',
+    Cancel: 'Provisions.Cancel',
+    Track: 'Provisions.Track'
+  },
   /** Sevk girişinin API ile eşleşen eylem izinleri. */
   Dispatches: {
     View: 'Dispatches.View',

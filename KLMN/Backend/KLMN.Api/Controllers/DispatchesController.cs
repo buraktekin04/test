@@ -31,7 +31,8 @@ public sealed class DispatchesController(ISender sender):ControllerBase
     /// <summary>MSKBS enum kodlarıyla uyumlu cinsiyet tanımlarını DB'den döndürür.</summary>
     [HttpGet("genders")]
     [HasPermission(PermissionCodes.Dispatches.Create,PermissionCodes.Dispatches.Update,
-        PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query)]
+        PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query,
+        PermissionCodes.Provisions.CreateWithoutDispatch)]
     public async Task<IActionResult> Genders(CancellationToken ct)
     {
         return Ok(await sender.Send(new GetDispatchGendersQuery(),ct));
@@ -39,7 +40,10 @@ public sealed class DispatchesController(ISender sender):ControllerBase
 
     /// <summary>Aktif sevk durumları veritabanı sözlüğünden okunur; tanım ekranı yoktur.</summary>
     [HttpGet("statuses")]
-    [HasPermission(PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query,PermissionCodes.Dispatches.Create,PermissionCodes.Dispatches.Update)]
+    [HasPermission(PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query,
+        PermissionCodes.Dispatches.Create,PermissionCodes.Dispatches.Update,
+        PermissionCodes.Provisions.CreateWithDispatch,PermissionCodes.Provisions.CreateWithoutDispatch,
+        PermissionCodes.Provisions.View,PermissionCodes.Provisions.Query,PermissionCodes.Provisions.Track)]
     public async Task<IActionResult> Statuses(CancellationToken ct)
     {
         return Ok(await sender.Send(new GetDispatchStatusesQuery(),ct));
@@ -64,7 +68,8 @@ public sealed class DispatchesController(ISender sender):ControllerBase
     /// Servis handler'a bağlanana kadar 503 döner, yanlışlıkla kişi bulunamadı sonucu vermez.
     /// </summary>
     [HttpPost("persons/national-registry")]
-    [HasPermission(PermissionCodes.Dispatches.Create,PermissionCodes.Dispatches.Query)]
+    [HasPermission(PermissionCodes.Dispatches.Create,PermissionCodes.Dispatches.Query,
+        PermissionCodes.Provisions.CreateWithoutDispatch)]
     public async Task<IActionResult> LookupPerson([FromBody] LookupDispatchPersonQuery query,CancellationToken ct)
     {
         Response.Headers["Cache-Control"]="no-store";
@@ -94,7 +99,10 @@ public sealed class DispatchesController(ISender sender):ControllerBase
     }
 
     [HttpGet("options")]
-    [HasPermission(PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query,PermissionCodes.Dispatches.Create,PermissionCodes.Dispatches.Update)]
+    [HasPermission(PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query,
+        PermissionCodes.Dispatches.Create,PermissionCodes.Dispatches.Update,
+        PermissionCodes.Provisions.CreateWithDispatch,PermissionCodes.Provisions.CreateWithoutDispatch,
+        PermissionCodes.Provisions.View,PermissionCodes.Provisions.Query,PermissionCodes.Provisions.Track)]
     public async Task<IActionResult> Options([FromQuery] GetDispatchOptionsQuery query,CancellationToken ct)
     {
         return Ok(await sender.Send(query,ct));
@@ -102,7 +110,10 @@ public sealed class DispatchesController(ISender sender):ControllerBase
 
     /// <summary>Seçili başvuru grubunun dinamik zorunluluklarını ve kullanılamayan muayene sebeplerini verir.</summary>
     [HttpGet("admission-rules/{admissionTypeId:guid}")]
-    [HasPermission(PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query,PermissionCodes.Dispatches.Create,PermissionCodes.Dispatches.Update)]
+    [HasPermission(PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query,
+        PermissionCodes.Dispatches.Create,PermissionCodes.Dispatches.Update,
+        PermissionCodes.Provisions.CreateWithDispatch,PermissionCodes.Provisions.CreateWithoutDispatch,
+        PermissionCodes.Provisions.View,PermissionCodes.Provisions.Query,PermissionCodes.Provisions.Track)]
     public async Task<IActionResult> AdmissionRules(Guid admissionTypeId,CancellationToken ct)
     {
         return Ok(await sender.Send(new GetDispatchAdmissionRulesQuery(admissionTypeId),ct));
