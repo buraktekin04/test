@@ -61,6 +61,31 @@ Check(!bulkValidator.Validate(new CreateBulkDispatchCommand([
 Check(!bulkValidator.Validate(new CreateBulkDispatchCommand([
     new BulkDispatchItemInput { Person=person,Dispatch=null! }
 ])).IsValid,"Toplu sevkte sevk detayı olmayan kayıt reddedilir");
+var transferredSenderGuid=Guid.Parse("AABBCCDD-0011-4422-8333-ABCDEFABCDEF");
+Check(bulkValidator.Validate(new CreateBulkDispatchCommand([
+    new BulkDispatchItemInput {
+        Person=person,
+        Dispatch=Scope(2,city:Guid.NewGuid()),
+        LegacySenderChairId=transferredSenderGuid
+    }
+])).IsValid,"Eski SenderChair GUID yeni ID üretilmeden bulk talebinde korunur");
+Check(!bulkValidator.Validate(new CreateBulkDispatchCommand([
+    new BulkDispatchItemInput {
+        Person=person,
+        Dispatch=Scope(2,city:Guid.NewGuid()),
+        LegacySenderChairId=Guid.Empty
+    }
+])).IsValid,"Boş eski gönderen makam GUID'si reddedilir");
+Check(!bulkValidator.Validate(new CreateBulkDispatchCommand([
+    new BulkDispatchItemInput {
+        Person=person,Dispatch=new DispatchDetailsInput {
+            DispatchScope=2,DispatchScopeCityId=Guid.NewGuid(),
+            SenderMilitaryUnitDefId=Guid.NewGuid()
+        },LegacySenderChairId=transferredSenderGuid
+    }
+])).IsValid,"Çakışan eski-yeni gönderen makam alanları reddedilir");
+Check(typeof(BulkDispatchItemInput).GetProperty(nameof(BulkDispatchItemInput.LegacySenderChairId))?.PropertyType==typeof(Guid?),
+    "Eski SenderChair GUID değeri nullable Guid sözleşmesiyle taşınır");
 Check(!new UpdateDispatchCommandValidator().Validate(new UpdateDispatchCommand(Guid.Empty,0,person,dispatch)).IsValid,
     "Güncelleme kimliği ve versiyonu zorunlu");
 Check(!new CancelDispatchCommandValidator().Validate(new CancelDispatchCommand(Guid.Empty,0)).IsValid,

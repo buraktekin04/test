@@ -16,6 +16,15 @@ public sealed class CreateBulkDispatchCommandValidator : AbstractValidator<Creat
         {
             row.RuleFor(x => x.Person).NotNull().WithMessage("Kişi bilgisi gereklidir.");
             row.RuleFor(x => x.Dispatch).NotNull().WithMessage("Sevk bilgisi gereklidir.");
+            row.RuleFor(x => x.LegacySenderChairId)
+                .NotEqual(Guid.Empty)
+                .When(x => x.LegacySenderChairId.HasValue)
+                .WithMessage("Eski gönderen makam GUID kimliği boş olamaz.");
+            row.RuleFor(x => x).Must(x =>
+                !x.LegacySenderChairId.HasValue || x.Dispatch is null ||
+                (!x.Dispatch.SenderMilitaryUnitDefId.HasValue &&
+                 !x.Dispatch.SenderMilitaryOfficeDefId.HasValue))
+                .WithMessage("Eski SenderChair ve yeni gönderen makam alanları aynı anda kullanılamaz.");
         });
     }
 }

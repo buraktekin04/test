@@ -1,4 +1,5 @@
 using FluentValidation;
+using KLMN.Application.Common.Interfaces.Persistence;
 using KLMN.Application.Dispatches.Commands.CreateDispatch;
 using KLMN.Application.Dispatches.Exceptions;
 using KLMN.Application.Dispatches.Models;
@@ -6,6 +7,7 @@ using KLMN.Application.Dispatches.Responses;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace KLMN.Application.Dispatches.Commands.CreateBulkDispatch;
 
@@ -35,6 +37,29 @@ public sealed class CreateBulkDispatchCommandHandler(
             {
                 try
                 {
+                    // Eski birleşik SenderChair GUID'sini aynı GUID ile doğru mevcut FK'ye koy.
+                    // Hiçbir eşleşme yoksa veya iki tabloda da varsa tahmin/yeni GUID üretme.
+                    if (input.LegacySenderChairId is { } legacyId)
+                    {
+                        if (input.Dispatch.SenderMilitaryUnitDefId.HasValue ||
+                            input.Dispatch.SenderMilitaryOfficeDefId.HasValue)
+                            throw new DispatchConflictException(
+                                "Gönderen makam hem eski birleşik hem yeni alanlarla gönderilemez.");
+
+                        var db = scope.ServiceProvider.GetRequiredService<IKLMNDbContext>();
+                        var unitExists = await db.MilitaryUnitDefs.AsNoTracking().AnyAsync(
+                            x => x.Id == legacyId && x.IsActive && !x.IsDeleted,ct);
+                        var officeExists = await db.MilitaryOfficeDefs.AsNoTracking().AnyAsync(
+                            x => x.Id == legacyId && x.IsActive && !x.IsDeleted,ct);
+                        if (unitExists == officeExists)
+                            throw new DispatchConflictException(
+                                unitExists
+                                    ? "Gönderen makam GUID'si birlik ve şube tablolarında birden bulundu; eşleştirme belirsiz."
+                                    : "Eski gönderen makam GUID'si aktif birlik veya askerlik şubesi kayıtlarında bulunamadı.");
+                        if (unitExists) input.Dispatch.SenderMilitaryUnitDefId = legacyId;
+                        else input.Dispatch.SenderMilitaryOfficeDefId = legacyId;
+                    }
+
                     var sender = scope.ServiceProvider.GetRequiredService<ISender>();
                     var result = await sender.Send(new CreateDispatchCommand(input.Person,input.Dispatch),ct);
                     success = true;

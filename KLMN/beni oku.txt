@@ -1,3 +1,27 @@
+05.11.2026 — TOPLU SEVK ESKİ MSKBS GUID'LERİNİ BİREBİR KORUMA
+========================================================
+- Eski SevkYeniGiris düz alan adları doğrudan okunur; yeni {person,dispatch}
+  dosya biçimi zorunlu tutulmaz. Tek kayıt, virgülle ayrılmış kayıtlar
+  ve sevkYeniGiris dizisi desteklenir; gerçek XML değil JSON beklenir.
+- UniqueRefno, HcAdmissionTypeDef, ReasonForExamination, DispatchScopeProvince,
+  SenderChair, Nationality, TownOfBirth, ForcesCommand, MilitaryUnit, Rank,
+  MilitaryClass, MilitarySchool, MilitaryOffice, FlyingMission,
+  FlyingPlaneType gibi eski alanlar KLMN alanlarına aktarılır.
+- TANIM GUID'LERİ KESİNLİKLE DEĞİŞTİRİLMEZ / YENİSİ ÜRETİLMEZ.
+- Eski SenderChair/muayeneyeGonderenMakam alanı legacySenderChairId
+  olarak taşınır. Backend PostgreSQL birlik/şube tablolarında ID'yi
+  doğrular; yalnız doğru tabloya AYNI GUID ile koyar. Bulunamayan veya
+  her iki tabloda birden bulunan GUID'de satır hatası verir.
+- Eski ve yeni gönderen makam alanlarının birlikte gönderilmesi reddedilir.
+- Eski dosyada GUID yerine kod (ör. 9980) varsa bu bir GUID değildir;
+  sahte/rasgele ID atamak yerine satır hatası verilir. Kod→GUID tablosu
+  için eski model/gerçek anonim dosya şeması gereklidir.
+- Mevcut CreateDispatch iş kuralları ve kapsam 2/3 zorunluluğu korunur.
+- Yeni sevk/kisi entity kayıtları için normal DB yeni ID üretimi sürer.
+- Testler: npm run test:dispatch-bulk, test:dispatch-bulk-flow,
+  dotnet run --project KLMN/Tests/Dispatches.Regression
+  ayrıca Angular/.NET build; bu bağlantıda build/DB testleri çalıştırılmadı.
+- Migration gerekmez. Tek commit/push.
 05.11.2026 — TOPLU SEVK GİRİŞİ (ESKİ test2 HTML/TS KARŞILIĞI)
 =============================================================
 ESKİ AKIŞ: newdispatchmultiple.component.html / .ts kaynak dosyası

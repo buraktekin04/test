@@ -20,15 +20,27 @@ JSON diye kabul etmez. Doğrulanan biçimler:
 - JSON nesne dizisi: `[{ "person": {...}, "dispatch": {...} }]`
 - `{"items":[...]}` veya eski `{"sevkYeniGiris":[...]}`
 - Satır bazlı JSON (JSONL) veya virgülle ayrılmış JSON nesneleri.
-- Bilinen eski düz alan adları (`adi`, `soyadi`, `skBasvuruGrubu`,
-  `muayeneSebebi`, `sevkKapsami`, `sevkKapsamiSehir/Hastane`) da
-  karşılanır; eski `muayeneyeGonderenMakam` alanı türü belirsiz tek GUID
-  ise otomatik birlik/şube tahmini **yapılmaz**. Bunun yerine
-  `senderMilitaryUnitDefId`, `senderMilitaryOfficeDefId` veya
-  `senderChairChoice: "unit:<GUID>" / "office:<GUID>"` kullanılır.
+- Eski düz MSKBS alanları (`UniqueRefno`, `Name`, `Surname`,
+  `HcAdmissionTypeDef`, `ReasonForExamination`, `DispatchScopeProvince`,
+  `ForcesCommand`, `Rank`, `MilitaryClass`, `MilitaryUnit`,
+  `MilitarySchool`, `MilitaryOffice`, `FlyingMission`,
+  `FlyingPlaneType`, `LastNominationDate` ve Türkçe frontend
+  karşılıkları) yeniden dosya biçimi oluşturulmadan okunur.
+- **İlişkili bütün GUID değerleri dosyadan geldiği gibi kalır.**
+  `SenderChair` / `muayeneyeGonderenMakam` tek birleşik GUID alanı
+  frontend'de `legacySenderChairId` olarak API'ye taşınır. Backend
+  mevcut PostgreSQL `MilitaryUnitDefs` ve `MilitaryOfficeDefs`
+  tablolarından **aynı GUID** ile sorgulayarak yalnızca eşleşen
+  ilişkiye atar. İkisinde birden bulunursa veya hiçbirinde bulunmazsa
+  başka GUID üretmeden satır hatası döndürür.
+- İstenirse yeni `senderMilitaryUnitDefId` /
+  `senderMilitaryOfficeDefId` alanları da kullanılabilir; eski
+  birleşik GUID ve yeni gönderen makam aynı satırda birlikte olamaz.
 
-Aşağıdaki örnekte GUID'ler **yer tutucudur**; istekten önce KLMN'nin
-gerçek ve aktif tanım kimlikleriyle değiştirilmelidir:
+Aşağıdaki örnek yalnızca **dokümantasyon için uydurulmuş test GUID'leri** içerir.
+Gerçek MSKBS dosyasında zaten mevcut olan GUID'ler **aynen kullanılır**;
+kullanıcı yeni GUID üretmez veya dosyayı yeniden düzenlemez. PostgreSQL'de
+bu kimlikler doğru tablolarda aktarılmış olmalıdır:
 
 ```json
 {
@@ -77,14 +89,24 @@ ilgili şehir/hastane alanı ve gönderen birlik veya şube kimliği zorunludur.
   ve kişisel bilgiler loglanmaz. Dış servis/MERNİS çağrısı uydurulmaz.
 - **Veritabanı şeması değişmez, migration gerekmez.**
 
-## Uyumluluk sınırı
+## GUID koruma ve uyumluluk sınırı
 
-Eski `SevkYeniGiris` ve `SevkYeniTopluGiris` TypeScript sınıfları
-veya gerçek, kişisel bilgiler temizlenmiş örnek dosya `test2` içinde yok.
-Bu nedenle eksiksiz eski veri şeması uyumluluğu **henüz doğrulanamaz**.
-KLMN'nin mevcut `person`/`dispatch` sözleşmesi üzerinden toplu
-giriş tamamlanmıştır. Bilinmeyen eski property'ler otomatik doğru alan
-gibi varsayılmaz.
+- **Yeni tanım GUID üretilmez.** Eski dosyanın Başvuru Grubu,
+  Muayene Sebebi, Kuvvet, Rütbe, Sınıf, Birlik, Okul, Askerlik Şubesi,
+  Uçuş/İşlem ve Kapsam Şehir/Hastane GUID'leri aynı KLMN FK alanlarına geçer.
+  Yeni *Sevk* ve yeni *Kişi* kayıtlarının kendi ID'leri olağan kayıt
+  oluşturma davranışıyla ayrı üretilir.
+- Gönderen Makam için eski `SenderChair` GUID'sinin birlik/şube
+  ayrımı PostgreSQL üzerinden doğrulanır; eşleşme yoksa satır reddedilir.
+- Eski MSKBS kod bazlı alanı (ör. `Nationality: "9980"`) bir GUID
+  değildir; mevcut eşleşen GUID bilgisi veya onaylı kod→ID referansı
+  olmadan **tahmini eşleştirme yapılmaz**. Kullanıcı sahte GUID üretmez.
+- Eski `SevkYeniGiris` / `SevkYeniTopluGiris` TypeScript
+  sınıfları ve gerçek, kişisel verileri temizlenmiş dosya `test2`
+  içinde bulunmadığından bütün olası eski alanlar için **%100 veri
+  dosyası uyumluluğu henüz doğrulanamaz**. Bilinen eski alanların
+  eşleştirmesi ve birebir GUID koruma regresyon testleri eklendi. Gerçek
+  dosya ve PostgreSQL entegrasyon testleri ayrıca yapılmalıdır.
 
 ## Kontroller
 

@@ -27,10 +27,11 @@
      [outlined]="true" size="small" (onClick)="clear()"/>
    }
   </div>
-  <p class="help-text">Eski sistem .xml uzantısı altında JSON içerik okuyordu. Gerçek XML dosyaları,
-    eski veri şeması eşleştirilmeden yüklenemez. Yeni KLMN için kişi ve sevk nesneleriyle
-    JSON dizi veya <code>sevkYeniGiris</code> listesi kullanınız. Mevcut Başvuru Grubu,
-    Muayene Sebebi ve Gönderen Makam GUID'leri gereklidir.</p>
+  <p class="help-text">Eski MSKBS dosyanızı aynı biçimde yükleyebilirsiniz: dosyadaki tanım GUID'leri
+    değiştirilmez veya yeniden oluşturulmaz. Eski <code>SenderChair</code> (Muayeneye Gönderen Makam)
+    GUID'si, veritabanında birlik/askerlik şubesi olarak doğrulanarak aynı ID ile eşleştirilir.
+    Sistem eşleşmeyi bulamazsa ilgili sevk hata verir. Dosya uzantısı .xml olsa bile içeriğin
+    eski sistemdeki gibi JSON olması gerekir; gerçek XML desteklenmez.</p>
   @if(fileLoading()){<p class="status-text"><i class="pi pi-spin pi-spinner"></i> Dosya okunuyor…</p>}
   @if(error()){<div role="alert" class="bulk-error"><i class="pi pi-exclamation-triangle"></i> {{error()}}</div>}
   @if(fileName()&&!fileLoading()){
@@ -53,7 +54,7 @@
   }
   @if(items().length>0){
    <div class="preview-header">
-    <strong>Dosya içeriği (KLMN JSON)</strong>
+    <strong>Dosya içeriği (GUID değerleri korunmuş önizleme)</strong>
     <p-button type="button" [label]="showPreview()?'Önizlemeyi Gizle':'Önizlemeyi Göster'"
      [outlined]="true" severity="secondary" icon="pi pi-code"
      size="small" (onClick)="showPreview.update(v=>!v)"/>
