@@ -58,9 +58,8 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
   {label:'Tüm durumlar',value:null as number|null},
   ...this.statuses().map(x=>({label:x.name,value:x.code as number|null}))
  ]);
+ /** Sorgulama filtresi zorunlu değildir; boş değer tüm kapsamları (tarihsel 1 dahil) gösterir. */
  readonly scopeItems=[
-  {label:'Tüm kapsamlar',value:null as number|null},
-  {label:'Kapsam belirtilmemiş',value:1},
   {label:'Şehirdeki sağlık tesisleri',value:2},
   {label:'Belirli sağlık tesisi',value:3}
  ];

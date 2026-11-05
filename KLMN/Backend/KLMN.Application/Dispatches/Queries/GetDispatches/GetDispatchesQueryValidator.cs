@@ -12,8 +12,9 @@ public sealed class GetDispatchesQueryValidator:AbstractValidator<GetDispatchesQ
         RuleFor(x=>x.Search).MaximumLength(100);
         RuleFor(x=>x.CurrentState).Must(x=>!x.HasValue||(x.Value>=1&&x.Value<=5))
             .WithMessage("Geçersiz sevk durumu.");
-        RuleFor(x=>x.DispatchScope).Must(x=>!x.HasValue||(x.Value>=1&&x.Value<=3))
-            .WithMessage("Sevk kapsamı 1-3 arasında olmalıdır.");
+        // Filtre boşsa eski kayıtlar (kapsam=1 dahil) görünür; açık seçim yalnız güncel kapsamlar olabilir.
+        RuleFor(x=>x.DispatchScope).Must(x=>!x.HasValue||(x.Value is 2 or 3))
+            .WithMessage("Sevk kapsamı filtresi Şehirdeki sağlık tesisleri (2) veya Belirli sağlık tesisi (3) olmalıdır.");
         RuleFor(x=>x.DispatchNo).Must(x=>!x.HasValue||x.Value>0);
         RuleFor(x=>x.PurchaseId).Must(x=>!x.HasValue||x.Value>=0);
         RuleFor(x=>x.Name).MaximumLength(64);

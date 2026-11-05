@@ -1,3 +1,23 @@
+05.11.2026 — SEVK LİSTESİ VE SORGULAMA KAPSAM FİLTRESİ
+====================================================
+Sevk Girişi'ndeki kapsam seçeneği düzeltmesi liste/sorgulama ekranına aktarıldı.
+- 'Kapsam belirtilmemiş' (1) artık Sevk Listesi filtre seçeneklerinde yok.
+- Yalnız 2=Şehirdeki sağlık tesisleri ve 3=Belirli sağlık tesisi seçilebilir.
+- Filtre isteğe bağlı: null + 'Tüm kapsamlar' placeholder ile, tarihsel
+  kapsam=1 sevkler dahil tüm sonuçlar aranabilir. Şehir/hastane alt
+  filtreleri 2/3 kapsamına bağlı kalır.
+- Backend GetDispatchesQueryValidator null, 2 veya 3 kabul eder;
+  açıkça gönderilen 1/0/4 vb. geçersizdir. DB şeması değişmedi.
+- Frontend tests/dispatch-scope-regression.mjs,
+  tests/dispatch-pages-regression.mjs ve
+  Tests/Dispatches.Regression/Program.cs güncellendi.
+TEST: npm --prefix KLMN/Frontend run test:dispatch-scope
+      npm --prefix KLMN/Frontend run test:dispatch-pages
+      dotnet run --project KLMN/Tests/Dispatches.Regression
+      npm --prefix KLMN/Frontend run build
+      dotnet build KLMN/Backend/KLMN.slnx
+Bu ortamda gerçek npm/.NET build ve API/DB/E2E testleri çalıştırılmadı.
+Migration gerekmez; tek commit/push.
 04.11.2026 — SEVK GİRİŞİ KAPSAM ZORUNLULUĞU
 ===========================================
 Yeni sevk için 'Kapsam belirtilmemiş' (1) seçeneği kaldırıldı.

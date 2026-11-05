@@ -12,6 +12,8 @@ const rules=read('Backend/KLMN.Application/Dispatches/Commands/Common/DispatchRu
 const create=read('Backend/KLMN.Application/Dispatches/Commands/CreateDispatch/CreateDispatchCommandValidator.cs');
 const update=read('Backend/KLMN.Application/Dispatches/Commands/UpdateDispatch/UpdateDispatchCommandValidator.cs');
 const history=read('Frontend/src/app/features/dispatches/dispatch-list/dispatch-list.component.ts');
+const historyHtml=read('Frontend/src/app/features/dispatches/dispatch-list/dispatch-list.component.html');
+const queryValidator=read('Backend/KLMN.Application/Dispatches/Queries/GetDispatches/GetDispatchesQueryValidator.cs');
 const db=read('Backend/KLMN.Persistence/Configurations/Admissions/DispatchConfiguration.cs');
 
 assert.match(ts,/dispatchScope:this\.fb\.control<number\|null>\(null,Validators\.required\)/);
@@ -32,7 +34,13 @@ for(const v of [create,update]){
  assert.match(v,/Dispatch!\.DispatchScopeCityId\)\.NotNull\(\)/);
  assert.match(v,/Dispatch!\.DispatchScopeHospitalId\)\.NotNull\(\)/);
 }
-// Historical code 1 stays searchable and allowed at DB level to avoid migration/data loss.
-assert.match(history,/label:'Kapsam belirtilmemiş',value:1/);
+// Sorgu filtresi isteğe bağlı, fakat açık bir kapsam seçilirse sadece 2/3 geçerli.
+assert.match(history,/readonly scopeItems=\[\s*\{label:'Şehirdeki sağlık tesisleri',value:2\},\s*\{label:'Belirli sağlık tesisi',value:3\}\s*\]/);
+assert.doesNotMatch(history,/Kapsam belirtilmemiş/);
+assert.match(history,/dispatchScope:this\.fb\.control<number\|null>\(null\)/);
+assert.match(history,/dispatchScope:null,dispatchScopeCityId:null,dispatchScopeHospitalId:null/);
+assert.match(historyHtml,/formControlName="dispatchScope"[\s\S]*?placeholder="Tüm kapsamlar"/);
+assert.match(historyHtml,/\[showClear\]="true"/);
+assert.match(queryValidator,/RuleFor\(x=>x\.DispatchScope\)\.Must\(x=>!x\.HasValue\|\|\(x\.Value is 2 or 3\)\)/);
 assert.match(db,/CK_Dispatch_Scope/);
-console.log('PASS: Yeni sevk kapsamı 2/3 zorunlu; 1 yeni kayıtta reddedilir, tarihsel sorgu korunur.');
+console.log('PASS: Sevk girişinde kapsam 2/3 zorunlu; liste filtresinde 2/3 veya boş (tarihsel tüm kayıtlar).');

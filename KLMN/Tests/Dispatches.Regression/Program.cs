@@ -75,6 +75,17 @@ Check(new GetDispatchesQueryValidator().Validate(new GetDispatchesQuery(
     SenderMilitaryUnitDefId:Guid.NewGuid(),IncludeRelatedOrganizations:true,
     DispatchScope:2,DispatchScopeCityId:Guid.NewGuid())).IsValid,
     "Ayrıntılı sevk sorgusu geçerli parametreleri");
+var scopeQueryValidator=new GetDispatchesQueryValidator();
+Check(scopeQueryValidator.Validate(new GetDispatchesQuery(DispatchScope:null)).IsValid,
+    "Sevk kapsamı filtresi boş bırakıldığında tüm kayıtlar (tarihsel kapsam=1 dahil) sorgulanabilir");
+Check(scopeQueryValidator.Validate(new GetDispatchesQuery(DispatchScope:2)).IsValid,
+    "Sevk kapsamına göre Şehirdeki sağlık tesisleri filtrelenebilir");
+Check(scopeQueryValidator.Validate(new GetDispatchesQuery(DispatchScope:3)).IsValid,
+    "Sevk kapsamına göre Belirli sağlık tesisi filtrelenebilir");
+Check(!scopeQueryValidator.Validate(new GetDispatchesQuery(DispatchScope:1)).IsValid,
+    "Sevk sorgusunda Kapsam belirtilmemiş seçeneği reddedilir");
+Check(!scopeQueryValidator.Validate(new GetDispatchesQuery(DispatchScope:0)).IsValid,
+    "Sevk sorgusunda geçersiz kapsam reddedilir");
 Check(typeof(BaseEntity).IsAssignableFrom(typeof(GenderDef)),
     "Cinsiyet tanımları BaseEntity audit/xmin kalıtımı");
 Check(typeof(GenderDef).GetProperty(nameof(GenderDef.Code))?.PropertyType==typeof(int),

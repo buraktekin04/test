@@ -57,7 +57,7 @@
       </label>
       <label class="filter-field">Sevk Kapsamı
        <p-select formControlName="dispatchScope" [options]="scopeItems" optionLabel="label" optionValue="value"
-        [showClear]="true" [fluid]="true" appendTo="body"/>
+        [showClear]="true" [fluid]="true" appendTo="body" placeholder="Tüm kapsamlar"/>
       </label>
       @if(searchForm.controls.dispatchScope.value===2){
        <label class="filter-field">Sevk Kapsamı Şehir

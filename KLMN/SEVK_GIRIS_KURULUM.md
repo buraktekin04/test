@@ -1,10 +1,18 @@
+## 05.11.2026 — Sevk Listesi ve Sorgulama kapsam seçenekleri düzeltildi
+
+- Sevk Girişi'ndeki kuralla uyumlu olarak **Sevk Listesi ve Sorgulama** ekranının kapsam filtresinden `Kapsam belirtilmemiş (1)` kaldırıldı.
+- Açılır liste yalnız `Şehirdeki sağlık tesisleri (2)` ve `Belirli sağlık tesisi (3)` seçeneklerini gösterir. `Tüm kapsamlar` artık bir seçim değil, **boş filtre için placeholder** değeridir.
+- Sorgulamada filtre seçimi **zorunlu değil**: `dispatchScope=null` iken tüm sevkler (eski 1 kapsamlı kayıtlar dahil) görünür. Şehir/hastane alanları yalnız ilgili kapsam seçildiğinde görüntülenir ve kapsam temizlendiğinde sıfırlanır.
+- `GetDispatchesQueryValidator`, açıkça verilen kapsamda yalnız `2` veya `3` kabul eder; boş filtre geçerlidir. Kayıtlar, eski veritabanı constraint'i ve kayıt oluşturma/güncelleme kuralları değişmedi.
+- `Frontend/tests/dispatch-scope-regression.mjs`, `dispatch-pages-regression.mjs` ve `Tests/Dispatches.Regression/Program.cs` güncellendi.
+- Veritabanı değişmedi. **Migration gerekmez**. Gerçek build ve uçtan uca testler yerel ortamda çalıştırılmalıdır.
 ## 04.11.2026 — Sevk kapsamı seçim zorunluluğu
 
 - Yeni Sevk Girişi'nde **Kapsam belirtilmemiş (1)** seçeneği kaldırıldı. Varsayılan `dispatchScope=null`, formda zorunlu yıldız ve seçim yer tutucusu var.
 - Geçerli seçenekler: `2=Şehirdeki sağlık tesisleri` (şehir seçimi zorunlu) ve `3=Belirli sağlık tesisi` (hastane seçimi zorunlu).
 - Frontend kaydetmeden önce 2/3 seçimini kontrol eder; Create/Update FluentValidation ve DispatchRules de yalnız 2/3'e izin verir.
 - `DispatchDetailsInput` varsayılan 1 değerini kaldırdık: kapsam gönderilmeyen istekler artık sessizce 1'e dönüştürülmez.
-- Sevk Listesi ve Sorgulama'da tarihsel **Kapsam belirtilmemiş (1)** kayıtlarını filtreleyebilmek için eski seçenek korunmuştur. DB `CK_Dispatch_Scope` değiştirilmemiştir; eski kayıtlar silinmez. Düzenleme ekranında eski kapsamlı bir kayıt açıldığında kullanıcı 2 veya 3 seçmeden güncelleyemez.
+- Sevk Listesi ve Sorgulama'da **Kapsam belirtilmemiş (1)** seçeneği artık görünmez. Kapsam filtresi boş (`Tüm kapsamlar`) bırakılırsa eski `1` kodlu sevkler dahil tüm kayıtlar görünür; açık bir filtrede yalnız 2 veya 3 gönderilir. DB `CK_Dispatch_Scope` değiştirilmemiştir; eski kayıtlar silinmez. Düzenleme ekranında eski kapsamlı bir kayıt açıldığında kullanıcı 2 veya 3 seçmeden güncelleyemez.
 - Frontend regresyonu: `npm run test:dispatch-scope`; backend regresyonu: `dotnet run --project ../Tests/Dispatches.Regression`.
 - **Migration gerekmez.** Gerçek Angular/.NET build ve canlı veritabanı testleri yerel ortamda yapılmalı.
 ## 04.11.2026 — Sevk tanım türü ve eski sevk alanları

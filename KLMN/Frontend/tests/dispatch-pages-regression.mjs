@@ -53,6 +53,11 @@ assert.doesNotMatch(listTs,/readonly statusItems=\[/);
 assert.match(listTs,/this\.api\.statuses\(\)/);
 assert.match(listTs,/senderMilitaryUnitDefId/);
 assert.match(listTs,/includeRelatedOrganizations/);
+// Sevk Listesi kapsam filtresi: tüm kayıtlar için null, seçilebilir yalnız 2 veya 3.
+assert.match(listTs,/readonly scopeItems=\[\s*\{label:'Şehirdeki sağlık tesisleri',value:2\},\s*\{label:'Belirli sağlık tesisi',value:3\}\s*\]/);
+assert.doesNotMatch(listTs,/Kapsam belirtilmemiş/);
+assert.match(listTs,/dispatchScope:this\.fb\.control<number\|null>\(null\)/);
+assert.match(listHtml,/formControlName="dispatchScope"[\s\S]*?placeholder="Tüm kapsamlar"/);
 assert.match(entryHtml,/Önce başvuru grubu/);
 assert.match(entryHtml,/class="entry-workspace"/);
 assert.match(entryHtml,/class="required-mark"/);
