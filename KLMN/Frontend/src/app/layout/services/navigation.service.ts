@@ -30,6 +30,12 @@ export class NavigationService {
           requiredPermissions: [PermissionCodes.Dispatches.Create]
         },
         {
+          label: 'Toplu Sevk Girişi',
+          icon: 'pi pi-file-import',
+          route: '/app/dispatches/bulk',
+          requiredPermissions: [PermissionCodes.Dispatches.Create]
+        },
+        {
           label: 'Sevk Listesi ve Sorgulama',
           icon: 'pi pi-list',
           route: '/app/dispatches',

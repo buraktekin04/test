@@ -4,6 +4,7 @@ using KLMN.Application.Dispatches.Commands.SetDispatchPhoto;
 using KLMN.Application.Dispatches.Commands.DeleteDispatchPhoto;
 using KLMN.Application.Dispatches.Queries.GetDispatchPhoto;
 using KLMN.Application.Dispatches.Commands.CreateDispatch;
+using KLMN.Application.Dispatches.Commands.CreateBulkDispatch;
 using KLMN.Application.Dispatches.Commands.UpdateDispatch;
 using KLMN.Application.Dispatches.Commands.UploadDispatchFile;
 using KLMN.Application.Dispatches.Queries.GetDispatchById;
@@ -113,6 +114,16 @@ public sealed class DispatchesController(ISender sender):ControllerBase
     {
         var created=await sender.Send(command,ct);
         return CreatedAtAction(nameof(Detail),new{id=created.Id},created);
+    }
+
+    /// <summary>En fazla 100 sevki bağımsız kaydeder; satır bazında başarı ve hata raporlar.</summary>
+    [HttpPost("bulk")]
+    [HasPermission(PermissionCodes.Dispatches.Create)]
+    [RequestSizeLimit(2*1024*1024)]
+    public async Task<IActionResult> Bulk([FromBody] CreateBulkDispatchCommand command,CancellationToken ct)
+    {
+        Response.Headers["Cache-Control"]="no-store";
+        return Ok(await sender.Send(command,ct));
     }
 
     [HttpPut("{id:guid}")]

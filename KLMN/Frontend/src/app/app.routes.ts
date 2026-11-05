@@ -63,6 +63,14 @@ export const routes: Routes = [
             .then(component => component.DispatchEntryComponent)
       },
       {
+        path: 'dispatches/bulk',
+        canActivate: [permissionGuard],
+        data: { permissions:[PermissionCodes.Dispatches.Create] },
+        loadComponent: () =>
+          import('./features/dispatches/dispatch-bulk/dispatch-bulk-entry.component')
+            .then(component => component.DispatchBulkEntryComponent)
+      },
+      {
         path: 'dispatches/:id/edit',
         canActivate: [permissionGuard],
         data: { permissions:[PermissionCodes.Dispatches.Update] },

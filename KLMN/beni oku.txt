@@ -1,3 +1,48 @@
+05.11.2026 — TOPLU SEVK GİRİŞİ (ESKİ test2 HTML/TS KARŞILIĞI)
+=============================================================
+ESKİ AKIŞ: newdispatchmultiple.component.html / .ts kaynak dosyası
+GitHub ana dizinindeki test2. Kaynak dosya gerçek XML ayrıştırmıyor;
+.xml uzantısıyla düz JSON metnini JSON.parse ve '},' üzerinden ayırıyor.
+Yeni KLMN ayrıştırıcı JSON dizi, {items:[]}, {sevkYeniGiris:[]},
+JSONL ve eski virgülle birleştirilmiş nesneleri destekler. Gerçek XML
+dosyası açık hata verir; eski SevkYeniGiris modelinin tüm alanları
+elde bulunmadığından birebir eski dosya şeması henüz garanti edilemez.
+
+YENİ FRONTEND:
+- Angular 21 + PrimeNG Toplu Sevk Girişi /app/dispatches/bulk
+- Menü Sevk İşlemleri altında, yalnız Dispatches.Create yetkisiyle
+- Dosya seç, ilk 5 satır maskeli JSON önizlemesi, 100 satır/1 MiB limit
+- Dosya bütünü geçerli değilse kayıt yapılmaz; gizli satır atılmaz
+- Kaydetmeden önce onay, çift gönderimi önleme, satır bazlı sonuç tablosu
+- Başarı/hata sayısı, sıra, maskeli kimlik, ad soyad, kayıt ID, sevk no
+- Servis POST /api/dispatches/bulk; ayrı response/model/parser dosyaları.
+
+YENİ BACKEND:
+- CreateBulkDispatchCommand + Validator (1..100, kişi ve sevk şart)
+- Handler her sevk için yeni IServiceScope + mevcut CreateDispatchCommand
+  kullanır; mevcut iş kuralı ve PostgreSQL doğrulamaları uygulanır
+- Satırlar birbirinden bağımsızdır: başarılı kayıt kalıcı, hatalı
+  satır raporlanır. Bilinmeyen exception ayrıntısı ve tam kimlik no
+  API yanıtına / loglara yazılmaz.
+- DispatchesController Bulk endpoint Dispatches.Create yetkili;
+  Response Cache-Control=no-store, 2 MiB HTTP istek boyutu.
+- Varsayılan kapsam 1 kabul edilmez; şehir/hastane zorunlu.
+- Yeni tablo/kolon yok. Migration gerekmez.
+
+TEST:
+ cd KLMN/Frontend
+ npm run test:dispatch-bulk
+ npm run test:dispatch-bulk-flow
+ npm run test:dispatch-pages
+ npm run build
+ dotnet run --project ../Tests/Dispatches.Regression
+ dotnet build ../Backend/KLMN.slnx
+
+NOT: Bu ortamda gerçek Angular/.NET/DB/API derlemesi ve E2E yapılmadı.
+Eski dosya biçiminin tam eşdeğerliği için
+apimodel/sevkyenigiris.ts + sevkyenitoplugiris.ts veya gerçek,
+kişisel verileri temizlenmiş bir örnek JSON gereklidir.
+Tek commit/push disiplini; migration uygulama kullanıcıda.
 05.11.2026 — SEVK LİSTESİ VE SORGULAMA KAPSAM FİLTRESİ
 ====================================================
 Sevk Girişi'ndeki kapsam seçeneği düzeltmesi liste/sorgulama ekranına aktarıldı.

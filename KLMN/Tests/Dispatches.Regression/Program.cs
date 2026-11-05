@@ -3,6 +3,7 @@ using KLMN.Application.Dispatches.Exceptions;
 using KLMN.Application.Dispatches.Commands.SetDispatchPhoto;
 using KLMN.Application.Dispatches.Commands.DeleteDispatchPhoto;
 using KLMN.Application.Dispatches.Commands.CreateDispatch;
+using KLMN.Application.Dispatches.Commands.CreateBulkDispatch;
 using KLMN.Application.Dispatches.Commands.UpdateDispatch;
 using KLMN.Application.Dispatches.Commands.CancelDispatch;
 using KLMN.Application.Dispatches.Queries.GetDispatches;
@@ -45,6 +46,21 @@ Check(!updateValidator.Validate(new UpdateDispatchCommand(Guid.NewGuid(),1,perso
     "Sevk düzenlerken kapsam belirtilmemiş (1) reddedilir");
 Check(!new CreateDispatchCommandValidator().Validate(new CreateDispatchCommand(null!,dispatch)).IsValid,
     "Kişi bilgisi olmadan oluşturma engeli");
+var bulkValidator=new CreateBulkDispatchCommandValidator();
+var bulkRow=new BulkDispatchItemInput { Person=person,Dispatch=dispatch };
+Check(bulkValidator.Validate(new CreateBulkDispatchCommand([bulkRow])).IsValid,
+    "Toplu sevkte tek geçerli satır");
+Check(!bulkValidator.Validate(new CreateBulkDispatchCommand([])).IsValid,
+    "Toplu sevkte boş dosya reddedilir");
+Check(!bulkValidator.Validate(new CreateBulkDispatchCommand(
+    Enumerable.Repeat(bulkRow,101).ToArray())).IsValid,
+    "Toplu sevkte 100 kayıt sınırı");
+Check(!bulkValidator.Validate(new CreateBulkDispatchCommand([
+    new BulkDispatchItemInput { Person=null!,Dispatch=dispatch }
+])).IsValid,"Toplu sevkte kişisiz kayıt reddedilir");
+Check(!bulkValidator.Validate(new CreateBulkDispatchCommand([
+    new BulkDispatchItemInput { Person=person,Dispatch=null! }
+])).IsValid,"Toplu sevkte sevk detayı olmayan kayıt reddedilir");
 Check(!new UpdateDispatchCommandValidator().Validate(new UpdateDispatchCommand(Guid.Empty,0,person,dispatch)).IsValid,
     "Güncelleme kimliği ve versiyonu zorunlu");
 Check(!new CancelDispatchCommandValidator().Validate(new CancelDispatchCommand(Guid.Empty,0)).IsValid,

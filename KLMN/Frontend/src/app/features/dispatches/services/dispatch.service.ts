@@ -1,6 +1,8 @@
 import {inject,Injectable} from '@angular/core';
 import {HttpClient,HttpParams} from '@angular/common/http';
 import {API_BASE_URL} from '../../../core/config/api.tokens';
+import type {BulkDispatchItem} from '../dispatch-bulk/dispatch-bulk.parser';
+import type {BulkDispatchResponse} from '../models/dispatch-bulk.model';
 import {DispatchPerson,DispatchDetails,DispatchResponse,DispatchSaveResponse,DispatchItem,
  DispatchOption,OptionType,DispatchFileItem,DispatchPage,DispatchAdmissionRules,
  DispatchStatusOption,DispatchAdvancedFilters,DispatchPopulationResult,DispatchGenderOption} from '../models/dispatch.model';
@@ -43,6 +45,10 @@ export class DispatchService {
  }
  create(person:DispatchPerson,dispatch:DispatchDetails){
   return this.http.post<DispatchSaveResponse>(this.url,{person,dispatch});
+ }
+ /** Her satır ayrı DB işleminde kaydedilir; sonuçlarda yalnız maskeli kimlik bulunur. */
+ bulkCreate(items:BulkDispatchItem[]){
+  return this.http.post<BulkDispatchResponse>(this.url+'/bulk',{items});
  }
  update(id:string,version:number,person:DispatchPerson,dispatch:DispatchDetails){
   return this.http.put<DispatchSaveResponse>(this.url+'/'+id,{id,version,person,dispatch});

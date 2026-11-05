@@ -21,11 +21,13 @@ const listScss=read('src/app/features/dispatches/dispatch-list/dispatch-list.com
 
 assert.match(routes,/path: 'dispatches'[\s\S]{0,390}DispatchListComponent/);
 assert.match(routes,/path: 'dispatches\/new'[\s\S]{0,400}DispatchEntryComponent/);
+assert.match(routes,/path: 'dispatches\/bulk'[\s\S]{0,430}DispatchBulkEntryComponent/);
 assert.match(routes,/path: 'dispatches\/:id\/edit'[\s\S]{0,400}DispatchEntryComponent/);
 assert.match(routes,/permissions:\[PermissionCodes\.Dispatches\.Create\]/);
 assert.match(routes,/permissions:\[PermissionCodes\.Dispatches\.Update\]/);
 
 assert.match(navigation,/label: 'Sevk Girişi'[\s\S]{0,200}route: '\/app\/dispatches\/new'/);
+assert.match(navigation,/label: 'Toplu Sevk Girişi'[\s\S]{0,210}route: '\/app\/dispatches\/bulk'/);
 assert.match(navigation,/label: 'Sevk Listesi ve Sorgulama'[\s\S]{0,200}route: '\/app\/dispatches'/);
 
 assert.match(listHtml,/formControlName="currentState"/);
@@ -48,6 +50,7 @@ assert.match(entryTs,/this\.route\.snapshot\.paramMap\.get\('id'\)/);
 assert.match(listTs,/this\.router\.navigate\(\['\/app\/dispatches',row\.id,'edit'\]\)/);
 assert.match(service,/documentDateFrom/);
 assert.match(service,/statuses\(\)/);
+assert.match(service,/bulkCreate\(items:BulkDispatchItem\[\]\)/);
 assert.match(listTs,/readonly statusItems=computed\(/);
 assert.doesNotMatch(listTs,/readonly statusItems=\[/);
 assert.match(listTs,/this\.api\.statuses\(\)/);
