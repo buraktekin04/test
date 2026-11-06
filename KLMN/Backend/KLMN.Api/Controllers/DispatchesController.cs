@@ -32,7 +32,8 @@ public sealed class DispatchesController(ISender sender):ControllerBase
     [HttpGet("genders")]
     [HasPermission(PermissionCodes.Dispatches.Create,PermissionCodes.Dispatches.Update,
         PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query,
-        PermissionCodes.Provisions.CreateWithoutDispatch)]
+        PermissionCodes.Provisions.CreateWithoutDispatch,PermissionCodes.Provisions.View,
+        PermissionCodes.Provisions.Query,PermissionCodes.Provisions.Track)]
     public async Task<IActionResult> Genders(CancellationToken ct)
     {
         return Ok(await sender.Send(new GetDispatchGendersQuery(),ct));

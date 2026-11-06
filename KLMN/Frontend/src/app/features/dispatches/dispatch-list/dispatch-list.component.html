@@ -241,7 +241,7 @@
      <div><dt>Sevk Evrak Sayısı</dt><dd>{{d.dispatch.dispatchDocumentNo||'—'}}</dd></div>
      <div><dt>İşlem Kayıt Tarihi</dt><dd>{{d.dispatchDate|date:'dd.MM.yyyy HH:mm'}}</dd></div>
      <div><dt>Muayene Sebebi</dt><dd>{{detailName('reason')}}</dd></div>
-     <div><dt>Gönderen Makam</dt><dd>{{d.dispatch.senderChairOther || (detailName('senderUnit') !== '—' ? detailName('senderUnit') : detailName('senderOffice'))}}</dd></div>
+     <div><dt>Gönderen Makam</dt><dd>{{detailName('senderUnit') !== '—' ? detailName('senderUnit') : (detailName('senderOffice') !== '—' ? detailName('senderOffice') : '—')}}</dd></div>
      <div><dt>Gönderen Makam Açıklaması</dt><dd>{{d.dispatch.senderChairOther||'—'}}</dd></div>
      <div><dt>Kaçıncı İşlem</dt><dd>{{d.dispatch.nthAdmission??'—'}}</dd></div>
      <div><dt>Sevk Durumu</dt><dd>{{stateLabel(d.currentState)}}</dd></div>

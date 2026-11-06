@@ -162,7 +162,7 @@
      <dl class="provision-detail-grid">
       <div><dt>Sevk Sıra No</dt><dd>{{d.dispatchNo}}</dd></div>
       <div><dt>Provizyon Sıra No</dt><dd>{{d.provisionNo}}</dd></div>
-      <div><dt>Gönderen Makam</dt><dd>{{d.dispatch.senderChairOther || (detailName('senderUnit') !== '—' ? detailName('senderUnit') : detailName('senderOffice'))}}</dd></div>
+      <div><dt>Gönderen Makam</dt><dd>{{detailName('senderUnit') !== '—' ? detailName('senderUnit') : (detailName('senderOffice') !== '—' ? detailName('senderOffice') : '—')}}</dd></div>
       <div><dt>Gönderen Makam Açıklaması</dt><dd>{{d.dispatch.senderChairOther||'—'}}</dd></div>
       <div><dt>Muayene Sebebi</dt><dd>{{detailName('reason')}}</dd></div>
       <div><dt>Kaçıncı İşlem</dt><dd>{{d.dispatch.nthAdmission??'—'}}</dd></div>

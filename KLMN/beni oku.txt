@@ -1,3 +1,11 @@
+06.11.2026 — SORGULAMA DETAY YETKİ VE GÖNDEREN MAKAM DÜZELTMESİ
+================================================================
+- Provizyon yalnız Query/View/Track izinli kullanıcılar detay dialogunda
+  cinsiyet adını okuyabilsin diye Dispatches/genders API izinleri genişletildi.
+- Sevk ve Provizyon Detay ekranlarında gönderen makam adı doğru FK tanımından
+  alınır, ayrı 'Gönderen Makam Açıklaması' bu adı gölgelemez.
+- Var olan audit/İz Kaydı altyapısına, ortak stillere veya GUID'lere dokunulmadı.
+
 06.11.2026 — SEVK/PROVİZYON SORGULAMA ESKİ EKRAN EKSİKLERİ
 =======================================================
 - KLMN/Frontend/src/app/features/dispatches/dispatch-list:

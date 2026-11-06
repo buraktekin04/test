@@ -30,5 +30,7 @@ assert.match(provisionHtml, /Kişi Bilgileri/);
 assert.match(provisionHtml, /Askerî Bilgileri/);
 assert.match(provisionHtml, /Provizyon Bilgileri/);
 assert.match(provisionHtml, /Görüntülenecek Kolonlar/);
+assert.match(provisionHtml, /detailName\('senderUnit'\) !== '—'/);
+assert.match(dispatchHtml, /detailName\('senderUnit'\) !== '—'/);
 
 console.log('Legacy dispatch/provision query UI regression: OK');
