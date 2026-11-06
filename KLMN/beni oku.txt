@@ -1,3 +1,29 @@
+06.11.2026 — KALICI KURAL: EKRAN BAŞINA AYRI HTML / TS / SCSS
+================================================================
+KULLANICI TALİMATI — ZORUNLUDUR:
+- KLMN'nin mevcut proje yapısı ve UI_DESIGN_SYSTEM.md standardı esas alınacak.
+- Her ekran/bileşenin kendisine ait HTML, TS ve SCSS dosyası olacak.
+- Ekranlar arasında yeni ortak SCSS oluşturmak, stilleri birleştirmek,
+  ortaklaştırmak veya başka ekrana taşımak YASAK; kullanıcı açıkça
+  istemedikçe hiçbir ortaklaştırma/refactoring yapılmayacak.
+- Projede var olan src/styles.scss ve PrimeNG tema token'ları
+  sadece kullanılabilir; mevcut global stil dosyaları bu gerekçeyle
+  DEĞİŞTİRİLMEYECEK.
+- İstenmeyen alan, buton, bileşen, ekran, tablo, servis, soyutlama,
+  tasarım veya iş kuralı EKLENMEYECEK; mevcutlar keyfî SİLİNMEYECEK.
+- Önce mevcut benzer KLMN ekranlarının dosya düzeni/stili incelenecek;
+  yalnız talep edilen kapsamda değişiklik yapılacak.
+BU TUR:
+- Provizyon Sevkli/Sevksiz/Sorgulama/Takip ekranları için ayrı component.scss
+  dosyaları oluşturuldu, TS styleUrl kendi yerel stiline döndürüldü.
+- KLMN/Frontend/src/app/features/provisions/provision-common.scss SİLİNDİ.
+- HTML, backend, DTO, API ve iş kurallarına dokunulmadı.
+- Regression kontrolleri dosya ayrımını doğrulayacak şekilde güncellendi.
+- Migration yok; Angular build yapılmadı.
+- İlgili MD: KLMN/Frontend/UI_DESIGN_SYSTEM.md ve
+  KLMN/PROVIZYON_EKSIKLER_VE_AKTARIM.md.
+- Tek commit/push.
+
 06.11.2026 — PROVİZYON DURUM TABLOSU VE EKRAN TASARIMI
 ===================================================
 - ProvisionStatusDefs (Code int PK, Name, SortOrder) sabit durum sözlüğü.

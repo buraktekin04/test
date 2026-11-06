@@ -12,7 +12,7 @@ import type {ProvisionItem,ProvisionState,ProvisionStatusOption} from '../models
  selector:'app-provision-tracking',standalone:true,
  imports:[ReactiveFormsModule,RouterLink,DatePipe,ButtonModule,TableModule,TagModule],
  templateUrl:'./provision-tracking.component.html',
- styleUrl:'../provision-common.scss'
+ styleUrl:'./provision-tracking.component.scss'
 })
 export class ProvisionTrackingComponent implements OnInit {
  private readonly api=inject(ProvisionService);

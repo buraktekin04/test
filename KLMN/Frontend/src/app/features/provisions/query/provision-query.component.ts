@@ -20,7 +20,7 @@ import type {ProvisionItem,ProvisionDetail,ProvisionFilter,ProvisionStatusOption
  imports:[ReactiveFormsModule,FormsModule,RouterLink,DatePipe,ButtonModule,TableModule,
   SelectModule,DialogModule,TagModule],
  templateUrl:'./provision-query.component.html',
- styleUrl:'../provision-common.scss'
+ styleUrl:'./provision-query.component.scss'
 })
 export class ProvisionQueryComponent implements OnInit {
  private readonly api=inject(ProvisionService);

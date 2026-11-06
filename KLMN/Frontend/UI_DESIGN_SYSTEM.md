@@ -1,5 +1,32 @@
 # KLMN Arayüz Tasarım Sistemi
 
+## 06.11.2026 — Zorunlu ekran bağımsızlığı ve değişiklik kapsamı kuralı
+
+- **Her ekranın kendisine ait `.component.scss` dosyası olmalıdır.**
+  Provizyon ekranları arasında `provision-common.scss` veya başka yeni
+  ortak özellik SCSS dosyası **oluşturulmaz/kullanılmaz**.
+  Her bileşen kendi klasöründeki HTML, TypeScript ve SCSS ile yönetilir.
+- KLMN'nin zaten var olan `src/styles.scss` ve tema token'ları kullanılabilir;
+  ancak bu iş için **mevcut global stiller değiştirilmez**, oraya yeni
+  ortak provizyon kuralları taşınmaz ve ortaklaştırma/refactoring yapılmaz.
+- **Kullanıcı istemedikçe** yeni alan, buton, tablo, component, servis, mimari
+  katman veya iş kuralı eklenmez; mevcut akış, yerleşim, alan adları ve
+  görsel kararlar keyfî olarak silinmez veya değiştirilmez.
+- Geliştirmelerde önce aynı projenin benzer ekranı, dosya organizasyonu ve
+  tema standardı incelenir. İstenen işin kapsamı dışında refactoring,
+  ortaklaştırma ve tasarım değişikliği yapılmaz.
+- Dört Provizyon ekranının kendi dosyaları:
+  `with-dispatch/provision-with-dispatch.component.scss`,
+  `without-dispatch/provision-without-dispatch.component.scss`,
+  `query/provision-query.component.scss`,
+  `tracking/provision-tracking.component.scss`.
+  Eski `provision-common.scss` kaldırılmıştır. HTML ve iş kuralları
+  bu düzenlemede **değiştirilmemiştir**.
+- Yeni tablo, entity, API veya migration bu SCSS düzenlemesinde yoktur.
+  Angular derleme ve tarayıcıdaki görünüm yerel geliştirme ortamında
+  ayrıca doğrulanmalıdır.
+
+
 ## Amaç
 KLMN'in sağlık, kontrol, takip ve raporlama süreçlerinde kullanılacak ekranlarını
 tutarlı, erişilebilir ve kurumsal bir görünümle yönetmek. Bu düzenleme var olan

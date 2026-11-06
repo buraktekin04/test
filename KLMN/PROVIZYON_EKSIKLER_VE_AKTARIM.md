@@ -1,5 +1,20 @@
 # KLMN — Provizyon Modülü: Veri Modeli, Kurulum ve Aktarım
 
+## 06.11.2026 — Provizyon SCSS dosyalarının ayrılması
+
+KLMN'nin mevcut ekran mimarisine uygun olarak Provizyon Sevkli Giriş,
+Sevksiz Giriş, Sorgulama ve Takip bileşenlerinin her birinin
+**kendi klasöründe, kendisine ait `.component.scss` dosyası** vardır.
+Eski `provision-common.scss` tamamen silinmiştir.
+
+**Kalıcı geliştirme kuralı:** Provizyon ekranlarına yeni ortak SCSS
+oluşturulmaz, ekranların stilleri ortaklaştırılmaz. Var olan global
+tema değişkenleri kullanılır; genel `src/styles.scss` değiştirilmez.
+Kullanıcı istemeden ek alan, ekran, stil mimarisi veya davranış
+ekleme/silme/refactoring yapılmaz. HTML, TS iş akışları, backend
+entity'leri, GUID'ler ve API sözleşmeleri bu değişiklikte korunmuştur.
+
+
 ## 06.11.2026 — Provizyon durum sözlüğü ve ekran düzenlemeleri
 
 Provizyon durumları için **ProvisionStatusDefs** isimli referans tablosu

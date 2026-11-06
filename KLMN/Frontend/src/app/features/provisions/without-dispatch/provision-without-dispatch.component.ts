@@ -13,7 +13,7 @@ import type {ProvisionMutation} from '../models/provision.model';
  selector:'app-provision-without-dispatch',standalone:true,
  imports:[RouterLink,ReactiveFormsModule,ButtonModule,SelectModule],
  templateUrl:'./provision-without-dispatch.component.html',
- styleUrl:'../provision-common.scss'
+ styleUrl:'./provision-without-dispatch.component.scss'
 })
 export class ProvisionWithoutDispatchComponent implements OnInit {
  private readonly fb=inject(FormBuilder);

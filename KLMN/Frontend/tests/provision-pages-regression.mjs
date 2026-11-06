@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {readFileSync,existsSync} from 'node:fs';
 import {dirname,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
@@ -31,7 +31,12 @@ const statusCodes=backend('KLMN.Domain/Entities/Admissions/ProvisionStatusCodes.
 const statusConfig=backend('KLMN.Persistence/Configurations/Admissions/ProvisionStatusDefConfiguration.cs');
 const statusController=backend('KLMN.Api/Controllers/ProvisionsController.cs');
 const statusHandler=backend('KLMN.Application/Provisions/Queries/GetProvisionStatuses/GetProvisionStatusesQueryHandler.cs');
-const styles=read('src/app/features/provisions/provision-common.scss');
+const provisionStyles={
+ withDispatch:read('src/app/features/provisions/with-dispatch/provision-with-dispatch.component.scss'),
+ withoutDispatch:read('src/app/features/provisions/without-dispatch/provision-without-dispatch.component.scss'),
+ query:read('src/app/features/provisions/query/provision-query.component.scss'),
+ tracking:read('src/app/features/provisions/tracking/provision-tracking.component.scss')
+};
 const ctrl=backend('KLMN.Api/Controllers/ProvisionsController.cs');
 const withHandler=backend('KLMN.Application/Provisions/Commands/CreateWithDispatch/CreateWithDispatchCommandHandler.cs');
 const withoutHandler=backend('KLMN.Application/Provisions/Commands/CreateWithoutDispatch/CreateWithoutDispatchCommandHandler.cs');
@@ -123,8 +128,29 @@ assert.match(withHtml,/class="provision-link-button"/);
 assert.match(withoutHtml,/provision-link-button/);
 assert.match(queryHtml,/provision-header-actions/);
 assert.match(trackingHtml,/provision-link-button/);
-assert.match(styles,/\.provision-field-label\{/);
-assert.match(styles,/\.provision-link-button\{/);
+// Her provizyon ekranının kendi SCSS dosyası olmalı; özellik düzeyi ortak SCSS yasaktır.
+const provisionComponents=[
+ ['with-dispatch/provision-with-dispatch.component',withTs,provisionStyles.withDispatch],
+ ['without-dispatch/provision-without-dispatch.component',withoutTs,provisionStyles.withoutDispatch],
+ ['query/provision-query.component',queryTs,provisionStyles.query],
+ ['tracking/provision-tracking.component',trackingTs,provisionStyles.tracking]
+];
+assert.equal(existsSync(resolve(root,'src/app/features/provisions/provision-common.scss')),false);
+for(const [component,ts,scss] of provisionComponents){
+ const filename=component.split('/').at(-1);
+ assert.ok(ts.includes("styleUrl:'./"+filename+".scss'"),component+' must use its own stylesheet');
+ assert.doesNotMatch(ts,/provision-common\.scss|styleUrls\s*:/);
+ assert.ok(scss.includes('.provision-page{'),component+' missing page layout');
+ assert.ok(scss.includes('.provision-card{'),component+' missing own card style');
+ assert.ok(scss.includes('.provision-field{'),component+' missing own form style');
+ assert.ok(scss.includes('.provision-link-button{'),component+' missing own navigation style');
+ assert.doesNotMatch(scss,/@(?:import|use|forward)\s+['"][^'"]*provision-common/);
+}
+assert.match(provisionStyles.withDispatch,/\.provision-field-label\{/);
+assert.match(provisionStyles.withoutDispatch,/\.provision-field-label\{/);
+assert.match(provisionStyles.query,/\.provision-field-label\{/);
+assert.match(provisionStyles.tracking,/\.provision-tabs button.active\{/);
+assert.match(provisionStyles.query,/\.provision-table-wrap\{/);
 for(const html of [withHtml,withoutHtml,queryHtml]){
  assert.doesNotMatch(html,/<label class="provision-field(?: wide)?">[^<\n]+ <span class="provision-required">\*<\/span>/);
 }

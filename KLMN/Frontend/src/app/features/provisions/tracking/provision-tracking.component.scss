@@ -1,3 +1,4 @@
+/* provision-tracking.component: bu ekranın yerel stilleri. Genel tema token'ları mevcut KLMN tasarım sisteminden gelir. */
 :host{display:block;min-width:0}
 .provision-page{display:flex;flex-direction:column;gap:.85rem;min-width:0;color:var(--ui-text)}
 .provision-header{display:flex;justify-content:space-between;align-items:center;gap:.8rem;flex-wrap:wrap}
@@ -9,10 +10,10 @@
 .provision-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem}
 .provision-field{display:flex;flex-direction:column;gap:.35rem;min-width:0;font-size:.81rem;font-weight:600}
 .provision-field input,.provision-field textarea,.provision-field select{border:1px solid var(--ui-border);border-radius:6px;background:var(--ui-surface);color:var(--ui-text);padding:.5rem;min-height:37px;font:inherit;font-weight:400;box-sizing:border-box;width:100%}
-.provision-field.wide{grid-column:span 2}.provision-field.full{grid-column:1/-1}
+.provision-field.wide{grid-column:span 2}
+.provision-field.full{grid-column:1/-1}
 .provision-actions{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-top:1rem}
 .provision-error{color:var(--ui-danger);border-left:3px solid var(--ui-danger);padding:.65rem;background:var(--ui-surface-muted);font-size:.8rem}
-.provision-success{color:#168259;border-left:3px solid #168259;padding:.65rem;background:var(--ui-surface-muted);font-size:.82rem}
 .provision-note{font-size:.77rem;color:var(--ui-muted);line-height:1.55;margin:.75rem 0}
 .provision-table-wrap{overflow-x:auto;max-width:100%}
 :host ::ng-deep .provision-table-wrap .p-datatable-thead>tr>th{font-size:.78rem;white-space:nowrap;background:var(--ui-surface-muted);padding:.7rem}
@@ -23,16 +24,16 @@
 .provision-tabs button{padding:.55rem .9rem;cursor:pointer;border:1px solid var(--ui-border);color:var(--ui-text);background:var(--ui-surface-muted);border-radius:6px}
 .provision-tabs button.active{background:var(--ui-primary);color:#fff}
 .provision-empty{font-size:.84rem;color:var(--ui-muted);padding:1.2rem;text-align:center}
-.provision-required{color:var(--ui-danger)}
-@media(max-width:1200px){.provision-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:850px){.provision-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:550px){.provision-grid{grid-template-columns:1fr}.provision-field.wide{grid-column:auto}}
-
-/* Alan adı ve zorunluluk yıldızı her genişlikte tek satırda tutulur. */
-.provision-field-label{display:inline-flex;align-items:center;gap:.25rem;flex-wrap:nowrap;white-space:nowrap;min-width:0}
-.provision-required{color:var(--ui-danger);display:inline-block;flex:0 0 auto;line-height:1}
-/* Header / footer yönlendirmeleri sade metin yerine açık tonlu buton yüzeyi. */
-.provision-header-actions{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+@media(max-width:1200px){
+.provision-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:850px){
+.provision-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:550px){
+.provision-grid{grid-template-columns:1fr}
+.provision-field.wide{grid-column:auto}
+}
 .provision-link-button{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
  padding:.52rem .82rem;border:1px solid color-mix(in srgb,var(--ui-primary) 24%,var(--ui-border));
  border-radius:8px;background:color-mix(in srgb,var(--ui-primary) 9%,var(--ui-surface));
@@ -41,11 +42,12 @@
 .provision-link-button:hover{background:color-mix(in srgb,var(--ui-primary) 16%,var(--ui-surface));
  border-color:color-mix(in srgb,var(--ui-primary) 42%,var(--ui-border));text-decoration:none;transform:translateY(-1px)}
 .provision-link-button:focus-visible{outline:2px solid var(--ui-primary);outline-offset:2px}
-.provision-link-button--small{padding:.35rem .58rem;min-height:28px;font-size:.76rem}
 .provision-tabs button.active{background:color-mix(in srgb,var(--ui-primary) 16%,var(--ui-surface));
  color:var(--ui-primary);border-color:color-mix(in srgb,var(--ui-primary) 36%,var(--ui-border));font-weight:650}
 :host ::ng-deep .provision-actions .p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-danger){
  background:color-mix(in srgb,var(--ui-primary) 88%,white);
  border-color:color-mix(in srgb,var(--ui-primary) 88%,white)
 }
-@media(max-width:600px){.provision-header-actions{width:100%}.provision-link-button{max-width:100%}.provision-field-label{white-space:normal}}
+@media(max-width:600px){
+.provision-link-button{max-width:100%}
+}

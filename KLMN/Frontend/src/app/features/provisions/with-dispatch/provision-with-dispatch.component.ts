@@ -12,7 +12,7 @@ import type {ProvisionMutation} from '../models/provision.model';
  selector:'app-provision-with-dispatch',standalone:true,
  imports:[ReactiveFormsModule,RouterLink,ButtonModule,SelectModule],
  templateUrl:'./provision-with-dispatch.component.html',
- styleUrl:'../provision-common.scss'
+ styleUrl:'./provision-with-dispatch.component.scss'
 })
 export class ProvisionWithDispatchComponent implements OnInit {
  private readonly fb=inject(FormBuilder);
