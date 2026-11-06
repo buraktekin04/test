@@ -50,6 +50,7 @@ public static class DependencyInjection
 
         // PDF byte'larını veritabanı dışında tutan private dosya deposudur.
         services.AddSingleton<IUserAgreementPdfStorage, LocalUserAgreementPdfStorage>();
+        services.AddSingleton<IDocumentPdfStorage, LocalDocumentPdfStorage>();
 
         /*
          * Jwt, Authentication, PasswordReset ve Smtp ayarları
@@ -353,3 +354,4 @@ public static class DependencyInjection
         catch (InvalidTimeZoneException) { return false; }
     }
 }
+

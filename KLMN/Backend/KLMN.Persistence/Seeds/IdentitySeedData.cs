@@ -21,6 +21,9 @@ internal static class IdentitySeedData
     /// </summary>
     public static IReadOnlyCollection<PermissionSeedItem> Permissions { get; } =
     [
+        new("Yönetmelik PDF Görüntüleme", PermissionCodes.DocumentPdfs.View, "DocumentPdfs", 10),
+        new("Yönetmelik PDF Yükleme ve Silme", PermissionCodes.DocumentPdfs.Manage, "DocumentPdfs", 20),
+
         new("Kullanıcıları Görüntüleme", PermissionCodes.Users.View, "Users", 10),
         new("Kullanıcı Sorgulama", PermissionCodes.Users.Query, "Users", 20),
         new("Kullanıcı Oluşturma", PermissionCodes.Users.Create, "Users", 30),
@@ -310,3 +313,4 @@ internal sealed record PermissionSeedItem(
     string Code,
     string Module,
     int SortOrder);
+

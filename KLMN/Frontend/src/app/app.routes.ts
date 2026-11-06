@@ -46,6 +46,14 @@ export const routes: Routes = [
             .then(component => component.HomeComponent)
       },
       {
+        path: 'admin/document-pdfs',
+        canActivate: [permissionGuard],
+        data: { permissions: [PermissionCodes.DocumentPdfs.Manage] },
+        loadComponent: () =>
+          import('./features/document-pdfs/manage/document-pdf-manage.component')
+            .then(component => component.DocumentPdfManageComponent)
+      },
+      {
         path: 'dispatches',
         canActivate: [permissionGuard],
         data: { permissions:[PermissionCodes.Dispatches.View,PermissionCodes.Dispatches.Query],

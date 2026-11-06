@@ -1,5 +1,6 @@
 using KLMN.Application.Common.Interfaces.Persistence;
 using KLMN.Domain.Entities.Identity;
+using KLMN.Domain.Entities.Documents;
 using KLMN.Domain.Entities.Auditing;
 using KLMN.Domain.Entities.MilitaryUnit;
 using KLMN.Domain.Entities.Admissions;
@@ -24,6 +25,7 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     /// Kullanıcı hesaplarına ait EF Core DbSet koleksiyonudur.
     /// </summary>
     public DbSet<User> Users => Set<User>();
+    public DbSet<DocumentPdf> DocumentPdfs => Set<DocumentPdf>();
 
     /// <summary>Değiştirilemez tanımlama audit kayıtlarının sorgu kümesidir.</summary>
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
@@ -179,3 +181,4 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
         modelBuilder.ApplyGlobalQueryFilters();
     }
 }
+

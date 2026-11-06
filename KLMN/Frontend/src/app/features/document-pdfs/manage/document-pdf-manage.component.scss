@@ -1,0 +1,36 @@
+:host { display: block; min-width: 0; }
+.document-page { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+.page-header h1 { margin: 0 0 .4rem; color: var(--ui-text); font-size: 1.45rem; }
+.page-header p, .list-header p { margin: 0; color: var(--ui-muted); font-size: .85rem; }
+.document-panel { min-width: 0; overflow: hidden; background: var(--ui-surface);
+  border: 1px solid var(--ui-border); border-radius: 9px; }
+.upload-panel { padding: 1.2rem; }
+.document-panel h2 { color: var(--ui-text); font-size: 1rem; margin: 0 0 .5rem; }
+.upload-row { display: flex; flex-wrap: wrap; gap: .9rem; align-items: flex-end; margin-top: 1rem; }
+.upload-field { display: flex; flex: 1 1 300px; flex-direction: column; gap: .4rem; min-width: 0; }
+.upload-field label { font-size: .85rem; font-weight: 650; color: var(--ui-text); }
+.upload-field input { box-sizing: border-box; width: 100%; padding: .7rem; color: var(--ui-text);
+  background: var(--ui-surface); border: 1px solid var(--ui-control-border); border-radius: 6px; }
+.upload-field small { color: var(--ui-muted); overflow-wrap: anywhere; }
+.list-header { display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 1rem; padding: 1.1rem 1.2rem; }
+.table-scroll { overflow-x: auto; width: 100%; }
+:host ::ng-deep .table-scroll {
+  .p-datatable-thead > tr > th { padding: .8rem; background: var(--ui-surface-muted);
+    color: var(--ui-text); font-size: .83rem; border-bottom: 1px solid var(--ui-border); }
+  .p-datatable-tbody > tr > td { padding: .8rem; color: var(--ui-text);
+    border-bottom: 1px solid var(--ui-border-soft); font-size: .85rem; }
+}
+.file-name { max-width: 420px; overflow-wrap: anywhere; }
+.file-name i { color: var(--ui-danger); margin-right: .4rem; }
+.row-actions { white-space: nowrap; }
+.row-actions p-button { margin-right: .4rem; }
+.empty { padding: 2rem !important; text-align: center; color: var(--ui-muted) !important; }
+.document-notice { padding: .8rem 1rem; display: flex; justify-content: space-between;
+  background: var(--ui-surface); color: var(--ui-text); border: 1px solid var(--ui-border);
+  border-radius: 7px; font-size: .85rem; }
+.document-notice.error { border-left: 4px solid var(--ui-danger); }
+.document-notice.success { border-left: 4px solid var(--ui-success); }
+.document-notice button { background: transparent; border: 0; color: var(--ui-muted);
+  cursor: pointer; padding: .2rem; }
+

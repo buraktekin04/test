@@ -28,6 +28,42 @@
   </nav>
 
   <footer class="sidebar-footer">
+    @if (canViewDocuments()) {
+      <div class="sidebar-documents">
+        <button type="button" class="sidebar-documents-trigger"
+                [attr.aria-expanded]="documentsOpen()" aria-label="Dokümanlar"
+                (click)="toggleDocuments()">
+          <i class="pi pi-book" aria-hidden="true"></i>
+          <span class="sidebar-documents-text">Dokümanlar</span>
+          <i class="pi sidebar-documents-chevron" aria-hidden="true"
+             [class.pi-chevron-down]="documentsOpen()"
+             [class.pi-chevron-up]="!documentsOpen()"></i>
+        </button>
+        @if (documentsOpen()) {
+          <div class="sidebar-documents-popup" aria-label="Sağlık Yeteneği Yönetmeliği belgeleri">
+            <strong>Sağlık Yeteneği Yönetmeliği</strong>
+            @if (documentsLoading()) {
+              <span class="sidebar-documents-hint">Yükleniyor...</span>
+            } @else if (documentsError()) {
+              <span class="sidebar-documents-hint" role="alert">{{ documentsError() }}</span>
+            } @else if (!documents().length) {
+              <span class="sidebar-documents-hint">Henüz doküman bulunmuyor.</span>
+            } @else {
+              <div class="sidebar-documents-list">
+                @for (document of documents(); track document.id) {
+                  <button type="button" class="sidebar-document-link"
+                          [title]="document.fileName" (click)="openDocument(document.id)">
+                    <i class="pi pi-file-pdf" aria-hidden="true"></i>
+                    <span>{{ document.fileName }}</span>
+                    <i class="pi pi-external-link" aria-hidden="true"></i>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
     <div class="sidebar-status" title="Kurumsal sağlık takip uygulaması">
       <span class="sidebar-status-dot" aria-hidden="true"></span>
       <span class="sidebar-status-text">Kurumsal Uygulama</span>

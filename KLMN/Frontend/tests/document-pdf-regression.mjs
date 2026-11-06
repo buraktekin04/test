@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const base = new URL('../', import.meta.url);
+const read = p => readFileSync(new URL(p, base), 'utf8');
+const sidebar = read('src/app/layout/sidebar/sidebar.component.html');
+const source = read('src/app/layout/sidebar/sidebar.component.ts');
+const manager = read('src/app/features/document-pdfs/manage/document-pdf-manage.component.html');
+const routes = read('src/app/app.routes.ts');
+const nav = read('src/app/layout/services/navigation.service.ts');
+const service = read('src/app/features/document-pdfs/services/document-pdf.service.ts');
+assert.match(nav, /label: 'Yönetim Paneli'/);
+assert.match(nav, /label: 'Doküman İşlemleri'/);
+assert.match(routes, /admin\/document-pdfs/);
+assert.match(sidebar, /<footer class="sidebar-footer">[\s\S]*sidebar-documents/);
+assert.match(source, /PermissionCodes\.DocumentPdfs\.View/);
+assert.match(manager, /Doküman Yükle/);
+assert.match(manager, /Görüntüle/);
+assert.match(manager, /confirmDelete/);
+assert.match(service, /responseType: 'blob'/);
+assert.match(service, /window\.open/);
+console.log('document-pdf-regression OK');
+

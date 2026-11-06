@@ -1,4 +1,5 @@
 using KLMN.Domain.Entities.Identity;
+using KLMN.Domain.Entities.Documents;
 using KLMN.Domain.Entities.Auditing;
 using KLMN.Domain.Entities.MilitaryUnit;
 using KLMN.Domain.Entities.Admissions;
@@ -11,6 +12,7 @@ namespace KLMN.Application.Common.Interfaces.Persistence;
 public interface IKLMNDbContext
 {
     DbSet<User> Users { get; }
+    DbSet<DocumentPdf> DocumentPdfs { get; }
 
     /// <summary>Audit geçmişi sorgulama modeli; interceptor haricinde yazılmaz.</summary>
     DbSet<AuditLog> AuditLogs { get; }
@@ -136,3 +138,4 @@ public interface IKLMNDbContext
     /// </summary>
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
+

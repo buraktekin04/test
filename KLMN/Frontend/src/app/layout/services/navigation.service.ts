@@ -64,6 +64,15 @@ export class NavigationService {
       ]
     },
     {
+      label: 'Yönetim Paneli',
+      icon: 'pi pi-sliders-h',
+      children: [
+        { label: 'Doküman İşlemleri', icon: 'pi pi-file-pdf',
+          route: '/app/admin/document-pdfs',
+          requiredPermissions: [PermissionCodes.DocumentPdfs.Manage] }
+      ]
+    },
+    {
       label: 'Tanımlamalar',
       icon: 'pi pi-cog',
       children: [

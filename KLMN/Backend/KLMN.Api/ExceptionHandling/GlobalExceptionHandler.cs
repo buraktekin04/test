@@ -15,6 +15,7 @@ using KLMN.Application.SYYDiagnosisTypes.Exceptions;
 using KLMN.Application.SYYDiagnosisSlices.Exceptions;
 using KLMN.Application.Dispatches.Exceptions;
 using KLMN.Application.Provisions.Exceptions;
+using KLMN.Application.DocumentPdfs.Exceptions;
 using KLMN.Application.AnnotationReasons.Exceptions;
 using KLMN.Application.PlaneTypes.Exceptions;
 using KLMN.Application.FlyingMissions.Exceptions;
@@ -176,6 +177,8 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
                     Title = "Kullanıcı işlemi gerçekleştirilemedi.",
                     Detail = exception.Message
                 },
+            DocumentPdfNotFoundException => new ProblemDetails { Status=404, Title="Doküman bulunamadı.", Detail=exception.Message },
+            DocumentPdfConflictException => new ProblemDetails { Status=409, Title="Doküman değişti.", Detail=exception.Message },
             ProvisionNotFoundException =>
                 new ProblemDetails { Status=404,Title="Provizyon bulunamadı.",Detail=exception.Message },
             ProvisionConflictException =>
@@ -447,3 +450,4 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         return problem;
     }
 }
+

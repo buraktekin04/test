@@ -1,3 +1,26 @@
+06.11.2026 — YÖNETİM PANELİ / SAĞLIK YETENEĞİ YÖNETMELİĞİ DOKÜMANLARI
+===================================================================
+- Yönetim Paneli > Doküman İşlemleri: birden fazla PDF yükleme,
+  görüntüleme (yeni sekmede) ve onayla silme.
+- Sol alt sabit Dokümanlar açılır listesi: JWT yetkili seçim,
+  güvenli API GET -> Blob ile PDF yeni sekmede açılır.
+- DocumentPdfs: eski ObjectId/Id ve PDFDataObjectId GUID'leri korunur;
+  Binary private DocumentStorage:RootPath/regulations konumundadır.
+- DocumentPdfs.View ve DocumentPdfs.Manage, rol/kullanıcı izinlerine
+  ve backend/Angular guard'larına eklenmiştir. ADMIN yeni izinleri alır;
+  diğer rol/kullanıcılara ayrı izin verilir.
+- PDF uzantısı, %PDF- imzası, dosya boyutu, soft-delete ve xmin denetimi.
+- Global SCSS veya ortak SCSS oluşturulmadı/değiştirilmedi; sadece
+  sidebar'ın kendi SCSS ve yeni ekranın kendi HTML/TS/SCSS dosyaları.
+- Yeni DocumentPdfs tablosu için migration GEREKİYOR. Migration üretme/
+  uygulama kullanıcıda. Oracle eski PDF içerik blob'ları da ayrıca
+  PDFDataObjectId ile diske taşınmalıdır; aksi halde açılmaz.
+- Ayrıntılar: KLMN/DOKUMAN_ISLEMLERI_KURULUM.md
+- Kontroller: npm --prefix KLMN/Frontend run test:document-pdfs,
+  npm --prefix KLMN/Frontend run build,
+  dotnet build KLMN/Backend/KLMN.slnx.
+- Gerçek Angular/.NET/DB/E2E çalıştırılmadı. Tek commit/push.
+
 06.11.2026 — KALICI KURAL: EKRAN BAŞINA AYRI HTML / TS / SCSS
 ================================================================
 KULLANICI TALİMATI — ZORUNLUDUR:

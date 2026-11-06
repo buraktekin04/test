@@ -3,6 +3,7 @@
  * UI görünürlüğü içindir; gerçek authorization kararı backend'de verilir.
  */
 export const PermissionCodes = {
+  DocumentPdfs: { View: 'DocumentPdfs.View', Manage: 'DocumentPdfs.Manage' },
   /** Provizyon ekranlarının backend izin kodları. */
   Provisions: {
     View: 'Provisions.View',

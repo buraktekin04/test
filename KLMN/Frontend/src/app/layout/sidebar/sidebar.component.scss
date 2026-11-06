@@ -91,3 +91,42 @@
 .sidebar-search-clear {border:0;background:transparent;color:#c1ccd6;cursor:pointer;padding:5px;}
 .sidebar-no-result {padding:14px;color:#bcc8d2;font-size:12.5px;}
 @media (min-width:993px){.sidebar.collapsed .sidebar-search{display:none;}}
+
+/* Sol alt sabit yönetmelik dokümanları açılır listesi. */
+.sidebar-documents { position: relative; width: 100%; }
+.sidebar-documents-trigger {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  min-height: 40px; padding: 9px 10px; border: 1px solid #556474;
+  border-radius: 5px; background: #344350; color: #edf3f8;
+  font-family: inherit; font-size: 12.5px; font-weight: 600;
+  cursor: pointer; text-align: left;
+}
+.sidebar-documents-trigger:hover { background: #3b4e5c; }
+.sidebar-documents-trigger:focus-visible { outline: 2px solid #c3d1dc; outline-offset: 2px; }
+.sidebar-documents-text { flex: 1; }
+.sidebar-documents-chevron { font-size: 10px; }
+.sidebar-documents-popup {
+  position: absolute; bottom: calc(100% + 8px); left: 0; right: 0;
+  z-index: 12; display: flex; flex-direction: column; gap: .55rem;
+  padding: 12px 10px; border: 1px solid #566675; border-radius: 6px;
+  background: #344350; box-shadow: 0 8px 24px rgba(0,0,0,.22);
+  max-height: min(350px, 48vh);
+}
+.sidebar-documents-popup strong { font-size: 12px; font-weight: 650; color: #f1f5fa; }
+.sidebar-documents-list { display: flex; flex-direction: column; gap: 2px;
+  min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+.sidebar-documents-hint { color: #d5dee7; font-size: 12px; }
+.sidebar-document-link { display: flex; align-items: center; gap: 8px;
+  width: 100%; border: none; border-radius: 4px; background: transparent;
+  color: #f0f4f8; font-size: 12px; font-family: inherit;
+  text-align: left; padding: 9px 6px; cursor: pointer; }
+.sidebar-document-link span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.sidebar-document-link:hover { background: #445969; }
+.sidebar-document-link:focus-visible { outline: 2px solid #c3d1dc; }
+.sidebar-document-link .pi-external-link { font-size: 10px; }
+@media (min-width: 993px) {
+  .sidebar.collapsed .sidebar-documents-trigger { justify-content: center; padding: 10px 7px; }
+  .sidebar.collapsed .sidebar-documents-text,
+  .sidebar.collapsed .sidebar-documents-chevron,
+  .sidebar.collapsed .sidebar-documents-popup { display: none; }
+}

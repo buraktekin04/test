@@ -6,6 +6,13 @@ namespace KLMN.Domain.Constants;
 /// </summary>
 public static class PermissionCodes
 {
+    /// <summary>Yönetmelik PDF'lerini görüntüleme ve yönetim izinleri.</summary>
+    public static class DocumentPdfs
+    {
+        public const string View = "DocumentPdfs.View";
+        public const string Manage = "DocumentPdfs.Manage";
+    }
+
     /// <summary>Kullanıcı yönetimi permission kodlarını içerir.</summary>
     public static class Users
     {
@@ -552,3 +559,4 @@ public static class PermissionCodes
         public const string Update = "Dispatches.Update";
     }
 }
+

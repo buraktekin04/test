@@ -4,6 +4,10 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { APP_BRANDING } from '../../core/config/app-branding';
 import { NavigationItem } from '../models/navigation-item.model';
 import { NavigationService } from '../services/navigation.service';
+import { PermissionCodes } from '../../core/permissions/constants/permission-codes';
+import { PermissionService } from '../../core/permissions/services/permission.service';
+import { DocumentPdf } from '../../features/document-pdfs/models/document-pdf.model';
+import { DocumentPdfService } from '../../features/document-pdfs/services/document-pdf.service';
 
 /** Menünün içeriği permission bazlıdır, genişliği üst layout tarafından yönetilir. */
 @Component({
@@ -15,6 +19,8 @@ import { NavigationService } from '../services/navigation.service';
 })
 export class SidebarComponent {
   private readonly navigationService = inject(NavigationService);
+  private readonly permissionService = inject(PermissionService);
+  private readonly pdfService = inject(DocumentPdfService);
 
   @Input() public collapsed = false;
   @Output() public readonly navigationSelected = new EventEmitter<void>();
@@ -30,6 +36,36 @@ export class SidebarComponent {
     const term = this.searchTerm().trim().toLocaleLowerCase('tr-TR');
     return term ? this.filterMenu(allowed, term) : allowed;
   });
+
+  public readonly canViewDocuments = computed(() =>
+    this.permissionService.hasAny(PermissionCodes.DocumentPdfs.View, PermissionCodes.DocumentPdfs.Manage));
+  public readonly documentsOpen = signal(false);
+  public readonly documentsLoading = signal(false);
+  public readonly documentsError = signal<string | null>(null);
+  public readonly documents = signal<DocumentPdf[]>([]);
+
+  public toggleDocuments(): void {
+    if (!this.canViewDocuments()) return;
+    if (this.collapsed) this.expandRequested.emit();
+    const open = !this.documentsOpen();
+    this.documentsOpen.set(open);
+    if (!open) return;
+    this.documentsLoading.set(true);
+    this.documentsError.set(null);
+    this.pdfService.list().subscribe({
+      next: items => { this.documents.set(items); this.documentsLoading.set(false); },
+      error: () => {
+        this.documentsLoading.set(false);
+        this.documentsError.set('Dokümanlar yüklenemedi.');
+      }
+    });
+  }
+
+  public openDocument(id: string): void {
+    this.documentsError.set(null);
+    this.pdfService.openPdf(id,
+      () => this.documentsError.set('PDF açılamadı. Açılır pencere iznini kontrol edin.'));
+  }
 
   private filterMenu(items: readonly NavigationItem[], term: string): NavigationItem[] {
     return items.flatMap(item => {
