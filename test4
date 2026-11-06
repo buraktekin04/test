@@ -1,0 +1,696 @@
+
+[HttpPost]
+[ProducesResponseType(typeof(ProvizyonSorgulaCevap), 200)]
+[ProducesResponseType(404)]
+[MSKBSAuthorizeRole(MSKBSRoleNames.ProvizyonSorgula)]
+public IActionResult SorgulaDetayli([FromBody] ProvizyonDetayliSorgulaGiris sorgulaGiris)
+{
+    if (!ModelState.IsValid)
+    {
+        return BadRequest(ModelState);
+    }
+
+    var cevap = new ProvizyonSorgulaCevap();
+
+    try
+    {
+        var input = Newtonsoft.Json.JsonConvert.SerializeObject(sorgulaGiris);
+        _logger.LogInformation($"Provizyon/SorgulaDetayli Giriş {input}");
+
+        var queryInput = new ProvisionDetailedQueryInput
+        {
+            UniqueRefno = sorgulaGiris.TCKimlikNo,
+            ForeignUniqueRefno = sorgulaGiris.YabanciKimlikNo,
+            Name = sorgulaGiris.Adi,
+            Surname = sorgulaGiris.Soyadi,
+            ProvisionDateFrom = sorgulaGiris.BaslangicTarihi,
+            ProvisionDateTo = sorgulaGiris.BitisTarihi,
+            ProvisionNo = sorgulaGiris.ProvizyonSiraNo,
+            Hospital = sorgulaGiris.Hastane,
+            ConnectedOrganizations = sorgulaGiris.BagliOrganizasyonlar
+        };
+
+        if (sorgulaGiris.ProvizyonDurumu.HasValue)
+        {
+            queryInput.ProvisionState = (Provision.States)sorgulaGiris.ProvizyonDurumu.Value;
+        }
+
+        var result = _provisionService.QueryProvision(queryInput);
+
+        var queryResult = from r in result
+                          let provizyonOzet = MapToProvizyonOzetTo(r)
+                          select provizyonOzet;
+
+        cevap.Provizyonlar = queryResult.ToArray();
+        cevap.SetSuccessResult();
+        var output = Newtonsoft.Json.JsonConvert.SerializeObject(cevap);
+        _logger.LogInformation($"Provizyon/SorgulaDetayli Cevap {output}");
+
+    }
+    catch (MSKBSValidationException ex)
+    {
+        cevap.SonucKodu = MSKBSResultCodes.ValidationErrorResultCode;
+        cevap.SonucMesaji = ex.Message;
+        _logger.LogError(ex.ToString());
+    }
+    catch (MSKBSBusinessException ex)
+    {
+        cevap.SonucKodu = ex.ResultCode;
+        cevap.SonucMesaji = ex.ResultMessage;
+        _logger.LogError(ex.ToString());
+    }
+
+    return Ok(cevap);
+}
+
+
+
+
+
+
+
+
+
+        [HttpPost]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> ProvizyonOzetDurum([FromBody] ProvizyonOzetKriterGiris giris)
+        {
+            //provizyonUpdate.islemTarihi, provizyonUpdate.alimId
+            var queryInput = new ERaporProvisionSummaryInput
+            {
+                startDate = giris.BaslangicTarihi,
+                purchaseId = giris.alimId
+            };
+            var result = await _provisionWS.QueryProvisionSummaryState(queryInput);
+            return Ok(result);
+        }
+		
+		
+		
+		
+		
+		
+  [HttpPost]
+  [ProducesResponseType(typeof(ItirazRaporCevap), 200)]
+  [ProducesResponseType(404)]
+  [MSKBSAuthorizeRole(MSKBSRoleNames.RaporSorgula)]
+  public IActionResult ItirazRaporSorgula([FromBody] ItirazRaporInput input)
+  {
+
+      if (!ModelState.IsValid)
+      {
+          return BadRequest(ModelState);
+      }
+
+      var cevap = new ItirazRaporCevap();
+
+      try
+      {
+          List<ItirazRaporDetay> detayList = new List<ItirazRaporDetay>();
+          detayList = _provisionService.GetReportLastMonthList(input.UniqueRefno).Select(x => new ItirazRaporDetay
+          {
+              ObjectID = x.ObjectId.ToString(),
+              RaporBilgisi = x.ReportNo + " - " + x.ReportDate.ToShortDateString()
+
+          }).ToList();
+
+
+          cevap.SetSuccessResult();
+          cevap.Raporlar = detayList.ToArray();
+
+      }
+      catch (MSKBSValidationException ex)
+      {
+          cevap.SonucKodu = MSKBSResultCodes.ValidationErrorResultCode;
+          cevap.SonucMesaji = ex.Message;
+          _logger.LogError(ex.ToString());
+      }
+      catch (MSKBSBusinessException ex)
+      {
+          cevap.SonucKodu = ex.ResultCode;
+          cevap.SonucMesaji = ex.ResultMessage;
+          _logger.LogError(ex.ToString());
+      }
+
+      return Ok(cevap);
+  }
+  
+  
+  
+  
+  
+  
+  
+   [HttpPost]
+   [ProducesResponseType(typeof(ProvizyonYeniCevap), 200)]
+   [ProducesResponseType(404)]
+   [MSKBSAuthorizeRole(MSKBSRoleNames.ProvizyonYeniSevkli)]
+   public IActionResult YeniSevkli([FromBody] ProvizyonSevkliYeniGiris provizyonGiris)
+   {
+       if (!ModelState.IsValid)
+       {
+           return BadRequest(ModelState);
+       }
+
+       var cevap = new ProvizyonYeniCevap();
+
+       try
+       {
+           var input = Newtonsoft.Json.JsonConvert.SerializeObject(provizyonGiris);
+           _logger.LogInformation($"Provizyon/YeniSevkli Giriş {input}");
+
+           var provisionInput = new ProvisionWithDispatchInput
+           {
+               DispatchObjectId = provizyonGiris.SevkKayitNo.SafeParseNullableGuid()
+           };
+
+           if (provizyonGiris.KabulYapanHastane != null)
+           {
+               var hospital = _provisionService.GetHospitalObjectId(provizyonGiris.KabulYapanHastane);
+               if (hospital.HasValue)
+                   provisionInput.AdmissionHospital = hospital.Value;
+           }
+
+           var result = _provisionService.NewProvision(provisionInput);
+           cevap.ProvizyonKayitNo = result.ObjectId.ToString();
+           cevap.ProvizyonSiraNo = result.ProvisionRecordNumber;
+
+           var Branslar = new List<string>();
+           foreach (var item in result.Branches)
+           {
+               Branslar.Add(item);
+           }
+           cevap.Branslar = Branslar;
+
+           var Tetkikler = new List<string>();
+           foreach (var item in result.Procedures)
+           {
+               Tetkikler.Add(item);
+           }
+           cevap.Tetkikler = Tetkikler;
+           cevap.SevkAlimId = result.PurchaseId;
+
+           cevap.SetSuccessResult();
+           var output = Newtonsoft.Json.JsonConvert.SerializeObject(cevap);
+           _logger.LogInformation($"Provizyon/YeniSevkli Cevap {output}");
+
+       }
+       catch (MSKBSValidationException ex)
+       {
+           cevap.SonucKodu = MSKBSResultCodes.ValidationErrorResultCode;
+           cevap.SonucMesaji = ex.Message;
+           _logger.LogError(ex.ToString());
+       }
+       catch (MSKBSBusinessException ex)
+       {
+           cevap.SonucKodu = ex.ResultCode;
+           cevap.SonucMesaji = ex.ResultMessage;
+           _logger.LogError(ex.ToString());
+       }
+
+       return Ok(cevap);
+   }
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+[HttpPost]
+[ProducesResponseType(typeof(ProvizyonYeniCevap), 200)]
+[ProducesResponseType(404)]
+[MSKBSAuthorizeRole(MSKBSRoleNames.ProvizyonYeniSevksiz)]
+public IActionResult YeniSevksizFoto([FromBody] ProvizyonSevksizFotoYeniGiris provizyonGiris)
+{
+    if (!ModelState.IsValid)
+    {
+        return BadRequest(ModelState);
+    }
+
+    var cevap = new ProvizyonYeniCevap();
+
+    try
+    {
+        var input = Newtonsoft.Json.JsonConvert.SerializeObject(provizyonGiris);
+        _logger.LogInformation($"Provizyon/YeniSevksizFoto Giriş {input}");
+
+        var person = new Person
+        {
+            UniqueRefno = provizyonGiris.TCKimlikNo,
+            ForeignUniqueRefno = provizyonGiris.YabanciKimlikNo,
+            Name = provizyonGiris.Adi,
+            Surname = provizyonGiris.Soyadi,
+            FatherName = provizyonGiris.BabaAdi,
+            MotherName = provizyonGiris.AnneAdi,
+            BirthDate = provizyonGiris.DogumTarihi,
+            Gender = (Gender)provizyonGiris.Cinsiyet,
+            Address = provizyonGiris.Adres,
+            RegistryNumber = provizyonGiris.SicilNo,
+            LastNominationDate = provizyonGiris.Nasbi,
+            MilitaryUnitDescription = provizyonGiris.BirlikAciklama,
+            SenderChairOther = provizyonGiris.MuayeneyeGonderenMakamAciklama,
+        };
+
+
+        if (provizyonGiris.DogumYeri != null)
+        {
+            var townOfBirth = _personService.GetTownOfBirth(Int32.Parse(provizyonGiris.DogumYeri));
+            if (townOfBirth.HasValue)
+            {
+                var placeName = _personService.GetTownName(townOfBirth.Value);
+                person.TownOfBirth = townOfBirth.Value;
+                person.BdPlace = placeName;
+                person.BdCode = provizyonGiris.DogumYeri;
+            }
+        }
+
+
+        if (provizyonGiris.Uyrugu != null)
+        {
+            var nationality = _personService.GetCountryObjectId(provizyonGiris.Uyrugu);
+            if (nationality.HasValue)
+                person.Nationality = nationality.Value;
+        }
+
+        if (Guid.TryParse(provizyonGiris.SKBasvuruGrubu, out Guid hdAdmissionType))
+            person.HcAdmissionTypeDef = hdAdmissionType;
+
+        if (Guid.TryParse(provizyonGiris.Kuvvet, out Guid forcesCommand))
+            person.ForcesCommand = forcesCommand;
+
+        if (Guid.TryParse(provizyonGiris.Rutbe, out Guid rank))
+            person.Rank = rank;
+
+        if (Guid.TryParse(provizyonGiris.Sinif, out Guid militaryClass))
+            person.MilitaryClass = militaryClass;
+
+        if (Guid.TryParse(provizyonGiris.Birlik, out Guid militaryUnit))
+            person.MilitaryUnit = militaryUnit;
+
+        if (Guid.TryParse(provizyonGiris.Okulu, out Guid militarySchool))
+            person.MilitarySchool = militarySchool;
+
+        if (Guid.TryParse(provizyonGiris.MuayeneyeGonderenMakam, out Guid senderChair))
+            person.SenderChair = senderChair;
+
+
+        if (Guid.TryParse(provizyonGiris.KayitliOlduguAskerlikSubesi, out Guid militaryOffice))
+            person.MilitaryOffice = militaryOffice;
+
+        if (Guid.TryParse(provizyonGiris.UcucuGorevi, out Guid flyingMission))
+            person.FlyingMission = flyingMission;
+
+        if (Guid.TryParse(provizyonGiris.UctuguUcakTipi, out Guid flyingPlaneType))
+            person.FlyingPlaneType = flyingPlaneType;
+
+        var dispatch = new Dispatch
+        {
+            NthAdmission = provizyonGiris.KacinciIslem,
+            DispatchDocumentDate = provizyonGiris.SevkEvrakTarihi.Date,
+            DispatchDocumentNo = provizyonGiris.SevkEvrakSayisi,
+            UniqueRefno = provizyonGiris.TCKimlikNo,
+            ForeignUniqueRefno = provizyonGiris.YabanciKimlikNo,
+            Name = provizyonGiris.Adi,
+            Surname = provizyonGiris.Soyadi,
+            FatherName = provizyonGiris.BabaAdi,
+            MotherName = provizyonGiris.AnneAdi,
+            BirthDate = provizyonGiris.DogumTarihi.Date,
+            Gender = (Gender)provizyonGiris.Cinsiyet,
+            Address = provizyonGiris.Adres,
+            RegistryNumber = provizyonGiris.SicilNo,
+            LastNominationDate = provizyonGiris.Nasbi,
+            AutomaticDispatch = true,
+            MilitaryUnitDescription = provizyonGiris.BirlikAciklama,
+            SenderChairOther = provizyonGiris.MuayeneyeGonderenMakamAciklama,
+            PurchaseId = provizyonGiris.AlimId,
+        };
+        if (Guid.TryParse(provizyonGiris.MuayeneSebebi, out Guid reasonForExamination))
+            dispatch.ReasonForExamination = reasonForExamination;
+
+
+        if (provizyonGiris.DogumYeri != null)
+        {
+            var townOfBirth = _personService.GetTownOfBirth(Int32.Parse(provizyonGiris.DogumYeri));
+            if (townOfBirth.HasValue)
+            {
+                var placeName = _personService.GetTownName(townOfBirth.Value);
+                dispatch.TownOfBirth = townOfBirth.Value;
+                dispatch.BdPlace = placeName;
+                dispatch.BdCode = provizyonGiris.DogumYeri;
+            }
+        }
+
+        if (provizyonGiris.Uyrugu != null)
+        {
+            var nationality = _personService.GetCountryObjectId(provizyonGiris.Uyrugu);
+            if (nationality.HasValue)
+                dispatch.Nationality = nationality.Value;
+        }
+
+        if (Guid.TryParse(provizyonGiris.SKBasvuruGrubu, out Guid dispatchHcAdmissionType))
+            dispatch.HcAdmissionTypeDef = dispatchHcAdmissionType;
+
+        if (Guid.TryParse(provizyonGiris.Kuvvet, out Guid dispatchForcesCommand))
+            dispatch.ForcesCommand = dispatchForcesCommand;
+
+        if (Guid.TryParse(provizyonGiris.Rutbe, out Guid dispatchRank))
+            dispatch.Rank = dispatchRank;
+
+        if (Guid.TryParse(provizyonGiris.Sinif, out Guid dispatchMilitaryClass))
+            dispatch.MilitaryClass = dispatchMilitaryClass;
+
+        if (Guid.TryParse(provizyonGiris.Birlik, out Guid dispatchMilitaryUnit))
+            dispatch.MilitaryUnit = dispatchMilitaryUnit;
+
+        if (Guid.TryParse(provizyonGiris.Okulu, out Guid dispatchMilitarySchool))
+            dispatch.MilitarySchool = dispatchMilitarySchool;
+
+        if (Guid.TryParse(provizyonGiris.KayitliOlduguAskerlikSubesi, out Guid dispatchMilitaryOffice))
+            dispatch.MilitaryOffice = dispatchMilitaryOffice;
+
+        if (Guid.TryParse(provizyonGiris.MuayeneyeGonderenMakam, out Guid dispatchSenderChair))
+            dispatch.SenderChair = dispatchSenderChair;
+
+        if (Guid.TryParse(provizyonGiris.UcucuGorevi, out Guid dispatchFlyingMission))
+            dispatch.FlyingMission = dispatchFlyingMission;
+
+        if (Guid.TryParse(provizyonGiris.UctuguUcakTipi, out Guid dispatchFlyingPlaneType))
+            dispatch.FlyingPlaneType = dispatchFlyingPlaneType;
+
+        var dispatchInput = new DispatchNewInput
+        {
+            Person = person,
+            Dispatch = dispatch
+        };
+
+        var provisionInput = new ProvisionInput
+        {
+            Person = person,
+            Dispatch = dispatch,
+
+        };
+
+        if (provizyonGiris.KabulYapanHastane != null)
+        {
+            var hospital = _provisionService.GetHospitalObjectId(provizyonGiris.KabulYapanHastane);
+            if (hospital.HasValue)
+                provisionInput.AdmissionHospital = hospital.Value;
+        }
+
+        provisionInput.TempBinaryDataObjectId = provizyonGiris.TempBinaryDataObjectId.SafeParseNullableGuid();
+
+        provisionInput.ObjectionableReportId = provizyonGiris.ItirazRaporId.SafeParseNullableGuid();
+
+
+        var result = _provisionService.NewProvision(provisionInput);
+        cevap.ProvizyonKayitNo = result.ObjectId.ToString();
+        cevap.ProvizyonSiraNo = result.ProvisionRecordNumber;
+
+        var Branslar = new List<string>();
+        foreach (var item in result.Branches)
+        {
+            Branslar.Add(item);
+        }
+        cevap.Branslar = Branslar;
+
+        var Tetkikler = new List<string>();
+        foreach (var item in result.Procedures)
+        {
+            Tetkikler.Add(item);
+        }
+        cevap.Tetkikler = Tetkikler;
+
+        cevap.SetSuccessResult();
+        var output = Newtonsoft.Json.JsonConvert.SerializeObject(cevap);
+        _logger.LogInformation($"Provizyon/YeniSevksizFoto Cevap {output}");
+
+    }
+    catch (MSKBSValidationException ex)
+    {
+        cevap.SonucKodu = MSKBSResultCodes.ValidationErrorResultCode;
+        cevap.SonucMesaji = ex.Message;
+        _logger.LogError(ex.ToString());
+    }
+    catch (MSKBSBusinessException ex)
+    {
+        cevap.SonucKodu = ex.ResultCode;
+        cevap.SonucMesaji = ex.ResultMessage;
+        _logger.LogError(ex.ToString());
+    }
+
+    return Ok(cevap);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { IProvisionService } from '../../services/iprovisionservice';
+import { ProvizyonSevkliYeniGiris } from '../../apimodel/provizyonsevkliyenigiris';
+import { ProvizyonYeniCevap } from '../../apimodel/provizyonyenicevap';
+import { ProvizyonSevksizYeniGiris } from '../../apimodel/provizyonsevksizyenigiris';
+import { ProvizyonIptalGiris } from '../../apimodel/provizyoniptalgiris';
+import { ProvizyonSorgulaGiris } from '../../apimodel/provizyonsorgulagiris';
+import { ProvizyonIptalCevap } from '../../apimodel/provizyoniptalcevap';
+import { ProvizyonSorgulaCevap } from '../../apimodel/provizyonsorgulacevap';
+import { Observable } from 'rxjs';
+import { MSKBSConfiguration } from '../../app.constants';
+import { ProvizyonDetayliSorgulaGiris } from '../../apimodel/provizyondetaylisorgulagiris';
+import { ProvizyonSevksizYeniGirisFoto } from '../../apimodel/provizyonsevksizyenigirisfoto';
+import { ProvizyonYeniSorgulaCevap } from '../../apimodel/provizyonyenisorgulacevap';
+import { Report } from '../../model/report';
+import { ItirazRaporCevap } from '../../apimodel/itirazraporcevap';
+import { ItirazRaporInput } from '../../apimodel/itirazraporinput';
+import { ProvizyonIptalCokluGiris } from '../../apimodel/provizyoniptalcoklugiris';
+import { ProvizyonDurumGiris, ProvizyonDurumOzetGiris } from '../../apimodel/provizyondurumservisi';
+import { ProvisionStatusDetail, ProvisionStatusSummary } from '../..//model/provisionstateservicemodel';
+
+@Injectable()
+export class ProvisionService implements IProvisionService {
+  private actionUrl: string;
+  private headers: HttpHeaders;
+
+  constructor(private configuration: MSKBSConfiguration, private http: HttpClient) {
+    this.actionUrl = configuration.Server + 'api/provizyon/';
+    this.headers = new HttpHeaders();
+    this.headers.append('Content-Type', 'application/json');
+    this.headers.append('Accept', 'application/json');
+  }
+
+  public newProvision(input: ProvizyonSevkliYeniGiris): Observable<ProvizyonYeniCevap> {
+    const url = this.actionUrl + 'yenisevkli' + this.configuration.ApiVersion;
+    return this.http.post<ProvizyonYeniCevap>(url, input, { headers: this.headers });
+  }
+
+  public query(input: ProvizyonDetayliSorgulaGiris): Observable<ProvizyonSorgulaCevap> {
+    const url = this.actionUrl + 'sorguladetayli' + this.configuration.ApiVersion;
+    return this.http.post<ProvizyonSorgulaCevap>(url, input, { headers: this.headers });
+  }
+
+  public queryNew(): Observable<ProvizyonYeniSorgulaCevap> {
+    const url = this.actionUrl + 'yeniprovizyonlar' + this.configuration.ApiVersion;
+    return this.http.post<ProvizyonYeniSorgulaCevap>(url, null, { headers: this.headers });
+  }
+
+  public newProvisionWithoutDispatch(input: ProvizyonSevksizYeniGiris): Observable<ProvizyonYeniCevap> {
+    const url = this.actionUrl + 'yenisevksiz' + this.configuration.ApiVersion;
+    return this.http.post<ProvizyonYeniCevap>(url, input, { headers: this.headers });
+  }
+
+  public cancelProvision(input: ProvizyonIptalGiris): Observable<ProvizyonIptalCevap> {
+    const url = this.actionUrl + 'provizyonuygulamaiptal' + this.configuration.ApiVersion;
+    return this.http.post<ProvizyonIptalCevap>(url, input, { headers: this.headers });
+  }
+
+  public queryProvision(input: ProvizyonSorgulaGiris): Observable<ProvizyonSorgulaCevap> {
+    const url = this.actionUrl + 'sorgula' + this.configuration.ApiVersion;
+    return this.http.post<ProvizyonSorgulaCevap>(url, input, { headers: this.headers });
+  }
+
+  public newProvisionWithoutDispatchPhoto(input: ProvizyonSevksizYeniGirisFoto): Observable<ProvizyonYeniCevap> {
+    const url = this.actionUrl + 'yenisevksizfoto' + this.configuration.ApiVersion;
+    return this.http.post<ProvizyonYeniCevap>(url, input, { headers: this.headers });
+  }
+
+  public cancelledExpectProvision(input: ProvizyonIptalCokluGiris): Observable<ProvizyonIptalCevap> {
+    const url = this.actionUrl + 'provizyoniptal' + this.configuration.ApiVersion;
+    return this.http.post<ProvizyonIptalCevap>(url,input,{ headers: this.headers });
+  }
+
+  public getReportLastMonthList(input: ItirazRaporInput): Observable<ItirazRaporCevap> {
+    const url = this.actionUrl + 'itirazraporsorgula' + this.configuration.ApiVersion;
+    return this.http.post<ItirazRaporCevap>(url, input, { headers: this.headers });
+
+  }
+
+   public queryProvisionState(input: ProvizyonDurumGiris): Observable<ProvisionStatusDetail> {
+    const url = this.actionUrl + 'provizyondurum' + this.configuration.ApiVersion;
+    return this.http.post<ProvisionStatusDetail>(url, input, { headers: this.headers });
+
+  }
+  public queryProvisionSummaryState(input: ProvizyonDurumOzetGiris): Observable<ProvisionStatusSummary[]> {
+    const url = this.actionUrl + 'provizyonozetdurum' + this.configuration.ApiVersion;
+    return this.http.post<ProvisionStatusSummary[]>(url, input, { headers: this.headers });
+
+  }
+
+}
+
+
+
+
+
+
+
+
+
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Person } from '../../model/person';
+import { IDispatchService } from '../../services/idispatch.service';
+import { Observable, of } from 'rxjs';
+import { Gender } from '../../model/gender';
+import { PERSON_LIST, DISPATCH_LIST } from '../../services/sample.data';
+import { DispatchQueryCriteria } from '../../model/dispatch-query-criteria';
+import { DispatchResult } from '../../model/dispatch-result';
+import { MSKBSConfiguration } from '../../app.constants';
+import { SevkYeniGiris } from '../../apimodel/sevkyenigiris';
+import { SevkYeniCevap } from '../../apimodel/sevkyenicevap';
+import { SevkSorgulaGiris } from '../../apimodel/sevksorgulagiris';
+import { SevkSorgulaCevap } from '../../apimodel/sevksorgulacevap';
+import { Sevk3713IptalGiris, SevkIptalGiris } from '../../apimodel/sevkiptalgiris';
+import { SevkIptalCevap } from '../../apimodel/sevkiptalcevap';
+import { SevkDetayliSorgulaGiris } from '../../apimodel/sevkdetaylisorgulagiris';
+import { SevkYeniGirisFoto } from '../../apimodel/sevkyenigirisfoto';
+import { SevkYeniTopluGiris } from '../../apimodel/sevkyenitoplugiris';
+import { SevkYeniTopluCevap } from '../../apimodel/sevkyenitoplucevap';
+import { SevkDosyaYeniKanun3713 } from '../../apimodel/sevkdosyayenikanun3713';
+import { SevkYeniKanun3713 } from '../../apimodel/sevkyenikanun3713';
+import { DataResponse, GetHospitalByCityResponse, SevkYeniKanun3713Cevap } from '../../apimodel/sevkyenikanun3713cevap';
+import { SevkKanun3713SorgulaGiris } from '../../apimodel/sevkkanun3713sorgulagiris';
+import { SevkKanun3713SorgulaCevap } from '../../apimodel/sevkkanun3713sorgulacevap';
+import { SevkKanun3713KriterGiris } from '../../apimodel/sevkkanun3713kritergiris';
+import { Sevk3713DokumanEkleGiris } from '../../apimodel/sevk3713dokumanekle';
+import { SevkKanun3713Ozet } from '../../apimodel/sevkkanun3713Ozet';
+
+@Injectable()
+export class DispatchService implements IDispatchService {
+
+    private actionUrl: string;
+    private headers: HttpHeaders;
+
+    constructor(private configuration: MSKBSConfiguration, private http: HttpClient) {
+        this.actionUrl = configuration.Server + 'api/sevk/';
+        this.headers = new HttpHeaders();
+        this.headers.append('Content-Type', 'application/json');
+        this.headers.append('Accept', 'application/json');
+    }
+
+    public getPerson(uniquerefno: number): Observable<Person> {
+        const foundPerson = PERSON_LIST.find(p => p.uniqueRefno === uniquerefno);
+        return of(foundPerson);
+    }
+
+    public query(input: SevkDetayliSorgulaGiris): Observable<SevkSorgulaCevap> {
+        const url = this.actionUrl + 'sorguladetayli' + this.configuration.ApiVersion;
+        return this.http.post<SevkSorgulaCevap>(url, input, { headers: this.headers });
+    }
+
+    public newDispatch(input: SevkYeniGiris): Observable<SevkYeniCevap> {
+        const url = this.actionUrl + 'yeni' + this.configuration.ApiVersion;
+        return this.http.post<SevkYeniCevap>(url, input, { headers: this.headers });
+    }
+
+    public queryDispatch(input: SevkSorgulaGiris): Observable<SevkSorgulaCevap> {
+        const url = this.actionUrl + 'sorgula' + this.configuration.ApiVersion;
+        return this.http.post<SevkSorgulaCevap>(url, input, { headers: this.headers });
+    }
+
+    public cancelDispatch(input: SevkIptalGiris): Observable<SevkIptalCevap> {
+        const url = this.actionUrl + 'iptal' + this.configuration.ApiVersion;
+        return this.http.post<SevkIptalCevap>(url, input, { headers: this.headers });
+    }
+    public cancelDispatch3713(input: Sevk3713IptalGiris): Observable<SevkIptalCevap> {
+        const url = this.actionUrl + 'sevk3713iptal' + this.configuration.ApiVersion;
+        return this.http.post<SevkIptalCevap>(url, input, { headers: this.headers });
+    }
+
+    public newDispatchPhoto(input: SevkYeniGirisFoto): Observable<SevkYeniCevap> {
+        const url = this.actionUrl + 'yenisevkfoto' + this.configuration.ApiVersion;
+        return this.http.post<SevkYeniCevap>(url, input, { headers: this.headers });
+    }
+
+    public cancelledExpectDispatch(): Observable<SevkIptalCevap> {
+        const url = this.actionUrl + 'sevkiptal' + this.configuration.ApiVersion;
+        return this.http.post<SevkYeniCevap>(url, { headers: this.headers });
+    }
+
+    public newDispatchMultiple(input: SevkYeniTopluGiris): Observable<SevkYeniTopluCevap> {
+        const url = this.actionUrl + 'yenitoplu' + this.configuration.ApiVersion;
+        return this.http.post<SevkYeniTopluCevap>(url, input, { headers: this.headers });
+    }
+
+    public newDispatchLaw3713(input: SevkYeniKanun3713): Observable<SevkYeniKanun3713Cevap> {
+        const url = this.actionUrl + 'sevkyenikanun3713' + this.configuration.ApiVersion;
+        return this.http.post<SevkYeniKanun3713Cevap>(url, input, { headers: this.headers });     
+    }
+
+    public queryDispatchLaw3713(input: SevkKanun3713SorgulaGiris): Observable<SevkKanun3713SorgulaCevap> {
+        const url = this.actionUrl + 'sorgulakanun3713' + this.configuration.ApiVersion;
+        return this.http.post<SevkKanun3713SorgulaCevap>(url, input, { headers: this.headers });
+    }
+    public getHastanelerBySehir(input: SevkKanun3713KriterGiris): Observable<DataResponse[]> {
+        const url = this.actionUrl + 'hastanegetir' + this.configuration.ApiVersion;
+        return this.http.post<DataResponse[]>(url, input, { headers: this.headers });
+    }
+
+   public dispatchLaw3713AddDocument(input: Sevk3713DokumanEkleGiris): Observable<SevkYeniKanun3713Cevap> {
+        const url = this.actionUrl + 'sevkyenikanun3713ekdokuman' + this.configuration.ApiVersion;
+        return this.http.post<SevkYeniKanun3713Cevap>(url, input, { headers: this.headers });     
+    }
+    public sendToSbService(input: SevkKanun3713Ozet): Observable<SevkYeniKanun3713Cevap> {
+        const url = this.actionUrl + 'sevk3713sbservisegonder' + this.configuration.ApiVersion;
+        return this.http.post<SevkYeniKanun3713Cevap>(url, input, { headers: this.headers });     
+    }
+
+    
+}
+
+
+
+
+
+
+
+
+
