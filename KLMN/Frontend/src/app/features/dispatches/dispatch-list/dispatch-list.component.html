@@ -97,30 +97,43 @@
   </section>
   @if(hasSearched()){
   <section class="list-card">
+   <details class="dispatch-columns" aria-label="Tablo kolonları">
+    <summary><i class="pi pi-list"></i> Görüntülenecek Kolonlar</summary>
+    <div class="dispatch-columns-list">
+     @for(column of selectableColumns;track column.name){
+      <label><input type="checkbox" [checked]="showColumn(column.name)"
+        (change)="toggleColumn(column.name,$any($event.target).checked)"/>
+       {{column.label}}</label>
+     }
+    </div>
+   </details>
    <div class="table-scroll">
     <p-table [value]="records()" [loading]="loading()" [resizableColumns]="true" columnResizeMode="expand"
       [tableStyle]="{'min-width':'1000px','width':'100%'}">
      <ng-template pTemplate="header"><tr>
-      <th pResizableColumn pSortableColumn="dispatchNo">Sevk No <p-sortIcon field="dispatchNo"/></th>
-      <th pResizableColumn pSortableColumn="personName">Başvuran Kişi <p-sortIcon field="personName"/></th>
-      <th pResizableColumn>Kimlik No (Maskeli)</th>
-      <th pResizableColumn pSortableColumn="dispatchDate">Sevk Tarihi <p-sortIcon field="dispatchDate"/></th>
-      <th pResizableColumn pSortableColumn="dispatchDocumentNo">Evrak No <p-sortIcon field="dispatchDocumentNo"/></th>
-      <th pResizableColumn pSortableColumn="admissionTypeName">Başvuru Grubu <p-sortIcon field="admissionTypeName"/></th>
-      <th pResizableColumn pSortableColumn="currentState">Durum <p-sortIcon field="currentState"/></th>
-      @if(canUpdate()||canAudit()||canCreateProvision()){<th class="sticky-actions-col">İşlemler</th>}
+      @if(showColumn('dispatchNo')){<th pResizableColumn pSortableColumn="dispatchNo">Sevk No <p-sortIcon field="dispatchNo"/></th>}
+      @if(showColumn('personName')){<th pResizableColumn pSortableColumn="personName">Başvuran Kişi <p-sortIcon field="personName"/></th>}
+      @if(showColumn('identityMasked')){<th pResizableColumn>Kimlik No (Maskeli)</th>}
+      @if(showColumn('dispatchDate')){<th pResizableColumn pSortableColumn="dispatchDate">Sevk Tarihi <p-sortIcon field="dispatchDate"/></th>}
+      @if(showColumn('dispatchDocumentDate')){<th pResizableColumn pSortableColumn="dispatchDocumentDate">Evrak Tarihi <p-sortIcon field="dispatchDocumentDate"/></th>}
+      @if(showColumn('dispatchDocumentNo')){<th pResizableColumn pSortableColumn="dispatchDocumentNo">Evrak No <p-sortIcon field="dispatchDocumentNo"/></th>}
+      @if(showColumn('admissionTypeName')){<th pResizableColumn pSortableColumn="admissionTypeName">Başvuru Grubu <p-sortIcon field="admissionTypeName"/></th>}
+      @if(showColumn('currentState')){<th pResizableColumn pSortableColumn="currentState">Durum <p-sortIcon field="currentState"/></th>}
+      <th class="sticky-actions-col">İşlemler</th>
      </tr></ng-template>
      <ng-template pTemplate="body" let-item><tr>
-      <td><strong>{{item.dispatchNo}}</strong></td>
-      <td class="wrap">{{item.personName}}</td>
-      <td class="mono">{{item.identityMasked}}</td>
-      <td>{{item.dispatchDate|date:'dd.MM.yyyy HH:mm'}}</td>
-      <td>{{item.dispatchDocumentNo||'—'}}</td>
-      <td class="wrap">{{item.admissionTypeName}}</td>
-      <td><p-tag [value]="stateLabel(item.currentState)" [severity]="stateSeverity(item.currentState)"/></td>
-      @if(canUpdate()||canAudit()||canCreateProvision()){
+      @if(showColumn('dispatchNo')){<td><strong>{{item.dispatchNo}}</strong></td>}
+      @if(showColumn('personName')){<td class="wrap">{{item.personName}}</td>}
+      @if(showColumn('identityMasked')){<td class="mono">{{item.identityMasked}}</td>}
+      @if(showColumn('dispatchDate')){<td>{{item.dispatchDate|date:'dd.MM.yyyy HH:mm'}}</td>}
+      @if(showColumn('dispatchDocumentDate')){<td>{{item.dispatchDocumentDate|date:'dd.MM.yyyy'}}</td>}
+      @if(showColumn('dispatchDocumentNo')){<td>{{item.dispatchDocumentNo||'—'}}</td>}
+      @if(showColumn('admissionTypeName')){<td class="wrap">{{item.admissionTypeName}}</td>}
+      @if(showColumn('currentState')){<td><p-tag [value]="stateLabel(item.currentState)" [severity]="stateSeverity(item.currentState)"/></td>}
        <td class="sticky-actions-col">
         <div class="row-actions">
+         <p-button icon="pi pi-eye" ariaLabel="Sevk Detay" label="Detay" [text]="true" severity="secondary"
+          (onClick)="openDetail(item)"/>
          @if(canCreateProvision()&&item.currentState===1){
           <p-button icon="pi pi-heart" ariaLabel="Sevke provizyon al" [text]="true"
            severity="secondary" (onClick)="openProvision(item)"/>
@@ -134,10 +147,9 @@
          }
         </div>
        </td>
-      }
      </tr></ng-template>
      <ng-template pTemplate="emptymessage"><tr>
-      <td [attr.colspan]="canUpdate()||canAudit()||canCreateProvision()?8:7" class="empty">Sevk kaydı bulunamadı.</td>
+      <td [attr.colspan]="visibleColumnCount()+1" class="empty">Sevk kaydı bulunamadı.</td>
      </tr></ng-template>
     </p-table>
    </div>
@@ -174,4 +186,89 @@
  @if(auditRecord();as item){
   <app-audit-history entityType="Dispatch" [entityId]="item.id"/>
  }
+</p-dialog>
+
+<p-dialog header="Sevk Detay" [visible]="detailOpen()" (visibleChange)="!$event&&closeDetail()"
+ [modal]="true" [dismissableMask]="true" [style]="{'width':'min(1000px,96vw)'}">
+ @if(detail();as d){
+  <div class="dispatch-detail">
+   <section class="dispatch-detail-group">
+    <h3>Fotoğraf</h3>
+    @if(detailPhotoUrl();as photo){<img [src]="photo" alt="Başvuran fotoğrafı" class="dispatch-detail-photo"/>}
+    @else{<p class="muted">Fotoğraf bulunmuyor.</p>}
+   </section>
+   <section class="dispatch-detail-group">
+    <h3>Kişi Bilgileri</h3>
+    <dl class="dispatch-detail-grid">
+     <div><dt>T.C. Kimlik No</dt><dd>{{d.person.tcKimlikNo||'—'}}</dd></div>
+     <div><dt>Yabancı Kimlik No</dt><dd>{{d.person.yabanciKimlikNo||'—'}}</dd></div>
+     <div><dt>Adı</dt><dd>{{d.person.name}}</dd></div>
+     <div><dt>Soyadı</dt><dd>{{d.person.surname}}</dd></div>
+     <div><dt>Anne Adı</dt><dd>{{d.person.motherName||'—'}}</dd></div>
+     <div><dt>Baba Adı</dt><dd>{{d.person.fatherName||'—'}}</dd></div>
+     <div><dt>Cinsiyet</dt><dd>{{detailGender()}}</dd></div>
+     <div><dt>Doğum Tarihi</dt><dd>{{d.person.birthDate|date:'dd.MM.yyyy'}}</dd></div>
+     <div><dt>Doğum Yeri</dt><dd>{{d.person.birthPlaceText||detailName('town')}}</dd></div>
+     <div><dt>Uyruğu</dt><dd>{{detailName('nationality')}}</dd></div>
+     <div class="wide"><dt>Adres</dt><dd>{{d.person.address||'—'}}</dd></div>
+    </dl>
+   </section>
+   <section class="dispatch-detail-group">
+    <h3>Askerî Bilgileri</h3>
+    <dl class="dispatch-detail-grid">
+     <div><dt>Başvuru Grubu</dt><dd>{{detailName('admission')}}</dd></div>
+     <div><dt>Kuvvet</dt><dd>{{detailName('forces')}}</dd></div>
+     <div><dt>Askerlik Şubesi</dt><dd>{{detailName('office')}}</dd></div>
+     <div><dt>Okulu</dt><dd>{{detailName('school')}}</dd></div>
+     <div><dt>Birliği</dt><dd>{{detailName('unit')}}</dd></div>
+     <div><dt>Birlik Açıklaması</dt><dd>{{d.dispatch.militaryUnitDescription||'—'}}</dd></div>
+     <div><dt>Sınıfı</dt><dd>{{detailName('class')}}</dd></div>
+     <div><dt>Rütbesi</dt><dd>{{detailName('rank')}}</dd></div>
+     <div><dt>Sicil No</dt><dd>{{d.dispatch.registryNumber||'—'}}</dd></div>
+     <div><dt>Nasbı</dt><dd>{{d.dispatch.lastNominationDate|date:'dd.MM.yyyy'}}</dd></div>
+     <div><dt>Uçucu Görev</dt><dd>{{detailName('mission')}}</dd></div>
+     <div><dt>Uçtuğu Uçak</dt><dd>{{detailName('plane')}}</dd></div>
+    </dl>
+   </section>
+   <section class="dispatch-detail-group">
+    <h3>Sevk Bilgileri</h3>
+    <dl class="dispatch-detail-grid">
+     <div><dt>Sevk Sıra No</dt><dd>{{d.dispatchNo}}</dd></div>
+     <div><dt>Sevk Kapsamı</dt><dd>{{d.dispatch.dispatchScope===2?'Şehirdeki sağlık tesisleri':d.dispatch.dispatchScope===3?'Belirli sağlık tesisi':'—'}}</dd></div>
+     <div><dt>Sevk Kapsamı Şehir</dt><dd>{{detailName('scopeCity')}}</dd></div>
+     <div><dt>Sevk Kapsamı Hastane</dt><dd>{{detailName('scopeHospital')}}</dd></div>
+     <div><dt>Sevk Evrak Tarihi</dt><dd>{{d.dispatch.dispatchDocumentDate|date:'dd.MM.yyyy'}}</dd></div>
+     <div><dt>Sevk Evrak Sayısı</dt><dd>{{d.dispatch.dispatchDocumentNo||'—'}}</dd></div>
+     <div><dt>İşlem Kayıt Tarihi</dt><dd>{{d.dispatchDate|date:'dd.MM.yyyy HH:mm'}}</dd></div>
+     <div><dt>Muayene Sebebi</dt><dd>{{detailName('reason')}}</dd></div>
+     <div><dt>Gönderen Makam</dt><dd>{{d.dispatch.senderChairOther || (detailName('senderUnit') !== '—' ? detailName('senderUnit') : detailName('senderOffice'))}}</dd></div>
+     <div><dt>Gönderen Makam Açıklaması</dt><dd>{{d.dispatch.senderChairOther||'—'}}</dd></div>
+     <div><dt>Kaçıncı İşlem</dt><dd>{{d.dispatch.nthAdmission??'—'}}</dd></div>
+     <div><dt>Sevk Durumu</dt><dd>{{stateLabel(d.currentState)}}</dd></div>
+     <div><dt>Alım ID</dt><dd>{{d.dispatch.purchaseId??'—'}}</dd></div>
+     <div class="wide"><dt>Açıklama</dt><dd>{{d.dispatch.description||'—'}}</dd></div>
+     @if(d.cancellationReason){
+      <div class="wide"><dt>İptal Açıklaması</dt><dd>{{d.cancellationReason}}</dd></div>
+     }
+    </dl>
+   </section>
+  </div>
+  <div class="dialog-actions"><p-button type="button" label="Kapat" [outlined]="true"
+   (onClick)="closeDetail()"/></div>
+ }@else{
+  <p class="muted">{{detailLoading()?'Sevk detayı yükleniyor...':'Detay bulunamadı.'}}</p>
+ }
+</p-dialog>
+<p-dialog header="Sevk İptali" [visible]="cancelOpen()" (visibleChange)="cancelOpen.set($event)"
+ [modal]="true" [style]="{'width':'min(500px,96vw)'}">
+ <p class="muted">{{cancelTarget()?.dispatchNo}} numaralı sevk için iptal gerekçesini yazınız.</p>
+ <label class="field">İptal Açıklaması
+  <textarea [(ngModel)]="cancelReason" rows="4" maxlength="500" placeholder="İptal gerekçesi zorunludur."></textarea>
+ </label>
+ <div class="dialog-actions">
+  <p-button type="button" label="İptal Et" severity="danger"
+   [disabled]="!cancelReason.trim()" (onClick)="confirmCancel()"/>
+  <p-button type="button" label="Vazgeç" [outlined]="true" severity="secondary"
+   (onClick)="cancelOpen.set(false)"/>
+ </div>
 </p-dialog>

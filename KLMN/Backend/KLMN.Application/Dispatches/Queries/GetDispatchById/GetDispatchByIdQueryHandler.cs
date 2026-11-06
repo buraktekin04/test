@@ -38,6 +38,6 @@ public sealed class GetDispatchByIdQueryHandler(IKLMNDbContext db)
                     PlaneTypeDefId=x.PlaneTypeDefId,RegistryNumber=x.RegistryNumber,
                     LastNominationDate=x.LastNominationDate,MilitaryUnitDescription=x.MilitaryUnitDescription,
                     PurchaseId=x.PurchaseId,Description=x.Description
-                })).SingleOrDefaultAsync(ct)??throw new DispatchNotFoundException();
+                },x.CancellationReason)).SingleOrDefaultAsync(ct)??throw new DispatchNotFoundException();
     }
 }

@@ -1,4 +1,5 @@
 using KLMN.Application.Common.Interfaces.Persistence;
+using KLMN.Application.Common.Interfaces.Identity;
 using KLMN.Application.Common.Models;
 using KLMN.Application.Provisions.Responses;
 using MediatR;
@@ -7,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace KLMN.Application.Provisions.Queries.GetProvisions;
 
 /// <summary>Sayfalama veritabanında; TC ve yabancı kimlik asla düz liste response'unda dönmez.</summary>
-public sealed class GetProvisionsQueryHandler(IKLMNDbContext db)
+public sealed class GetProvisionsQueryHandler(IKLMNDbContext db, ICurrentUserService currentUser)
     : IRequestHandler<GetProvisionsQuery,PagedResult<ProvisionListItemResponse>>
 {
     public async Task<PagedResult<ProvisionListItemResponse>> Handle(GetProvisionsQuery request,CancellationToken ct)
@@ -42,6 +43,34 @@ public sealed class GetProvisionsQueryHandler(IKLMNDbContext db)
         }
         if(request.PurchaseId.HasValue)
             q=q.Where(x=>x.Dispatch.PurchaseId==request.PurchaseId.Value);
+
+        // Eski provizyon sorgusundaki Bağlı Organizasyonları Listele:
+        // kullanıcının bağlı olduğu birlik ve tüm alt birlikleri.
+        if(request.IncludeRelatedOrganizations)
+        {
+            var unitId=currentUser.MilitaryUnitDefId;
+            if(!unitId.HasValue)
+                throw new InvalidDataException("Bağlı organizasyonlarla sorgulama için kullanıcıya birlik atanmalıdır.");
+            var units=await db.MilitaryUnitDefs.AsNoTracking()
+                .Where(x=>!x.IsDeleted)
+                .Select(x=>new {x.Id,x.ConnectedTopUnity}).ToListAsync(ct);
+            var byParent=units.Where(x=>x.ConnectedTopUnity.HasValue)
+                .GroupBy(x=>x.ConnectedTopUnity!.Value)
+                .ToDictionary(x=>x.Key,x=>x.Select(v=>v.Id).ToArray());
+            var related=new HashSet<Guid>{unitId.Value};
+            var queue=new Queue<Guid>();
+            queue.Enqueue(unitId.Value);
+            while(queue.Count>0)
+            {
+                var parent=queue.Dequeue();
+                if(!byParent.TryGetValue(parent,out var children))continue;
+                foreach(var child in children)
+                    if(related.Add(child))queue.Enqueue(child);
+            }
+            var permitted=related.ToArray();
+            q=q.Where(x=>x.Dispatch.SenderMilitaryUnitDefId.HasValue
+                && permitted.Contains(x.Dispatch.SenderMilitaryUnitDefId.Value));
+        }
 
         var total=await q.CountAsync(ct);
         // Kimlik numarasını DB projeksiyonunda alır, API yanıtında yalnız maskeliyi gösterir.

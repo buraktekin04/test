@@ -28,6 +28,7 @@ public sealed class DispatchConfiguration : BaseEntityConfiguration<Dispatch>
         b.Property(x => x.MilitaryUnitDescription).HasMaxLength(1000);
         b.Property(x => x.SenderChairOther).HasMaxLength(1000);
         b.Property(x => x.Description).HasMaxLength(500);
+        b.Property(x => x.CancellationReason).HasMaxLength(500);
         b.Property(x => x.Photo).HasColumnType("bytea");
         b.Property(x => x.PhotoContentType).HasMaxLength(20);
         b.HasOne(x => x.Person).WithMany(x => x.Dispatches).HasForeignKey(x => x.PersonId).OnDelete(DeleteBehavior.Restrict);

@@ -56,3 +56,24 @@
 .provision-link-button{max-width:100%}
 .provision-field-label{white-space:normal}
 }
+
+/* Provizyon Sorgulama'ya ait kolon seçici ve ayrıntılı detay dialogu. */
+.provision-organization-filter{margin-top:1rem;display:flex;align-items:center;flex-wrap:wrap;gap:.4rem 1rem}
+.provision-checkbox{display:inline-flex;gap:.45rem;align-items:center;font-weight:600;font-size:.8rem}
+.provision-organization-filter small{color:var(--ui-muted);font-size:.75rem}
+.provision-columns{padding:.55rem .1rem .8rem;color:var(--ui-text)}
+.provision-columns summary{display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.82rem;font-weight:650}
+.provision-columns-list{display:flex;align-items:center;flex-wrap:wrap;gap:.6rem 1rem;margin-top:.7rem}
+.provision-columns-list label{display:inline-flex;align-items:center;gap:.4rem;font-size:.8rem;cursor:pointer}
+.provision-columns-list input{accent-color:var(--ui-primary)}
+.provision-detail{max-height:min(65vh,620px);overflow-y:auto;display:flex;flex-direction:column;gap:.9rem}
+.provision-detail-group{background:var(--ui-surface);border:1px solid var(--ui-border);
+ border-radius:7px;padding:1rem;min-width:0}
+.provision-detail-group h3{font-size:.93rem;margin:0 0 .75rem;font-weight:700;color:var(--ui-text)}
+.provision-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.85rem;margin:0}
+.provision-detail-grid>div{min-width:0;overflow-wrap:anywhere}
+.provision-detail-grid dt{font-size:.76rem;font-weight:650;color:var(--ui-muted)}
+.provision-detail-grid dd{font-size:.83rem;line-height:1.5;margin:.3rem 0 0;
+ color:var(--ui-text);white-space:pre-wrap}
+.provision-detail-grid .wide{grid-column:1/-1}
+@media(max-width:650px){.provision-detail-grid{grid-template-columns:1fr}.provision-detail-grid .wide{grid-column:auto}}

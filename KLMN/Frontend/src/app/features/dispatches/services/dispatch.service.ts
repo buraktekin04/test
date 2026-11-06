@@ -53,8 +53,9 @@ export class DispatchService {
  update(id:string,version:number,person:DispatchPerson,dispatch:DispatchDetails){
   return this.http.put<DispatchSaveResponse>(this.url+'/'+id,{id,version,person,dispatch});
  }
- cancel(item:Pick<DispatchItem,'id'|'version'>){
-  return this.http.patch<DispatchSaveResponse>(this.url+'/'+item.id+'/cancel',{id:item.id,version:item.version});
+ cancel(item:Pick<DispatchItem,'id'|'version'>,reason:string){
+  return this.http.patch<DispatchSaveResponse>(this.url+'/'+item.id+'/cancel',
+   {id:item.id,version:item.version,reason});
  }
  /** Fotoğraf için ayrı endpoint; kimlik görseli belge olarak karıştırılmaz. */
  getPhoto(id:string){return this.http.get(this.url+'/'+id+'/photo',{responseType:'blob'});}

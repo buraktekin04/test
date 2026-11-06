@@ -28,6 +28,18 @@
     <label class="provision-field">Adı<input formControlName="name" maxlength="64"/></label>
     <label class="provision-field">Soyadı<input formControlName="surname" maxlength="64"/></label>
    </div>
+   <div class="provision-organization-filter">
+    <label class="provision-checkbox">
+     <p-checkbox formControlName="includeRelatedOrganizations" [binary]="true"
+       [disabled]="!canIncludeRelatedOrganizations()"/>
+     Bağlı Organizasyonları da Listele
+    </label>
+    @if(!canIncludeRelatedOrganizations()){
+     <small>Bu seçenek için kullanıcının bağlı olduğu birlik tanımlanmalıdır.</small>
+    }@else{
+     <small>İşaretlendiğinde kendi birliğiniz ve alt birliklere ait provizyonlar sorgulanır.</small>
+    }
+   </div>
    <div class="provision-actions"><p-button type="submit" label="Listele" icon="pi pi-search" [loading]="loading()"/></div>
   </form>
  </section>
@@ -37,19 +49,42 @@
   <h2><i class="pi pi-table"></i> Provizyon Sorgulama Sonuçları</h2>
   @if(!searched()){<p class="provision-empty">Kriterleri seçip Listele butonuna basınız.</p>}
   @else{
+   <details class="provision-columns">
+    <summary><i class="pi pi-list"></i> Görüntülenecek Kolonlar</summary>
+    <div class="provision-columns-list">
+     @for(column of selectableColumns;track column.key){
+      <label><input type="checkbox" [checked]="showColumn(column.key)"
+        (change)="toggleColumn(column.key,$any($event.target).checked)"/> {{column.label}}</label>
+     }
+    </div>
+   </details>
    <div class="provision-table-wrap"><p-table [value]="records()" [showGridlines]="true"
     [tableStyle]="{'min-width':'1050px'}">
     <ng-template pTemplate="header"><tr>
-     <th>Provizyon No</th><th>Sevk No</th><th>Provizyon Tarihi</th><th>Hastane</th>
-     <th>Ad Soyad</th><th>Kimlik (Maskeli)</th><th>Durum</th><th>Tür</th><th>İşlemler</th>
+     @if(showColumn('provisionNo')){<th>Provizyon No</th>}
+     @if(showColumn('dispatchNo')){<th>Sevk No</th>}
+     @if(showColumn('provisionDate')){<th>Provizyon Tarihi</th>}
+     @if(showColumn('hospitalName')){<th>Hastane</th>}
+     @if(showColumn('personName')){<th>Ad Soyad</th>}
+     @if(showColumn('identityMasked')){<th>Kimlik (Maskeli)</th>}
+     @if(showColumn('currentState')){<th>Durum</th>}
+     @if(showColumn('withoutDispatch')){<th>Tür</th>}
+     @if(showColumn('purchaseId')){<th>Alım ID</th>}
+     @if(showColumn('description')){<th>Açıklama</th>}
+     <th>İşlemler</th>
     </tr></ng-template>
     <ng-template pTemplate="body" let-row><tr>
-     <td>{{row.provisionNo}}</td><td>{{row.dispatchNo}}</td>
-     <td>{{row.provisionDate | date:'dd.MM.yyyy HH:mm'}}</td>
-     <td>{{row.hospitalName}}</td><td>{{row.personName}}</td><td>{{row.identityMasked}}</td>
-     <td><p-tag [severity]="row.currentState===3?'danger':row.currentState===1?'info':'success'"
-      [value]="stateLabel(row.currentState)"/></td>
-     <td>{{row.withoutDispatch===1?'Sevksiz':'Sevkli'}}</td>
+     @if(showColumn('provisionNo')){<td>{{row.provisionNo}}</td>}
+     @if(showColumn('dispatchNo')){<td>{{row.dispatchNo}}</td>}
+     @if(showColumn('provisionDate')){<td>{{row.provisionDate | date:'dd.MM.yyyy HH:mm'}}</td>}
+     @if(showColumn('hospitalName')){<td>{{row.hospitalName}}</td>}
+     @if(showColumn('personName')){<td>{{row.personName}}</td>}
+     @if(showColumn('identityMasked')){<td>{{row.identityMasked}}</td>}
+     @if(showColumn('currentState')){<td><p-tag [severity]="row.currentState===3?'danger':row.currentState===1?'info':'success'"
+      [value]="stateLabel(row.currentState)"/></td>}
+     @if(showColumn('withoutDispatch')){<td>{{row.withoutDispatch===1?'Sevksiz':'Sevkli'}}</td>}
+     @if(showColumn('purchaseId')){<td>{{row.purchaseId??'—'}}</td>}
+     @if(showColumn('description')){<td>{{row.description||'—'}}</td>}
      <td><div class="provision-row">
       <p-button type="button" icon="pi pi-eye" size="small" [text]="true" (onClick)="openDetail(row)" label="Detay"/>
       @if(row.currentState===1&&canCancel()){
@@ -85,16 +120,63 @@
    <p-button label="Vazgeç" severity="secondary" [outlined]="true" (onClick)="cancelOpen.set(false)"/>
   </div>
  </p-dialog>
- <p-dialog header="Provizyon Detayı" [visible]="detailOpen()" (visibleChange)="detailOpen.set($event)"
+ <p-dialog header="Provizyon Detayı" [visible]="detailOpen()" (visibleChange)="!$event&&closeDetail()"
   [modal]="true" [style]="{width:'min(95vw,900px)'}">
   @if(detail();as d){
-   <div class="provision-grid">
-    <div><strong>Provizyon:</strong> {{d.provisionNo}}</div>
-    <div><strong>Sevk:</strong> {{d.dispatchNo}}</div>
-    <div><strong>Ad Soyad:</strong> {{d.person.name}} {{d.person.surname}}</div>
-    <div><strong>Durum:</strong> {{stateLabel(d.currentState)}}</div>
-    <div><strong>Kabul Yapan Hastane:</strong> {{detailHospitalName()}}</div>
-    <div><strong>Provizyon Tarihi:</strong> {{d.provisionDate | date:'dd.MM.yyyy HH:mm'}}</div>
+   <div class="provision-detail">
+    <section class="provision-detail-group">
+     <h3>Kişi Bilgileri</h3>
+     <dl class="provision-detail-grid">
+      <div><dt>T.C. Kimlik No</dt><dd>{{d.person.tcKimlikNo||'—'}}</dd></div>
+      <div><dt>Yabancı Kimlik No</dt><dd>{{d.person.yabanciKimlikNo||'—'}}</dd></div>
+      <div><dt>Adı</dt><dd>{{d.person.name}}</dd></div>
+      <div><dt>Soyadı</dt><dd>{{d.person.surname}}</dd></div>
+      <div><dt>Anne Adı</dt><dd>{{d.person.motherName||'—'}}</dd></div>
+      <div><dt>Baba Adı</dt><dd>{{d.person.fatherName||'—'}}</dd></div>
+      <div><dt>Cinsiyet</dt><dd>{{detailGender()}}</dd></div>
+      <div><dt>Doğum Tarihi</dt><dd>{{d.person.birthDate|date:'dd.MM.yyyy'}}</dd></div>
+      <div><dt>Doğum Yeri</dt><dd>{{d.person.birthPlaceText||detailName('town')}}</dd></div>
+      <div><dt>Uyruğu</dt><dd>{{detailName('nationality')}}</dd></div>
+      <div class="wide"><dt>Adres</dt><dd>{{d.person.address||'—'}}</dd></div>
+     </dl>
+    </section>
+    <section class="provision-detail-group">
+     <h3>Askerî Bilgileri</h3>
+     <dl class="provision-detail-grid">
+      <div><dt>Başvuru Grubu</dt><dd>{{detailName('admission')}}</dd></div>
+      <div><dt>Kuvvet</dt><dd>{{detailName('forces')}}</dd></div>
+      <div><dt>Askerlik Şubesi</dt><dd>{{detailName('office')}}</dd></div>
+      <div><dt>Okulu</dt><dd>{{detailName('school')}}</dd></div>
+      <div><dt>Birliği</dt><dd>{{detailName('unit')}}</dd></div>
+      <div><dt>Birlik Açıklaması</dt><dd>{{d.dispatch.militaryUnitDescription||'—'}}</dd></div>
+      <div><dt>Sınıf</dt><dd>{{detailName('class')}}</dd></div>
+      <div><dt>Rütbe</dt><dd>{{detailName('rank')}}</dd></div>
+      <div><dt>Sicil No</dt><dd>{{d.dispatch.registryNumber||'—'}}</dd></div>
+      <div><dt>Nasbı</dt><dd>{{d.dispatch.lastNominationDate|date:'dd.MM.yyyy'}}</dd></div>
+      <div><dt>Uçucu Görev</dt><dd>{{detailName('mission')}}</dd></div>
+      <div><dt>Uçtuğu Uçak</dt><dd>{{detailName('plane')}}</dd></div>
+     </dl>
+    </section>
+    <section class="provision-detail-group">
+     <h3>Provizyon Bilgileri</h3>
+     <dl class="provision-detail-grid">
+      <div><dt>Sevk Sıra No</dt><dd>{{d.dispatchNo}}</dd></div>
+      <div><dt>Provizyon Sıra No</dt><dd>{{d.provisionNo}}</dd></div>
+      <div><dt>Gönderen Makam</dt><dd>{{d.dispatch.senderChairOther || (detailName('senderUnit') !== '—' ? detailName('senderUnit') : detailName('senderOffice'))}}</dd></div>
+      <div><dt>Gönderen Makam Açıklaması</dt><dd>{{d.dispatch.senderChairOther||'—'}}</dd></div>
+      <div><dt>Muayene Sebebi</dt><dd>{{detailName('reason')}}</dd></div>
+      <div><dt>Kaçıncı İşlem</dt><dd>{{d.dispatch.nthAdmission??'—'}}</dd></div>
+      <div><dt>Sevk Evrak Tarihi</dt><dd>{{d.dispatch.dispatchDocumentDate|date:'dd.MM.yyyy'}}</dd></div>
+      <div><dt>Sevk Evrak Sayısı</dt><dd>{{d.dispatch.dispatchDocumentNo||'—'}}</dd></div>
+      <div><dt>Kabul Yapan Hastane</dt><dd>{{detailHospitalName()}}</dd></div>
+      <div><dt>Provizyon Tarihi</dt><dd>{{d.provisionDate|date:'dd.MM.yyyy HH:mm'}}</dd></div>
+      <div><dt>Son İşlem Tarihi</dt><dd>{{latestStateDate()|date:'dd.MM.yyyy HH:mm'}}</dd></div>
+      <div><dt>Provizyon Durumu</dt><dd>{{stateLabel(d.currentState)}}</dd></div>
+      <div><dt>Alım ID</dt><dd>{{d.dispatch.purchaseId??'—'}}</dd></div>
+      <div><dt>Tür</dt><dd>{{d.withoutDispatch===1?'Sevksiz':'Sevkli'}}</dd></div>
+      <div class="wide"><dt>Açıklama</dt><dd>{{d.description||'—'}}</dd></div>
+     </dl>
+    </section>
    </div>
    <h3>Durum Geçmişi</h3>
    @for(state of d.states;track state.id){
@@ -102,7 +184,7 @@
    }
    <p class="provision-note">Rapor Giriş işlemi, Rapor modülünün gerçek API akışı
     bağlandıktan sonra etkinleştirilecektir. Eksik entegrasyon nedeniyle işlem başlatılmaz.</p>
-   <p-button type="button" label="Kapat" [outlined]="true" (onClick)="detailOpen.set(false)"/>
+   <p-button type="button" label="Kapat" [outlined]="true" (onClick)="closeDetail()"/>
   }@else{<p>Detay yükleniyor…</p>}
  </p-dialog>
 </div>

@@ -13,6 +13,9 @@ public sealed class CancelDispatchCommandHandler(IKLMNDbContext db):IRequestHand
             ??throw new DispatchNotFoundException();
         if(item.Version!=request.Version)throw new DbUpdateConcurrencyException("Sevk başka bir kullanıcı tarafından değiştirildi.");
         if(item.CurrentState!=1)throw new DispatchConflictException("Yalnız Yeni durumundaki sevkler iptal edilebilir.");
+        if(string.IsNullOrWhiteSpace(request.Reason) || request.Reason.Trim().Length > 500)
+            throw new DispatchConflictException("İptal açıklaması 1-500 karakter olmalıdır.");
+        item.CancellationReason=request.Reason.Trim();
         item.CurrentState=4;
         await db.SaveChangesAsync(ct);
         return new DispatchMutationResponse(item.Id,item.DispatchNo,item.Version);

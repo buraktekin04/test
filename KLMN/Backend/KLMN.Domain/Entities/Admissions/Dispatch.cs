@@ -38,6 +38,8 @@ public sealed class Dispatch : BaseEntity
     public string? MilitaryUnitDescription { get; set; }
     public int? PurchaseId { get; set; }
     public string? Description { get; set; }
+    /// <summary>Sevk iptal gerekçesi, normal sevk açıklamasından ayrı saklanır.</summary>
+    public string? CancellationReason { get; set; }
     public bool AutomaticDispatch { get; set; }
     /// <summary>Başvurana ait fotoğraf; kimlik fotoğrafı belge eklerinden ayrı tutulur ve audit içine alınmaz.</summary>
     public byte[]? Photo { get; set; }

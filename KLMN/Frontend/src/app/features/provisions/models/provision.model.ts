@@ -24,4 +24,5 @@ export interface ProvisionFilter {
  provisionNo?:number|null;hospitalId?:string|null;
  tcKimlikNo?:string;yabanciKimlikNo?:string;name?:string;surname?:string;
  purchaseId?:number|null;
+ includeRelatedOrganizations?:boolean;
 }

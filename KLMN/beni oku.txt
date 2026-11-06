@@ -1,3 +1,37 @@
+06.11.2026 — SEVK/PROVİZYON SORGULAMA ESKİ EKRAN EKSİKLERİ
+=======================================================
+- KLMN/Frontend/src/app/features/dispatches/dispatch-list:
+  Eski querydispatch benzeri Sevk Detay dialogu, fotoğraf, Kişi/
+  Askerî/Sevk Bilgileri, kolon seçici ve açıklamalı sevk iptali.
+- Sevk iptalinde mevcut Description alanı KORUNUR, ayrı nullable
+  Dispatches.CancellationReason (varchar(500)) kullanılır.
+  CancelDispatchCommand: {id,version,reason}; gerekçe zorunludur.
+  Yeni sütun için EF migration GEREKİR; burada üretilmedi/uygulanmadı.
+- Provizyon Sorgulama Detay penceresi eski queryprovision bilgileriyle
+  genişletildi. Mevcut GET /api/provisions/{id} ve GET /api/dispatches/options
+  kullanılır, yeni detay endpointi gerekmiyor. GUID'ler aynen korunur.
+- Provizyon Sorgulama: Bağlı Organizasyonları da Listele seçeneği
+  mevcut JWT kullanıcısının MilitaryUnitDefId birliği ve alt birimleri
+  üzerinden GetProvisionsQuery'ye eklendi; root claim yoksa 400.
+- İki sorgulama ekranında mevcut kolonlar için göster/gizle seçeneği
+  ve T.C. numarası doğrulama kontrolü eklendi.
+- İZ KAYDI YENİ GELİŞTİRME KONUSU DEĞİLDİR: KLMN AuditLogs var.
+  Var olan Audit Log altyapısı/ekranları korunur, yeni audit API yok.
+- DIŞ SİSTEM BEKLENENLER: IProvisionService.queryProvisionState,
+  queryProvisionSummaryState, getReportLastMonthList ve rapor giriş
+  ekranı/backend; eski sözleşmeler gelmeden sahte endpoint eklenmez.
+  Eski newProvision, newProvisionWithoutDispatchPhoto, IProvisionService.query
+  ve IDispatchService.query kaynakları iş kuralı/DTO teyidi için istenir.
+- Henüz eski griddeki tüm alanların sunucu sayfalı kolon gruplama ve
+  başlık filtreleri uygulanmadı; ekranlardaki kullanılabilir kolonları
+  seçme tamamlandı. Harici servis ve rapor ekranı da beklemede.
+- Ayrı HTML/TS/SCSS kuralı korundu; global/ortak SCSS değiştirilmedi.
+- Test komutları: npm --prefix KLMN/Frontend run test:legacy-query,
+  npm --prefix KLMN/Frontend run build,
+  dotnet build KLMN/Backend/KLMN.slnx.
+- Kaynak kodu bağlamında statik kontroller; gerçek build/DB/E2E bu
+  bağlantıda çalıştırılmadı. Migration ve deploy kullanıcıda.
+
 06.11.2026 — YÖNETİM PANELİ / SAĞLIK YETENEĞİ YÖNETMELİĞİ DOKÜMANLARI
 ===================================================================
 - Yönetim Paneli > Doküman İşlemleri: birden fazla PDF yükleme,

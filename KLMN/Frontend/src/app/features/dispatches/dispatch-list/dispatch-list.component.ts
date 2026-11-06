@@ -1,7 +1,7 @@
 import {DatePipe} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
 import {AfterViewInit,Component,computed,inject,OnInit,signal} from '@angular/core';
-import {FormBuilder,ReactiveFormsModule} from '@angular/forms';
+import {FormBuilder,ReactiveFormsModule,FormsModule} from '@angular/forms';
 import {ActivatedRoute,Router} from '@angular/router';
 import {finalize} from 'rxjs';
 import {ConfirmationService,MessageService} from 'primeng/api';
@@ -17,13 +17,13 @@ import {ToastModule} from 'primeng/toast';
 import {PermissionCodes} from '../../../core/permissions/constants/permission-codes';
 import {PermissionService} from '../../../core/permissions/services/permission.service';
 import {AuditHistoryComponent} from '../../../shared/audit-history/audit-history.component';
-import {DispatchItem,DispatchOption,DispatchStatusOption,DispatchAdvancedFilters} from '../models/dispatch.model';
+import {DispatchItem,DispatchOption,DispatchStatusOption,DispatchAdvancedFilters,DispatchResponse,OptionType} from '../models/dispatch.model';
 import {DispatchService} from '../services/dispatch.service';
 
 /** Sevk listesi ve sunucu üzerinde sorgulama. Sevk giriş formunu içermez. */
 @Component({
  selector:'app-dispatch-list',standalone:true,
- imports:[DatePipe,ReactiveFormsModule,ButtonModule,CheckboxModule,ConfirmDialogModule,
+ imports:[DatePipe,ReactiveFormsModule,FormsModule,ButtonModule,CheckboxModule,ConfirmDialogModule,
   DialogModule,InputTextModule,SelectModule,TableModule,TagModule,ToastModule,AuditHistoryComponent],
  providers:[ConfirmationService,MessageService],
  templateUrl:'./dispatch-list.component.html',
@@ -52,7 +52,37 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
  readonly loading=signal(false);
  readonly hasSearched=signal(false);
  readonly auditRecord=signal<DispatchItem|null>(null);
+ readonly detail=signal<DispatchResponse|null>(null);
+ readonly detailOpen=signal(false);
+ readonly detailLoading=signal(false);
+ readonly detailPhotoUrl=signal<string|null>(null);
+ readonly detailNames=signal<Record<string,string>>({});
+ readonly detailGender=signal('—');
+ readonly cancelOpen=signal(false);
+ readonly cancelTarget=signal<DispatchItem|null>(null);
+ cancelReason='';
+ readonly columns=signal<Record<string,boolean>>({
+  dispatchNo:true,personName:true,identityMasked:true,dispatchDate:true,
+  dispatchDocumentDate:false,dispatchDocumentNo:true,admissionTypeName:true,currentState:true
+ });
+ showColumn(name:string):boolean{return this.columns()[name]??true;}
+ toggleColumn(name:string,checked:boolean):void{
+  this.columns.update(v=>({...v,[name]:checked}));
+ }
+ readonly selectableColumns=[
+  {name:'dispatchNo',label:'Sevk No'},
+  {name:'personName',label:'Başvuran Kişi'},
+  {name:'identityMasked',label:'Kimlik No (Maskeli)'},
+  {name:'dispatchDate',label:'Sevk Tarihi'},
+  {name:'dispatchDocumentDate',label:'Evrak Tarihi'},
+  {name:'dispatchDocumentNo',label:'Evrak No'},
+  {name:'admissionTypeName',label:'Başvuru Grubu'},
+  {name:'currentState',label:'Durum'}
+ ];
+ readonly visibleColumnCount=computed(()=>Object.values(this.columns()).filter(Boolean).length);
+
  private lastRequest=0;
+ private detailVersion=0;
 
  readonly statuses=signal<DispatchStatusOption[]>([]);
  readonly statusItems=computed(()=>[
@@ -193,6 +223,9 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
    this.filterError.set('Başlangıç tarihi bitiş tarihinden sonra olamaz.');
    return;
   }
+  if(values.tcKimlikNo.trim()&&!this.validTc(values.tcKimlikNo.trim())){
+   this.filterError.set('Geçersiz T.C. Kimlik numarası.');return;
+  }
   this.filterError.set(null);
   this.appliedForm={...values};
   this.hasSearched.set(true);
@@ -214,6 +247,14 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
   this.page.set(1);
   this.filterError.set(null);
  }
+ private validTc(value:string):boolean{
+  if(!/^[1-9][0-9]{10}$/.test(value))return false;
+  const d=value.split('').map(Number);
+  const odd=d[0]+d[2]+d[4]+d[6]+d[8];
+  const even=d[1]+d[3]+d[5]+d[7];
+  return ((odd*7-even)%10+10)%10===d[9] &&
+   d.slice(0,10).reduce((sum,n)=>sum+n,0)%10===d[10];
+ }
  toPage(n:number){if(!this.hasSearched()||n<1||n>this.maxPage())return;this.page.set(n);this.load();}
  setPageSize(e:Event){
   const value=Number((e.target as HTMLSelectElement).value);
@@ -232,16 +273,97 @@ export class DispatchListComponent implements OnInit,AfterViewInit {
  }
  cancel(row:DispatchItem){
   if(!this.canUpdate()||row.currentState!==1)return;
-  this.confirm.confirm({
-   header:'Sevk İptali',
-   message:row.dispatchNo+' numaralı sevk iptal edilsin mi? Kayıt geçmişte korunur.',
-   acceptLabel:'İptal Et',rejectLabel:'Vazgeç',
-   accept:()=>this.api.cancel(row).subscribe({
-    next:()=>{this.message.add({severity:'success',summary:'Sevk iptal edildi'});this.load();},
-    error:e=>this.error(e)
-   })
+  this.cancelTarget.set(row);this.cancelReason='';this.cancelOpen.set(true);
+ }
+ confirmCancel():void{
+  const row=this.cancelTarget();
+  const reason=this.cancelReason.trim();
+  if(!row||!this.canUpdate()||row.currentState!==1||reason.length===0||reason.length>500){
+   this.message.add({severity:'warn',summary:'İptal açıklaması 1-500 karakter olmalıdır.'});return;
+  }
+  this.api.cancel(row,reason).subscribe({
+   next:()=>{
+    this.cancelOpen.set(false);this.cancelTarget.set(null);this.cancelReason='';
+    this.message.add({severity:'success',summary:'Sevk iptal edildi'});this.load();
+   },
+   error:e=>this.error(e)
   });
  }
+
+ openDetail(row:DispatchItem):void{
+  if(!this.canView())return;
+  this.closeDetail();
+  const request=++this.detailVersion;
+  this.detailOpen.set(true);this.detailLoading.set(true);
+  this.api.detail(row.id).subscribe({
+   next:d=>{
+    if(!this.detailOpen()||request!==this.detailVersion)return;
+    this.detail.set(d);this.detailLoading.set(false);this.loadDetailNames(d);
+    this.detailGender.set('—');
+    if(d.person.gender!=null)
+     this.api.genders().subscribe({next:items=>{
+      if(this.detail()?.id!==d.id)return;
+      this.detailGender.set(items.find(x=>x.code===d.person.gender)?.name??'—');
+     }});
+    if(d.hasPhoto){
+     this.api.getPhoto(d.id).subscribe({
+      next:photo=>{
+       if(!this.detailOpen()||request!==this.detailVersion||this.detail()?.id!==d.id)return;
+       this.releaseDetailPhoto();
+       this.detailPhotoUrl.set(URL.createObjectURL(photo));
+      },
+      error:()=>this.detailPhotoUrl.set(null)
+     });
+    }
+   },
+   error:e=>{
+    if(request!==this.detailVersion)return;
+    this.detailLoading.set(false);this.closeDetail();this.error(e);
+   }
+  });
+ }
+ closeDetail():void{
+  ++this.detailVersion;
+  this.detailOpen.set(false);this.detail.set(null);this.detailNames.set({});this.detailGender.set('—');
+  this.releaseDetailPhoto();
+ }
+ private releaseDetailPhoto():void{
+  const previous=this.detailPhotoUrl();
+  if(previous)URL.revokeObjectURL(previous);
+  this.detailPhotoUrl.set(null);
+ }
+ detailName(key:string):string{return this.detailNames()[key]??'—';}
+ private loadDetailNames(d:DispatchResponse):void{
+  const ids:{key:string;type:OptionType;id:string|null|undefined}[]=[
+   {key:'nationality',type:'countries',id:d.person.nationalityId},
+   {key:'town',type:'towns',id:d.person.townOfBirthId},
+   {key:'admission',type:'admissionTypes',id:d.dispatch.hcAdmissionTypeDefId},
+   {key:'reason',type:'reasons',id:d.dispatch.reasonForExaminationDefId},
+   {key:'forces',type:'forces',id:d.dispatch.forcesCommandDefId},
+   {key:'rank',type:'ranks',id:d.dispatch.rankDefId},
+   {key:'class',type:'classes',id:d.dispatch.militaryClassDefId},
+   {key:'unit',type:'units',id:d.dispatch.militaryUnitDefId},
+   {key:'school',type:'schools',id:d.dispatch.militarySchoolDefId},
+   {key:'office',type:'offices',id:d.dispatch.militaryOfficeDefId},
+   {key:'senderUnit',type:'units',id:d.dispatch.senderMilitaryUnitDefId},
+   {key:'senderOffice',type:'offices',id:d.dispatch.senderMilitaryOfficeDefId},
+   {key:'mission',type:'missions',id:d.dispatch.flyingMissionDefId},
+   {key:'plane',type:'planes',id:d.dispatch.planeTypeDefId},
+   {key:'scopeCity',type:'cities',id:d.dispatch.dispatchScopeCityId},
+   {key:'scopeHospital',type:'hospitals',id:d.dispatch.dispatchScopeHospitalId}
+  ];
+  for(const item of ids){
+   if(!item.id)continue;
+   this.api.options(item.type,'',item.id).subscribe({
+    next:opts=>{
+     if(this.detail()?.id!==d.id)return;
+     const value=opts.find(x=>x.id===item.id)?.label;
+     if(value)this.detailNames.update(v=>({...v,[item.key]:value}));
+    }
+   });
+  }
+ }
+
  stateLabel(state:number):string{
   return this.statuses().find(item=>item.code===state)?.name??'Durum #'+state;
  }

@@ -9,5 +9,6 @@ public sealed record GetProvisionsQuery(
     DateOnly? DateFrom=null,DateOnly? DateTo=null,int? CurrentState=null,
     long? ProvisionNo=null,Guid? HospitalId=null,string? TcKimlikNo=null,
     string? YabanciKimlikNo=null,string? Name=null,string? Surname=null,
-    int? PurchaseId=null,int PageNumber=1,int PageSize=20)
+    int? PurchaseId=null,int PageNumber=1,int PageSize=20,
+    bool IncludeRelatedOrganizations=false)
     : IRequest<PagedResult<ProvisionListItemResponse>>;

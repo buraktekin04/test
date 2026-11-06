@@ -148,3 +148,20 @@
   .empty-query-state{min-height:170px;padding:1.1rem .85rem}
   .empty-query-content{gap:.45rem}
 }
+
+/* Sevk Sorgulama ekranına özel kolon seçici ve detay penceresi. */
+.dispatch-columns{padding:.7rem .9rem;border-bottom:1px solid var(--ui-border);color:var(--ui-text)}
+.dispatch-columns summary{cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;font-size:.82rem;font-weight:650}
+.dispatch-columns-list{display:flex;gap:.6rem 1.3rem;flex-wrap:wrap;margin-top:.65rem}
+.dispatch-columns-list label{display:inline-flex;gap:.4rem;align-items:center;font-size:.8rem;cursor:pointer}
+.dispatch-columns-list input{accent-color:var(--ui-primary)}
+.dispatch-detail{max-height:min(70vh,690px);overflow-y:auto;display:flex;flex-direction:column;gap:.9rem}
+.dispatch-detail-group{border:1px solid var(--ui-border);border-radius:7px;padding:1rem;background:var(--ui-surface);min-width:0}
+.dispatch-detail-group h3{font-size:.95rem;margin:0 0 .85rem;color:var(--ui-text);font-weight:700}
+.dispatch-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.85rem;margin:0}
+.dispatch-detail-grid>div{min-width:0;overflow-wrap:anywhere}
+.dispatch-detail-grid .wide{grid-column:1/-1}
+.dispatch-detail-grid dt{font-size:.76rem;color:var(--ui-muted);font-weight:600}
+.dispatch-detail-grid dd{font-size:.85rem;color:var(--ui-text);margin:.3rem 0 0;line-height:1.45;white-space:pre-wrap}
+.dispatch-detail-photo{display:block;width:120px;height:140px;object-fit:cover;border:1px solid var(--ui-border);border-radius:5px}
+@media(max-width:650px){.dispatch-detail-grid{grid-template-columns:1fr}.dispatch-detail-grid .wide{grid-column:auto}}

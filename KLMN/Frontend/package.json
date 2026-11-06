@@ -21,7 +21,8 @@
     "test:dispatch-bulk": "node --experimental-strip-types tests/dispatch-bulk-regression.mjs",
     "test:dispatch-bulk-flow": "node tests/dispatch-bulk-flow-regression.mjs",
     "test:provisions": "node tests/provision-pages-regression.mjs",
-    "test:document-pdfs": "node tests/document-pdf-regression.mjs"
+    "test:document-pdfs": "node tests/document-pdf-regression.mjs",
+    "test:legacy-query": "node tests/legacy-query-regression.mjs"
   },
   "dependencies": {
     "@angular/animations": "^21.0.0",
