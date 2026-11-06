@@ -1,0 +1,88 @@
+# KLMN Azure DevOps manual IIS release using the 2 KLMN-CI build artifacts.
+# Server targets are intentionally NOT hard-coded. The self-hosted agent must run
+# on the target IIS server; variable groups are configured in Azure DevOps UI.
+# No automatic production deployment from a push.
+name: KLMN-Release-$(Date:yyyyMMdd)$(Rev:.r)
+trigger: none
+pr: none
+
+parameters:
+- name: promoteToProduction
+  displayName: 'Also release to Production after Test (Production requires approval)'
+  type: boolean
+  default: false
+
+resources:
+  pipelines:
+  - pipeline: klmn_ci
+    source: KLMN-CI
+    branch: main
+    trigger: none
+
+stages:
+- stage: Test
+  displayName: 'Release - Test'
+  variables:
+  - group: KLMN-TEST
+  jobs:
+  - deployment: DeployKLMNTest
+    displayName: 'KLMN API and WEB - IIS Test'
+    environment: KLMN-Test
+    pool:
+      name: KLMN-TEST-IIS
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - template: deploy/azure-devops/iis-release-steps.yml
+            parameters:
+              kind: Api
+              artifactName: KLMN-API
+              packageName: KLMN.Api.zip
+              iisSite: $(KLMN_API_SITE)
+              iisAppPool: $(KLMN_API_APPPOOL)
+              targetPath: $(KLMN_API_PATH)
+          - template: deploy/azure-devops/iis-release-steps.yml
+            parameters:
+              kind: Web
+              artifactName: KLMN-WEB
+              packageName: KLMN.Web.zip
+              iisSite: $(KLMN_WEB_SITE)
+              iisAppPool: $(KLMN_WEB_APPPOOL)
+              targetPath: $(KLMN_WEB_PATH)
+
+- ${{ if eq(parameters.promoteToProduction, true) }}:
+  - stage: Production
+    displayName: 'Release - Production (approval required)'
+    dependsOn: Test
+    condition: succeeded()
+    variables:
+    - group: KLMN-PRODUCTION
+    jobs:
+    - deployment: DeployKLMNProduction
+      displayName: 'KLMN API and WEB - IIS Production'
+      environment: KLMN-Production
+      pool:
+        name: KLMN-PRODUCTION-IIS
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - checkout: self
+            - template: deploy/azure-devops/iis-release-steps.yml
+              parameters:
+                kind: Api
+                artifactName: KLMN-API
+                packageName: KLMN.Api.zip
+                iisSite: $(KLMN_API_SITE)
+                iisAppPool: $(KLMN_API_APPPOOL)
+                targetPath: $(KLMN_API_PATH)
+            - template: deploy/azure-devops/iis-release-steps.yml
+              parameters:
+                kind: Web
+                artifactName: KLMN-WEB
+                packageName: KLMN.Web.zip
+                iisSite: $(KLMN_WEB_SITE)
+                iisAppPool: $(KLMN_WEB_APPPOOL)
+                targetPath: $(KLMN_WEB_PATH)

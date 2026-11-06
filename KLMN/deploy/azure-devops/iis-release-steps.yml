@@ -1,0 +1,42 @@
+parameters:
+- name: kind
+  type: string
+  values:
+  - Api
+  - Web
+- name: artifactName
+  type: string
+- name: packageName
+  type: string
+- name: iisSite
+  type: string
+- name: iisAppPool
+  type: string
+- name: targetPath
+  type: string
+
+steps:
+- task: DownloadBuildArtifacts@0
+  displayName: 'Download ${{ parameters.artifactName }} from selected CI run'
+  inputs:
+    buildType: 'specific'
+    project: '$(System.TeamProject)'
+    pipeline: '$(resources.pipeline.klmn_ci.pipelineID)'
+    buildVersionToDownload: 'specific'
+    buildId: '$(resources.pipeline.klmn_ci.runID)'
+    downloadType: 'single'
+    artifactName: '${{ parameters.artifactName }}'
+    downloadPath: '$(Pipeline.Workspace)/klmn-release'
+
+- task: PowerShell@2
+  displayName: 'Deploy ${{ parameters.kind }} to IIS with backup/rollback'
+  inputs:
+    targetType: filePath
+    filePath: '$(Build.SourcesDirectory)/KLMN/deploy/azure-devops/deploy-iis.ps1'
+    arguments: >
+      -Kind '${{ parameters.kind }}'
+      -PackagePath '$(Pipeline.Workspace)/klmn-release/${{ parameters.artifactName }}/${{ parameters.packageName }}'
+      -SiteName '${{ parameters.iisSite }}'
+      -AppPoolName '${{ parameters.iisAppPool }}'
+      -TargetPath '${{ parameters.targetPath }}'
+    failOnStderr: true

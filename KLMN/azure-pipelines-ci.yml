@@ -1,0 +1,124 @@
+# KLMN Azure DevOps CI (GitHub repo: buraktekin04/test).
+# Pipelines > New pipeline > Existing Azure Pipelines YAML file: /KLMN/azure-pipelines-ci.yml
+# Name the Azure DevOps pipeline KLMN-CI, for the release pipeline resource link.
+name: KLMN-CI-$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - KLMN/**
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - KLMN/**
+
+jobs:
+- job: Backend
+  displayName: '.NET 10 API - build and artifact'
+  timeoutInMinutes: 45
+  pool:
+    vmImage: 'windows-2022'
+  steps:
+  - checkout: self
+    clean: true
+  - task: UseDotNet@2
+    displayName: 'Install .NET 10 SDK'
+    inputs:
+      packageType: sdk
+      version: '10.0.x'
+  - pwsh: |
+      $ErrorActionPreference = 'Stop'
+      $solution = "$(Build.SourcesDirectory)/KLMN/Backend/KLMN.slnx"
+      $project  = "$(Build.SourcesDirectory)/KLMN/Backend/KLMN.Api/KLMN.Api.csproj"
+      $outDir   = "$(Build.ArtifactStagingDirectory)/api"
+      dotnet restore $solution
+      if ($LASTEXITCODE -ne 0) { throw 'dotnet restore failed' }
+      dotnet build $solution --configuration Release --no-restore
+      if ($LASTEXITCODE -ne 0) { throw 'dotnet build failed' }
+      dotnet publish $project --configuration Release --no-restore --output $outDir -p:UseAppHost=false
+      if ($LASTEXITCODE -ne 0) { throw 'dotnet publish failed' }
+      if (!(Test-Path (Join-Path $outDir 'KLMN.Api.dll'))) { throw 'KLMN.Api.dll missing' }
+      # Never package environment-specific configuration, credentials or local overrides.
+      Get-ChildItem -Path $outDir -File -Filter 'appsettings*.json' | Remove-Item -Force
+    displayName: 'Restore, build, publish (without environment configs)'
+  - task: ArchiveFiles@2
+    displayName: 'Create KLMN.Api.zip'
+    inputs:
+      rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/api'
+      includeRootFolder: false
+      archiveType: zip
+      archiveFile: '$(Build.ArtifactStagingDirectory)/KLMN.Api.zip'
+      replaceExistingArchive: true
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish KLMN-API build artifact'
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)/KLMN.Api.zip'
+      ArtifactName: 'KLMN-API'
+      publishLocation: 'Container'
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish IIS release tools for Classic Releases'
+    inputs:
+      PathtoPublish: '$(Build.SourcesDirectory)/KLMN/deploy/azure-devops'
+      ArtifactName: 'KLMN-DEPLOY'
+      publishLocation: 'Container'
+
+- job: Frontend
+  displayName: 'Angular 21 - build and artifact'
+  timeoutInMinutes: 45
+  pool:
+    vmImage: 'windows-2022'
+  steps:
+  - checkout: self
+    clean: true
+  - task: NodeTool@0
+    displayName: 'Install Node.js 22'
+    inputs:
+      versionSpec: '22.x'
+  - pwsh: |
+      $ErrorActionPreference = 'Stop'
+      Set-Location "$(Build.SourcesDirectory)/KLMN/Frontend"
+      node --version
+      npm.cmd --version
+      if (Test-Path 'package-lock.json') {
+        npm.cmd ci --no-audit --no-fund
+      } else {
+        Write-Warning 'package-lock.json does not exist yet. npm install is non-reproducible: commit a lockfile when possible.'
+        npm.cmd install --no-audit --no-fund
+      }
+      if ($LASTEXITCODE -ne 0) { throw 'npm dependencies failed' }
+      npm.cmd run test:provisions
+      if ($LASTEXITCODE -ne 0) { throw 'Provision regression failed' }
+      npm.cmd run test:legacy-query
+      if ($LASTEXITCODE -ne 0) { throw 'Legacy query regression failed' }
+      npm.cmd run test:dispatch-pages
+      if ($LASTEXITCODE -ne 0) { throw 'Dispatch regression failed' }
+      npm.cmd run build
+      if ($LASTEXITCODE -ne 0) { throw 'Angular production build failed' }
+      $browser = 'dist/klmn-web/browser'
+      if (!(Test-Path (Join-Path $browser 'index.html'))) { throw 'Angular browser/index.html missing' }
+      $output = "$(Build.ArtifactStagingDirectory)/web"
+      New-Item -ItemType Directory -Path $output -Force | Out-Null
+      Copy-Item -Path "$browser/*" -Destination $output -Recurse -Force
+      Copy-Item -Path "$(Build.SourcesDirectory)/KLMN/deploy/azure-devops/frontend-web.config" -Destination (Join-Path $output 'web.config') -Force
+    displayName: 'Install, regression checks, production build and IIS assets'
+  - task: ArchiveFiles@2
+    displayName: 'Create KLMN.Web.zip'
+    inputs:
+      rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/web'
+      includeRootFolder: false
+      archiveType: zip
+      archiveFile: '$(Build.ArtifactStagingDirectory)/KLMN.Web.zip'
+      replaceExistingArchive: true
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish KLMN-WEB build artifact'
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)/KLMN.Web.zip'
+      ArtifactName: 'KLMN-WEB'
+      publishLocation: 'Container'

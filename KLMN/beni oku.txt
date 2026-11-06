@@ -1,3 +1,18 @@
+06.11.2026 — AZURE DEVOPS PIPELINE / ARTIFACT / RELEASE HAZIRLIĞI
+================================================================
+- KLMN/azure-pipelines-ci.yml: .NET 10 API + Angular 21 ayri job,
+  build ve test; KLMN-API, KLMN-WEB, KLMN-DEPLOY Build Artifacts.
+- KLMN/azure-pipelines-release.yml: manuel Test -> onayli Production;
+  Windows IIS self-hosted agent, iki ayri site/pool, yedekli yayin.
+- KLMN/deploy/azure-devops: Release step YAML, IIS PowerShell yayini,
+  Angular SPA web.config. Var olan ekran/stil/API kodlari degismedi.
+- appsettings/DB/JWT/SMTP secretlari ZIP artifact'e girmez.
+- Azure DevOps organizasyon ve IIS sunucu erisimi yok: tanimlar
+  REPOYA EKLENDI, Azure UI kurulum/yayin GERCEKLESTIRILMEDI.
+- API runtime startup Database.MigrateAsync() uygular; canlida
+  veritabani yedegi ve migration onayi olmadan release acilmaz.
+- Kurulum: KLMN/AZURE_DEVOPS_KURULUM.md
+
 06.11.2026 — SORGULAMA DETAY YETKİ VE GÖNDEREN MAKAM DÜZELTMESİ
 ================================================================
 - Provizyon yalnız Query/View/Track izinli kullanıcılar detay dialogunda
