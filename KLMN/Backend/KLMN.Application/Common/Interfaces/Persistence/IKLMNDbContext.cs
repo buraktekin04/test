@@ -126,6 +126,7 @@ public interface IKLMNDbContext
     DbSet<Dispatch> Dispatches { get; }
     DbSet<Provision> Provisions { get; }
     DbSet<ProvisionState> ProvisionStates { get; }
+    DbSet<ProvisionStatusDef> ProvisionStatusDefs { get; }
     DbSet<DispatchStatusDef> DispatchStatusDefs { get; }
     DbSet<GenderDef> GenderDefs { get; }
     DbSet<DispatchFile> DispatchFiles { get; }

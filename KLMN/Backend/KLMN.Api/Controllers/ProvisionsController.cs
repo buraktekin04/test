@@ -5,13 +5,14 @@ using KLMN.Application.Provisions.Commands.CancelProvision;
 using KLMN.Application.Provisions.Queries.GetProvisions;
 using KLMN.Application.Provisions.Queries.GetProvisionById;
 using KLMN.Application.Provisions.Queries.GetProvisionStates;
+using KLMN.Application.Provisions.Queries.GetProvisionStatuses;
 using KLMN.Domain.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KLMN.Api.Controllers;
 
-/// <summary>Eski MSKBS Provizyon Sevkli/Sevksiz, Sorgu, Takip, İptal API.</summary>
+/// <summary>Provizyon kaydı, sorgulama, durum takibi ve iptal uç noktaları.</summary>
 [ApiController]
 [Route("api/provisions")]
 public sealed class ProvisionsController(ISender sender):ControllerBase
@@ -20,6 +21,11 @@ public sealed class ProvisionsController(ISender sender):ControllerBase
     [HasPermission(PermissionCodes.Provisions.View,PermissionCodes.Provisions.Query,PermissionCodes.Provisions.Track)]
     public async Task<IActionResult> List([FromQuery] GetProvisionsQuery query,CancellationToken ct)
         =>Ok(await sender.Send(query,ct));
+
+    [HttpGet("statuses")]
+    [HasPermission(PermissionCodes.Provisions.View,PermissionCodes.Provisions.Query,PermissionCodes.Provisions.Track)]
+    public async Task<IActionResult> Statuses(CancellationToken ct)
+        =>Ok(await sender.Send(new GetProvisionStatusesQuery(),ct));
 
     [HttpGet("{id:guid}")]
     [HasPermission(PermissionCodes.Provisions.View,PermissionCodes.Provisions.Query,PermissionCodes.Provisions.Track)]

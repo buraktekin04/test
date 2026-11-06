@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KLMN.Application.Provisions.Commands.CreateWithDispatch;
 
-/// <summary>Var olan sevk ve hastanenin GUID'sini değiştirmeden provizyona bağlar.</summary>
+/// <summary>Sevk ve kabul eden hastaneyi ilişkilendirerek provizyon oluşturur.</summary>
 public sealed class CreateWithDispatchCommandHandler(IKLMNDbContext db)
     : IRequestHandler<CreateWithDispatchCommand,ProvisionMutationResponse>
 {
@@ -32,12 +32,12 @@ public sealed class CreateWithDispatchCommandHandler(IKLMNDbContext db)
         var provision=new Provision
         {
             DispatchId=dispatch.Id,DispatchHospitalId=hospital.Id,
-            CurrentState=1,ProvisionDate=DateTime.UtcNow,WithoutDispatch=null
+            CurrentState=ProvisionStatusCodes.New,ProvisionDate=DateTime.UtcNow,WithoutDispatch=null
         };
         await db.Provisions.AddAsync(provision,ct);
         await db.ProvisionStates.AddAsync(new ProvisionState
         {
-            Provision=provision,State=1
+            Provision=provision,State=ProvisionStatusCodes.New
         },ct);
         dispatch.CurrentState=2;
         await db.SaveChangesAsync(ct);

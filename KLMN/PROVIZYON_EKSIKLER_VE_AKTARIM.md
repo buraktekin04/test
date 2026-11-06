@@ -1,4 +1,31 @@
-# KLMN — Eski test3 Provizyon Analizi, Eksik Model ve Aktarım
+# KLMN — Provizyon Modülü: Veri Modeli, Kurulum ve Aktarım
+
+## 06.11.2026 — Provizyon durum sözlüğü ve ekran düzenlemeleri
+
+Provizyon durumları için **ProvisionStatusDefs** isimli referans tablosu
+eklendi. Bu tablo `Code` (int PK), `Name` ve `SortOrder`
+alanlarından oluşur; EF Core `HasData` ile Yeni, Rapor, İptal, Bildirim
+tanımları eklenir. `Provision.CurrentState` ve `ProvisionState.State`
+alanlarının tipleri ve değerleri **değişmez**; iki tablo da
+`ProvisionStatusDefs.Code` ile foreign key ilişkisine bağlanır.
+Mevcut provizyon ve durum geçmişi GUID ilişkileri aynı kalır.
+
+`GET /api/provisions/statuses` yalnız yetkili kullanıcıya durum
+tanımlarını getirir. Sorgulama ve Takip ekranındaki görünen durum adları
+bu API'den okunur, kod-ad eşlemeleri frontend'e gömülmez.
+
+Arayüzde Sevkli Giriş'in gereksiz üst başlığı kaldırıldı, ham GUID
+metinleri kullanıcıya gösterilmez, zorunlu alan yıldızları isimle
+aynı satırda tutulur. Navigasyon bağlantıları açık tonlu, klavye
+odak stili bulunan buton görünümüne dönüştürüldü.
+
+**Migration gerekiyor:** `ProvisionStatusDefs` tablosu, dört seed
+satırı, `Provisions.CurrentState` ve `ProvisionStates.State`
+FK'leri ile eski CHECK constraint'lerinin kaldırılması.
+Migration oluşturma ve uygulama kullanıcıya bırakılmıştır.
+Verileri aktarmadan önce durum değerlerinin tanımlı kodlarda olduğunu
+denetleyin. Yeni migration **üretip çalıştırmadım**.
+
 
 ## Eski ekranların yeni karşılığı
 

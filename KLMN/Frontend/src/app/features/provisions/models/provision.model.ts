@@ -1,6 +1,7 @@
 import type {DispatchDetails,DispatchPerson} from '../../dispatches/models/dispatch.model';
 
-/** Provizyon durum kodları: eski MSKBS ile aynı (1 Yeni, 2 Rapor, 3 İptal, 4 Bildirim). */
+/** Provizyon verileri durum tanım tablosuyla ilişkilendirilir. */
+export interface ProvisionStatusOption {code:number;name:string;sortOrder:number;}
 export interface ProvisionItem {
  id:string;provisionNo:number;dispatchId:string;dispatchNo:number;
  provisionDate:string;hospitalId:string;hospitalName:string;currentState:number;

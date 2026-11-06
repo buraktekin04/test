@@ -59,4 +59,11 @@ Check(typeof(Provision).GetProperty(nameof(Provision.DispatchHospitalId))?.Prope
     "Hastane GUID aynı kalır");
 Check(typeof(ProvisionState).GetProperty(nameof(ProvisionState.ProvisionId))?.PropertyType==typeof(Guid),
     "ProvisionState eski provizyon GUID ile ilişki");
-Console.WriteLine("Not: Gerçek EF Core migration, PostgreSQL ve bakanlık servis testleri ayrıca yapılmalıdır.");
+Check(ProvisionStatusCodes.New==1 && ProvisionStatusCodes.Report==2 &&
+      ProvisionStatusCodes.Cancelled==3 && ProvisionStatusCodes.Notification==4,
+    "Mevcut provizyon durum kodları korunuyor");
+Check(new Provision().CurrentState==ProvisionStatusCodes.New,
+    "Yeni provizyonun varsayılan durumu merkezi tanımdan geliyor");
+Check(typeof(ProvisionStatusDef).GetProperty(nameof(ProvisionStatusDef.Code))?.PropertyType==typeof(int),
+    "Provizyon durum tablosu kodla ilişkilendirilebilir");
+Console.WriteLine("Not: Gerçek EF Core migration ve PostgreSQL testleri ayrıca yapılmalıdır.");

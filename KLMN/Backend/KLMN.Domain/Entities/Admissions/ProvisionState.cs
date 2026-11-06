@@ -2,11 +2,11 @@ using KLMN.Domain.Common;
 
 namespace KLMN.Domain.Entities.Admissions;
 
-/// <summary>Eski ProvisionState: her durum değişikliği ayrı auditli satırdır.</summary>
+/// <summary>Her provizyon durum değişikliği için tarihçeye eklenen kayıt.</summary>
 public sealed class ProvisionState : BaseEntity
 {
     public Guid ProvisionId { get; set; }
     public Provision Provision { get; set; } = null!;
-    /// <summary>Provizyon durum kodu: 1=Yeni, 2=Rapor, 3=İptal, 4=Bildirim.</summary>
+    /// <summary>ProvisionStatusDefs sözlüğüne bağlı durum kodu.</summary>
     public int State { get; set; }
 }

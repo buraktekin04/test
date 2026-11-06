@@ -2,7 +2,7 @@ import {inject,Injectable} from '@angular/core';
 import {HttpClient,HttpParams} from '@angular/common/http';
 import {API_BASE_URL} from '../../../core/config/api.tokens';
 import type {DispatchDetails,DispatchPerson} from '../../dispatches/models/dispatch.model';
-import type {ProvisionDetail,ProvisionFilter,ProvisionItem,ProvisionMutation,ProvisionPage,ProvisionState} from '../models/provision.model';
+import type {ProvisionDetail,ProvisionFilter,ProvisionItem,ProvisionMutation,ProvisionPage,ProvisionState,ProvisionStatusOption} from '../models/provision.model';
 
 /** API uçları kullanıcı yetkisini ayrıca sunucu üzerinde kontrol eder. */
 @Injectable({providedIn:'root'})
@@ -16,7 +16,7 @@ export class ProvisionService {
   const dispatchNo=!dispatchId && /^[1-9]\d*$/.test(dispatchReference.trim())
    ? Number(dispatchReference.trim()):null;
   if(!dispatchId&&(!dispatchNo||!Number.isSafeInteger(dispatchNo)))
-   throw new Error('Geçerli sevk sıra numarası veya GUID giriniz.');
+   throw new Error('Geçerli bir sevk numarası giriniz.');
   return this.http.post<ProvisionMutation>(this.url+'/with-dispatch',{dispatchId,dispatchNo,hospitalId});
  }
  withoutDispatch(hospitalId:string,person:DispatchPerson,dispatch:DispatchDetails,
@@ -31,6 +31,7 @@ export class ProvisionService {
   }
   return this.http.get<ProvisionPage>(this.url,{params});
  }
+ statuses(){return this.http.get<ProvisionStatusOption[]>(this.url+'/statuses');}
  detail(id:string){return this.http.get<ProvisionDetail>(this.url+'/'+id);}
  states(id:string){return this.http.get<ProvisionState[]>(this.url+'/'+id+'/states');}
  cancel(item:Pick<ProvisionItem,'id'|'version'>,reason:string){

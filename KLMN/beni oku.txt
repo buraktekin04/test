@@ -1,3 +1,23 @@
+06.11.2026 — PROVİZYON DURUM TABLOSU VE EKRAN TASARIMI
+===================================================
+- ProvisionStatusDefs (Code int PK, Name, SortOrder) sabit durum sözlüğü.
+- EF Core seed: Yeni, Rapor, İptal, Bildirim. Kodlar değiştirilmedi.
+- Provisions.CurrentState ve ProvisionStates.State -> ProvisionStatusDefs.Code FK.
+- İlgili provizyon/sevk/hastane GUID değerleri değişmedi.
+- GET api/provisions/statuses ve CQRS query; Query ve Tracking ekranlarında
+  durum adları API tanımlarından dinamik alınır, hard-coded UI listesi kaldırıldı.
+- Sevkli Provizyon Girişindeki üst header kaldırıldı, kart başlığı korundu.
+- Ekranlardaki eski sistem/GUID bilgilendirme metinleri ve ham GUID alanları
+  kaldırıldı. Kullanıcıya anlamlı isim ve numaralar gösterilir.
+- Gerekli alanların yıldızları aynı satırda; header/footer linkleri,
+  sonuç bağlantıları ve sekmeler açık tonlu buton tasarımına alındı.
+- Ekran stilleri focus/hover ve mobil uyumlulukla güncellendi.
+- Frontend + backend regression testleri güncellendi; Angular/.NET build
+  bu bağlantıda çalıştırılmadı.
+- Migration ZORUNLU: yeni tablo, seed, FK ve durum CHECK constraint'leri.
+  Migration oluşturma/uygulama kullanıcıda; dosyalar üretilmedi.
+- Tek commit/push. / KLMN/PROVIZYON_EKSIKLER_VE_AKTARIM.md
+
 05.11.2026 — KLMN PROVİZYON MODÜLÜ (test3)
 ============================================
 KAYNAK: GitHub ana dizini test3 — eski MSKBS:

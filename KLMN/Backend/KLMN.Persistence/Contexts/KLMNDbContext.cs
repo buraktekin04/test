@@ -161,6 +161,7 @@ public sealed class KLMNDbContext : DbContext, IKLMNDbContext
     public DbSet<Dispatch> Dispatches => Set<Dispatch>();
     public DbSet<Provision> Provisions => Set<Provision>();
     public DbSet<ProvisionState> ProvisionStates => Set<ProvisionState>();
+    public DbSet<ProvisionStatusDef> ProvisionStatusDefs => Set<ProvisionStatusDef>();
     public DbSet<DispatchStatusDef> DispatchStatusDefs => Set<DispatchStatusDef>();
     public DbSet<GenderDef> GenderDefs => Set<GenderDef>();
     public DbSet<DispatchFile> DispatchFiles => Set<DispatchFile>();

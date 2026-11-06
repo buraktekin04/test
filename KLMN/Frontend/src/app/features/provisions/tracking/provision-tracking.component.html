@@ -2,7 +2,8 @@
  <header class="provision-header">
   <div><h1>Provizyon Takibi</h1>
    <p>Yerel provizyon durumu, işlem geçmişi ve alım numarası bazlı sorgulama.</p></div>
-  <a routerLink="/app/provisions/query">Provizyon Sorgulama</a>
+  <a class="provision-link-button" routerLink="/app/provisions/query">
+   <i class="pi pi-search"></i> Provizyon Sorgulama</a>
  </header>
  <section class="provision-card">
   <div class="provision-tabs">
@@ -24,9 +25,7 @@
    </div>
    <div class="provision-actions"><p-button type="submit" label="Listele" icon="pi pi-search" [loading]="loading()"/></div>
   </form>
-  <p class="provision-note">Bu ekran KLMN PostgreSQL provizyon kayıtlarını ve durum geçmişini gösterir.
-   Eski sistemin bakanlık provizyon durum servisi, tetkik ve rapor imza geçmişi entegrasyonu henüz
-   bağlı olmadığından dış servis verileri gösterilmez. Yanlış veya örnek veri üretilmez.</p>
+  <p class="provision-note">Provizyon durumlarını ve işlem geçmişini kayıt bazında inceleyebilirsiniz.</p>
  </section>
  @if(error()){<div role="alert" class="provision-error">{{error()}}</div>}
  <section class="provision-card">

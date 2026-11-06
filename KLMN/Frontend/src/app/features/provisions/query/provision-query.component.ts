@@ -13,7 +13,7 @@ import {TagModule} from 'primeng/tag';
 import {DispatchService} from '../../dispatches/services/dispatch.service';
 import type {DispatchOption} from '../../dispatches/models/dispatch.model';
 import {ProvisionService} from '../services/provision.service';
-import type {ProvisionItem,ProvisionDetail,ProvisionFilter} from '../models/provision.model';
+import type {ProvisionItem,ProvisionDetail,ProvisionFilter,ProvisionStatusOption} from '../models/provision.model';
 
 @Component({
  selector:'app-provision-query',standalone:true,
@@ -30,6 +30,8 @@ export class ProvisionQueryComponent implements OnInit {
  private readonly permissions=inject(PermissionService);
  readonly canCancel=computed(()=>this.permissions.has(PermissionCodes.Provisions.Cancel));
  readonly hospitals=signal<DispatchOption[]>([]);
+ readonly statuses=signal<ProvisionStatusOption[]>([]);
+ readonly detailHospitalName=signal('');
  readonly records=signal<ProvisionItem[]>([]);
  readonly totalCount=signal(0);
  readonly page=signal(1);
@@ -43,13 +45,6 @@ export class ProvisionQueryComponent implements OnInit {
  readonly cancelOpen=signal(false);
  readonly selected=signal<ProvisionItem|null>(null);
  cancelReason='';
- readonly statuses=[
-  {label:'Tüm durumlar',value:null},
-  {label:'Yeni',value:1},
-  {label:'Rapor',value:2},
-  {label:'İptal',value:3},
-  {label:'Bildirim',value:4}
- ];
  readonly form=this.fb.nonNullable.group({
   dateFrom:'',dateTo:'',currentState:0,provisionNo:0,hospitalId:'',
   tcKimlikNo:'',yabanciKimlikNo:'',name:'',surname:'',purchaseId:0
@@ -61,10 +56,14 @@ export class ProvisionQueryComponent implements OnInit {
    next:items=>this.hospitals.set(items),
    error:()=>this.error.set('Hastaneler yüklenemedi.')
   });
+  this.api.statuses().subscribe({
+   next:statuses=>this.statuses.set(statuses),
+   error:()=>this.error.set('Provizyon durum tanımları yüklenemedi.')
+  });
   if(no)this.search();
  }
  stateLabel(state:number):string{
-  return ({1:'Yeni',2:'Rapor',3:'İptal',4:'Bildirim'} as Record<number,string>)[state]??'Bilinmiyor';
+  return this.statuses().find(x=>x.code===state)?.name??'Durum '+state;
  }
  private filters():ProvisionFilter{
   const v=this.form.getRawValue();
@@ -94,7 +93,7 @@ export class ProvisionQueryComponent implements OnInit {
   });
  }
  openDetail(row:ProvisionItem):void{
-  this.detail.set(null);this.detailOpen.set(true);
+  this.detail.set(null);this.detailHospitalName.set(row.hospitalName);this.detailOpen.set(true);
   this.api.detail(row.id).subscribe({
    next:data=>this.detail.set(data),
    error:e=>{this.error.set(e.error?.detail||'Provizyon detayı alınamadı.');this.detailOpen.set(false);}

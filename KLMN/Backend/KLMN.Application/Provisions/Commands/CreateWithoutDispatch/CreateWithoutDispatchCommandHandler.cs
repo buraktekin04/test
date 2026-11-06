@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore;
 namespace KLMN.Application.Provisions.Commands.CreateWithoutDispatch;
 
 /// <summary>
-/// Eski modelin NOT NULL Provision.Dispatch ilişkisi için aynı transaction içinde
-/// sentetik sevk + kişi + provizyon + ilk durum oluşturur; dış servisi taklit etmez.
+/// Sevksiz işlemde kişi, otomatik sevk, provizyon ve ilk durum aynı
+/// veritabanı işleminde oluşturulur.
 /// </summary>
 public sealed class CreateWithoutDispatchCommandHandler(IKLMNDbContext db)
     : IRequestHandler<CreateWithoutDispatchCommand,ProvisionMutationResponse>
@@ -23,7 +23,7 @@ public sealed class CreateWithoutDispatchCommandHandler(IKLMNDbContext db)
             ??throw new ProvisionConflictException("Kabul yapan hastane geçersiz.");
 
         // Sevksiz provizyonda UI kapsam seçtirmez; kabul hastanesi belirli tesis kapsamıdır.
-        // Eski Dispatch kaydı mevcut değildir, ancak Provision.Dispatch FK'si korunur.
+        // Provizyon kaydı, oluşturulan sevk kaydıyla ilişkilendirilir.
         request.Dispatch.DispatchScope=3;
         request.Dispatch.DispatchScopeHospitalId=hospital.Id;
         request.Dispatch.DispatchScopeCityId=null;
@@ -65,13 +65,13 @@ public sealed class CreateWithoutDispatchCommandHandler(IKLMNDbContext db)
         {
             Dispatch=dispatch,DispatchHospitalId=hospital.Id,
             Photo=photo,
-            WithoutDispatch=1,CurrentState=1,ProvisionDate=DateTime.UtcNow,
+            WithoutDispatch=1,CurrentState=ProvisionStatusCodes.New,ProvisionDate=DateTime.UtcNow,
             ObjectionableReportId=request.ObjectionableReportId
         };
         await db.Provisions.AddAsync(provision,ct);
         await db.ProvisionStates.AddAsync(new ProvisionState
         {
-            Provision=provision,State=1
+            Provision=provision,State=ProvisionStatusCodes.New
         },ct);
         await db.SaveChangesAsync(ct);
         return new ProvisionMutationResponse(provision.Id,provision.ProvisionNo,dispatch.Id,provision.Version);

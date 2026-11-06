@@ -2,7 +2,7 @@ using KLMN.Domain.Common;
 
 namespace KLMN.Domain.Entities.Admissions;
 
-/// <summary>Eski MSKBS Provision kaydının GUID ve durum semantiği korunmuş karşılığı.</summary>
+/// <summary>Provizyon kaydı, sevk ve hastane ilişkileriyle birlikte yönetilir.</summary>
 public sealed class Provision : BaseEntity
 {
     public Guid DispatchId { get; set; }
@@ -12,12 +12,12 @@ public sealed class Provision : BaseEntity
     public Guid DispatchHospitalId { get; set; }
     public HospitalDef DispatchHospital { get; set; } = null!;
     public Guid? PhotoObjectId { get; set; }
-    /// <summary>Eski modelde nullable int; 1=sevksiz, null/0=sevkli.</summary>
+    /// <summary>Sevksiz işlem işareti.</summary>
     public int? WithoutDispatch { get; set; }
-    /// <summary>1=Yeni, 2=Rapor, 3=İptal, 4=Bildirim.</summary>
-    public int CurrentState { get; set; } = 1;
+    /// <summary>Durum kodu ProvisionStatusDefs sözlüğünden doğrulanır.</summary>
+    public int CurrentState { get; set; } = ProvisionStatusCodes.New;
     public byte[]? Photo { get; set; }
-    /// <summary>Rapor modülündeki orijinal GUID. Report entity gelene kadar FK tanımlanmaz.</summary>
+    /// <summary>İlgili itiraz raporunun kimliği.</summary>
     public Guid? ObjectionableReportId { get; set; }
     public string? Description { get; set; }
     public ICollection<ProvisionState> States { get; set; } = new List<ProvisionState>();

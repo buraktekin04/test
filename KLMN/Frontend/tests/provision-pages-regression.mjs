@@ -26,6 +26,12 @@ const entity=backend('KLMN.Domain/Entities/Admissions/Provision.cs');
 const state=backend('KLMN.Domain/Entities/Admissions/ProvisionState.cs');
 const config=backend('KLMN.Persistence/Configurations/Admissions/ProvisionConfiguration.cs');
 const stateConfig=backend('KLMN.Persistence/Configurations/Admissions/ProvisionStateConfiguration.cs');
+const statusEntity=backend('KLMN.Domain/Entities/Admissions/ProvisionStatusDef.cs');
+const statusCodes=backend('KLMN.Domain/Entities/Admissions/ProvisionStatusCodes.cs');
+const statusConfig=backend('KLMN.Persistence/Configurations/Admissions/ProvisionStatusDefConfiguration.cs');
+const statusController=backend('KLMN.Api/Controllers/ProvisionsController.cs');
+const statusHandler=backend('KLMN.Application/Provisions/Queries/GetProvisionStatuses/GetProvisionStatusesQueryHandler.cs');
+const styles=read('src/app/features/provisions/provision-common.scss');
 const ctrl=backend('KLMN.Api/Controllers/ProvisionsController.cs');
 const withHandler=backend('KLMN.Application/Provisions/Commands/CreateWithDispatch/CreateWithDispatchCommandHandler.cs');
 const withoutHandler=backend('KLMN.Application/Provisions/Commands/CreateWithoutDispatch/CreateWithoutDispatchCommandHandler.cs');
@@ -60,7 +66,7 @@ assert.match(queryHtml,/Provizyon İptal/);
 assert.match(queryTs,/canCancel=computed\(/);
 assert.match(trackingHtml,/Provizyon Durumu Detay/);
 assert.match(trackingHtml,/Provizyon Durumu Özet/);
-assert.match(trackingHtml,/Bakanlık|bakanlık/);
+assert.doesNotMatch(trackingHtml,/Eski sistem|Eski MSKBS| GUID/);
 assert.match(trackingTs,/api\.states\(/);
 for(const name of ['withDispatch','withoutDispatch','list','detail','states','cancel']){
  assert.ok(service.includes(name+'('));
@@ -83,10 +89,43 @@ assert.match(withHandler,/x=>x\.Id==request\.HospitalId/);
 assert.match(withHandler,/dispatch\.CurrentState=2/);
 assert.match(withoutHandler,/DispatchRules\.ValidateAsync/);
 assert.match(withoutHandler,/WithoutDispatch=1/);
-assert.match(withoutHandler,/Provision=provision,State=1/);
+assert.match(withoutHandler,/Provision=provision,State=ProvisionStatusCodes\.New/);
 assert.match(withoutHandler,/photo=Convert\.FromBase64String/);
-assert.match(cancelHandler,/provision\.CurrentState=3/);
+assert.match(cancelHandler,/provision\.CurrentState=ProvisionStatusCodes\.Cancelled/);
 assert.match(cancelHandler,/provision\.Version!=request\.Version/);
 assert.match(listHandler,/Skip\(\(request\.PageNumber-1\)\*request\.PageSize\)/);
 assert.match(historyHandler,/ProvisionStates/);
-console.log('PASS: 4 provizyon ekranı, yetki, API, DB ve eski durum/GUID alanları bağlandı.');
+// Durum adları tek bir merkezi tanım tablosundan okunur; UI'da magic-number eşlemesi yoktur.
+assert.match(db,/DbSet<ProvisionStatusDef> ProvisionStatusDefs/);
+assert.match(iface,/DbSet<ProvisionStatusDef> ProvisionStatusDefs/);
+assert.match(statusEntity,/public int Code/);
+assert.match(statusConfig,/ToTable\("ProvisionStatusDefs"\)/);
+assert.match(statusConfig,/HasData\(/);
+for(const name of ['New','Report','Cancelled','Notification']){
+ assert.match(statusCodes,new RegExp('const int '+name+' ='));
+ assert.match(statusConfig,new RegExp('ProvisionStatusCodes\\.'+name));
+}
+assert.match(config,/HasOne<ProvisionStatusDef>\(\)/);
+assert.match(stateConfig,/HasOne<ProvisionStatusDef>\(\)/);
+assert.match(statusController,/HttpGet\("statuses"\)/);
+assert.match(statusHandler,/ProvisionStatusDefs\.AsNoTracking\(\)/);
+assert.match(service,/statuses\(\)\{/);
+assert.match(queryTs,/api\.statuses\(\)/);
+assert.match(trackingTs,/api\.statuses\(\)/);
+assert.doesNotMatch(queryTs,/\(\{1:'Yeni'/);
+assert.doesNotMatch(trackingTs,/\(\{1:'Yeni'/);
+assert.doesNotMatch(withHtml,/<header class="provision-header">/);
+for(const html of [withHtml,withoutHtml,queryHtml,trackingHtml]){
+ assert.doesNotMatch(html,/Eski MSKBS|Eski sistem|eski GUID| GUID:/i);
+}
+assert.match(withHtml,/Sevk numarasını giriniz/);
+assert.match(withHtml,/class="provision-link-button"/);
+assert.match(withoutHtml,/provision-link-button/);
+assert.match(queryHtml,/provision-header-actions/);
+assert.match(trackingHtml,/provision-link-button/);
+assert.match(styles,/\.provision-field-label\{/);
+assert.match(styles,/\.provision-link-button\{/);
+for(const html of [withHtml,withoutHtml,queryHtml]){
+ assert.doesNotMatch(html,/<label class="provision-field(?: wide)?">[^<\n]+ <span class="provision-required">\*<\/span>/);
+}
+console.log('PASS: Provizyon durumları referans tablosundan geliyor; metin, yıldız ve buton düzeni güncel.');

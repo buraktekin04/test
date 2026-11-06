@@ -6,7 +6,7 @@ import {ButtonModule} from 'primeng/button';
 import {TableModule} from 'primeng/table';
 import {TagModule} from 'primeng/tag';
 import {ProvisionService} from '../services/provision.service';
-import type {ProvisionItem,ProvisionState} from '../models/provision.model';
+import type {ProvisionItem,ProvisionState,ProvisionStatusOption} from '../models/provision.model';
 
 @Component({
  selector:'app-provision-tracking',standalone:true,
@@ -22,6 +22,7 @@ export class ProvisionTrackingComponent implements OnInit {
  readonly loading=signal(false);
  readonly error=signal('');
  readonly records=signal<ProvisionItem[]>([]);
+ readonly statuses=signal<ProvisionStatusOption[]>([]);
  readonly totalCount=signal(0);
  readonly page=signal(1);
  readonly selected=signal<ProvisionItem|null>(null);
@@ -31,11 +32,15 @@ export class ProvisionTrackingComponent implements OnInit {
   tcKimlikNo:'',purchaseId:0,provisionNo:0,dateFrom:'',dateTo:''
  });
  ngOnInit():void{
+  this.api.statuses().subscribe({
+   next:statuses=>this.statuses.set(statuses),
+   error:()=>this.error.set('Provizyon durumları yüklenemedi.')
+  });
   const query=this.route.snapshot.queryParamMap.get('provisionNo');
   if(query&&/^\d+$/.test(query)){this.form.patchValue({provisionNo:Number(query)});this.search();}
  }
  stateLabel(state:number):string{
-  return ({1:'Yeni',2:'Rapor',3:'İptal',4:'Bildirim'} as Record<number,string>)[state]??'Bilinmiyor';
+  return this.statuses().find(x=>x.code===state)?.name??'Durum '+state;
  }
  search(nextPage=1):void{
   if(this.loading())return;
